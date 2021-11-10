@@ -118,8 +118,6 @@ export default class UserController {
             if (user) {
                 const passwordHashed = generateHash(user.salt, password)
                 if (user.password === passwordHashed) {
-                    user.token = uid2(128)
-                    await getManager().save(user)
                     return res.status(200).json(userResponse(user))
                 } else {
                     return res.status(401).json('wrong password')
