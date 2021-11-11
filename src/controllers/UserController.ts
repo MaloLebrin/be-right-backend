@@ -7,6 +7,7 @@ import { UserEntity, userSearchableFields } from "../entity/UserEntity"
 import checkUserRole from "../middlewares/checkUserRole"
 import { Role } from "../types/Role"
 import { generateHash, userResponse } from "../utils"
+import EventEntity from '../entity/EventEntity'
 
 export default class UserController {
 
@@ -63,7 +64,7 @@ export default class UserController {
     public static getOne = async (req: Request, res: Response) => {
         try {
             const id = parseInt(req.params.id)
-            const user = await getManager().findOne(UserEntity, id)
+            const user = await getManager().findOne(UserEntity, id, { relations: ["events"] })
             return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
         } catch (error) {
             return res.status(400).json({ error: error.message })
@@ -114,7 +115,7 @@ export default class UserController {
     public static login = async (req: Request, res: Response) => {
         try {
             const { email, password }: { email: string, password: string } = req.body
-            const user = await getManager().findOne(UserEntity, { email })
+            const user = await getManager().findOne(UserEntity, { email }, { relations: ["events"] })
             if (user) {
                 const passwordHashed = generateHash(user.salt, password)
                 if (user.password === passwordHashed) {
