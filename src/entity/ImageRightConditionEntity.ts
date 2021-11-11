@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany, JoinColumn, ManyToOne } from "typeorm"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
