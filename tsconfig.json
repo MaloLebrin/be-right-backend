@@ -12,6 +12,14 @@
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "sourceMap": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "paths": {
+         "~/*": [
+            "./src/*"
+         ],
+         "@/*": [
+            "./src/*"
+         ]
+    },
    }
 }
