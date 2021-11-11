@@ -17,6 +17,8 @@ router.patch('/:id', [isAuthenticated], UserController.updateOne)
 
 router.delete('/:id', [isAuthenticated], UserController.deleteOne)
 
+router.patch('/subscription/:id', [checkUserRole(Role.ADMIN)], UserController.updatesubscription)
+
 // router.get('/clear', UserController.clear)
 
 export default router

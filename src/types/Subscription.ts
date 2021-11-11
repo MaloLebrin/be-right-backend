@@ -1,4 +1,4 @@
-export enum Subscription {
+export enum SubscriptionEnum {
     PREMIUM = 'PREMIUM',
     MEDIUM = 'MEDIUM',
     BASIC = 'BASIC'

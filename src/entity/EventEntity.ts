@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm"
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
+import { FileEntity } from "./FileEntity"
 import ImageRightConditionEntity from "./ImageRightConditionEntity"
 import { UserEntity } from "./UserEntity"
 
@@ -47,6 +48,9 @@ export default class EventEntity extends BaseEntity {
     @OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.event, { cascade: true })
     @JoinColumn()
     imageRightCondition: ImageRightConditionEntity[]
+
+    @OneToMany(() => FileEntity, file => file.event, { cascade: true })
+    files: FileEntity[]
 
 }
 

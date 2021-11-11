@@ -5,6 +5,7 @@ import express, { NextFunction, Request, Response } from 'express'
 import config from './typeOrmConfig'
 import cors from "cors"
 import helmet from "helmet"
+import dotenv from "dotenv"
 import Context from "./context"
 import userRoutes from './routes/userRoutes'
 import eventRoutes from './routes/eventRoutes'
@@ -14,6 +15,7 @@ import newsletterRoutes from './routes/newsletterRoutes'
 
 createConnection().then(async connection => {
     const app = createExpressServer(config)
+    dotenv.config()
     app.use(cors())
     app.use(helmet())
     app.use(express.json())
@@ -36,7 +38,7 @@ createConnection().then(async connection => {
     app.use('/imageRight', imageRightConditionRoutes)
     app.use('/newsletter', newsletterRoutes)
 
-    const server = app.listen(5000, '0.0.0.0', () => {
+    const server = app.listen(process.env.PORT, '0.0.0.0', () => {
         console.log('Application is running at: ' + server.address().address + ':' + server.address().port)
     })
 

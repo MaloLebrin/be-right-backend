@@ -74,7 +74,11 @@ export default class EventController {
         try {
             const ctx = Context.get(req)
             const userId = ctx.user.id
-            const events = await getManager().find(EventEntity, { user: userId })
+            const filters = {
+                user: userId,
+                relations: ["employees"],
+            }
+            const events = await getManager().find(EventEntity, filters)
             return res.status(200).json({ data: events, count: events.length })
         } catch (error) {
             return res.status(error.status).json({ error: error.message })

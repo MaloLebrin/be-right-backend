@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn } from "typeorm"
+import { Entity, Column, OneToMany } from "typeorm"
 import { Role } from "../types/Role"
-import { Subscription } from "../types/Subscription"
+import { SubscriptionEnum } from "../types/Subscription"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
+import { FileEntity } from "./FileEntity"
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -38,14 +39,18 @@ export class UserEntity extends BaseEntity {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     roles: Role
 
-    @Column({ type: 'enum', enum: Subscription, default: Subscription.BASIC })
-    subscription: Subscription
+    @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
+    subscription: SubscriptionEnum
 
     @OneToMany(() => EventEntity, event => event.user, { cascade: true })
     events: EventEntity[]
 
     @OneToMany(() => EmployeeEntity, employee => employee.user, { cascade: true })
     employee: EmployeeEntity[]
+
+    @OneToMany(() => FileEntity, file => file.user, { cascade: true })
+    files: FileEntity[]
+
 
 }
 
