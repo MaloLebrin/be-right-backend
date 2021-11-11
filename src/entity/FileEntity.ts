@@ -9,16 +9,46 @@ import { UserEntity } from "./UserEntity"
 export class FileEntity extends BaseEntity {
 
 	@Column()
+	name: string
+
+	@Column()
 	fileName: string
 
 	@Column()
-	path: string
+	mimeType: string
+
+	@Column()
+	size: number
 
 	@Column({ type: "enum", enum: FileTypeEnum, default: FileTypeEnum.IMAGE_RIGHT })
 	type: FileTypeEnum
 
 	@Column({ nullable: true })
 	description: string
+
+	@Column()
+	public_id: string
+
+	@Column()
+	signature: string
+
+	@Column()
+	width: number
+
+	@Column()
+	height: number
+
+	@Column()
+	format: string
+
+	@Column()
+	url: string
+
+	@Column()
+	secure_url: string
+
+	@Column()
+	original_filename: string
 
 	@ManyToOne(() => EventEntity, event => event.files)
 	event: number
