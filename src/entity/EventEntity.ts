@@ -1,5 +1,5 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
-import { EventStatusEnum } from "@/types/Event"
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm"
+import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import { FileEntity } from "./FileEntity"

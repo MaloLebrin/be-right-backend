@@ -1,13 +1,13 @@
-import { paginator } from '@/utils'
+import { paginator } from '../utils'
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import uid2 from "uid2"
-import Context from "@/context"
-import { UserEntity, userSearchableFields } from "@/entity/UserEntity"
-import checkUserRole from "@/middlewares/checkUserRole"
-import { Role } from "@/types/Role"
-import { generateHash, userResponse } from "@/utils"
-import { SubscriptionEnum } from '@/types/Subscription'
+import Context from "../context"
+import { UserEntity, userSearchableFields } from "../entity/UserEntity"
+import checkUserRole from "../middlewares/checkUserRole"
+import { Role } from "../types/Role"
+import { generateHash, userResponse } from "../utils"
+import { SubscriptionEnum } from '../types/Subscription'
 
 export default class UserController {
 

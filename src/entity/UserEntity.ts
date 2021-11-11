@@ -1,6 +1,6 @@
 import { Entity, Column, OneToMany } from "typeorm"
-import { Role } from "@/types/Role"
-import { SubscriptionEnum } from "@/types/Subscription"
+import { Role } from "../types/Role"
+import { SubscriptionEnum } from "../types/Subscription"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
