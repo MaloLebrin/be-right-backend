@@ -14,12 +14,9 @@
       "sourceMap": true,
       "esModuleInterop": true,
       "paths": {
-         "~/*": [
-            "./src/*"
-         ],
          "@/*": [
             "./src/*"
          ]
-    },
+      }
    }
 }
