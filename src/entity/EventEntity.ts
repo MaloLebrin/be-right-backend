@@ -12,10 +12,10 @@ export default class EventEntity extends BaseEntity {
     name: string
 
     @Column()
-    startDate: Date
+    start: Date
 
     @Column()
-    endDate: Date
+    end: Date
 
     @Column({ type: 'enum', enum: EventStatusEnum, default: EventStatusEnum.CREATE })
     status: EventStatusEnum

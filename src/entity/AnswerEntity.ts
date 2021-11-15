@@ -23,3 +23,9 @@ export default class AnswerEntity extends BaseEntity {
 	@JoinColumn({ name: "id" })
 	event: number
 }
+
+export const answerSearchFields = [
+	'hasSigned',
+	'employee',
+	'event',
+]
