@@ -1,7 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
-import { EmployeeEntity } from "./EmployeeEntity"
 import { FileEntity } from "./FileEntity"
 import ImageRightConditionEntity from "./ImageRightConditionEntity"
 import { UserEntity } from "./UserEntity"
@@ -40,10 +39,8 @@ export default class EventEntity extends BaseEntity {
     totalSignatureNeeded: number
 
     @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
-    user: number
+    createdByUser: number
 
-    @ManyToMany(() => EmployeeEntity, employee => employee.events)
-    employees: EmployeeEntity[]
 
     @OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.event, { cascade: true })
     @JoinColumn()
