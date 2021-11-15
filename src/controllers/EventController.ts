@@ -20,7 +20,7 @@ export default class EventController {
             const userId = ctx.user.id
             const eventToCreate = {
                 ...event,
-                user: userId
+                createdByUser: userId
             }
             const user = await getManager().findOne(UserEntity, userId)
             const newEvent = getManager().create(EventEntity, eventToCreate)
@@ -42,7 +42,7 @@ export default class EventController {
             const ctx = Context.get(req)
             const userId = ctx.user.id
             const event = await getManager().findOne(EventEntity, id, { relations: ["employees"] })
-            if (checkUserRole(Role.ADMIN) || event.user === userId) {
+            if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
                 return res.status(200).json(event)
             } else {
                 return res.status(401).json('unauthorized')
@@ -115,7 +115,7 @@ export default class EventController {
             const ctx = Context.get(req)
             const userId = ctx.user.id
             const eventFinded = await getManager().findOne(EventEntity, id)
-            if (checkUserRole(Role.ADMIN) || eventFinded.user === userId) {
+            if (checkUserRole(Role.ADMIN) || eventFinded.createdByUser === userId) {
                 const eventUpdated = {
                     ...eventFinded,
                     ...event,
@@ -137,7 +137,7 @@ export default class EventController {
             const ctx = Context.get(req)
             const userId = ctx.user.id
             const eventToDelete = await getManager().findOne(EventEntity, id)
-            if (eventToDelete.user === userId || checkUserRole(Role.ADMIN)) {
+            if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
                 await getManager().delete(EventEntity, id)
                 return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
             } else {
