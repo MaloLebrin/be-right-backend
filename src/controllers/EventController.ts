@@ -28,7 +28,11 @@ export default class EventController {
             await getManager().save([newEvent, user])
             return res.status(200).json(newEvent)
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -41,14 +45,18 @@ export default class EventController {
             const id = parseInt(req.params.id)
             const ctx = Context.get(req)
             const userId = ctx.user.id
-            const event = await getManager().findOne(EventEntity, id, { relations: ["employees"] })
+            const event = await getManager().findOne(EventEntity, id)
             if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
                 return res.status(200).json(event)
             } else {
                 return res.status(401).json('unauthorized')
             }
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -59,10 +67,14 @@ export default class EventController {
     public static getMany = async (req: Request, res: Response) => {
         try {
             const { ids }: { ids: number[] } = req.body
-            const events = await Promise.all(ids.map(id => getManager().findOne(EventEntity, id, { relations: ["employees"] })))
+            const events = await Promise.all(ids.map(id => getManager().findOne(EventEntity, id)))
             return res.status(200).json({ data: events, total: events.length })
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -74,14 +86,14 @@ export default class EventController {
         try {
             const ctx = Context.get(req)
             const userId = ctx.user.id
-            const filters = {
-                user: userId,
-                relations: ["employees"],
-            }
-            const events = await getManager().find(EventEntity, filters)
+            const events = await getManager().find(EventEntity, { where: { createdByUser: userId } })
             return res.status(200).json({ data: events, count: events.length })
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -92,15 +104,15 @@ export default class EventController {
     public static getAll = async (req: Request, res: Response) => {
         try {
             const queriesFilters = paginator(req, eventSearchableFields)
-            const eventFilters = {
-                ...queriesFilters,
-                relations: ["employees"],
-            }
-            const events = await getManager().find(EventEntity, eventFilters)
-            const total = await getManager().count(EventEntity, eventFilters)
+            const events = await getManager().find(EventEntity, queriesFilters)
+            const total = await getManager().count(EventEntity, queriesFilters)
             return res.status(200).json({ data: events, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -127,7 +139,11 @@ export default class EventController {
                 return res.status(400).json('event not updated')
             }
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 
@@ -144,7 +160,11 @@ export default class EventController {
                 return res.status(401).json('Not allowed')
             }
         } catch (error) {
-            return res.status(error.status).json({ error: error.message })
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
         }
     }
 }
