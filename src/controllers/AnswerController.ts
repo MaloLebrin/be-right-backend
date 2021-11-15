@@ -28,7 +28,7 @@ export default class AnswerController {
 		}
 	}
 
-	public static updateAnswer = async (req: Request, res: Response) => {
+	public static updateOne = async (req: Request, res: Response) => {
 		try {
 			const answer: AnswerEntity = req.body.answer
 			const id = answer.id

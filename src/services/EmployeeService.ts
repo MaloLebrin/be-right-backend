@@ -21,6 +21,11 @@ export default class EmployeeService {
 		return employees
 	}
 
+	public static async getManyWithResponse(ids: number[]) {
+		const employees = await getManager().findByIds(EmployeeEntity, ids, { relations: ["answer"] })
+		return employees
+	}
+
 	public static async getAllForUser(userId: number) {
 		return getManager().find(EmployeeEntity, {
 			where: {
