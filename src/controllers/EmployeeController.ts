@@ -5,8 +5,8 @@ import { EmployeeEntity, employeeSearchablefields } from "../entity/EmployeeEnti
 import { paginator } from "../utils"
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
-import EmployeeService from "@/services/EmployeeService"
-import AnswerService from "@/services/AnswerService"
+import EmployeeService from '../services/EmployeeService'
+import AnswerService from "../services/AnswerService"
 
 export default class EmployeeController {
 

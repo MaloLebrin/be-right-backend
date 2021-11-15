@@ -1,5 +1,5 @@
-import AnswerEntity from "@/entity/AnswerEntity"
-import AnswerService from "@/services/AnswerService"
+import AnswerEntity from "../entity/AnswerEntity"
+import AnswerService from "../services/AnswerService"
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 

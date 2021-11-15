@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import AnswerController from '@/controllers/AnswerController'
-import isAuthenticated from '@/middlewares/IsAuthenticated'
+import AnswerController from '../controllers/AnswerController'
+import isAuthenticated from '../middlewares/IsAuthenticated'
 
 const router = Router()
 

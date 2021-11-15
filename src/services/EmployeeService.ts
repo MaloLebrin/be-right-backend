@@ -1,4 +1,4 @@
-import { EmployeeEntity } from "@/entity/EmployeeEntity"
+import { EmployeeEntity } from "../entity/EmployeeEntity"
 import { getManager } from "typeorm"
 
 export default class EmployeeService {

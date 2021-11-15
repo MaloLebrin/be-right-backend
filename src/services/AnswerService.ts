@@ -1,4 +1,4 @@
-import AnswerEntity from "@/entity/AnswerEntity"
+import AnswerEntity from "../entity/AnswerEntity"
 import { getManager } from "typeorm"
 
 export default class AnswerService {
