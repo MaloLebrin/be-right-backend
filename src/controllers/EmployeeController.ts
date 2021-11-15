@@ -5,7 +5,8 @@ import { EmployeeEntity, employeeSearchablefields } from "../entity/EmployeeEnti
 import { paginator } from "../utils"
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
-import EventEntity from '../entity/EventEntity'
+import EmployeeService from "@/services/EmployeeService"
+import AnswerService from "@/services/AnswerService"
 
 export default class EmployeeController {
 
@@ -19,20 +20,46 @@ export default class EmployeeController {
 			const { employee }: { employee: Partial<EmployeeEntity> } = req.body
 			const ctx = Context.get(req)
 			const userId = ctx.user.id
-			const employeeToCreate = {
-				...employee,
-				user: userId,
-			}
-			const newEmployee = getManager().create(EmployeeEntity, employeeToCreate)
-			if (employee.events) {
-				const id: number = parseInt(employee.events.toString())
-				const event = await getManager().findOne(EventEntity, id)
-				event.employees = [newEmployee]
-				await getManager().save([newEmployee, event])
-				return res.status(200).json(newEmployee)
-			}
-			await getManager().save([newEmployee])
+			const newEmployee = await EmployeeService.createOne(employee, userId)
 			return res.status(200).json(newEmployee)
+		} catch (error) {
+			return res.status(error.status).json({ error: error.message })
+		}
+	}
+
+	public static createMany = async (req: Request, res: Response) => {
+		try {
+			const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+			if (employees.length > 0) {
+				const ctx = Context.get(req)
+				const userId = ctx.user.id
+				const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
+				return res.status(200).json(newEmployees)
+			} else {
+				return res.status(400).json({ error: "employees is empty" })
+			}
+		} catch (error) {
+			return res.status(error.status).json({ error: error.message })
+		}
+	}
+
+	public static createManyEmployeeByEventId = async (req: Request, res: Response) => {
+		try {
+			const eventId = parseInt(req.params.eventId)
+			const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+			if (employees.length > 0) {
+				const ctx = Context.get(req)
+				const userId = ctx.user.id
+				const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
+				const newEmployeesIds = newEmployees.map(employee => employee.id)
+				await AnswerService.createMany(eventId, newEmployeesIds)
+				const returnedEmployees = newEmployees.map(employee => ({
+					...employee,
+					eventId,
+				}))
+
+				return res.status(200).json(returnedEmployees)
+			}
 		} catch (error) {
 			return res.status(error.status).json({ error: error.message })
 		}
@@ -53,13 +80,27 @@ export default class EmployeeController {
 	}
 
 	/**
+	 * @param ids Array of ids
+	 * @returns each employee
+	 */
+	public static getMany = async (req: Request, res: Response) => {
+		try {
+			const ids: number[] = req.body.employeeIds
+			const employees = await EmployeeService.getMany(ids)
+			return employees ? res.status(200).json(employees) : res.status(404).json({ error: "employees not found" })
+		} catch (error) {
+			return res.status(error.status).json({ error: error.message })
+		}
+	}
+
+	/**
 	 * @param id user id
 	 * @returns all employees from user Id
 	 */
 	public static getManyByUserId = async (req: Request, res: Response) => {
 		try {
 			const userId = parseInt(req.params.id)
-			const employees = await getManager().find(EmployeeEntity, { user: userId })
+			const employees = await EmployeeService.getAllForUser(userId)
 			return res.status(200).json({ data: employees, count: employees.length })
 		} catch (error) {
 			return res.status(error.status).json({ error: error.message })
@@ -73,23 +114,14 @@ export default class EmployeeController {
 	public static getManyByEventId = async (req: Request, res: Response) => {
 		try {
 			const eventId = parseInt(req.params.id)
-			const employees = await getManager().findOne(EmployeeEntity, { relations: ["events"] })
-			return res.status(200).json({ data: employees })
-		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
-		}
-	}
-
-
-	/**
-	 * @param ids Array of ids
-	 * @returns each employee
-	 */
-	public static getMany = async (req: Request, res: Response) => {
-		try {
-			const { ids }: { ids: number[] } = req.body
-			const employees = await Promise.all(ids.map(id => getManager().findOne(EmployeeEntity, id, { relations: ["events"] })))
-			return res.status(200).json({ data: employees, total: employees.length })
+			const answers = await AnswerService.getAllAnswersForEvent(eventId)
+			const employeesIds = answers.map(answer => answer.employee)
+			const employees = await EmployeeService.getMany(employeesIds)
+			const employeesWithAnswers = employees.map(employee => ({
+				...employee,
+				answers: answers.filter(answer => answer.employee === employee.id),
+			}))
+			return res.status(200).json({ data: employeesWithAnswers })
 		} catch (error) {
 			return res.status(error.status).json({ error: error.message })
 		}
@@ -118,13 +150,7 @@ export default class EmployeeController {
 		try {
 			const { employee }: { employee: Partial<EmployeeEntity> } = req.body
 			const id = parseInt(req.params.id)
-			const employeeFinded = await getManager().findOne(EmployeeEntity, id)
-			const employeeUpdated = {
-				...employeeFinded,
-				...employee,
-				updatedAt: new Date(),
-			}
-			await getManager().save(employeeUpdated)
+			const employeeUpdated = await EmployeeService.updateOne(id, employee)
 			return res.status(200).json(employeeUpdated)
 		} catch (error) {
 			return res.status(error.status).json({ error: error.message })
@@ -137,9 +163,28 @@ export default class EmployeeController {
 			const ctx = Context.get(req)
 			const userId = ctx.user.id
 			const employeeToDelete = await getManager().findOne(EmployeeEntity, id)
-			if (employeeToDelete.user === userId || checkUserRole(Role.ADMIN)) {
-				await getManager().delete(EmployeeEntity, id)
+			if (employeeToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
+				await EmployeeService.deleteOne(id)
 				return res.status(204).json({ data: employeeToDelete, message: 'Employee deleted' })
+			} else {
+				return res.status(401).json('Unauthorized')
+			}
+		} catch (error) {
+			return res.status(error.status).json({ error: error.message })
+		}
+	}
+
+	public static deleteMany = async (req: Request, res: Response) => {
+		try {
+			const employeeIds: number[] = req.body.employeeIds
+			const ctx = Context.get(req)
+			const userId = ctx.user.id
+			if (employeeIds.every(async (id) => {
+				const employee = await EmployeeService.getOne(id)
+				return employee.createdByUser === userId || checkUserRole(Role.ADMIN)
+			})) {
+				const deletedEmployees = await EmployeeService.deleteMany(employeeIds)
+				return res.status(204).json({ data: deletedEmployees, message: 'Employees deleted' })
 			} else {
 				return res.status(401).json('Unauthorized')
 			}
