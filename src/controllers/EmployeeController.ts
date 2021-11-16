@@ -23,7 +23,12 @@ export default class EmployeeController {
 			const newEmployee = await EmployeeService.createOne(employee, userId)
 			return res.status(200).json(newEmployee)
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -39,7 +44,12 @@ export default class EmployeeController {
 				return res.status(400).json({ error: "employees is empty" })
 			}
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -61,7 +71,12 @@ export default class EmployeeController {
 				return res.status(200).json(returnedEmployees)
 			}
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -75,7 +90,12 @@ export default class EmployeeController {
 			const employee = await getManager().findOne(EmployeeEntity, id)
 			return res.status(200).json(employee)
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -89,7 +109,12 @@ export default class EmployeeController {
 			const employees = await EmployeeService.getMany(ids)
 			return employees ? res.status(200).json(employees) : res.status(404).json({ error: "employees not found" })
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -103,7 +128,12 @@ export default class EmployeeController {
 			const employees = await EmployeeService.getAllForUser(userId)
 			return res.status(200).json({ data: employees, count: employees.length })
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -123,7 +153,12 @@ export default class EmployeeController {
 			}))
 			return res.status(200).json({ data: employeesWithAnswers })
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -138,7 +173,12 @@ export default class EmployeeController {
 			const total = await getManager().count(EmployeeEntity, queriesFilters)
 			return res.status(200).json({ data: employees, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -153,7 +193,12 @@ export default class EmployeeController {
 			const employeeUpdated = await EmployeeService.updateOne(id, employee)
 			return res.status(200).json(employeeUpdated)
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -170,7 +215,12 @@ export default class EmployeeController {
 				return res.status(401).json('Unauthorized')
 			}
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 
@@ -189,7 +239,12 @@ export default class EmployeeController {
 				return res.status(401).json('Unauthorized')
 			}
 		} catch (error) {
-			return res.status(error.status).json({ error: error.message })
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
 		}
 	}
 }
