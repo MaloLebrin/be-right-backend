@@ -15,11 +15,17 @@ export default class AnswerEntity extends BaseEntity {
 	@Column({ nullable: true })
 	reason: string
 
-	@ManyToOne(() => EmployeeEntity, employee => employee.events)
-	@JoinColumn({ name: "id" })
+	@ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: "employeeId" })
 	employee: number
 
-	@ManyToOne(() => EventEntity, event => event.employees)
-	@JoinColumn({ name: "id" })
+	@ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: "eventId" })
 	event: number
 }
+
+export const answerSearchFields = [
+	'hasSigned',
+	'employee',
+	'event',
+]

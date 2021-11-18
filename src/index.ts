@@ -14,6 +14,7 @@ import employeeRoutes from './routes/employeeRoutes'
 import imageRightConditionRoutes from './routes/imageRightConditionRoutes'
 import newsletterRoutes from './routes/newsletterRoutes'
 import fileRoutes from './routes/fileRoutes'
+import answerRoute from './routes/answerRoutes'
 
 createConnection().then(async connection => {
     const app = createExpressServer(config)
@@ -46,6 +47,7 @@ createConnection().then(async connection => {
     app.use('/imageRight', imageRightConditionRoutes)
     app.use('/newsletter', newsletterRoutes)
     app.use('/file', fileRoutes)
+    app.use('/answer', answerRoute)
 
     const server = app.listen(5000, '0.0.0.0', () => {
         console.log('Application is running at: ' + server.address().address + ':' + server.address().port)

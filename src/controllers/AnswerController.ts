@@ -1,5 +1,5 @@
-import AnswerEntity from "@/entity/AnswerEntity"
-import AnswerService from "@/services/AnswerService"
+import AnswerEntity from "../entity/AnswerEntity"
+import AnswerService from "../services/AnswerService"
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 
@@ -8,8 +8,8 @@ export default class AnswerController {
 
 	public static createOne = async (req: Request, res: Response) => {
 		try {
-			const eventId = parseInt(req.params.eventId)
-			const employeeId = parseInt(req.params.employeeId)
+			const eventId = parseInt(req.query.eventId.toString())
+			const employeeId = parseInt(req.query.employeeId.toString())
 			const answer = AnswerService.createOne(eventId, employeeId)
 			return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
 		} catch (error) {
@@ -28,7 +28,7 @@ export default class AnswerController {
 		}
 	}
 
-	public static updateAnswer = async (req: Request, res: Response) => {
+	public static updateOne = async (req: Request, res: Response) => {
 		try {
 			const answer: AnswerEntity = req.body.answer
 			const id = answer.id
