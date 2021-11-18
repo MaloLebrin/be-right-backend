@@ -42,10 +42,10 @@ export class UserEntity extends BaseEntity {
     @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
     subscription: SubscriptionEnum
 
-    @OneToMany(() => EventEntity, event => event.user, { cascade: true })
+    @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
     events: EventEntity[]
 
-    @OneToMany(() => EmployeeEntity, employee => employee.user, { cascade: true })
+    @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
     employee: EmployeeEntity[]
 
     @OneToMany(() => FileEntity, file => file.user, { cascade: true })
