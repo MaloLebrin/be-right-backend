@@ -15,11 +15,11 @@ export default class AnswerEntity extends BaseEntity {
 	@Column({ nullable: true })
 	reason: string
 
-	@ManyToOne(() => EmployeeEntity, employee => employee)
+	@ManyToOne(() => EmployeeEntity, employee => employee.id, { cascade: true })
 	@JoinColumn({ name: "employeeId" })
 	employee: number
 
-	@ManyToOne(() => EventEntity, event => event)
+	@ManyToOne(() => EventEntity, event => event.id, { cascade: true })
 	@JoinColumn({ name: "eventId" })
 	event: number
 }

@@ -19,15 +19,12 @@ export class EmployeeEntity extends BaseEntity {
 	@Column()
 	lastName: string
 
-
 	@ManyToOne(() => UserEntity, user => user.employee)
 	createdByUser: number
 
 	@OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.employee, { cascade: true })
 	@JoinColumn()
 	imageRightCondition: ImageRightConditionEntity[]
-
-
 
 	@OneToMany(() => FileEntity, file => file.employee, { cascade: true })
 	files: FileEntity[]

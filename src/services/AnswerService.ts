@@ -1,5 +1,6 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import { getManager } from "typeorm"
+import EmployeeService from "./EmployeeService"
 
 export default class AnswerService {
 
@@ -7,7 +8,6 @@ export default class AnswerService {
 		const newAnswer = getManager().create(AnswerEntity, {
 			event: eventId,
 			employee: employeeId,
-			hasSigned: false,
 		})
 		await getManager().save(newAnswer)
 		return newAnswer
@@ -17,7 +17,6 @@ export default class AnswerService {
 		const newAnswers = employeeIds.map(employeeId => getManager().create(AnswerEntity, {
 			event: eventId,
 			employee: employeeId,
-			hasSigned: false,
 		}))
 		await getManager().save(newAnswers)
 		return newAnswers
@@ -29,6 +28,7 @@ export default class AnswerService {
 				event: eventId,
 				employee: employeeId,
 			},
+			relations: ["employee"],
 		})
 	}
 
@@ -37,14 +37,17 @@ export default class AnswerService {
 			where: {
 				event: eventId,
 			},
+			relations: ["employee"],
 		})
 	}
+
 
 	public static getAllAnswersForEmployee = async (employeeId: number) => {
 		return await getManager().find(AnswerEntity, {
 			where: {
 				employee: employeeId,
 			},
+			relations: ["employee", "event"],
 		})
 	}
 
@@ -54,6 +57,7 @@ export default class AnswerService {
 			...answerToUpdate,
 			signedAt: new Date(),
 			hasSigned: answer.hasSigned,
+			reason: answer.reason,
 		}
 		await getManager().save(updatedAnswer)
 		return updatedAnswer

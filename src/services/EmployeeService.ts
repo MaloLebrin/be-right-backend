@@ -17,11 +17,13 @@ export default class EmployeeService {
 	}
 
 	public static async getMany(ids: number[]) {
+		console.log(ids, 'ids')
 		const employees = await getManager().findByIds(EmployeeEntity, ids)
 		return employees
 	}
 
 	public static async getManyWithResponse(ids: number[]) {
+		console.log(ids, 'ids')
 		const employees = await getManager().findByIds(EmployeeEntity, ids, { relations: ["answer"] })
 		return employees
 	}
@@ -39,9 +41,14 @@ export default class EmployeeService {
 		if (!updatedEmployee) {
 			return null
 		}
-		updatedEmployee.updatedAt = new Date()
-		await getManager().save(updatedEmployee)
-		return updatedEmployee
+		delete updatedEmployee.imageRightCondition
+		const employeeToSave = {
+			...employee,
+			updatedAt: new Date(),
+		}
+		await getManager().update(EmployeeEntity, id, employeeToSave)
+		const entityReturned = await getManager().findOne(EmployeeEntity, id)
+		return entityReturned
 	}
 
 	public static async deleteOne(id: number) {
