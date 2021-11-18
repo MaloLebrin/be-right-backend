@@ -3,6 +3,7 @@ import { FileEntity, filesSearchableFields } from "../entity/FileEntity"
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import { paginator } from '../utils'
+import FileService from '../services/FileService'
 export default class FileController {
 
 	public static newFile = async (req: Request, res: Response) => {
@@ -142,6 +143,20 @@ export default class FileController {
 			}
 			return res.status(400).json({ message: 'Files not found' })
 		} catch (error) {
+			return res.status(400).json({ error: error.message })
+		}
+	}
+
+	public static deleteFile = async (req: Request, res: Response) => {
+		try {
+			const id = parseInt(req.params.id)
+			const deleted = await FileService.deleteFile(id)
+			return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'File not found' })
+		} catch (error) {
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
 			return res.status(400).json({ error: error.message })
 		}
 	}
