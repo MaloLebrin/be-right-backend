@@ -30,6 +30,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
+    "tsc": "tsc",
     "build": "tsc && ts-node build/index.js"
   },
   "keywords": [],
