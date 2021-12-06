@@ -9,6 +9,9 @@ import { Role } from "../types/Role"
 import { generateHash, userResponse } from "../utils"
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
+import EventEntity from '@/entity/EventEntity'
+import { EmployeeEntity } from '@/entity/EmployeeEntity'
+import { FileEntity } from '@/entity/FileEntity'
 
 export default class UserController {
 
@@ -171,7 +174,26 @@ export default class UserController {
     public static login = async (req: Request, res: Response) => {
         try {
             const { email, password }: { email: string, password: string } = req.body
-            const user = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
+            const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
+            const events = userFinded.events as EventEntity[]
+            const employees = userFinded.employee as EmployeeEntity[]
+            const files = userFinded.files as FileEntity[]
+            const user = {
+                ...userFinded,
+                events: events.map(event => ({
+                    ...event,
+                    createdByUser: userFinded.id,
+                })),
+                employee: employees.map(employee => ({
+                    ...employee,
+                    createdByUser: userFinded.id,
+                })),
+                files: files.map(file => ({
+                    ...file,
+                    createdByUser: userFinded.id,
+                })),
+            }
+
             if (user) {
                 const passwordHashed = generateHash(user.salt, password)
                 if (user.password === passwordHashed) {

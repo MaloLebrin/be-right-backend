@@ -7,7 +7,25 @@ import { FileEntity } from "../entity/FileEntity"
 export default class UserService {
 
 	public static async getByToken(token: string): Promise<UserEntity> {
-		return getManager().findOne(UserEntity, { token })
+		const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ["events", "files", "employee"] })
+		const events = userFinded.events as EventEntity[]
+		const employees = userFinded.employee as EmployeeEntity[]
+		const files = userFinded.files as FileEntity[]
+		return {
+			...userFinded,
+			events: events.map(event => ({
+				...event,
+				createdByUser: userFinded.id,
+			})),
+			employee: employees.map(employee => ({
+				...employee,
+				createdByUser: userFinded.id,
+			})),
+			files: files.map(file => ({
+				...file,
+				createdByUser: userFinded.id,
+			})),
+		}
 	}
 	public static async updateTheme(id: number, theme: ThemeEnum) {
 		const user = await getManager().findOne(UserEntity, id)
