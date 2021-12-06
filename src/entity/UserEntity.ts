@@ -48,13 +48,13 @@ export class UserEntity extends BaseEntity {
     subscription: SubscriptionEnum
 
     @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
-    events: EventEntity[]
+    events: EventEntity[] | number[]
 
     @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
-    employee: EmployeeEntity[]
+    employee: EmployeeEntity[] | number[]
 
     @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
-    files: FileEntity[]
+    files: FileEntity[] | number[]
 
     @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
     theme: ThemeEnum

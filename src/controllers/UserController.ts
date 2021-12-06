@@ -76,7 +76,7 @@ export default class UserController {
     public static getOne = async (req: Request, res: Response) => {
         try {
             const id = parseInt(req.params.id)
-            const user = await getManager().findOne(UserEntity, id, { relations: ["events"] })
+            const user = await UserService.getOneWithRelations(id)
             return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
         } catch (error) {
             return res.status(400).json({ error: error.message })
@@ -171,7 +171,7 @@ export default class UserController {
     public static login = async (req: Request, res: Response) => {
         try {
             const { email, password }: { email: string, password: string } = req.body
-            const user = await getManager().findOne(UserEntity, { email }, { relations: ["events"] })
+            const user = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
             if (user) {
                 const passwordHashed = generateHash(user.salt, password)
                 if (user.password === passwordHashed) {
