@@ -39,7 +39,7 @@ export default class EventEntity extends BaseEntity {
     totalSignatureNeeded: number
 
     @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
-    createdByUser: number
+    createdByUser: UserEntity | number
 
     @OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.event, { cascade: true })
     @JoinColumn()
