@@ -11,7 +11,10 @@ export default class EmployeeService {
 		}
 		const newEmployee = getManager().create(EmployeeEntity, employee)
 		await getManager().save(newEmployee)
-		return newEmployee
+		return {
+			...newEmployee,
+			createdByUser: userId,
+		}
 	}
 
 	public static async getOne(id: number) {
