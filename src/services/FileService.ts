@@ -1,5 +1,5 @@
 import cloudinary from 'cloudinary'
-import { FileEntity } from "@/entity/FileEntity"
+import { FileEntity } from "../entity/FileEntity"
 import { getManager } from 'typeorm'
 
 export default class FileService {

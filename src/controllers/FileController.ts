@@ -160,5 +160,5 @@ export default class FileController {
 			return res.status(400).json({ error: error.message })
 		}
 	}
-	// TODO add update file and delte file
+	// TODO add update file
 }
