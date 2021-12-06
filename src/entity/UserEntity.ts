@@ -6,6 +6,11 @@ import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
 import { FileEntity } from "./FileEntity"
 
+export enum ThemeEnum {
+    LIGHT = 'light',
+    DARK = 'dark'
+}
+
 @Entity()
 export class UserEntity extends BaseEntity {
 
@@ -51,7 +56,8 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => FileEntity, file => file.user, { cascade: true })
     files: FileEntity[]
 
-
+    @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
+    theme: ThemeEnum
 }
 
 export const userSearchableFields = [
