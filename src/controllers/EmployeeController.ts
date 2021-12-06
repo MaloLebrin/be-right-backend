@@ -110,7 +110,11 @@ export default class EmployeeController {
 		try {
 			const userId = parseInt(req.params.id)
 			const employees = await EmployeeService.getAllForUser(userId)
-			return res.status(200).json({ data: employees, count: employees.length })
+			const entitiesReturned = employees.map(employee => ({
+				...employee,
+				createdByUser: userId,
+			}))
+			return res.status(200).json(entitiesReturned)
 		} catch (error) {
 			console.error(error)
 			if (error.status) {
