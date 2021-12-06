@@ -34,28 +34,14 @@ export default class EmployeeService {
 		})
 	}
 
-	public static async getManyWithResponse(ids: number[]) {
-		const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["answer", "createdByUser"] })
-		return finded.map((employee) => {
-			const answer = employee.answer! as AnswerEntity
-			const user = employee.createdByUser as UserEntity
-			return {
-				...employee,
-				event: answer.event,
-				createdByUser: user.id,
-
-			}
-		})
-	}
-
 	public static async getAllForUser(userId: number) {
-		const events = await getManager().find(EmployeeEntity, {
+		const employees = await getManager().find(EmployeeEntity, {
 			where: {
 				createdByUser: userId
 			}
 		})
-		return events.map((event) => ({
-			...event,
+		return employees.map((employee) => ({
+			...employee,
 			createdByUser: userId,
 		}))
 	}

@@ -53,7 +53,7 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
     employee: EmployeeEntity[]
 
-    @OneToMany(() => FileEntity, file => file.user, { cascade: true })
+    @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
     files: FileEntity[]
 
     @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })

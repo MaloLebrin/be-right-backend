@@ -15,7 +15,7 @@ export default class FileService {
 	}
 
 	public static async getFile(fileId: number) {
-		const doc = await getManager().findOne(FileEntity, fileId)
+		const doc = await getManager().findOne(FileEntity, fileId, { relations: ["createdByUser"] })
 		return doc
 	}
 
@@ -27,7 +27,7 @@ export default class FileService {
 	public static async getFilesByUser(id: number) {
 		const docs = await getManager().find(FileEntity, {
 			where: {
-				user: id
+				createdByUser: id
 			}
 		})
 		return docs

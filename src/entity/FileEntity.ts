@@ -57,7 +57,7 @@ export class FileEntity extends BaseEntity {
 	employee: number
 
 	@ManyToOne(() => UserEntity, user => user.files)
-	user: number
+	createdByUser: number
 }
 
 export const filesSearchableFields = [
