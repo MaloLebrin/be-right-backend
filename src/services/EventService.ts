@@ -34,4 +34,15 @@ export default class EventService {
 		}
 	}
 
+	public static async getManyEvents(eventIds: number[]) {
+		const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser"] })
+		return finded.map(event => {
+			const user = event.createdByUser as UserEntity
+			return {
+				...event,
+				createdByUser: user.id,
+			}
+		})
+	}
+
 }

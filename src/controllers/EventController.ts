@@ -1,5 +1,6 @@
+import EventService from "../services/EventService"
 import { Request, Response } from "express"
-import { getManager } from "typeorm"
+import { EventSubscriber, getManager } from "typeorm"
 import Context from "../context"
 import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
 import { UserEntity } from "../entity/UserEntity"
@@ -56,6 +57,21 @@ export default class EventController {
             } else {
                 return res.status(401).json('unauthorized')
             }
+        } catch (error) {
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
+        }
+    }
+
+    public static getMany = async (req: Request, res: Response) => {
+        try {
+            const ids = req.query.ids as string
+            const eventsIds = ids.split(',').map(id => parseInt(id))
+            const events = await EventService.getManyEvents(eventsIds)
+            return res.status(200).json(events)
         } catch (error) {
             console.error(error)
             if (error.status) {
