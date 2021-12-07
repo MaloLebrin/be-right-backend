@@ -27,7 +27,7 @@ export default class EventController {
             const newEvent = getManager().create(EventEntity, eventToCreate)
             user.events = [newEvent]
             await getManager().save([newEvent, user])
-            return res.status(200).json(newEvent)
+            return res.status(200).json({ ...newEvent, createdByUser: user.id })
         } catch (error) {
             console.error(error)
             if (error.status) {
