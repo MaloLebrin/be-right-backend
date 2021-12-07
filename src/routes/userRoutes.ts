@@ -9,11 +9,15 @@ router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.get
 
 router.get('/:id', UserController.getOne)
 
+router.post('/token', UserController.getOneByToken)
+
 router.post('/', UserController.newUser)
 
 router.post('/login', UserController.login)
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
+
+router.patch('/theme/:id', [isAuthenticated], UserController.updateTheme)
 
 router.delete('/:id', [isAuthenticated], UserController.deleteOne)
 

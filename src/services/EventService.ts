@@ -1,6 +1,7 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import EventEntity from "../entity/EventEntity"
 import { getManager } from "typeorm"
+import { UserEntity } from "../entity/UserEntity"
 
 export default class EventService {
 
@@ -8,7 +9,7 @@ export default class EventService {
 		const event = await getManager().findOne(EventEntity, eventId)
 		event.totalSignatureNeeded = signatureNeeded
 		await getManager().save(event)
-		return event
+		return this.getOneEvent(eventId)
 	}
 
 	public static getNumberSignatureNeededForEvent = async (eventId: number) => {
@@ -20,12 +21,28 @@ export default class EventService {
 		})
 		const totalSignatureNeeded = answers.length
 		await getManager().update(EventEntity, eventId, { totalSignatureNeeded, updatedAt: new Date() })
-		return getManager().findOne(EventEntity, eventId)
+		return this.getOneEvent(eventId)
 	}
 
 
 	public static async getOneEvent(eventId: number) {
-		return getManager().findOne(EventEntity, eventId)
+		const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser"] })
+		const user = finded.createdByUser as UserEntity
+		return {
+			...finded,
+			createdByUser: user.id,
+		}
+	}
+
+	public static async getManyEvents(eventIds: number[]) {
+		const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser"] })
+		return finded.map(event => {
+			const user = event.createdByUser as UserEntity
+			return {
+				...event,
+				createdByUser: user.id,
+			}
+		})
 	}
 
 }

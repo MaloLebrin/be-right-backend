@@ -17,5 +17,6 @@ router.get('/user/:id', FileController.getFilesByUser)
 
 router.get('/event/:id', FileController.getFilesByEvent)
 
+router.delete('/:id', FileController.deleteFile)
 
 export default router

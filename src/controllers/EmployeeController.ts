@@ -8,6 +8,7 @@ import { Role } from '../types/Role'
 import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
+import { UserEntity } from "../entity/UserEntity"
 
 export default class EmployeeController {
 
@@ -22,7 +23,7 @@ export default class EmployeeController {
 			const ctx = Context.get(req)
 			const userId = ctx.user.id
 			const newEmployee = await EmployeeService.createOne(employee, userId)
-			return res.status(200).json(newEmployee)
+			return res.status(200).json({ ...newEmployee, createdByUser: userId })
 		} catch (error) {
 			console.error(error)
 			if (error.status) {
@@ -39,7 +40,13 @@ export default class EmployeeController {
 			if (employees.length > 0) {
 				const ctx = Context.get(req)
 				const userId = ctx.user.id
-				const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
+				const newEmployees = await Promise.all(employees.map(async (employee) => {
+					const emp = await EmployeeService.createOne(employee, userId)
+					return {
+						...emp,
+						createdByUser: userId,
+					}
+				}))
 				return res.status(200).json(newEmployees)
 			} else {
 				return res.status(400).json({ error: "employees is empty" })
@@ -68,6 +75,7 @@ export default class EmployeeController {
 				const returnedEmployees = newEmployees.map(employee => ({
 					...employee,
 					eventId,
+					createdByUser: userId,
 				}))
 
 				return res.status(200).json(returnedEmployees)
@@ -89,8 +97,9 @@ export default class EmployeeController {
 	public static getOne = async (req: Request, res: Response) => {
 		try {
 			const id = parseInt(req.params.id)
-			const employee = await getManager().findOne(EmployeeEntity, id)
-			return res.status(200).json(employee)
+			const employee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+			const user = employee.createdByUser as UserEntity
+			return res.status(200).json({ ...employee, createdByUser: user.id })
 		} catch (error) {
 			console.error(error)
 			if (error.status) {
@@ -110,7 +119,11 @@ export default class EmployeeController {
 		try {
 			const userId = parseInt(req.params.id)
 			const employees = await EmployeeService.getAllForUser(userId)
-			return res.status(200).json({ data: employees, count: employees.length })
+			const entitiesReturned = employees.map(employee => ({
+				...employee,
+				createdByUser: userId,
+			}))
+			return res.status(200).json(entitiesReturned)
 		} catch (error) {
 			console.error(error)
 			if (error.status) {
@@ -156,9 +169,16 @@ export default class EmployeeController {
 	public static getAll = async (req: Request, res: Response) => {
 		try {
 			const queriesFilters = paginator(req, employeeSearchablefields)
-			const employees = await getManager().find(EmployeeEntity, queriesFilters)
+			const employees = await getManager().find(EmployeeEntity, { ...queriesFilters, relations: ["createdByUser"] })
+			const entityReturned = employees.map(employee => {
+				const user = employee.createdByUser as UserEntity
+				return {
+					...employee,
+					createdByUser: user.id,
+				}
+			})
 			const total = await getManager().count(EmployeeEntity, queriesFilters)
-			return res.status(200).json({ data: employees, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+			return res.status(200).json({ data: entityReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
 		} catch (error) {
 			console.error(error)
 			if (error.status) {

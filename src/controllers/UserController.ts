@@ -8,6 +8,10 @@ import checkUserRole from "../middlewares/checkUserRole"
 import { Role } from "../types/Role"
 import { generateHash, userResponse } from "../utils"
 import { SubscriptionEnum } from '../types/Subscription'
+import UserService from '../services/UserService'
+import EventEntity from '@/entity/EventEntity'
+import { EmployeeEntity } from '@/entity/EmployeeEntity'
+import { FileEntity } from '@/entity/FileEntity'
 
 export default class UserController {
 
@@ -48,7 +52,18 @@ export default class UserController {
                 ...queriesFilters,
                 relations: ["events"]
             }
-            const users = await getManager().find(UserEntity, usersFilters)
+            const search = await getManager().find(UserEntity, usersFilters)
+            const users = search.map(user => {
+                return {
+                    ...user,
+                    events: user.events.map(event => {
+                        return {
+                            ...event,
+                            createdByUser: user.id
+                        }
+                    })
+                }
+            })
             const usersToSend = users.map(user => userResponse(user))
             const total = await getManager().count(UserEntity, usersFilters)
             return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
@@ -64,9 +79,38 @@ export default class UserController {
     public static getOne = async (req: Request, res: Response) => {
         try {
             const id = parseInt(req.params.id)
-            const user = await getManager().findOne(UserEntity, id, { relations: ["events"] })
+            const user = await UserService.getOneWithRelations(id)
             return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
         } catch (error) {
+            return res.status(400).json({ error: error.message })
+        }
+    }
+
+    public static getOneByToken = async (req: Request, res: Response) => {
+        try {
+            const token = req.body.token
+            const user = await UserService.getByToken(token)
+            return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
+        } catch (error) {
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
+            return res.status(400).json({ error: error.message })
+        }
+    }
+
+    public static updateTheme = async (req: Request, res: Response) => {
+        try {
+            const id = parseInt(req.params.id)
+            const { theme } = req.body
+            const user = await UserService.updateTheme(id, theme)
+            return res.status(200).json(userResponse(user))
+        } catch (error) {
+            console.error(error)
+            if (error.status) {
+                return res.status(error.status).json({ error: error.message })
+            }
             return res.status(400).json({ error: error.message })
         }
     }
@@ -130,7 +174,26 @@ export default class UserController {
     public static login = async (req: Request, res: Response) => {
         try {
             const { email, password }: { email: string, password: string } = req.body
-            const user = await getManager().findOne(UserEntity, { email }, { relations: ["events"] })
+            const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
+            const events = userFinded.events as EventEntity[]
+            const employees = userFinded.employee as EmployeeEntity[]
+            const files = userFinded.files as FileEntity[]
+            const user = {
+                ...userFinded,
+                events: events.map(event => ({
+                    ...event,
+                    createdByUser: userFinded.id,
+                })),
+                employee: employees.map(employee => ({
+                    ...employee,
+                    createdByUser: userFinded.id,
+                })),
+                files: files.map(file => ({
+                    ...file,
+                    createdByUser: userFinded.id,
+                })),
+            }
+
             if (user) {
                 const passwordHashed = generateHash(user.salt, password)
                 if (user.password === passwordHashed) {

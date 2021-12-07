@@ -20,7 +20,7 @@ export class EmployeeEntity extends BaseEntity {
 	lastName: string
 
 	@ManyToOne(() => UserEntity, user => user.employee)
-	createdByUser: number
+	createdByUser: number | UserEntity
 
 	@OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.employee, { cascade: true })
 	@JoinColumn()

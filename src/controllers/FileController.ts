@@ -3,6 +3,7 @@ import { FileEntity, filesSearchableFields } from "../entity/FileEntity"
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import { paginator } from '../utils'
+import FileService from '../services/FileService'
 export default class FileController {
 
 	public static newFile = async (req: Request, res: Response) => {
@@ -19,7 +20,7 @@ export default class FileController {
 				fileName: fileRecieved.filename,
 				name,
 				description,
-				user,
+				createdByUser: user,
 				event,
 				employee,
 				url: result.url,
@@ -69,7 +70,7 @@ export default class FileController {
 			const { ids }: { ids: number[] } = req.body
 			const files = await Promise.all(ids.map(id => getManager().findOne(FileEntity, id)))
 			if (files.length > 0) {
-				return res.status(200).json({ data: files, count: files.length })
+				return res.status(200).json(files)
 			} else {
 				return res.status(400).json({ message: 'Files not found' })
 			}
@@ -81,9 +82,9 @@ export default class FileController {
 	public static getFilesByUser = async (req: Request, res: Response) => {
 		try {
 			const userId = parseInt(req.params.id)
-			const files = await getManager().find(FileEntity, { where: { user: userId } })
+			const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
 			if (files.length > 0) {
-				return res.status(200).json({ data: files, count: files.length })
+				return res.status(200).json(files)
 			}
 			return res.status(400).json({ message: 'Files not found' })
 		} catch (error) {
@@ -96,7 +97,7 @@ export default class FileController {
 			const eventId = parseInt(req.params.id)
 			const files = await getManager().find(FileEntity, { where: { event: eventId } })
 			if (files.length > 0) {
-				return res.status(200).json({ data: files, count: files.length })
+				return res.status(200).json(files)
 			}
 			return res.status(400).json({ message: 'Files not found' })
 
@@ -110,7 +111,7 @@ export default class FileController {
 			const employeeId = parseInt(req.params.id)
 			const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
 			if (files.length > 0) {
-				return res.status(200).json({ data: files, count: files.length })
+				return res.status(200).json(files)
 			} else {
 				return res.status(400).json({ message: 'Files not found' })
 			}
@@ -123,9 +124,9 @@ export default class FileController {
 		try {
 			const userId = parseInt(req.params.userId)
 			const eventId = parseInt(req.params.eventId)
-			const files = await getManager().find(FileEntity, { where: { user: userId, event: eventId } })
+			const files = await getManager().find(FileEntity, { where: { createdByUser: userId, event: eventId } })
 			if (files.length > 0) {
-				return res.status(200).json({ data: files, count: files.length })
+				return res.status(200).json(files)
 			}
 			return res.status(400).json({ message: 'Files not found' })
 		} catch (error) {
@@ -145,5 +146,19 @@ export default class FileController {
 			return res.status(400).json({ error: error.message })
 		}
 	}
-	// TODO add update file and delte file
+
+	public static deleteFile = async (req: Request, res: Response) => {
+		try {
+			const id = parseInt(req.params.id)
+			const deleted = await FileService.deleteFile(id)
+			return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'File not found' })
+		} catch (error) {
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+		}
+	}
+	// TODO add update file
 }

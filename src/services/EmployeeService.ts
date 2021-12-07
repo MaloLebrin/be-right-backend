@@ -1,5 +1,7 @@
 import { EmployeeEntity } from "../entity/EmployeeEntity"
 import { getManager } from "typeorm"
+import { UserEntity } from "../entity/UserEntity"
+import AnswerEntity from "../entity/AnswerEntity"
 
 export default class EmployeeService {
 
@@ -9,31 +11,42 @@ export default class EmployeeService {
 		}
 		const newEmployee = getManager().create(EmployeeEntity, employee)
 		await getManager().save(newEmployee)
-		return newEmployee
+		return {
+			...newEmployee,
+			createdByUser: userId,
+		}
 	}
 
 	public static async getOne(id: number) {
-		return getManager().findOne(EmployeeEntity, id)
+		const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+		const user = employeefinded.createdByUser as UserEntity
+		return {
+			...employeefinded,
+			createdByUser: user.id
+		}
 	}
 
 	public static async getMany(ids: number[]) {
-		console.log(ids, 'ids')
-		const employees = await getManager().findByIds(EmployeeEntity, ids)
-		return employees
-	}
-
-	public static async getManyWithResponse(ids: number[]) {
-		console.log(ids, 'ids')
-		const employees = await getManager().findByIds(EmployeeEntity, ids, { relations: ["answer"] })
-		return employees
+		const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["createdByUser"] })
+		return finded.map((event) => {
+			const user = event.createdByUser as UserEntity
+			return {
+				...event,
+				createdByUser: user.id,
+			}
+		})
 	}
 
 	public static async getAllForUser(userId: number) {
-		return getManager().find(EmployeeEntity, {
+		const employees = await getManager().find(EmployeeEntity, {
 			where: {
 				createdByUser: userId
 			}
 		})
+		return employees.map((employee) => ({
+			...employee,
+			createdByUser: userId,
+		}))
 	}
 
 	public static async updateOne(id: number, employee: Partial<EmployeeEntity>) {
@@ -47,17 +60,15 @@ export default class EmployeeService {
 			updatedAt: new Date(),
 		}
 		await getManager().update(EmployeeEntity, id, employeeToSave)
-		const entityReturned = await getManager().findOne(EmployeeEntity, id)
-		return entityReturned
+		return this.getOne(id)
 	}
 
 	public static async deleteOne(id: number) {
-		const deletedEmployee = await getManager().delete(EmployeeEntity, id)
-		return deletedEmployee
+		return getManager().delete(EmployeeEntity, id)
 	}
 
 	public static async deleteMany(ids: number[]) {
-		const deletedEmployees = await getManager().delete(EmployeeEntity, ids)
-		return deletedEmployees
+		return getManager().delete(EmployeeEntity, ids)
 	}
+
 }
