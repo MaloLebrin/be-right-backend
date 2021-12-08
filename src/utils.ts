@@ -35,7 +35,7 @@ export const userResponse = (entity: Record<string, any>) => {
  */
 export const paginator = (req: Request, searchableField: string[]) => {
     const page = req.query.page ? parseInt(req.query.page.toString()) : 1
-    const limit = req.query.limit ? parseInt(req.query.limit.toString()) : 5
+    const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
     const search = req.query.search ? Like(`%${req.query.search}%`) : null
 
     const queries = {
