@@ -12,9 +12,9 @@ export class SubscriptionEntitiy extends BaseEntity {
 	expireAt: Date
 
 	@OneToOne(() => UserEntity, user => user.subscription)
-	user: UserEntity
+	user: UserEntity|number
 	
-	@OneToOne(() => PaymentEntity, payment => payment.subscription)
+	@OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
 	@JoinColumn({ name: 'paymentId', referencedColumnName: 'id' })
 	payment: PaymentEntity
 
