@@ -1,6 +1,5 @@
-import { BaseEntity } from "./BaseEntity";
 import { Entity, Column, OneToOne } from "typeorm"
-import { SubscriptionEntitiy } from "./SubscriptionEntitiy";
+import { BaseEntity, SubscriptionEntitiy } from "."
 
 @Entity()
 export class PaymentEntity extends BaseEntity {
