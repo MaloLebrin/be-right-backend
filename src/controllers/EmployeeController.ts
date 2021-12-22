@@ -21,8 +21,13 @@ export default class EmployeeController {
 		try {
 			const { employee }: { employee: Partial<EmployeeEntity> } = req.body
 			const ctx = Context.get(req)
-			const userId = ctx.user.id
-			const newEmployee = await EmployeeService.createOne(employee, userId)
+			let userId = null
+			if (ctx.user.roles === Role.ADMIN) {
+				userId = parseInt(req.params.userId)
+			} else {
+				userId = ctx.user.id
+			}
+		const newEmployee = await EmployeeService.createOne(employee, userId)
 			return res.status(200).json({ ...newEmployee, createdByUser: userId })
 		} catch (error) {
 			console.error(error)
@@ -39,7 +44,12 @@ export default class EmployeeController {
 			const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
 			if (employees.length > 0) {
 				const ctx = Context.get(req)
-				const userId = ctx.user.id
+				let userId = null
+				if (ctx.user.roles === Role.ADMIN) {
+					userId = parseInt(req.params.userId)
+				} else {
+					userId = ctx.user.id
+				}
 				const newEmployees = await Promise.all(employees.map(async (employee) => {
 					const emp = await EmployeeService.createOne(employee, userId)
 					return {
@@ -67,7 +77,12 @@ export default class EmployeeController {
 			const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
 			if (employees.length > 0) {
 				const ctx = Context.get(req)
-				const userId = ctx.user.id
+				let userId = null
+				if (ctx.user.roles === Role.ADMIN) {
+					userId = parseInt(req.params.userId)
+				} else {
+					userId = ctx.user.id
+				}
 				const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
 				const newEmployeesIds = newEmployees.map(employee => employee.id)
 				await AnswerService.createMany(eventId, newEmployeesIds)

@@ -1,6 +1,6 @@
 import EventService from "../services/EventService"
 import { Request, Response } from "express"
-import { EventSubscriber, getManager } from "typeorm"
+import { getManager } from "typeorm"
 import Context from "../context"
 import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
 import { UserEntity } from "../entity/UserEntity"
@@ -18,7 +18,12 @@ export default class EventController {
         try {
             const { event }: { event: Partial<EventEntity> } = req.body
             const ctx = Context.get(req)
-            const userId = ctx.user.id
+			let userId = null
+			if (ctx.user.roles === Role.ADMIN) {
+				userId = parseInt(req.params.userId)
+			} else {
+				userId = ctx.user.id
+			}
             const eventToCreate = {
                 ...event,
                 createdByUser: userId
