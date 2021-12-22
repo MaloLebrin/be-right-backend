@@ -20,15 +20,17 @@ export default class UserController {
      * @returns return user just created
      */
     public static newUser = async (req: Request, res: Response) => {
-        const { email, firstName, lastName, password }: { email: string, firstName: string, lastName: string, password: string } = req.body
+        const { companyName, email, firstName, lastName, password, role }: { companyName: string, email: string, firstName: string, lastName: string, password: string, role: Role } = req.body
         try {
             const salt = uid2(128)
             const token = uid2(128)
             const user = {
+                companyName,
                 email,
                 firstName,
                 lastName,
                 salt,
+                roles: role,
                 token,
                 password: generateHash(salt, password),
                 events: []
@@ -50,20 +52,29 @@ export default class UserController {
             const queriesFilters = paginator(req, userSearchableFields)
             const usersFilters = {
                 ...queriesFilters,
-                relations: ["events"]
+                relations: ["events", "files", "employee"],
             }
             const search = await getManager().find(UserEntity, usersFilters)
             const users = search.map(user => {
+                const events = user.events as EventEntity[]
+                const employees = user.employee as EmployeeEntity[]
+                const files = user.files as FileEntity[]
                 return {
                     ...user,
-                    events: user.events.map(event => {
-                        return {
-                            ...event,
-                            createdByUser: user.id
-                        }
-                    })
+                    events: events.map(event => ({
+                        ...event,
+                        createdByUser: user.id,
+                    })),
+                    employee: employees.map(employee => ({
+                        ...employee,
+                        createdByUser: user.id,
+                    })),
+                    files: files.map(file => ({
+                        ...file,
+                        createdByUser: user.id,
+                    })),
                 }
-            })
+                })
             const usersToSend = users.map(user => userResponse(user))
             const total = await getManager().count(UserEntity, usersFilters)
             return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
