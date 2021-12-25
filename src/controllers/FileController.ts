@@ -4,25 +4,39 @@ import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import { paginator } from '../utils'
 import FileService from '../services/FileService'
+import { FileTypeEnum } from '@/types/File'
+import Context from '../context'
+import { Role } from '@/types/Role'
 export default class FileController {
 
 	public static newFile = async (req: Request, res: Response) => {
 		try {
 			const fileRecieved = req.file
-			const { name, description, user, event, employee }:
-				{ name: string, description: string, user?: number, event?: number, employee?: number } = req.body
+			const { name, description, user, event, employee, type }:
+				{ name: string, description: string, user?: number, event?: number, employee?: number, type: FileTypeEnum } = req.body
+
+				const ctx = Context.get(req)
+
+				let userId = null
+				if (ctx.user.roles === Role.ADMIN) {
+					userId = parseInt(req.params.userId)
+				} else {
+					userId = ctx.user.id
+				}
+	
 
 			const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
-				folder: `beright/imageRight/user-${user}`
+				folder: `beright/imageRight/user-${userId}`
 			})
 
 			const fileToPost = {
 				fileName: fileRecieved.filename,
 				name,
 				description,
-				createdByUser: user,
+				createdByUser: userId,
 				event,
 				employee,
+				type,
 				url: result.url,
 				public_id: result.public_id,
 				secure_url: result.secure_url,
@@ -39,10 +53,7 @@ export default class FileController {
 			await getManager().save(file)
 
 			if (file) {
-				return res.status(200).json({
-					message: 'File uploaded successfully',
-					file
-				})
+				return res.status(200).json(file)
 			} else {
 				return res.status(400).json({ message: 'File not uploaded' })
 			}

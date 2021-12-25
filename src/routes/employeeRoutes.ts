@@ -12,11 +12,11 @@ router.get('/user/:id', [isAuthenticated], EmployeeController.getManyByUserId)
 
 router.get('/event/:id', [isAuthenticated], EmployeeController.getManyByEventId)
 
-router.post('/', [isAuthenticated], EmployeeController.createOne)
+router.post('/:userId', [isAuthenticated], EmployeeController.createOne)
 
 router.post('/many', [isAuthenticated], EmployeeController.createMany)
 
-router.post('/manyonevent/:eventId', [isAuthenticated], EmployeeController.createManyEmployeeByEventId)
+router.post('/manyonevent/:eventId/:userId', [isAuthenticated], EmployeeController.createManyEmployeeByEventId)
 
 router.put('/updateTotalSignatureNeeded/:id', [isAuthenticated], EmployeeController.patchOne)
 
