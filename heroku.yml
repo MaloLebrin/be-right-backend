@@ -1,8 +1,10 @@
+setup:
+  config:
+    CLOUDINARY_CLOUD_NAME: be-right
+    CLOUDINARY_API_KEY: 273685759585545
+    CLOUDINARY_API_SECRET: AmhxJTrgFrWxZ_0yz7dlpJE9M7A
 build:
-  setup:
-    config:
-      CLOUDINARY_CLOUD_NAME: be-right
-      CLOUDINARY_API_KEY: 273685759585545
-      CLOUDINARY_API_SECRET: AmhxJTrgFrWxZ_0yz7dlpJE9M7A
   docker:
     web: Dockerfile
+run:
+  web: docker compose up --build
