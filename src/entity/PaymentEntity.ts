@@ -19,13 +19,6 @@ export class PaymentEntity extends BaseEntity {
 	@OneToOne(() => SubscriptionEntitiy, subscription => subscription.payment, { nullable: true })
 	subscription: SubscriptionEntitiy
 
-	public fromCent (amount: number): number {
-		return amount / 100
-	}
-
-	public toCent (amount: number): number {
-		return amount * 100
-	}
 }
 
 export enum PaymentStatusEnum {
