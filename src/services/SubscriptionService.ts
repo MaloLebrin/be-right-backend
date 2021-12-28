@@ -27,4 +27,9 @@ export class SubscriptionService {
   public updateOne = async (id: number, subscription: SubscriptionEntitiy) => {
     return getManager().update(SubscriptionEntitiy, id, subscription)
   }
+
+  public isActive = async (id: number) => {
+    const subscription = await this.getOne(id)
+    return subscription.expireAt?.valueOf() > new Date().valueOf()
+  }
 }
