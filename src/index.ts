@@ -2,7 +2,6 @@ import "reflect-metadata"
 import { createConnection } from "typeorm"
 import { createExpressServer } from 'routing-controllers'
 import express, { NextFunction, Request, Response } from 'express'
-import config from './typeOrmConfig'
 import cors from "cors"
 import helmet from "helmet"
 import * as dotenv from "dotenv"
@@ -17,7 +16,7 @@ import fileRoutes from './routes/fileRoutes'
 import answerRoute from './routes/answerRoutes'
 
 createConnection().then(async connection => {
-    const app = createExpressServer(config)
+    const app = createExpressServer()
     dotenv.config()
     app.use(cors())
     app.use(helmet())

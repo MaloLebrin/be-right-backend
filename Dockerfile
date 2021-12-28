@@ -12,4 +12,4 @@ COPY .env /app/.env
 COPY tsconfig.json /app/
 COPY ./src /app/src
 
-ENTRYPOINT ["npm", "run", "start"]
+ENTRYPOINT ["npm", "run", "build"]
