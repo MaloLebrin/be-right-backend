@@ -9,9 +9,9 @@ import { Role } from "../types/Role"
 import { generateHash, userResponse } from "../utils"
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import EventEntity from '@/entity/EventEntity'
-import { EmployeeEntity } from '@/entity/EmployeeEntity'
-import { FileEntity } from '@/entity/FileEntity'
+import EventEntity from '../entity/EventEntity'
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { FileEntity } from '../entity/FileEntity'
 
 export default class UserController {
 

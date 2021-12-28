@@ -4,9 +4,9 @@ import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import { paginator } from '../utils'
 import FileService from '../services/FileService'
-import { FileTypeEnum } from '@/types/File'
+import { FileTypeEnum } from '../types/File'
 import Context from '../context'
-import { Role } from '@/types/Role'
+import { Role } from '../types/Role'
 export default class FileController {
 
 	public static newFile = async (req: Request, res: Response) => {
