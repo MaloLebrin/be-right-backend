@@ -64,3 +64,7 @@ export const generateWhereFieldsByEntity = (searchableFields: string[], req: Req
     })
     return filters
 }
+
+export function toCent(value: number) {
+    return value * 100
+}

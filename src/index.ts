@@ -48,7 +48,8 @@ createConnection().then(async connection => {
     app.use('/file', fileRoutes)
     app.use('/answer', answerRoute)
 
-    const server = app.listen(5000, '0.0.0.0', () => {
+    const port = process.env.PORT || 5000
+    const server = app.listen(port, '0.0.0.0', () => {
         console.log('Application is running at: ' + server.address().address + ':' + server.address().port)
     })
 
