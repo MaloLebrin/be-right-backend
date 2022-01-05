@@ -23,7 +23,7 @@ export default class EmployeeController {
 			const ctx = Context.get(req)
 			let userId = null
 			if (ctx.user.roles === Role.ADMIN) {
-				userId = parseInt(req.params.userId)
+				userId = parseInt(req.params.id)
 			} else {
 				userId = ctx.user.id
 			}
@@ -46,7 +46,7 @@ export default class EmployeeController {
 				const ctx = Context.get(req)
 				let userId = null
 				if (ctx.user.roles === Role.ADMIN) {
-					userId = parseInt(req.params.userId)
+					userId = parseInt(req.params.id)
 				} else {
 					userId = ctx.user.id
 				}
@@ -79,7 +79,7 @@ export default class EmployeeController {
 				const ctx = Context.get(req)
 				let userId = null
 				if (ctx.user.roles === Role.ADMIN) {
-					userId = parseInt(req.params.userId)
+					userId = parseInt(req.params.id)
 				} else {
 					userId = ctx.user.id
 				}
