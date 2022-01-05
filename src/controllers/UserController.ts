@@ -142,7 +142,7 @@ export default class UserController {
                     ...user,
                     updatedAt: new Date(),
                 }
-                await getManager().update(UserEntity, id, userUpdated)
+                await getManager().save(UserEntity, user)
                 return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
             } else {
                 return res.status(401).json({ error: "unauthorized" })

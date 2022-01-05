@@ -5,10 +5,8 @@ import AnswerEntity from "../entity/AnswerEntity"
 
 export default class EmployeeService {
 
-	public static async createOne(employee: Partial<EmployeeEntity>, userId?: number) {
-		if (userId) {
+	public static async createOne(employee: Partial<EmployeeEntity>, userId: number) {
 			employee.createdByUser = userId
-		}
 		const newEmployee = getManager().create(EmployeeEntity, employee)
 		await getManager().save(newEmployee)
 		return {
