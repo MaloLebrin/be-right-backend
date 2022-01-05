@@ -5,16 +5,23 @@
 	"username": "test",
 	"password": "test",
 	"database": "be-right-db",
+	"url": "postgres://qgcketllxewhtf:2e18049b574506387bac96004809b1a08441cb247817801e599c41e88cce380c@ec2-3-213-76-170.compute-1.amazonaws.com:5432/dbpvbo9ve6n0e5",
 	"synchronize": true,
 	"logging": false,
+	"ssl": true,
+  "extra": {
+    "ssl": {
+      "rejectUnauthorized": false
+    }
+  },
 	"entities": [
-		"src/entity/**/*.ts"
+		"build/entity/**/*.js"
 	],
 	"migrations": [
-		"src/migration/**/*.ts"
+		"build/migration/**/*.js"
 	],
 	"subscribers": [
-		"src/subscriber/**/*.ts"
+		"build/subscriber/**/*.js"
 	],
 	"cli": {
 		"entitiesDir": "src/entity",

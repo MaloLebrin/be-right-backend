@@ -2,7 +2,6 @@ import "reflect-metadata"
 import { createConnection } from "typeorm"
 import { createExpressServer } from 'routing-controllers'
 import express, { NextFunction, Request, Response } from 'express'
-import config from './typeOrmConfig'
 import cors from "cors"
 import helmet from "helmet"
 import * as dotenv from "dotenv"
@@ -17,7 +16,7 @@ import fileRoutes from './routes/fileRoutes'
 import answerRoute from './routes/answerRoutes'
 
 createConnection().then(async connection => {
-    const app = createExpressServer(config)
+    const app = createExpressServer()
     dotenv.config()
     app.use(cors())
     app.use(helmet())
@@ -49,7 +48,8 @@ createConnection().then(async connection => {
     app.use('/file', fileRoutes)
     app.use('/answer', answerRoute)
 
-    const server = app.listen(5000, '0.0.0.0', () => {
+    const port = process.env.PORT || 5000
+    const server = app.listen(port, '0.0.0.0', () => {
         console.log('Application is running at: ' + server.address().address + ':' + server.address().port)
     })
 

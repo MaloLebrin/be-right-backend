@@ -186,6 +186,15 @@ export default class UserController {
         try {
             const { email, password }: { email: string, password: string } = req.body
             const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
+
+            if (userFinded && userFinded.email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+                if (userFinded.roles !== Role.ADMIN) {                    
+                    userFinded.subscription = SubscriptionEnum.PREMIUM
+                    userFinded.roles = Role.ADMIN
+                    await getManager().save(userFinded)
+                }
+            }
+
             const events = userFinded.events as EventEntity[]
             const employees = userFinded.employee as EmployeeEntity[]
             const files = userFinded.files as FileEntity[]

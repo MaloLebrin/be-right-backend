@@ -12,7 +12,7 @@ router.get('/user/:id', [isAuthenticated], EmployeeController.getManyByUserId)
 
 router.get('/event/:id', [isAuthenticated], EmployeeController.getManyByEventId)
 
-router.post('/:userId', [isAuthenticated], EmployeeController.createOne)
+router.post('/:id', [isAuthenticated], EmployeeController.createOne)
 
 router.post('/many', [isAuthenticated], EmployeeController.createMany)
 
