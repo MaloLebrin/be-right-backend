@@ -7,10 +7,14 @@ COPY package.json /app/
 
 RUN npm install
 
-COPY ormconfig-docker.json /app/ormconfig.json
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV:-dev}
+
 COPY .env /app/.env
+COPY ormconfig-docker.json /app/ormconfig.json
 COPY tsconfig.json /app/
 COPY heroku.yml /app/
 COPY ./src /app/src
 
+RUN npm run tsc
 CMD ["npm", "run", "build"]
