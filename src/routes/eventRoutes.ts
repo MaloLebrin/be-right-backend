@@ -9,7 +9,7 @@ router.get('/', [isAuthenticated], EventController.getAll)
 
 router.get('/:id', [isAuthenticated], EventController.getOne)
 
-router.post('/', [isAuthenticated], EventController.createOne)
+router.post('/:id', [isAuthenticated], EventController.createOne)
 
 router.get('/user/:id', [isAuthenticated], EventController.getAllForUser)
 
