@@ -3,7 +3,6 @@ import AnswerService from "../services/AnswerService"
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 
-
 export default class AnswerController {
 
 	public static createOne = async (req: Request, res: Response) => {
@@ -19,7 +18,7 @@ export default class AnswerController {
 
 	public static createMany = async (req: Request, res: Response) => {
 		try {
-			const eventId = parseInt(req.params.eventId)
+			const eventId = parseInt(req.body.eventId)
 			const employeeIds = req.body.employeeIds
 			const answers = AnswerService.createMany(eventId, employeeIds)
 			return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
@@ -41,8 +40,8 @@ export default class AnswerController {
 
 	public static updateAnswerStatus = async (req: Request, res: Response) => {
 		try {
-			const eventId = parseInt(req.params.eventId)
-			const employeeId = parseInt(req.params.employeeId)
+			const eventId = parseInt(req.body.eventId)
+			const employeeId = parseInt(req.body.employeeId)
 			const isSigned = req.query.isSigned
 
 			if (eventId && employeeId && isSigned !== undefined) {

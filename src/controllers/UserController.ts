@@ -74,7 +74,7 @@ export default class UserController {
                         createdByUser: user.id,
                     })),
                 }
-                })
+            })
             const usersToSend = users.map(user => userResponse(user))
             const total = await getManager().count(UserEntity, usersFilters)
             return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
