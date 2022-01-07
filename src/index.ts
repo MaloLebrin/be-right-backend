@@ -25,6 +25,11 @@ async function startServer() {
             ...config,
             url: process.env.DATABASE_URL!,
         }
+    } else {
+        connectionsOptions = {
+            ...config,
+            name: 'default',
+        }
     }
         
     createConnection(connectionsOptions).then(async connection => {

@@ -38,6 +38,31 @@
 		"username": "test",
 		"password": "test",
 		"database": "be-right-db",
+		"synchronize": true,
+		"logging": false,
+		"entities": [
+			"build/entity/**/*.js"
+		],
+		"migrations": [
+			"build/migration/**/*.js"
+		],
+		"subscribers": [
+			"build/subscriber/**/*.js"
+		],
+		"cli": {
+			"entitiesDir": "src/entity",
+			"migrationsDir": "src/migration",
+			"subscribersDir": "src/subscriber"
+		}
+	},
+	{
+		"name": "test",
+		"type": "postgres",
+		"host": "postgres",
+		"port": 5432,
+		"username": "test",
+		"password": "test",
+		"database": "be-right-db",
 		"synchronize": false,
 		"logging": false,
 		"entities": [
