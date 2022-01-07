@@ -1,4 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
+import { FileEntity } from "."
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
@@ -22,6 +23,10 @@ export default class AnswerEntity extends BaseEntity {
 	@ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: "eventId" })
 	event: number
+
+	@OneToOne(() => FileEntity, file => file.id, { cascade: true })
+	@JoinColumn({ name: "fileId" })
+	file: number
 }
 
 export const answerSearchFields = [
