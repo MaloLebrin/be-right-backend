@@ -51,7 +51,7 @@ export default class EventController {
             const id = parseInt(req.params.id)
             const ctx = Context.get(req)
             const userId = ctx.user.id
-            const finded = await getManager().findOne(EventEntity, id, { relations: ["createdByUser"] })
+            const finded = await getManager().findOne(EventEntity, id, { relations: ["createdByUser", "userPartner"] })
             const user = finded.createdByUser as UserEntity
             const event = {
                 ...finded,
@@ -117,7 +117,7 @@ export default class EventController {
     public static getAll = async (req: Request, res: Response) => {
         try {
             const queriesFilters = paginator(req, eventSearchableFields)
-            const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser"] })
+            const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "userPartner"] })
 
             const eventsReturned = events.map(event => {
                 const user = event.createdByUser as UserEntity
@@ -147,7 +147,7 @@ export default class EventController {
             const id = parseInt(req.params.id)
             const ctx = Context.get(req)
             const userId = ctx.user.id
-            const eventFinded = await getManager().findOne(EventEntity, id, { relations: ["createdByUser"] })
+            const eventFinded = await getManager().findOne(EventEntity, id, { relations: ["createdByUser", "userPartner"] })
             const user = eventFinded.createdByUser as UserEntity
             if (checkUserRole(Role.ADMIN) || user.id === userId) {
                 const eventUpdated = {

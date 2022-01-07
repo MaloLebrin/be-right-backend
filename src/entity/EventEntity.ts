@@ -41,6 +41,9 @@ export default class EventEntity extends BaseEntity {
     @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
     createdByUser: UserEntity | number
 
+    @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+    userPartner: UserEntity | number
+
     @OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.event, { cascade: true })
     @JoinColumn()
     imageRightCondition: ImageRightConditionEntity[]
