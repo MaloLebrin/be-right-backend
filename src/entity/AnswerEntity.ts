@@ -33,4 +33,5 @@ export const answerSearchFields = [
 	'hasSigned',
 	'employee',
 	'event',
+	'id',
 ]
