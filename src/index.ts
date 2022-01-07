@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import { createConnection, getConnectionOptions } from "typeorm"
+import { createConnection, getConnectionOptions, ConnectionOptions } from "typeorm"
 import { createExpressServer } from 'routing-controllers'
 import express, { NextFunction, Request, Response } from 'express'
 import cors from "cors"
@@ -14,11 +14,20 @@ import imageRightConditionRoutes from './routes/imageRightConditionRoutes'
 import newsletterRoutes from './routes/newsletterRoutes'
 import fileRoutes from './routes/fileRoutes'
 import answerRoute from './routes/answerRoutes'
+import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
 
 async function startServer() {
-    const config = await getConnectionOptions(process.env.NODE_ENV)
+    const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
+    let connectionsOptions = config
 
-    createConnection(config).then(async connection => {
+    if (process.env.NODE_ENV === 'production') {
+        connectionsOptions = {
+            ...config,
+            url: process.env.DATABASE_URL!,
+        }
+    }
+        
+    createConnection(connectionsOptions).then(async connection => {
         const app = createExpressServer()
         dotenv.config()
         app.use(cors())
@@ -53,7 +62,7 @@ async function startServer() {
 
         const port = process.env.PORT || 5000
         const server = app.listen(port, '0.0.0.0', () => {
-            console.log('Application is running in ' + process.env.NODE_ENV + 'mode on port : ' + port)
+            console.log('Application is running in ' + process.env.NODE_ENV + ' mode on port : ' + port)
         })
 
     }).catch(error => console.log(error))
