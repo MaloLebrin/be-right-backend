@@ -7,6 +7,8 @@ import { UserEntity } from "../entity/UserEntity"
 import checkUserRole from "../middlewares/checkUserRole"
 import { Role } from "../types/Role"
 import { paginator } from "../utils"
+import AnswerService from "../services/AnswerService"
+import { EmployeeEntity } from "../entity"
 
 export default class EventController {
 
@@ -96,10 +98,29 @@ export default class EventController {
             const ctx = Context.get(req)
             const userId = ctx.user.id
             const events = await getManager().find(EventEntity, { where: { createdByUser: userId } })
-            const eventsReturned = events.map((event) => ({
-                ...event,
-                createdByUser: userId,
+            const eventsReturned = await Promise.all(events.map(async(event) => {
+                const answers = await AnswerService.getAllAnswersForEvent(event.id)
+                let employees = []
+                if (answers.length > 0) {
+                    
+                    employees = answers.map(answer => {
+                        const employee = {
+                            ...answer.employee as unknown as EmployeeEntity,
+                            answer: answer,
+                            event: event.id
+                        }
+                        delete employee.answer.employee
+                        return employee
+                    }).filter(employee => employee)
+                }
+
+                return {
+                    ...event,
+                    employees: employees as EventEntity[],
+                    createdByUser: userId,
+                }
             }))
+
             return res.status(200).json(eventsReturned)
         } catch (error) {
             console.error(error)
