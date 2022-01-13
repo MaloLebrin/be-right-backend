@@ -31,7 +31,7 @@
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
     "tsc": "tsc",
-    "build": "tsc && node build/index.js"
+    "build": "node build/index.js"
   },
   "keywords": [],
   "author": "",
