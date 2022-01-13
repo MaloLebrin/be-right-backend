@@ -1,12 +1,14 @@
 import { EmployeeEntity } from "../entity/EmployeeEntity"
 import { getManager } from "typeorm"
 import { UserEntity } from "../entity/UserEntity"
-import AnswerEntity from "../entity/AnswerEntity"
+import uid2 from 'uid2'
+import { SHA256 } from 'crypto-js'
 
 export default class EmployeeService {
 
 	public static async createOne(employee: Partial<EmployeeEntity>, userId: number) {
 			employee.createdByUser = userId
+			employee.slug = SHA256(uid2(32)).toString()
 		const newEmployee = getManager().create(EmployeeEntity, employee)
 		await getManager().save(newEmployee)
 		return {

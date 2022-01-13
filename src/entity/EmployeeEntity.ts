@@ -13,6 +13,9 @@ export class EmployeeEntity extends BaseEntity {
 	@Column()
 	phone: string
 
+	@Column({ unique: true, nullable: true })
+	slug: string
+
 	@Column()
 	firstName: string
 
