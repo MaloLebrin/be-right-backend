@@ -184,14 +184,11 @@ export default class EmployeeController {
 	public static getAll = async (req: Request, res: Response) => {
 		try {
 			const queriesFilters = paginator(req, employeeSearchablefields)
-			console.log(queriesFilters, 'queriesFilters')
 			const employeeFilters = {
 				...queriesFilters,
 				relations: ["createdByUser"]
 			}
-			console.log(employeeFilters, 'employeeFilters')
 			const employees = await getManager().find(EmployeeEntity, employeeFilters)
-			console.log(employees, 'employees')
 			const entityReturned = employees.map(employee => {
 				const user = employee.createdByUser as UserEntity
 				return {
