@@ -185,14 +185,15 @@ export default class EmployeeController {
 			const queriesFilters = paginator(req, employeeSearchablefields)
 			const employeeFilters = {
 				...queriesFilters,
-				relations: ["createdByUser"]
+				relations: ["createdByUser", "answers"],
 			}
 			const employees = await getManager().find(EmployeeEntity, employeeFilters)
+			console.log(employees, 'employees')
 			const entityReturned = employees.map(employee => {
 				const user = employee.createdByUser as UserEntity
 				return {
 					...employee,
-					// event: employee.answer.event,
+					event: employee.answers.map(answer => answer.event),
 					createdByUser: user.id,
 				}
 			})

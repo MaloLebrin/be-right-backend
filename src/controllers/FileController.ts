@@ -12,21 +12,22 @@ export default class FileController {
 	public static newFile = async (req: Request, res: Response) => {
 		try {
 			const fileRecieved = req.file
-			const { name, description, user, event, employee, type }:
-				{ name: string, description: string, user?: number, event?: number, employee?: number, type: FileTypeEnum } = req.body
+			const { name, description, event, employee, type }:
+				{ name: string, description: string, event?: number, employee?: number, type: FileTypeEnum } = req.body
 
-				const ctx = Context.get(req)
+			const ctx = Context.get(req)
 
-				let userId = null
-				if (ctx.user.roles === Role.ADMIN) {
-					userId = parseInt(req.params.userId)
-				} else {
-					userId = ctx.user.id
-				}
-	
+			let userId = null
 
+			const user = ctx.user
+			if (user.roles === Role.ADMIN) {
+				userId = parseInt(req.params.userId)
+			} else {
+				userId = user.id
+			}
+			console.log(user, 'user')
 			const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
-				folder: `beright/imageRight/user-${userId}`
+				folder: `beright-${process.env.NODE_ENV}/imageRight/user-${userId}-${user.firstName}-${user.lastName}`,
 			})
 
 			const fileToPost = {

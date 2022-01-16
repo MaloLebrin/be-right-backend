@@ -1,22 +1,23 @@
 import { Router } from 'express'
 import FileController from '../controllers/FileController'
 import multer from "multer"
+import isAuthenticated from '../middlewares/IsAuthenticated'
 const upload = multer({ dest: "uploads/" })
 
 const router = Router()
 
-router.post('/', upload.single('file'), FileController.newFile)
+router.post('/', [isAuthenticated], upload.single('file'), FileController.newFile)
 
-router.get('/', FileController.getAllPaginate)
+router.get('/', [isAuthenticated], FileController.getAllPaginate)
 
-router.get('/:id', FileController.getFile)
+router.get('/:id', [isAuthenticated], FileController.getFile)
 
-router.get('/many', FileController.getFiles)
+router.get('/many', [isAuthenticated], FileController.getFiles)
 
-router.get('/user/:id', FileController.getFilesByUser)
+router.get('/user/:id', [isAuthenticated], FileController.getFilesByUser)
 
-router.get('/event/:id', FileController.getFilesByEvent)
+router.get('/event/:id', [isAuthenticated], FileController.getFilesByEvent)
 
-router.delete('/:id', FileController.deleteFile)
+router.delete('/:id', [isAuthenticated], FileController.deleteFile)
 
 export default router
