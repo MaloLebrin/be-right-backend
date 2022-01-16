@@ -10,7 +10,6 @@ import cloudinary from "cloudinary"
 import userRoutes from './routes/userRoutes'
 import eventRoutes from './routes/eventRoutes'
 import employeeRoutes from './routes/employeeRoutes'
-import imageRightConditionRoutes from './routes/imageRightConditionRoutes'
 import newsletterRoutes from './routes/newsletterRoutes'
 import fileRoutes from './routes/fileRoutes'
 import answerRoute from './routes/answerRoutes'
@@ -42,6 +41,13 @@ async function startServer() {
             extended: true
         }))
 
+        // const queryRunner = connection.createQueryRunner()
+        // const table = await queryRunner.getTable('employee_entity')
+        // const createdByUserIdColumn = table.findColumnByName('createdByUserId')
+        // const renamedColumn = createdByUserIdColumn.clone()
+        // renamedColumn.name = 'createdByUser'
+        // await queryRunner.renameColumn(table, createdByUserIdColumn, renamedColumn)
+
         cloudinary.v2.config({
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
             api_key: process.env.CLOUDINARY_API_KEY,
@@ -60,7 +66,6 @@ async function startServer() {
         app.use('/user', userRoutes)
         app.use('/event', eventRoutes)
         app.use('/employee', employeeRoutes)
-        app.use('/imageRight', imageRightConditionRoutes)
         app.use('/newsletter', newsletterRoutes)
         app.use('/file', fileRoutes)
         app.use('/answer', answerRoute)

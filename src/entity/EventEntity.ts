@@ -1,8 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
 import { FileEntity } from "./FileEntity"
-import ImageRightConditionEntity from "./ImageRightConditionEntity"
 import { UserEntity } from "./UserEntity"
 
 @Entity()
@@ -40,10 +39,6 @@ export default class EventEntity extends BaseEntity {
 
     @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
     createdByUser: UserEntity | number
-
-    @OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.event, { cascade: true })
-    @JoinColumn()
-    imageRightCondition: ImageRightConditionEntity[]
 
     @OneToMany(() => FileEntity, file => file.event, { cascade: true })
     files: FileEntity[]
