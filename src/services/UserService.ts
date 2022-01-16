@@ -11,6 +11,7 @@ export default class UserService {
 		const events = userFinded.events as EventEntity[]
 		const employees = userFinded.employee as EmployeeEntity[]
 		const files = userFinded.files as FileEntity[]
+		// FIXME if arrrays are empty, send array empty
 		return {
 			...userFinded,
 			events: events.map(event => ({
