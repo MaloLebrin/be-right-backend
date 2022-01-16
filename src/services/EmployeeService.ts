@@ -18,21 +18,23 @@ export default class EmployeeService {
 	}
 
 	public static async getOne(id: number) {
-		const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+		const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser", "answers"] })
 		const user = employeefinded.createdByUser as UserEntity
 		return {
 			...employeefinded,
-			createdByUser: user.id
+			createdByUser: user.id,
+			events: employeefinded.answers.map(answer => answer.event),
 		}
 	}
 
 	public static async getMany(ids: number[]) {
-		const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["createdByUser"] })
-		return finded.map((event) => {
-			const user = event.createdByUser as UserEntity
+		const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["createdByUser", "answers"] })
+		return finded.map((employee) => {
+			const user = employee.createdByUser as UserEntity
 			return {
-				...event,
+				...employee,
 				createdByUser: user.id,
+				events: employee.answers.map(answer => answer.event),
 			}
 		})
 	}
@@ -41,11 +43,14 @@ export default class EmployeeService {
 		const employees = await getManager().find(EmployeeEntity, {
 			where: {
 				createdByUser: userId
-			}
+			},
+			relations: ["createdByUser", "answers"],
 		})
+
 		return employees.map((employee) => ({
 			...employee,
 			createdByUser: userId,
+			events: employee.answers.map(answer => answer.event),
 		}))
 	}
 
@@ -54,7 +59,6 @@ export default class EmployeeService {
 		if (!updatedEmployee) {
 			return null
 		}
-		delete updatedEmployee.imageRightCondition
 		const employeeToSave = {
 			...employee,
 			updatedAt: new Date(),
