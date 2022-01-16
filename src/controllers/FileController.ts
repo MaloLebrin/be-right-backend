@@ -14,18 +14,22 @@ export default class FileController {
 			const fileRecieved = req.file
 			const { name, description, event, employee, type }:
 				{ name: string, description: string, event?: number, employee?: number, type: FileTypeEnum } = req.body
-
+			
 			const ctx = Context.get(req)
 
 			let userId = null
 
 			const user = ctx.user
 			if (user.roles === Role.ADMIN) {
-				userId = parseInt(req.params.userId)
+				if (req.params.id) {
+					userId = parseInt(req.params.id)
+				} else {
+					userId = user.id
+				}
 			} else {
 				userId = user.id
 			}
-			console.log(user, 'user')
+
 			const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
 				folder: `beright-${process.env.NODE_ENV}/imageRight/user-${userId}-${user.firstName}-${user.lastName}`,
 			})
