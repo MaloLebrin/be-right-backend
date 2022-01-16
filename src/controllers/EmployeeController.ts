@@ -112,9 +112,8 @@ export default class EmployeeController {
 	public static getOne = async (req: Request, res: Response) => {
 		try {
 			const id = parseInt(req.params.id)
-			const employee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
-			const user = employee.createdByUser as UserEntity
-			return res.status(200).json({ ...employee, createdByUser: user.id })
+			const employee = await EmployeeService.getOne(id)
+			return res.status(200).json(employee)
 		} catch (error) {
 			console.error(error)
 			if (error.status) {
@@ -248,11 +247,13 @@ export default class EmployeeController {
 			const id = parseInt(req.params.id)
 			const ctx = Context.get(req)
 			const userId = ctx.user.id
-			const employeeToDelete = await getManager().findOne(EmployeeEntity, id)
-			if (employeeToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
+			const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+			const employeeUser = getEmployee.createdByUser as UserEntity
+			if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
 				await EmployeeService.deleteOne(id)
-				await EventService.getNumberSignatureNeededForEvent(id)
-				return res.status(204).json({ data: employeeToDelete, message: 'Employee deleted' })
+				// TODO remove count signature if employee is on event
+				// await EventService.getNumberSignatureNeededForEvent(id)
+				return res.status(204).json( getEmployee )
 			} else {
 				return res.status(401).json('Unauthorized')
 			}
