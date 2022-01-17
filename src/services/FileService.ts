@@ -41,4 +41,18 @@ export default class FileService {
 		})
 		return docs
 	}
+
+	public static async updateFile(id: number, file: FileEntity) {
+		const updatedfile = await getManager().findOne(FileEntity, id)
+		if (!updatedfile) {
+			return null
+		}
+		const fileToSave = {
+			...file,
+			updatedAt: new Date(),
+		}
+		await getManager().update(FileEntity, id, fileToSave)
+		return this.getFile(id)
+
+	}
 }

@@ -8,6 +8,8 @@ const router = Router()
 
 router.post('/', [isAuthenticated], upload.single('file'), FileController.newFile)
 
+router.patch('/:id', [isAuthenticated], FileController.updateOne)
+
 router.get('/', [isAuthenticated], FileController.getAllPaginate)
 
 router.get('/:id', [isAuthenticated], FileController.getFile)

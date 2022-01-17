@@ -67,6 +67,26 @@ export default class FileController {
 		}
 	}
 
+	/**
+	 * @param file file: Partial<FileEntity>
+	 * @returns return file just updated
+	 */
+	 public static updateOne = async (req: Request, res: Response) => {
+		try {
+			const { file }: { file: Partial<FileEntity> } = req.body
+			const id = parseInt(req.params.id)
+			const fileUpdated = await FileService.updateFile(id, file as FileEntity)
+			return res.status(200).json(fileUpdated)
+		} catch (error) {
+			console.error(error)
+			if (error.status) {
+				return res.status(error.status).json({ error: error.message })
+			}
+			return res.status(400).json({ error: error.message })
+
+		}
+	}
+
 	public static getFile = async (req: Request, res: Response) => {
 		try {
 			const id = parseInt(req.params.id)
