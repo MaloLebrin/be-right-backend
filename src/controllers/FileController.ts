@@ -144,7 +144,7 @@ export default class FileController {
 			if (files.length > 0) {
 				return res.status(200).json(files)
 			}
-			return res.status(400).json({ message: 'Files not found' })
+			return res.status(200).json({ message: 'Files not found' })
 		} catch (error) {
 			return res.status(400).json({ error: error.message })
 		}
