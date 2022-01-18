@@ -6,7 +6,7 @@ const upload = multer({ dest: "uploads/" })
 
 const router = Router()
 
-router.post('/', [isAuthenticated], upload.single('file'), FileController.newFile)
+router.post('/:id', [isAuthenticated], upload.single('file'), FileController.newFile)
 
 router.patch('/:id', [isAuthenticated], FileController.updateOne)
 
