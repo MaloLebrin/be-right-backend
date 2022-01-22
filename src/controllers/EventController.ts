@@ -138,7 +138,7 @@ export default class EventController {
         const user = event.createdByUser as UserEntity
         return {
           ...event,
-          createdByUser: user ?? user.id
+          createdByUser: user.id
         }
       })
       const total = await getManager().count(EventEntity, queriesFilters)
