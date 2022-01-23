@@ -35,7 +35,6 @@ export default class EmployeeController {
         return res.status(error.status).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
