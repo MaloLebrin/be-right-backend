@@ -33,7 +33,7 @@ export default class FileController {
       }
 
       const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
-        folder: `beright-${process.env.NODE_ENV}/imageRight/user-${userId}-${user.firstName}-${user.lastName}`,
+        folder: `beright-${process.env.NODE_ENV}/user-${userId}-${user.firstName}-${user.lastName}/${type}`,
       })
 
       const fileToPost = {
