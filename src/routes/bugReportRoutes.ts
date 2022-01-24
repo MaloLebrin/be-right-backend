@@ -5,11 +5,11 @@ import BugReportController from '../controllers/BugReportController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 const router = Router()
 
-router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], BugReportController.getAll)
+router.get('/', [isAuthenticated], BugReportController.getAll)
 
 router.get('/:id', [isAuthenticated, checkUserRole(Role.ADMIN)], BugReportController.getOne)
 
-router.post('/', [isAuthenticated, checkUserRole(Role.ADMIN)], BugReportController.createOne)
+router.post('/', [isAuthenticated], BugReportController.createOne)
 
 router.patch('/:id', [isAuthenticated, checkUserRole(Role.ADMIN)], BugReportController.updateOne)
 
