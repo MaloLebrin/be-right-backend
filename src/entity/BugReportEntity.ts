@@ -22,7 +22,7 @@ export class BugReportEntity extends BaseEntity {
   @Column()
   description: string
 
-  @ManyToOne(() => FileEntity, { nullable: true })
+  @ManyToOne(() => FileEntity, { nullable: true, cascade: true })
   @JoinColumn()
   file: FileEntity
 
