@@ -1,5 +1,5 @@
 import { BugReportStatus, BugReportType } from "../types/BugReport"
-import { Entity, Column, OneToOne, JoinColumn } from "typeorm"
+import { Entity, Column, ManyToOne, JoinColumn } from "typeorm"
 import { FileEntity, UserEntity } from "."
 import { BaseEntity } from "./BaseEntity"
 
@@ -22,11 +22,11 @@ export class BugReportEntity extends BaseEntity {
   @Column()
   description: string
 
-  @OneToOne(() => FileEntity)
+  @ManyToOne(() => FileEntity, { nullable: true })
   @JoinColumn()
   file: FileEntity
 
-  @OneToOne(() => UserEntity, { nullable: true })
+  @ManyToOne(() => UserEntity)
   @JoinColumn()
   createdByUser: number
 }
