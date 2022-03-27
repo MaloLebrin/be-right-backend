@@ -193,7 +193,7 @@ export default class EmployeeController {
         return {
           ...employee,
           event: employee.answers.map(answer => answer.event),
-          createdByUser: user.id,
+          createdByUser: user?.id,
         }
       })
 

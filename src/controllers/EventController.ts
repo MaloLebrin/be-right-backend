@@ -134,13 +134,18 @@ export default class EventController {
     try {
       const queriesFilters = paginator(req, eventSearchableFields)
       const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser"] })
-      const eventsReturned = events.map(event => {
-        const user = event.createdByUser as UserEntity
-        return {
-          ...event,
-          createdByUser: user.id
-        }
-      })
+      const eventsReturned = events.length > 0 ?
+        events.map(event => {
+          const user = event.createdByUser as UserEntity
+          if (user && user.id) {
+            return {
+              ...event,
+              createdByUser: user?.id
+            }
+          }
+          return event
+        })
+        : []
       const total = await getManager().count(EventEntity, queriesFilters)
       return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
     } catch (error) {

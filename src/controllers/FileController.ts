@@ -107,11 +107,7 @@ export default class FileController {
     try {
       const { ids }: { ids: number[] } = req.body
       const files = await Promise.all(ids.map(id => getManager().findOne(FileEntity, id)))
-      if (files.length > 0) {
-        return res.status(200).json(files)
-      } else {
-        return res.status(400).json({ message: 'Files not found' })
-      }
+      return res.status(200).json(files)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -121,10 +117,7 @@ export default class FileController {
     try {
       const userId = parseInt(req.params.id)
       const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
-      if (files.length > 0) {
-        return res.status(200).json(files)
-      }
-      return res.status(400).json({ message: 'Files not found' })
+      return res.status(200).json(files)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -134,11 +127,7 @@ export default class FileController {
     try {
       const eventId = parseInt(req.params.id)
       const files = await getManager().find(FileEntity, { where: { event: eventId } })
-      if (files.length > 0) {
-        return res.status(200).json(files)
-      }
-      return res.status(400).json({ message: 'Files not found' })
-
+      return res.status(200).json(files)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -148,11 +137,7 @@ export default class FileController {
     try {
       const employeeId = parseInt(req.params.id)
       const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
-      if (files.length > 0) {
-        return res.status(200).json(files)
-      } else {
-        return res.status(400).json({ message: 'Files not found' })
-      }
+      return res.status(200).json(files)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -176,10 +161,7 @@ export default class FileController {
     try {
       const queriesFilters = paginator(req, filesSearchableFields)
       const [files, count] = await getManager().findAndCount(FileEntity, queriesFilters)
-      if (files.length > 0) {
-        return res.status(200).json({ data: files, total: count, currentPage: queriesFilters.page, limit: queriesFilters.take })
-      }
-      return res.status(400).json({ message: 'Files not found' })
+      return res.status(200).json({ data: files, total: count, currentPage: queriesFilters.page, limit: queriesFilters.take })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
