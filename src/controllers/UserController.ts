@@ -100,8 +100,12 @@ export default class UserController {
   public static getOneByToken = async (req: Request, res: Response) => {
     try {
       const token = req.body.token
-      const user = await UserService.getByToken(token)
-      return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
+      if (token) {
+        const user = await UserService.getByToken(token)
+        return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
+      } else {
+        return res.status(400).json({ error: "token is required" })
+      }
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -196,32 +200,32 @@ export default class UserController {
         }
       }
 
-      const events = userFinded.events as EventEntity[]
-      const employees = userFinded.employee as EmployeeEntity[]
-      const files = userFinded.files as FileEntity[]
-      const user = {
-        ...userFinded,
-        events: events.map(event => ({
-          ...event,
-          createdByUser: userFinded.id,
-        })),
-        employee: employees.map(employee => ({
-          ...employee,
-          createdByUser: userFinded.id,
-        })),
-        files: files.map(file => ({
-          ...file,
-          createdByUser: userFinded.id,
-        })),
-      }
-
-      if (user) {
+      if (userFinded) {
+        const events = userFinded.events as EventEntity[]
+        const employees = userFinded.employee as EmployeeEntity[]
+        const files = userFinded.files as FileEntity[]
+        const user = {
+          ...userFinded,
+          events: events.length > 0 ? events.map(event => ({
+            ...event,
+            createdByUser: userFinded.id,
+          })) : [],
+          employee: employees.length > 0 ? employees.map(employee => ({
+            ...employee,
+            createdByUser: userFinded.id,
+          })) : [],
+          files: files.length > 0 ? files.map(file => ({
+            ...file,
+            createdByUser: userFinded.id,
+          })) : [],
+        }
         const passwordHashed = generateHash(user.salt, password)
         if (user.password === passwordHashed) {
           return res.status(200).json(userResponse(user))
         } else {
           return res.status(401).json('wrong password')
         }
+
       } else {
         return res.status(400).json('user not found')
       }

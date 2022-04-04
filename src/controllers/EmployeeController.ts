@@ -154,12 +154,14 @@ export default class EmployeeController {
   public static getManyByEventId = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.params.id)
+      const user = await EventService.getOneEvent(eventId)
       const answers = await AnswerService.getAllAnswersForEvent(eventId)
       const employeesWithAnswers = answers.map(answer => {
         const employee = {
           ...answer.employee as unknown as EmployeeEntity,
           answer: answer,
-          event: eventId
+          event: eventId,
+          createdByUser: user.id,
         }
         delete employee.answer.employee
         return employee
