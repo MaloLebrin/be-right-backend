@@ -40,7 +40,7 @@ export default class EventEntity extends BaseEntity {
   @Column({ default: 0 })
   totalSignatureNeeded: number
 
-  @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  @OneToMany(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
   createdByUser: UserEntity | number
 
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })
