@@ -26,15 +26,9 @@ export default class EventController {
       } else {
         userId = ctx.user.id
       }
-      const eventToCreate = {
-        ...event,
-        createdByUser: userId
-      }
-      const user = await getManager().findOne(UserEntity, userId)
-      const newEvent = getManager().create(EventEntity, eventToCreate)
-      user.events = [newEvent]
-      await getManager().save([newEvent, user])
-      return res.status(200).json({ ...newEvent, createdByUser: user.id })
+
+      const newEvent = await EventService.createOneEvent(event, userId)
+      return res.status(200).json(newEvent)
     } catch (error) {
       console.error(error)
       if (error.status) {

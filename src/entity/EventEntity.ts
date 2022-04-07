@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from "typeorm"
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
 import { FileEntity } from "./FileEntity"
@@ -40,10 +40,10 @@ export default class EventEntity extends BaseEntity {
   @Column({ default: 0 })
   totalSignatureNeeded: number
 
-  @OneToMany(() => UserEntity, user => user.events, { nullable: true, cascade: true })
+  @ManyToOne(() => UserEntity, user => user.events, { nullable: true, cascade: true })
   partner: UserEntity | number
 
-  @OneToMany(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
   createdByUser: UserEntity | number
 
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })

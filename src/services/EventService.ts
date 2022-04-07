@@ -75,4 +75,14 @@ export default class EventService {
     await getManager().update(EventEntity, eventId, eventToSave)
     return this.getOneEvent(eventId)
   }
+
+  public static async createOneEvent(event: Partial<EventEntity>, userId: number) {
+    event.createdByUser = userId
+    const newEvent = getManager().create(EventEntity, event)
+    await getManager().save(newEvent)
+    return {
+      ...newEvent,
+      createdByUser: userId,
+    }
+  }
 }
