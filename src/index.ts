@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import { createConnection, getConnectionOptions, ConnectionOptions } from "typeorm"
+import { createConnection, getConnectionOptions } from "typeorm"
 import { createExpressServer } from 'routing-controllers'
 import express, { NextFunction, Request, Response } from 'express'
 import cors from "cors"

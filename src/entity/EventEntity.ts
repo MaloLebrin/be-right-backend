@@ -7,46 +7,49 @@ import { UserEntity } from "./UserEntity"
 @Entity()
 export default class EventEntity extends BaseEntity {
 
-    @Column()
-    name: string
+  @Column()
+  name: string
 
-    @Column()
-    start: Date
+  @Column()
+  start: Date
 
-    @Column()
-    end: Date
+  @Column()
+  end: Date
 
-    @Column({ type: 'enum', enum: EventStatusEnum, default: EventStatusEnum.CREATE })
-    status: EventStatusEnum
+  @Column({ nullable: true })
+  description: string
 
-    @Column({ nullable: true })
-    address: string
+  @Column({ type: 'enum', enum: EventStatusEnum, default: EventStatusEnum.CREATE })
+  status: EventStatusEnum
 
-    @Column({ nullable: true })
-    postalCode: number
+  @Column({ nullable: true })
+  address: string
 
-    @Column({ nullable: true })
-    city: string
+  @Column({ nullable: true })
+  postalCode: number
 
-    @Column({ nullable: true })
-    country: string
+  @Column({ nullable: true })
+  city: string
 
-    @Column({ default: 0 })
-    signatureCount: number
+  @Column({ nullable: true })
+  country: string
 
-    @Column({ default: 0 })
-    totalSignatureNeeded: number
+  @Column({ default: 0 })
+  signatureCount: number
 
-    @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
-    createdByUser: UserEntity | number
+  @Column({ default: 0 })
+  totalSignatureNeeded: number
 
-    @OneToMany(() => FileEntity, file => file.event, { cascade: true })
-    files: FileEntity[]
+  @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  createdByUser: UserEntity | number
+
+  @OneToMany(() => FileEntity, file => file.event, { cascade: true })
+  files: FileEntity[]
 
 }
 
 export const eventSearchableFields = [
-    'name',
-    'address',
-    'city',
+  'name',
+  'address',
+  'city',
 ]
