@@ -30,26 +30,31 @@ export default class EventService {
   use this get every where
   */
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
-    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser"] })
+    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner"] })
     const answers = await AnswerService.getAllAnswersForEvent(finded.id)
     const user = finded.createdByUser as UserEntity
+    const partner = finded.partner as UserEntity
 
     return {
       ...finded,
       totalSignatureNeeded: answers.length,
-      createdByUser: user.id,
+      createdByUser: user?.id,
+      partner: partner?.id,
     }
   }
 
   public static async getManyEvents(eventIds: number[]) {
-    const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser"] })
+    const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser", "partner"] })
     return finded.map(async (event) => {
       const user = event.createdByUser as UserEntity
       const answers = await AnswerService.getAllAnswersForEvent(event.id)
+      const partner = event.partner as UserEntity
+
       return {
         ...event,
         totalSignatureNeeded: answers.length,
-        createdByUser: user.id,
+        createdByUser: user?.id,
+        partner: partner?.id,
       }
     })
   }
@@ -69,5 +74,15 @@ export default class EventService {
 
     await getManager().update(EventEntity, eventId, eventToSave)
     return this.getOneEvent(eventId)
+  }
+
+  public static async createOneEvent(event: Partial<EventEntity>, userId: number) {
+    event.createdByUser = userId
+    const newEvent = getManager().create(EventEntity, event)
+    await getManager().save(newEvent)
+    return {
+      ...newEvent,
+      createdByUser: userId,
+    }
   }
 }
