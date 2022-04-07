@@ -40,6 +40,9 @@ export default class EventEntity extends BaseEntity {
   @Column({ default: 0 })
   totalSignatureNeeded: number
 
+  @OneToMany(() => UserEntity, user => user.events, { nullable: true, cascade: true })
+  partner: UserEntity | number
+
   @OneToMany(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
   createdByUser: UserEntity | number
 

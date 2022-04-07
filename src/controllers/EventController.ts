@@ -92,7 +92,7 @@ export default class EventController {
     try {
       const ctx = Context.get(req)
       const userId = ctx.user.id
-      const events = await getManager().find(EventEntity, { where: { createdByUser: userId } })
+      const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ["partner"] })
       const eventsReturned = await Promise.all(events.map(async (event) => {
         const answers = await AnswerService.getAllAnswersForEvent(event.id)
         let employees = []
@@ -108,11 +108,12 @@ export default class EventController {
             return employee
           }).filter(employee => employee)
         }
-
+        const partner = event.partner as UserEntity
         return {
           ...event,
           employees: employees as EventEntity[],
           createdByUser: userId,
+          partner: partner?.id,
         }
       }))
 
@@ -133,14 +134,16 @@ export default class EventController {
   public static getAll = async (req: Request, res: Response) => {
     try {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser"] })
+      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner"] })
       const eventsReturned = events.length > 0 ?
         events.map(event => {
           const user = event.createdByUser as UserEntity
+          const partner = event.partner as UserEntity
           if (user && user.id) {
             return {
               ...event,
-              createdByUser: user?.id
+              createdByUser: user?.id,
+              partner: partner?.id,
             }
           }
           return event
