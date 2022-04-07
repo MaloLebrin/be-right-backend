@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
+import { Column, Entity, OneToMany } from "typeorm"
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
 import { FileEntity } from "./FileEntity"
