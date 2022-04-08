@@ -60,12 +60,18 @@ export default class FileService {
 
   public static async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
     const existProfilePicture = await getManager().findOne(FileEntity, { createdByUser: user.id, type: FileTypeEnum.PROFILE_PICTURE })
+    const userToSave = await getManager().findOne(UserEntity, user.id)
+
     if (existProfilePicture) {
+      userToSave.profilePicture = null
+      await getManager().save(userToSave)
       await this.deleteFile(existProfilePicture.id)
     }
+
     const result = await cloudinary.v2.uploader.upload(file.path, {
       folder: `beright-${process.env.NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
     })
+
     const picture = {
       fileName: file.filename,
       name: 'Photo de profile',
@@ -85,7 +91,6 @@ export default class FileService {
     }
     const fileUploaded = getManager().create(FileEntity, picture)
     if (fileUploaded) {
-      const userToSave = await getManager().findOne(UserEntity, user.id)
       userToSave.profilePicture = fileUploaded
       await getManager().save([fileUploaded, userToSave])
       return fileUploaded

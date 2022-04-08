@@ -56,7 +56,7 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
   files: FileEntity[] | number[]
 
-  @OneToOne(() => FileEntity, file => file.createdByUser, { cascade: true })
+  @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
   profilePicture: FileEntity | number
 
