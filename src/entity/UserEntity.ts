@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm"
 import { Role } from "../types/Role"
 import { SubscriptionEnum } from "../types/Subscription"
 import { BaseEntity } from "./BaseEntity"
@@ -55,6 +55,10 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
   files: FileEntity[] | number[]
+
+  @OneToOne(() => FileEntity, file => file.createdByUser, { cascade: true })
+  @JoinColumn()
+  profilePicture: FileEntity | number
 
   @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
   theme: ThemeEnum

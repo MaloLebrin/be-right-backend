@@ -7,7 +7,7 @@ import { FileEntity } from "../entity/FileEntity"
 export default class UserService {
 
   public static async getByToken(token: string): Promise<UserEntity> {
-    const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ["events", "files", "employee"] })
+    const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ["events", "files", "employee", "profilePicture"] })
     if (userFinded) {
       const events = userFinded.events as EventEntity[]
       const employees = userFinded.employee as EmployeeEntity[]
@@ -38,7 +38,7 @@ export default class UserService {
   }
 
   public static async getOneWithRelations(id: number): Promise<UserEntity> {
-    const user = await getManager().findOne(UserEntity, id, { relations: ["events", "files", "employee"] })
+    const user = await getManager().findOne(UserEntity, id, { relations: ["events", "files", "employee", "profilePicture"] })
     const events = user.events as EventEntity[]
     const employees = user.employee as EmployeeEntity[]
     const files = user.files as FileEntity[]

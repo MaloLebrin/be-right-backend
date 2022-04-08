@@ -20,7 +20,22 @@ export default class UserController {
    * @returns return user just created
    */
   public static newUser = async (req: Request, res: Response) => {
-    const { companyName, email, firstName, lastName, password, role }: { companyName: string, email: string, firstName: string, lastName: string, password: string, role: Role } = req.body
+    const {
+      companyName,
+      email,
+      firstName,
+      lastName,
+      password,
+      role,
+    }:
+      {
+        companyName: string,
+        email: string,
+        firstName: string,
+        lastName: string,
+        password: string,
+        role: Role,
+      } = req.body
     try {
       const salt = uid2(128)
       const token = uid2(128)
@@ -52,7 +67,7 @@ export default class UserController {
       const queriesFilters = paginator(req, userSearchableFields)
       const usersFilters = {
         ...queriesFilters,
-        relations: ["events", "files", "employee"],
+        relations: ["events", "files", "employee", "profilePicture"],
       }
       const search = await getManager().find(UserEntity, usersFilters)
       const users = search.map(user => {
@@ -189,8 +204,8 @@ export default class UserController {
   public static login = async (req: Request, res: Response) => {
     try {
       const { email, password }: { email: string, password: string } = req.body
-      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee"] })
-
+      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee", "profilePicture"] })
+      const ctx = Context.get(req)
       // TODO remove this in prod
       if (userFinded && userFinded.email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
