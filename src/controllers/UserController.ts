@@ -192,7 +192,7 @@ export default class UserController {
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
         const userDeleted = await getManager().delete(UserEntity, id)
-        return userDeleted ? res.status(204).json(userResponse(userDeleted)) : res.status(400).json('Not deleted')
+        return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
         return res.status(401).json({ error: "unauthorized" })
       }

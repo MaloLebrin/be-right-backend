@@ -2,6 +2,7 @@ import { Request } from 'express'
 import { SHA256 } from "crypto-js"
 import encBase64 from "crypto-js/enc-base64"
 import { Like } from 'typeorm'
+import { FileEntity, UserEntity } from './entity'
 
 /**
  * create hash password
@@ -10,22 +11,26 @@ import { Like } from 'typeorm'
  * @returns hash saved in DB
  */
 export const generateHash = (salt: string, password: string) => {
-    const hash = SHA256(password + salt).toString(encBase64)
-    return hash
+  const hash = SHA256(password + salt).toString(encBase64)
+  return hash
 }
 
 /**
- * @param entity any entity in APP
+ * @param entity UserEntity
  * @returns entity filtered without any confidential fields
  */
-export const userResponse = (entity: Record<string, any>) => {
-    const entityReturned = {} as Record<string, any>
-    for (const [key, value] of Object.entries(entity)) {
-        if (key !== 'password' && key !== 'salt') {
-            entityReturned[key] = value
-        }
+export const userResponse = (entity: UserEntity) => {
+  const entityReturned = {} as Record<string, any>
+  for (const [key, value] of Object.entries(entity)) {
+    if (key !== 'password' && key !== 'salt') {
+      entityReturned[key] = value
     }
-    return entityReturned
+    if (key === 'profilePicture' && value) {
+      const picture = value as FileEntity
+      entityReturned[key] = picture.secure_url
+    }
+  }
+  return entityReturned
 }
 
 /**
@@ -34,19 +39,19 @@ export const userResponse = (entity: Record<string, any>) => {
  * @returns queries then pass them to find() entity
  */
 export const paginator = (req: Request, searchableField: string[]) => {
-    const page = req.query.page ? parseInt(req.query.page.toString()) : 1
-    const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
-    const search = req.query.search ? Like(`%${req.query.search}%`) : null
+  const page = req.query.page ? parseInt(req.query.page.toString()) : 1
+  const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
+  const search = req.query.search ? Like(`%${req.query.search}%`) : null
 
-    const queries = {
-        page,
-        take: limit,
-        skip: (page - 1) * limit,
-        orderBy: req.query.orderBy ? req.query.orderBy : 'id',
-        orderDir: req.query.orderDir ? req.query.orderDir : 'desc',
-        where: req.query.filters ? req.query.filters : search && searchableField.length ? generateWhereFieldsByEntity(searchableField, req) : null,
-    }
-    return queries
+  const queries = {
+    page,
+    take: limit,
+    skip: (page - 1) * limit,
+    orderBy: req.query.orderBy ? req.query.orderBy : 'id',
+    orderDir: req.query.orderDir ? req.query.orderDir : 'desc',
+    where: req.query.filters ? req.query.filters : search && searchableField.length ? generateWhereFieldsByEntity(searchableField, req) : null,
+  }
+  return queries
 }
 
 /**
@@ -56,15 +61,15 @@ export const paginator = (req: Request, searchableField: string[]) => {
  * @returns filters build with searchable fields form entity as key, and search value  
  */
 export const generateWhereFieldsByEntity = (searchableFields: string[], req: Request) => {
-    const search = req.query.search ? Like(`%${req.query.search}%`) : null
-    const filters = searchableFields.map(field => {
-        return {
-            [field]: search,
-        }
-    })
-    return filters
+  const search = req.query.search ? Like(`%${req.query.search}%`) : null
+  const filters = searchableFields.map(field => {
+    return {
+      [field]: search,
+    }
+  })
+  return filters
 }
 
 export function toCent(value: number) {
-    return value * 100
+  return value * 100
 }
