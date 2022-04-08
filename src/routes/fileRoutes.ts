@@ -6,6 +6,8 @@ const upload = multer({ dest: "uploads/" })
 
 const router = Router()
 
+router.post('/profile', [isAuthenticated], upload.single('file'), FileController.createProfilePicture)
+
 router.post('/:id', [isAuthenticated], upload.single('file'), FileController.newFile)
 
 router.patch('/:id', [isAuthenticated], FileController.updateOne)
