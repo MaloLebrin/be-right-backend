@@ -74,4 +74,9 @@ export default class EmployeeService {
   public static async deleteMany(ids: number[]) {
     return getManager().delete(EmployeeEntity, ids)
   }
+
+  public static async isEmployeeAlreadyExist(email: string) {
+    const employee = await getManager().findOne(EmployeeEntity, { email })
+    return employee ? true : false
+  }
 }

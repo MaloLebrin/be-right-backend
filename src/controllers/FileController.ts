@@ -58,12 +58,7 @@ export default class FileController {
 
       const file = getManager().create(FileEntity, fileToPost)
       await getManager().save(file)
-
-      if (file) {
-        return res.status(200).json(file)
-      } else {
-        return res.status(400).json({ message: 'File not uploaded' })
-      }
+      return res.status(200).json(file)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }

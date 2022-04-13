@@ -27,6 +27,10 @@ export default class EmployeeController {
       } else {
         userId = ctx.user.id
       }
+      const employeeAlreadyExist = await getManager().findOne(EmployeeEntity, { email: employee.email })
+      if (employeeAlreadyExist) {
+        return res.status(422).json({ error: 'cet email existe déjà' })
+      }
       const newEmployee = await EmployeeService.createOne(employee, userId)
       return res.status(200).json({ ...newEmployee, createdByUser: userId })
     } catch (error) {
@@ -50,10 +54,13 @@ export default class EmployeeController {
           userId = ctx.user.id
         }
         const newEmployees = await Promise.all(employees.map(async (employee) => {
-          const emp = await EmployeeService.createOne(employee, userId)
-          return {
-            ...emp,
-            createdByUser: userId,
+          const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+          if (!isEmployeeAlreadyExist) {
+            const emp = await EmployeeService.createOne(employee, userId)
+            return {
+              ...emp,
+              createdByUser: userId,
+            }
           }
         }))
         return res.status(200).json(newEmployees)

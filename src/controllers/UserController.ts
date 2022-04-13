@@ -37,6 +37,10 @@ export default class UserController {
         role: Role,
       } = req.body
     try {
+      const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+      if (userAlReadyExist) {
+        return res.status(400).json({ error: 'cet email existe déjà' })
+      }
       const salt = uid2(128)
       const token = uid2(128)
       const user = {
@@ -117,7 +121,7 @@ export default class UserController {
       const token = req.body.token
       if (token) {
         const user = await UserService.getByToken(token)
-        return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
+        return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       } else {
         return res.status(400).json({ error: "token is required" })
       }
@@ -205,7 +209,6 @@ export default class UserController {
     try {
       const { email, password }: { email: string, password: string } = req.body
       const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee", "profilePicture"] })
-      const ctx = Context.get(req)
       // TODO remove this in prod
       if (userFinded && userFinded.email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
