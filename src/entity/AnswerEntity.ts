@@ -6,26 +6,26 @@ import EventEntity from "./EventEntity"
 @Entity()
 export default class AnswerEntity extends BaseEntity {
 
-	@Column({ nullable: true, default: null })
-	hasSigned: boolean
+  @Column({ nullable: true, default: null })
+  hasSigned: boolean | null
 
-	@Column({ nullable: true })
-	signedAt: Date
+  @Column({ nullable: true })
+  signedAt: Date | null
 
-	@Column({ nullable: true })
-	reason: string
+  @Column({ nullable: true })
+  reason: string | null
 
-	@ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: "employeeId" })
-	employee: number
+  @ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: "employeeId" })
+  employee: number | EmployeeEntity
 
-	@ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: "eventId" })
-	event: number
+  @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: "eventId" })
+  event: number
 }
 
 export const answerSearchFields = [
-	'hasSigned',
-	'employee',
-	'event',
+  'hasSigned',
+  'employee',
+  'event',
 ]
