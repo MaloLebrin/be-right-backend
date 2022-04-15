@@ -3,6 +3,7 @@ import { getManager } from "typeorm"
 import { UserEntity } from "../entity/UserEntity"
 import uid2 from 'uid2'
 import { SHA256 } from 'crypto-js'
+import AnswerService from "./AnswerService"
 
 export default class EmployeeService {
 
@@ -52,6 +53,11 @@ export default class EmployeeService {
       createdByUser: userId,
       events: employee.answers.map(answer => answer.event),
     }))
+  }
+
+  public static async getAllForEvent(eventId: number) {
+    const answers = await AnswerService.getAllAnswersForEvent(eventId)
+    return answers.map(answer => answer.employee as EmployeeEntity)
   }
 
   public static async updateOne(id: number, employee: Partial<EmployeeEntity>) {

@@ -3,6 +3,9 @@ import EventEntity from "../entity/EventEntity"
 import { getManager } from "typeorm"
 import { UserEntity } from "../entity/UserEntity"
 import AnswerService from "./AnswerService"
+import { updateStatusEventBasedOnStartEndTodayDate } from "../utils/eventHelpers"
+import { isAnswerSigned } from "../utils/answerHelper"
+import { EventStatusEnum } from "../types/Event"
 
 export default class EventService {
 
@@ -26,7 +29,7 @@ export default class EventService {
   }
 
   /* TODO 
-  in this operation get total nswers for event and set as totalSignatureNeeded use answer service
+  in this operation get total answers for event and set as totalSignatureNeeded use answer service
   use this get every where
   */
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
@@ -45,7 +48,7 @@ export default class EventService {
 
   public static async getManyEvents(eventIds: number[]) {
     const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser", "partner"] })
-    return finded.map(async (event) => {
+    return Promise.all(finded.map(async (event) => {
       const user = event.createdByUser as UserEntity
       const answers = await AnswerService.getAllAnswersForEvent(event.id)
       const partner = event.partner as UserEntity
@@ -56,7 +59,7 @@ export default class EventService {
         createdByUser: user?.id,
         partner: partner?.id,
       }
-    })
+    }))
   }
 
   public static async updateOneEvent(eventId: number, event: EventEntity) {
@@ -80,9 +83,49 @@ export default class EventService {
     event.createdByUser = userId
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)
-    return {
-      ...newEvent,
-      createdByUser: userId,
+    return this.getOneEvent(newEvent.id)
+  }
+
+  public static async updateSignatureNeededForEvent(eventId: number) {
+    const event = await this.getOneEvent(eventId)
+    if (!event) {
+      return null
     }
+    const answers = await AnswerService.getAllAnswersForEvent(event.id)
+    event.totalSignatureNeeded = answers.length
+    await getManager().save(event)
+    return this.getOneEvent(eventId)
+  }
+
+  public static async updateStatusForEvent(eventId: number) {
+    const event = await this.getOneEvent(eventId)
+    if (!event) {
+      return null
+    }
+    await getManager().save(updateStatusEventBasedOnStartEndTodayDate(event))
+    return this.getOneEvent(eventId)
+  }
+
+  public static async updateStatusForEventArray(events: EventEntity[]) {
+    if (events.length > 0) {
+      const eventsToUpdate = events.map(event => updateStatusEventBasedOnStartEndTodayDate(event))
+      await getManager().save([...eventsToUpdate])
+      return eventsToUpdate
+    }
+    return null
+  }
+
+  public static async updateStatusEventWhenCompleted(event: EventEntity) {
+    if (event.totalSignatureNeeded > 0) {
+      const answers = await AnswerService.getAllAnswersForEvent(event.id)
+      if (answers.length > 0) {
+        const signedAnswers = answers.filter(answer => isAnswerSigned(answer))
+        if (signedAnswers.length === event.totalSignatureNeeded) {
+          event.status = EventStatusEnum.COMPLETED
+          await getManager().save(event)
+        }
+      }
+    }
+    return event
   }
 }
