@@ -6,7 +6,7 @@ import { CronJobInterval } from "../utils/cronHelper"
 
 export async function udpateEventStatusJob() {
   cron.schedule(
-    CronJobInterval.EVERY_DAY_MIDNIGHT,
+    CronJobInterval.EVERY_DAY_4_AM,
     async () => {
       try {
         console.warn('Sarting update event status')
