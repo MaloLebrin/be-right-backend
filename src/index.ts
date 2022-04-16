@@ -15,6 +15,7 @@ import fileRoutes from './routes/fileRoutes'
 import answerRoute from './routes/answerRoutes'
 import bugReportRoutes from './routes/bugReportRoutes'
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import { udpateEventStatusJob } from "./jobs/udpateEventStatus"
 
 async function startServer() {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -66,9 +67,10 @@ async function startServer() {
     app.use('/bugreport', bugReportRoutes)
 
     const port = process.env.PORT || 5000
-    const server = app.listen(port, '0.0.0.0', () => {
+    app.listen(port, '0.0.0.0', () => {
       console.log('Application is running in ' + process.env.NODE_ENV + ' mode on port : ' + port)
     })
+    await udpateEventStatusJob()
 
   }).catch(error => console.log(error))
 }
