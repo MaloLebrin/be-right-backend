@@ -21,7 +21,6 @@ export default class EventService {
       where: {
         event: eventId,
       },
-      relations: ["employee"],
     })
     const totalSignatureNeeded = answers.length
     await getManager().update(EventEntity, eventId, { totalSignatureNeeded, updatedAt: new Date() })
@@ -84,17 +83,6 @@ export default class EventService {
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)
     return this.getOneEvent(newEvent.id)
-  }
-
-  public static async updateSignatureNeededForEvent(eventId: number) {
-    const event = await this.getOneEvent(eventId)
-    if (!event) {
-      return null
-    }
-    const answers = await AnswerService.getAllAnswersForEvent(event.id)
-    event.totalSignatureNeeded = answers.length
-    await getManager().save(event)
-    return this.getOneEvent(eventId)
   }
 
   public static async updateStatusForEvent(eventId: number) {

@@ -3,10 +3,10 @@ lockfileVersion: 5.3
 specifiers:
   '@types/cors': ^2.8.10
   '@types/crypto-js': ^4.0.1
-  '@types/dotenv': ^8.2.0
   '@types/express': ^4.17.9
   '@types/multer': ^1.4.7
   '@types/node': ^8.2.0
+  '@types/node-cron': ^3.0.1
   '@types/uid2': 0.0.0
   cloudinary: ^1.27.1
   cors: ^2.8.5
@@ -16,6 +16,7 @@ specifiers:
   express: ^4.17.1
   helmet: ^4.3.1
   multer: ^1.4.3
+  node-cron: ^3.0.0
   pg: ^8.4.0
   reflect-metadata: ^0.1.10
   routing-controllers: ^0.9.0
@@ -33,6 +34,7 @@ dependencies:
   express: 4.17.2
   helmet: 4.6.0
   multer: 1.4.4
+  node-cron: 3.0.0
   pg: 8.7.1
   reflect-metadata: 0.1.13
   routing-controllers: 0.9.0
@@ -43,10 +45,10 @@ dependencies:
 devDependencies:
   '@types/cors': 2.8.12
   '@types/crypto-js': 4.1.0
-  '@types/dotenv': 8.2.0
   '@types/express': 4.17.13
   '@types/multer': 1.4.7
   '@types/node': 8.10.66
+  '@types/node-cron': 3.0.1
   '@types/uid2': 0.0.0
   typescript: 4.5.4
 
@@ -83,13 +85,6 @@ packages:
     resolution: {integrity: sha512-DCFfy/vh2lG6qHSGezQ+Sn2Ulf/1Mx51dqOdmOKyW5nMK3maLlxeS3onC7r212OnBM2pBR95HkAmAjjF08YkxQ==}
     dev: true
 
-  /@types/dotenv/8.2.0:
-    resolution: {integrity: sha512-ylSC9GhfRH7m1EUXBXofhgx4lUWmFeQDINW5oLuS+gxWdfUeW4zJdeVTYVkexEW+e2VUvlZR2kGnGGipAWR7kw==}
-    deprecated: This is a stub types definition. dotenv provides its own type definitions, so you do not need this installed.
-    dependencies:
-      dotenv: 8.6.0
-    dev: true
-
   /@types/express-serve-static-core/4.17.27:
     resolution: {integrity: sha512-e/sVallzUTPdyOTiqi8O8pMdBBphscvI6E4JYaKlja4Lm+zh7UFSSdW5VMkRbhDtmrONqOUHOXRguPsDckzxNA==}
     dependencies:
@@ -115,6 +110,10 @@ packages:
     resolution: {integrity: sha512-/SNsDidUFCvqqcWDwxv2feww/yqhNeTRL5CVoL3jU4Goc4kKEL10T7Eye65ZqPNi4HRx8sAEX59pV1aEH7drNA==}
     dependencies:
       '@types/express': 4.17.13
+    dev: true
+
+  /@types/node-cron/3.0.1:
+    resolution: {integrity: sha512-BkMHHonDT8NJUE/pQ3kr5v2GLDKm5or9btLBoBx4F2MB2cuqYC748LYMDC55VlrLI5qZZv+Qgc3m4P3dBPcmeg==}
     dev: true
 
   /@types/node/8.10.66:
@@ -575,6 +574,7 @@ packages:
   /dotenv/8.6.0:
     resolution: {integrity: sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==}
     engines: {node: '>=10'}
+    dev: false
 
   /ee-first/1.1.1:
     resolution: {integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=}
@@ -1149,6 +1149,16 @@ packages:
     hasBin: true
     dev: false
 
+  /moment-timezone/0.5.34:
+    resolution: {integrity: sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg==}
+    dependencies:
+      moment: 2.29.2
+    dev: false
+
+  /moment/2.29.2:
+    resolution: {integrity: sha512-UgzG4rvxYpN15jgCmVJwac49h9ly9NurikMWGPdVxm8GZD6XjkKPxDTjQQ43gtGgnV3X0cAyWDdP2Wexoquifg==}
+    dev: false
+
   /ms/2.0.0:
     resolution: {integrity: sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=}
     dev: false
@@ -1208,6 +1218,13 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: false
     optional: true
+
+  /node-cron/3.0.0:
+    resolution: {integrity: sha512-DDwIvvuCwrNiaU7HEivFDULcaQualDv7KoNlB/UU1wPW0n1tDEmBJKhEIE6DlF2FuoOHcNbLJ8ITL2Iv/3AWmA==}
+    engines: {node: '>=6.0.0'}
+    dependencies:
+      moment-timezone: 0.5.34
+    dev: false
 
   /object-assign/3.0.0:
     resolution: {integrity: sha1-m+3VygiXlJvKR+f/QIBi1Un1h/I=}
