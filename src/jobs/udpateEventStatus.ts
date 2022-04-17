@@ -3,13 +3,15 @@ import { getManager } from "typeorm"
 import EventService from "../services/EventService"
 import cron from 'node-cron'
 import { CronJobInterval } from "../utils/cronHelper"
+import dayjs from "dayjs"
 
 export async function udpateEventStatusJob() {
   cron.schedule(
     CronJobInterval.EVERY_DAY_4_AM,
     async () => {
       try {
-        console.warn('Sarting update event status')
+        const dateStart = dayjs().locale("fr").format("YYYY-MM-DD")
+        console.warn(`Sarting update event status at ${dateStart}`)
         const events = await getManager().find(EventEntity)
         console.log(events.length, 'events')
         if (events.length > 0) {
@@ -21,7 +23,8 @@ export async function udpateEventStatusJob() {
       } catch (error) {
         console.error(error, 'error')
       } finally {
-        console.warn('update event status ended')
+        const dateEnd = dayjs().locale("fr").format("YYYY-MM-DD")
+        console.warn(`update event status ended at ${dateEnd}`)
       }
     }
   )
