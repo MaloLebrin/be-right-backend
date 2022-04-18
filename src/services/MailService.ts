@@ -34,7 +34,7 @@ export default class MailService {
           button: {
             color: '#1b1e3dF2',
             text: 'Réinitialiser le mot de passe',
-            link: `http://localhost:3000/reset-password/${twoFactorRecoveryCode}/${recipient.email}`
+            link: `${process.env.FRONT_URL}/reset-password/${twoFactorRecoveryCode}/${recipient.email}`
           },
         },
       },
