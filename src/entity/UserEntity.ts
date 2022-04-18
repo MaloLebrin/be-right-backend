@@ -26,6 +26,12 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true, update: false })
   token: string
 
+  @Column({ unique: true, nullable: true })
+  twoFactorRecoveryCode: string | null
+
+  @Column({ unique: true, nullable: true })
+  twoFactorSecret: string | null
+
   @Column({ length: 100, nullable: true })
   firstName: string
 

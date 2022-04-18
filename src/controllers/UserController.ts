@@ -252,11 +252,11 @@ export default class UserController {
     }
   }
 
-  public static clear = async (req: Request, res: Response) => {
-    try {
-      return await getManager().clear(UserEntity)
-    } catch (error) {
-      return res.status(401).json({ error: error.message })
-    }
-  }
+  // public static clear = async (req: Request, res: Response) => {
+  //   try {
+  //     return await getManager().clear(UserEntity)
+  //   } catch (error) {
+  //     return res.status(401).json({ error: error.message })
+  //   }
+  // }
 }
