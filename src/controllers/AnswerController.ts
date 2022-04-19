@@ -12,7 +12,9 @@ export default class AnswerController {
       const employeeId = parseInt(req.query.employeeId.toString())
       const answer = AnswerService.createOne(eventId, employeeId)
       const event = await EventService.getOneEvent(eventId)
-      await EventService.multipleUpdateForEvent(event)
+      if (event) {
+        await EventService.multipleUpdateForEvent(event)
+      }
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -25,7 +27,9 @@ export default class AnswerController {
       const employeeIds = req.body.employeeIds
       const answers = AnswerService.createMany(eventId, employeeIds)
       const event = await EventService.getOneEvent(eventId)
-      await EventService.multipleUpdateForEvent(event)
+      if (event) {
+        await EventService.multipleUpdateForEvent(event)
+      }
       return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -38,7 +42,9 @@ export default class AnswerController {
       const id = answer.id
       const answerUpdated = await AnswerService.updateOneAnswer(id, answer)
       const event = await EventService.getOneEvent(answer.event)
-      await EventService.multipleUpdateForEvent(event)
+      if (event) {
+        await EventService.multipleUpdateForEvent(event)
+      }
       return res.status(200).json(answerUpdated)
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -58,7 +64,9 @@ export default class AnswerController {
           answer.signedAt = new Date()
           await getManager().save(answer)
           const event = await EventService.getOneEvent(answer.event)
-          await EventService.multipleUpdateForEvent(event)
+          if (event) {
+            await EventService.multipleUpdateForEvent(event)
+          }
           return res.status(200).json(answer)
         }
       } else {
@@ -76,7 +84,9 @@ export default class AnswerController {
       const answerToDelete = await AnswerService.getOne(id)
       const answer = await AnswerService.deleteOne(id)
       const event = await EventService.getOneEvent(answerToDelete.event)
-      await EventService.multipleUpdateForEvent(event)
+      if (event) {
+        await EventService.multipleUpdateForEvent(event)
+      }
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no deleted" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
