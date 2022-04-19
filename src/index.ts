@@ -7,14 +7,15 @@ import helmet from "helmet"
 import * as dotenv from "dotenv"
 import Context from "./context"
 import cloudinary from "cloudinary"
-import userRoutes from './routes/userRoutes'
-import eventRoutes from './routes/eventRoutes'
-import employeeRoutes from './routes/employeeRoutes'
-import newsletterRoutes from './routes/newsletterRoutes'
-import fileRoutes from './routes/fileRoutes'
-import answerRoute from './routes/answerRoutes'
-import bugReportRoutes from './routes/bugReportRoutes'
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import answerRoute from './routes/answerRoutes'
+import authRoutes from './routes/authRoutes'
+import bugReportRoutes from './routes/bugReportRoutes'
+import employeeRoutes from './routes/employeeRoutes'
+import eventRoutes from './routes/eventRoutes'
+import fileRoutes from './routes/fileRoutes'
+import newsletterRoutes from './routes/newsletterRoutes'
+import userRoutes from './routes/userRoutes'
 import { udpateEventStatusJob } from "./jobs/udpateEventStatus"
 
 async function startServer() {
@@ -65,12 +66,13 @@ async function startServer() {
     app.use('/file', fileRoutes)
     app.use('/answer', answerRoute)
     app.use('/bugreport', bugReportRoutes)
+    app.use('/auth', authRoutes)
 
     const port = process.env.PORT || 5000
     app.listen(port, '0.0.0.0', () => {
       console.log('Application is running in ' + process.env.NODE_ENV + ' mode on port : ' + port)
     })
-    await udpateEventStatusJob()
+    // await udpateEventStatusJob()
 
   }).catch(error => console.log(error))
 }
