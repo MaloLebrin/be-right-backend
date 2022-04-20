@@ -119,11 +119,11 @@ export default class EventService {
 
   public static async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
-      const event = await EventService.getOneEvent(eventId)
-      await EventService.getNumberSignatureNeededForEvent(eventId)
-      await EventService.updateStatusForEvent(eventId)
+      const event = await this.getOneEvent(eventId)
+      await this.getNumberSignatureNeededForEvent(eventId)
+      await this.updateStatusForEvent(eventId)
       if (event) {
-        await EventService.updateStatusEventWhenCompleted(event)
+        await this.updateStatusEventWhenCompleted(event)
       }
     }
   }
