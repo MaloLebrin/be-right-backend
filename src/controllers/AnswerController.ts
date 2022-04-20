@@ -11,10 +11,7 @@ export default class AnswerController {
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
       const answer = AnswerService.createOne(eventId, employeeId)
-      const event = await EventService.getOneEvent(eventId)
-      if (event) {
-        await EventService.multipleUpdateForEvent(event)
-      }
+      await EventService.multipleUpdateForEvent(eventId)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -26,10 +23,7 @@ export default class AnswerController {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
       const answers = AnswerService.createMany(eventId, employeeIds)
-      const event = await EventService.getOneEvent(eventId)
-      if (event) {
-        await EventService.multipleUpdateForEvent(event)
-      }
+      await EventService.multipleUpdateForEvent(eventId)
       return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -41,10 +35,7 @@ export default class AnswerController {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
       const answerUpdated = await AnswerService.updateOneAnswer(id, answer)
-      const event = await EventService.getOneEvent(answer.event)
-      if (event) {
-        await EventService.multipleUpdateForEvent(event)
-      }
+      await EventService.multipleUpdateForEvent(answerUpdated.event)
       return res.status(200).json(answerUpdated)
     } catch (error) {
       return res.status(error.status).json({ error: error.message })
@@ -63,10 +54,7 @@ export default class AnswerController {
           answer.hasSigned = isSigned ? true : false
           answer.signedAt = new Date()
           await getManager().save(answer)
-          const event = await EventService.getOneEvent(answer.event)
-          if (event) {
-            await EventService.multipleUpdateForEvent(event)
-          }
+          await EventService.multipleUpdateForEvent(answer.event)
           return res.status(200).json(answer)
         }
       } else {
@@ -83,10 +71,7 @@ export default class AnswerController {
       const id = parseInt(req.params.id)
       const answerToDelete = await AnswerService.getOne(id)
       const answer = await AnswerService.deleteOne(id)
-      const event = await EventService.getOneEvent(answerToDelete.event)
-      if (event) {
-        await EventService.multipleUpdateForEvent(event)
-      }
+      await EventService.multipleUpdateForEvent(answerToDelete.event)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no deleted" })
     } catch (error) {
       return res.status(error.status).json({ error: error.message })

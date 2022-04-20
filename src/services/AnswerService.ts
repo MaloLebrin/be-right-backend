@@ -46,7 +46,6 @@ export default class AnswerService {
       where: {
         employee: employeeId,
       },
-      relations: ["event"],
     })
   }
 

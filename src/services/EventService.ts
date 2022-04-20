@@ -117,9 +117,14 @@ export default class EventService {
     return event
   }
 
-  public static async multipleUpdateForEvent(event: EventEntity) {
-    await EventService.getNumberSignatureNeededForEvent(event.id)
-    await EventService.updateStatusForEvent(event.id)
-    await EventService.updateStatusEventWhenCompleted(event)
+  public static async multipleUpdateForEvent(eventId: number) {
+    if (typeof eventId === 'number') {
+      const event = await EventService.getOneEvent(eventId)
+      await EventService.getNumberSignatureNeededForEvent(eventId)
+      await EventService.updateStatusForEvent(eventId)
+      if (event) {
+        await EventService.updateStatusEventWhenCompleted(event)
+      }
+    }
   }
 }
