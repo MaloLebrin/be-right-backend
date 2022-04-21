@@ -17,6 +17,10 @@ export default class FileService {
     }
   }
 
+  public static async deleteManyfiles(fileIds: number[]) {
+    await Promise.all(fileIds.map(fileId => this.deleteFile(fileId)))
+  }
+
   public static async getFile(fileId: number) {
     const doc = await getManager().findOne(FileEntity, fileId, { relations: ["createdByUser"] })
     return doc
@@ -43,6 +47,22 @@ export default class FileService {
       }
     })
     return docs
+  }
+
+  public static async getFilesByType(type: FileTypeEnum) {
+    const docs = await getManager().find(FileEntity, {
+      where: {
+        type
+      },
+      relations: ["createdByUser"]
+    })
+    return docs.map(doc => {
+      const user = doc.createdByUser as unknown as UserEntity
+      return {
+        ...doc,
+        createdByUser: user.id,
+      }
+    })
   }
 
   public static async updateFile(id: number, file: FileEntity) {

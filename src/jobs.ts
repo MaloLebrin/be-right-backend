@@ -1,29 +1,46 @@
-import EventEntity from "./entity/EventEntity"
-import { getManager } from "typeorm"
-import EventService from "./services/EventService"
-import cron from 'node-cron'
+import { createConnection, getConnectionOptions, getManager } from "typeorm"
 import { CronJobInterval } from "./utils/cronHelper"
-import dayjs from "dayjs"
+import cron from 'node-cron'
+import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import * as dotenv from "dotenv"
+import cloudinary from "cloudinary"
+import udpateEventStatusJob from "./jobs/updateEventsStatusJob"
 
-cron.schedule(
-  CronJobInterval.EVERY_DAY_4_AM,
-  async () => {
-    try {
-      const dateStart = dayjs().locale("fr").format("YYYY-MM-DD")
-      console.warn(`Sarting update event status at ${dateStart}`)
-      const events = await getManager().find(EventEntity)
-      console.log(events.length, 'events')
-      if (events.length > 0) {
-        await Promise.all(events.map(event => EventService.getNumberSignatureNeededForEvent(event.id)))
-        await Promise.all(events.map(event => EventService.updateStatusEventWhenCompleted(event)))
-        await EventService.updateStatusForEventArray(events)
-      }
+(async () => {
+  const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
+  let connectionsOptions = config
 
-    } catch (error) {
-      console.error(error, 'error')
-    } finally {
-      const dateEnd = dayjs().locale("fr").format("YYYY-MM-DD")
-      console.warn(`update event status ended at ${dateEnd}`)
+  if (process.env.NODE_ENV === 'production') {
+    connectionsOptions = {
+      ...config,
+      url: process.env.DATABASE_URL!,
+    }
+  } else {
+    connectionsOptions = {
+      ...config,
+      name: 'default',
     }
   }
-)
+
+  createConnection(connectionsOptions).then(async connection => {
+    dotenv.config()
+
+    cloudinary.v2.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    })
+
+    cron.schedule(
+      CronJobInterval.EVERY_DAY_4_AM,
+      async () => {
+        await udpateEventStatusJob()
+      }
+    )
+
+    // cron.schedule(
+    //   CronJobInterval.EVERY_MINUTE,
+    //   async () => deleteOldLogosJob()
+    // )
+  })
+})()
