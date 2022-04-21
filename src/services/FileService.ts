@@ -3,7 +3,7 @@ import { FileEntity } from "../entity/FileEntity"
 import { getManager } from 'typeorm'
 import { UserEntity } from '../entity'
 import { FileTypeEnum } from '../types/File'
-import UserService from './UserService'
+import { getfullUsername } from '../utils/userHelper'
 
 export default class FileService {
 
@@ -94,8 +94,8 @@ export default class FileService {
 
     const picture = {
       fileName: file.filename,
-      name: 'Photo de profile',
-      description: 'Photo de profile',
+      name: `Photo de profile de ${getfullUsername(user)}`,
+      description: `Photo de profile de ${getfullUsername(user)}`,
       createdByUser: user.id,
       type: FileTypeEnum.PROFILE_PICTURE,
       url: result.url,
@@ -113,6 +113,41 @@ export default class FileService {
     if (fileUploaded) {
       userToSave.profilePicture = fileUploaded
       await getManager().save([fileUploaded, userToSave])
+      return fileUploaded
+    }
+  }
+
+  public static async createLogo(file: Express.Multer.File, user: UserEntity) {
+    const existLogos = await getManager().find(FileEntity, { createdByUser: user.id, type: FileTypeEnum.LOGO })
+
+    if (existLogos.length > 0) {
+      const logosIds = existLogos.map(logo => logo.id)
+      await this.deleteManyfiles(logosIds)
+    }
+    const result = await cloudinary.v2.uploader.upload(file.path, {
+      folder: `beright-${process.env.NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.LOGO}`,
+    })
+
+    const picture = {
+      fileName: file.filename,
+      name: `Logo de ${getfullUsername(user)}`,
+      description: `Logo de ${getfullUsername(user)}`,
+      createdByUser: user.id,
+      type: FileTypeEnum.LOGO,
+      url: result.url,
+      public_id: result.public_id,
+      secure_url: result.secure_url,
+      size: file.size,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      original_filename: result.original_filename,
+      signature: result.signature,
+      mimeType: file.mimetype,
+    }
+    const fileUploaded = getManager().create(FileEntity, picture)
+    if (fileUploaded) {
+      await getManager().save(fileUploaded)
       return fileUploaded
     }
   }

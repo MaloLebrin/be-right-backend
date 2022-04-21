@@ -79,6 +79,21 @@ export default class FileController {
     }
   }
 
+  public static createLogo = async (req: Request, res: Response) => {
+    try {
+      const fileRecieved = req.file
+      const ctx = Context.get(req)
+      const logo = await FileService.createLogo(fileRecieved, ctx.user)
+      return res.status(200).json(logo)
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
   /**
    * @param file file: Partial<FileEntity>
    * @returns return file just updated

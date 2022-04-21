@@ -8,6 +8,8 @@ const router = Router()
 
 router.post('/profile', [isAuthenticated], upload.single('file'), FileController.createProfilePicture)
 
+router.post('/logo', [isAuthenticated], upload.single('file'), FileController.createLogo)
+
 router.post('/:id', [isAuthenticated], upload.single('file'), FileController.newFile)
 
 router.patch('/:id', [isAuthenticated], FileController.updateOne)
