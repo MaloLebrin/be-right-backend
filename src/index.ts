@@ -16,7 +16,6 @@ import eventRoutes from './routes/eventRoutes'
 import fileRoutes from './routes/fileRoutes'
 import newsletterRoutes from './routes/newsletterRoutes'
 import userRoutes from './routes/userRoutes'
-import { udpateEventStatusJob } from "./jobs/udpateEventStatus"
 
 async function startServer() {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -72,7 +71,6 @@ async function startServer() {
     app.listen(port, '0.0.0.0', () => {
       console.log('Application is running in ' + process.env.NODE_ENV + ' mode on port : ' + port)
     })
-    // await udpateEventStatusJob()
 
   }).catch(error => console.log(error))
 }
