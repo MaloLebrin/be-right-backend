@@ -32,9 +32,8 @@ async function startServer() {
       name: 'default',
     }
   }
-  console.log(config, 'config')
 
-  createConnection(connectionsOptions).then(async connection => {
+  createConnection({ ...connectionsOptions, name: 'default' }).then(async connection => {
     const app = createExpressServer()
     dotenv.config()
     app.use(cors())
