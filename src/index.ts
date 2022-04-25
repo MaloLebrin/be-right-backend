@@ -32,6 +32,7 @@ async function startServer() {
       name: 'default',
     }
   }
+  console.log(config, 'config')
 
   createConnection(connectionsOptions).then(async connection => {
     const app = createExpressServer()
