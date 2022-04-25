@@ -12,7 +12,6 @@ services:
     volumes:
       - mysql-storage:/.data
 
-
   app:
     depends_on:
       - postgres
