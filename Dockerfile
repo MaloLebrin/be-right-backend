@@ -7,8 +7,9 @@ COPY package.json /app/
 
 RUN npm install
 
+# Be careful with this env variable
 ARG NODE_ENV
-ENV NODE_ENV=${NODE_ENV:-production}
+ENV NODE_ENV=${NODE_ENV:-dev}
 
 COPY .env /app/.env
 COPY ormconfig-docker.json /app/ormconfig.json

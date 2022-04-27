@@ -72,6 +72,7 @@ export default class UserController {
       const usersFilters = {
         ...queriesFilters,
         relations: ["events", "files", "employee", "profilePicture"],
+        // TODO find a way to not filter with search filed on subscription
       }
       const search = await getManager().find(UserEntity, usersFilters)
       const users = search.map(user => {
@@ -98,7 +99,10 @@ export default class UserController {
       const total = await getManager().count(UserEntity, usersFilters)
       return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 
@@ -112,6 +116,27 @@ export default class UserController {
       const user = await UserService.getOneWithRelations(id)
       return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
     } catch (error) {
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static getMany = async (req: Request, res: Response) => {
+    try {
+      const ids = req.query.ids as string
+      console.log(ids.split(','), 'ids')
+      if (ids) {
+        const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+        console.log(userIds, 'userIds')
+        if (userIds) {
+          const users = await UserService.getMany(userIds)
+          return res.status(200).json(users)
+        }
+      }
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
       return res.status(400).json({ error: error.message })
     }
   }

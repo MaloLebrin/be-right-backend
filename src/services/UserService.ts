@@ -3,6 +3,8 @@ import EventEntity from "../entity/EventEntity"
 import { getManager } from "typeorm"
 import { ThemeEnum, UserEntity } from "../entity/UserEntity"
 import { FileEntity } from "../entity/FileEntity"
+import { userResponse } from "../utils"
+import { formatEntityRelationWithId } from "../utils/entityHelper"
 
 export default class UserService {
 
@@ -39,14 +41,24 @@ export default class UserService {
 
   public static async getOneWithRelations(id: number): Promise<UserEntity> {
     const user = await getManager().findOne(UserEntity, id, { relations: ["events", "files", "employee", "profilePicture"] })
-    const events = user.events as EventEntity[]
-    const employees = user.employee as EmployeeEntity[]
-    const files = user.files as FileEntity[]
-    return {
-      ...user,
-      events: events.map(event => event.id).filter(id => id),
-      employee: employees.map(employee => employee.id).filter(id => id),
-      files: files.map(file => file.id).filter(id => id),
+    if (user) {
+      const events = user.events as EventEntity[]
+      const employees = user.employee as EmployeeEntity[]
+      const files = user.files as FileEntity[]
+
+      return {
+        ...user,
+        events: formatEntityRelationWithId(events),
+        employee: formatEntityRelationWithId(employees),
+        files: formatEntityRelationWithId(files),
+      }
+    } else {
+      return user
     }
+  }
+
+  public static async getMany(ids: number[]) {
+    const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
+    return users.map(user => userResponse(user))
   }
 }
