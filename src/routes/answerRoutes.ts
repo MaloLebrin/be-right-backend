@@ -4,6 +4,8 @@ import isAuthenticated from '../middlewares/IsAuthenticated'
 
 const router = Router()
 
+router.get('/event/:id', isAuthenticated, AnswerController.getManyForEvent)
+
 router.post('/', isAuthenticated, AnswerController.createOne)
 
 router.post('/many', isAuthenticated, AnswerController.createMany)

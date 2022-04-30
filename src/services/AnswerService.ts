@@ -1,5 +1,6 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import { getManager } from "typeorm"
+import { EmployeeEntity } from "@/entity"
 
 export default class AnswerService {
 
@@ -31,13 +32,25 @@ export default class AnswerService {
     })
   }
 
-  public static getAllAnswersForEvent = async (eventId: number) => {
-    return await getManager().find(AnswerEntity, {
+  public static getAllAnswersForEvent = async (eventId: number, withRelation = true) => {
+    const answers = await getManager().find(AnswerEntity, {
       where: {
         event: eventId,
       },
       relations: ["employee"],
     })
+    if (withRelation) {
+      return answers.map(answer => ({ ...answer, event: eventId }))
+    } else {
+      return answers.map(answer => {
+        const employee = answer.employee as EmployeeEntity
+        return {
+          ...answer,
+          event: eventId,
+          employee: employee.id,
+        }
+      })
+    }
   }
 
 

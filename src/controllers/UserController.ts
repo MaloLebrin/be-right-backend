@@ -123,10 +123,8 @@ export default class UserController {
   public static getMany = async (req: Request, res: Response) => {
     try {
       const ids = req.query.ids as string
-      console.log(ids.split(','), 'ids')
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
-        console.log(userIds, 'userIds')
         if (userIds) {
           const users = await UserService.getMany(userIds)
           return res.status(200).json(users)
@@ -196,6 +194,10 @@ export default class UserController {
         return res.status(401).json({ error: "unauthorized" })
       }
     } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
       return res.status(400).json({ error: error.message })
     }
   }
@@ -211,6 +213,10 @@ export default class UserController {
         return res.status(200).json(userResponse(user))
       }
     } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
       return res.status(400).json({ error: error.message })
     }
   }
@@ -226,6 +232,10 @@ export default class UserController {
         return res.status(401).json({ error: "unauthorized" })
       }
     } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
       return res.status(400).json({ error: error.message })
     }
   }
@@ -273,7 +283,11 @@ export default class UserController {
         return res.status(400).json('user not found')
       }
     } catch (error) {
-      return res.status(401).json({ error: error.message })
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 

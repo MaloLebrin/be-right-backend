@@ -14,7 +14,10 @@ export default class AnswerController {
       await EventService.multipleUpdateForEvent(eventId)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 
@@ -26,7 +29,26 @@ export default class AnswerController {
       await EventService.multipleUpdateForEvent(eventId)
       return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static getManyForEvent = async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id)
+      if (id) {
+        const answers = await AnswerService.getAllAnswersForEvent(id, false)
+        return res.status(200).json(answers)
+      }
+      return res.status(400).json({ message: "no id" })
+    } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 
@@ -38,7 +60,10 @@ export default class AnswerController {
       await EventService.multipleUpdateForEvent(answerUpdated.event)
       return res.status(200).json(answerUpdated)
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 
@@ -62,7 +87,10 @@ export default class AnswerController {
       }
 
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 
@@ -74,7 +102,10 @@ export default class AnswerController {
       await EventService.multipleUpdateForEvent(answerToDelete.event)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no deleted" })
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      if (error.status) {
+        return res.status(error.status).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
     }
   }
 }
