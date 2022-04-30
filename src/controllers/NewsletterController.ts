@@ -22,7 +22,7 @@ export default class NewsletterController {
       await getManager().save(recipient)
       return res.status(200).json(recipient)
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      return res.status(error.status || 500).json({ error: error.message })
     }
   }
 
@@ -38,7 +38,7 @@ export default class NewsletterController {
         total,
       })
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      return res.status(error.status || 500).json({ error: error.message })
     }
   }
 
@@ -53,7 +53,7 @@ export default class NewsletterController {
         return res.status(401).json('Not allowed')
       }
     } catch (error) {
-      return res.status(error.status).json({ error: error.message })
+      return res.status(error.status || 500).json({ error: error.message })
     }
   }
 }

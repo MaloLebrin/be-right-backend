@@ -38,7 +38,7 @@ export default class AuthController {
     } catch (error) {
       console.error(error)
       if (error.status) {
-        return res.status(error.status).json({ error: error.message, isSuccess: false })
+        return res.status(error.status || 500).json({ error: error.message, isSuccess: false })
       }
       return res.status(400).json({ error: error.message, isSuccess: false })
     }
@@ -63,7 +63,7 @@ export default class AuthController {
     } catch (error) {
       console.error(error)
       if (error.status) {
-        return res.status(error.status).json({ error: error.message, isSuccess: false })
+        return res.status(error.status || 500).json({ error: error.message, isSuccess: false })
       }
       return res.status(400).json({ error: error.message, isSuccess: false })
     }

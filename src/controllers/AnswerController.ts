@@ -15,7 +15,7 @@ export default class AnswerController {
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
@@ -30,7 +30,7 @@ export default class AnswerController {
       return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
@@ -46,7 +46,7 @@ export default class AnswerController {
       return res.status(400).json({ message: "no id" })
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
@@ -61,7 +61,7 @@ export default class AnswerController {
       return res.status(200).json(answerUpdated)
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
@@ -88,7 +88,7 @@ export default class AnswerController {
 
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
@@ -103,7 +103,7 @@ export default class AnswerController {
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no deleted" })
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ error: error.message })
+        return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
     }
