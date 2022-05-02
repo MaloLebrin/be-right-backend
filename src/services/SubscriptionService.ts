@@ -1,5 +1,5 @@
 import { SubscriptionEntitiy } from "../entity"
-import { SubscriptionEnum } from "../types/Subscription"
+import { SubscriptionEnum, SubscriptionWithRelations } from "../types/Subscription"
 import { getManager } from "typeorm"
 
 export class SubscriptionService {
@@ -12,12 +12,12 @@ export class SubscriptionService {
     return subscription
   }
 
-  public getOne = async (id: number) => {
-    return getManager().findOne(SubscriptionEntitiy, id, { relations: ["user", "payment"] })
+  public getOne = async (id: number): Promise<SubscriptionWithRelations> => {
+    return getManager().findOne(SubscriptionEntitiy, id, { relations: ["user", "payment"] }) as unknown as SubscriptionWithRelations
   }
 
-  public getMany = async (ids: number[]) => {
-    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ["user", "payment"] })
+  public getMany = async (ids: number[]): Promise<SubscriptionWithRelations[]> => {
+    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ["user", "payment"] }) as unknown as SubscriptionWithRelations[]
   }
 
   public getOneByUserId = async (userId: number) => {
@@ -28,8 +28,4 @@ export class SubscriptionService {
     return getManager().update(SubscriptionEntitiy, id, subscription)
   }
 
-  public isActive = async (id: number) => {
-    const subscription = await this.getOne(id)
-    return subscription.expireAt?.valueOf() > new Date().valueOf()
-  }
 }
