@@ -1,29 +1,26 @@
+import { CurrencyEnum, PaymentStatusEnum } from "../types/Payment"
 import { Entity, Column, OneToOne } from "typeorm"
 import { BaseEntity, SubscriptionEntitiy } from "."
 
 @Entity()
 export class PaymentEntity extends BaseEntity {
 
-	@Column({ default: 0 })
-	amount: number
+  @Column({ default: 0 })
+  amount: number
 
-	@Column({ default: 'eur'})
-	currency: string
+  @Column({ type: 'enum', enum: CurrencyEnum, default: CurrencyEnum.EUR }) // TODO add enum
+  currency: CurrencyEnum
 
-	@Column({ nullable: true })
-	submittedAt: Date
+  @Column({ type: 'enum', enum: PaymentStatusEnum, default: PaymentStatusEnum.PAYMENT_STATUS_CREATED }) // TODO add enum
+  status: PaymentStatusEnum
 
-	@Column({ nullable: true })
-	executedAt: Date
+  @Column({ nullable: true })
+  submittedAt: Date
 
-	@OneToOne(() => SubscriptionEntitiy, subscription => subscription.payment, { nullable: true })
-	subscription: SubscriptionEntitiy
+  @Column({ nullable: true })
+  executedAt: Date
 
-}
+  @OneToOne(() => SubscriptionEntitiy, subscription => subscription.payment, { nullable: true })
+  subscription: SubscriptionEntitiy
 
-export enum PaymentStatusEnum {
-	PAYMENT_STATUS_CREATED = 'PAYMENT_STATUS_CREATED',
-	PAYMENT_STATUS_SUBMITTED = 'PAYMENT_STATUS_SUBMITTED',
-	PAYMENT_STATUS_PAID = 'PAYMENT_STATUS_PAID',
-	PAYMENT_STATUS_REJECTED = 'PAYMENT_STATUS_REJECTED'
 }
