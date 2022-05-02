@@ -1,8 +1,8 @@
 import { UserEntity } from './UserEntity'
-import { Entity, Column, OneToMany, JoinColumn, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
 import { BaseEntity } from "./BaseEntity"
-import ImageRightConditionEntity from './ImageRightConditionEntity'
 import { FileEntity } from './FileEntity'
+import AnswerEntity from './AnswerEntity'
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {
@@ -13,6 +13,9 @@ export class EmployeeEntity extends BaseEntity {
 	@Column()
 	phone: string
 
+	@Column({ unique: true, nullable: true })
+	slug: string
+
 	@Column()
 	firstName: string
 
@@ -22,9 +25,8 @@ export class EmployeeEntity extends BaseEntity {
 	@ManyToOne(() => UserEntity, user => user.employee)
 	createdByUser: number | UserEntity
 
-	@OneToMany(() => ImageRightConditionEntity, imagerightCondition => imagerightCondition.employee, { cascade: true })
-	@JoinColumn()
-	imageRightCondition: ImageRightConditionEntity[]
+	@OneToMany(() => AnswerEntity, answer => answer.employee, { cascade: true })
+	answers: AnswerEntity[]
 
 	@OneToMany(() => FileEntity, file => file.employee, { cascade: true })
 	files: FileEntity[]

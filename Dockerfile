@@ -7,9 +7,17 @@ COPY package.json /app/
 
 RUN npm install
 
-COPY ormconfig-docker.json /app/ormconfig.json
+# Be careful with this env variable
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV:-dev}
+
 COPY .env /app/.env
+COPY ormconfig-docker.json /app/ormconfig.json
 COPY tsconfig.json /app/
+COPY heroku.yml /app/
+COPY entrypoint.sh /app/
 COPY ./src /app/src
 
-ENTRYPOINT ["npm", "run", "start"]
+RUN npm run tsc
+# CMD ["npm", "run", "build"]
+CMD ["/bin/bash", "/app/entrypoint.sh"]

@@ -5,6 +5,8 @@ import isAuthenticated from '../middlewares/IsAuthenticated'
 import { Role } from '../types/Role'
 const router = Router()
 
+router.get('/many', [isAuthenticated], UserController.getMany)
+
 router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.getAll)
 
 router.get('/:id', UserController.getOne)

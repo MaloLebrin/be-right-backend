@@ -5,8 +5,8 @@ import { SubscriptionEnum } from "../types/Subscription"
 @Entity()
 export class SubscriptionEntitiy extends BaseEntity {
 
-    @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
-    type: SubscriptionEnum
+	@Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
+	type: SubscriptionEnum
 
 	@Column({ nullable: true })
 	expireAt: Date
