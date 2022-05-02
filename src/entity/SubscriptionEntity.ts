@@ -18,3 +18,4 @@ export class SubscriptionEntitiy extends BaseEntity {
   @JoinColumn({ name: 'paymentId', referencedColumnName: 'id' })
   payment: PaymentEntity
 }
+// TODO create subscription entity on creation account
