@@ -16,6 +16,6 @@ export class SubscriptionEntitiy extends BaseEntity {
 
   @OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
   @JoinColumn({ name: 'paymentId', referencedColumnName: 'id' })
-  payment: PaymentEntity
+  payment: PaymentEntity | number
 }
 // TODO create subscription entity on creation account
