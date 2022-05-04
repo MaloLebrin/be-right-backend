@@ -9,6 +9,7 @@ import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
+import { isUserEntity } from "../utils/index"
 
 export default class EmployeeController {
 
@@ -22,7 +23,7 @@ export default class EmployeeController {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (ctx.user.roles === Role.ADMIN) {
+      if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
@@ -48,7 +49,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
@@ -84,7 +85,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
@@ -261,7 +262,6 @@ export default class EmployeeController {
       if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
         await EmployeeService.deleteOne(id)
         // TODO remove count signature if employee is on event
-        // await EventService.getNumberSignatureNeededForEvent(id)
         return res.status(204).json(getEmployee)
       } else {
         return res.status(401).json('Unauthorized')

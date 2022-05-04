@@ -1,7 +1,6 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import EventEntity from "../entity/EventEntity"
 import { getManager } from "typeorm"
-import { UserEntity } from "../entity/UserEntity"
 import AnswerService from "./AnswerService"
 import { EventStatusEnum } from "../types/Event"
 import { isUserEntity, updateStatusEventBasedOnStartEndTodayDate, isAnswerSigned } from "../utils/index"
