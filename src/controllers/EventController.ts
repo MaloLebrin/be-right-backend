@@ -45,14 +45,17 @@ export default class EventController {
   public static getOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      const userId = ctx.user.id
-      const event = await EventService.getOneEvent(id)
-      if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
-        return res.status(200).json(event)
-      } else {
-        return res.status(401).json('unauthorized')
+      if (id) {
+        const ctx = Context.get(req)
+        const userId = ctx.user.id
+        const event = await EventService.getOneEvent(id)
+        if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
+          return res.status(200).json(event)
+        } else {
+          return res.status(401).json('unauthorized')
+        }
       }
+      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -110,7 +113,6 @@ export default class EventController {
           partner: partner?.id,
         }
       }))
-
       return res.status(200).json(eventsReturned)
     } catch (error) {
       console.error(error)
@@ -162,17 +164,20 @@ export default class EventController {
     try {
       const { event }: { event: Partial<EventEntity> } = req.body
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      const userId = ctx.user.id
-      const eventFinded = await EventService.getOneEvent(id)
+      if (id) {
+        const ctx = Context.get(req)
+        const userId = ctx.user.id
+        const eventFinded = await EventService.getOneEvent(id)
 
-      const user = eventFinded.createdByUser as UserEntity
-      if (checkUserRole(Role.ADMIN) || user.id === userId) {
-        const eventUpdated = await EventService.updateOneEvent(id, event as EventEntity)
-        return res.status(200).json(eventUpdated)
-      } else {
-        return res.status(400).json('event not updated')
+        const user = eventFinded.createdByUser as UserEntity
+        if (checkUserRole(Role.ADMIN) || user.id === userId) {
+          const eventUpdated = await EventService.updateOneEvent(id, event as EventEntity)
+          return res.status(200).json(eventUpdated)
+        } else {
+          return res.status(400).json('event not updated')
+        }
       }
+      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -185,15 +190,18 @@ export default class EventController {
   public static deleteOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      const userId = ctx.user.id
-      const eventToDelete = await getManager().findOne(EventEntity, id)
-      if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
-        await getManager().delete(EventEntity, id)
-        return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
-      } else {
-        return res.status(401).json('Not allowed')
+      if (id) {
+        const ctx = Context.get(req)
+        const userId = ctx.user.id
+        const eventToDelete = await getManager().findOne(EventEntity, id)
+        if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
+          await getManager().delete(EventEntity, id)
+          return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
+        } else {
+          return res.status(401).json('Not allowed')
+        }
       }
+      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {

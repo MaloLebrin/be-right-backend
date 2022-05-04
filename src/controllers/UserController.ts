@@ -113,8 +113,11 @@ export default class UserController {
   public static getOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const user = await UserService.getOneWithRelations(id)
-      return user ? res.status(200).json(userResponse(user)) : res.status(400).json('user not found')
+      if (id) {
+        const user = await UserService.getOneWithRelations(id)
+        return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
+      }
+      return res.status(422).json({ error: 'id required' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -180,19 +183,22 @@ export default class UserController {
     try {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-        const userFinded = await getManager().findOne(UserEntity, id)
-        const userUpdated = {
-          ...userFinded,
-          ...user,
-          updatedAt: new Date(),
+      if (id) {
+        const ctx = Context.get(req)
+        if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
+          const userFinded = await getManager().findOne(UserEntity, id)
+          const userUpdated = {
+            ...userFinded,
+            ...user,
+            updatedAt: new Date(),
+          }
+          await getManager().save(UserEntity, user)
+          return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
+        } else {
+          return res.status(401).json({ error: "unauthorized" })
         }
-        await getManager().save(UserEntity, user)
-        return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
-      } else {
-        return res.status(401).json({ error: "unauthorized" })
       }
+      return res.status(422).json({ error: 'id required' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -206,12 +212,15 @@ export default class UserController {
     try {
       const userId = parseInt(req.params.id)
       const { subscription }: { subscription: SubscriptionEnum } = req.body
-      const user = await getManager().findOne(UserEntity, userId)
-      if (user) {
-        user.subscription = subscription
-        await getManager().save(user)
-        return res.status(200).json(userResponse(user))
+      if (userId) {
+        const user = await getManager().findOne(UserEntity, userId)
+        if (user) {
+          user.subscription = subscription
+          await getManager().save(user)
+          return res.status(200).json(userResponse(user))
+        }
       }
+      return res.status(422).json({ error: 'id required' })
     } catch (error) {
       console.error(error)
       if (error.status) {

@@ -15,7 +15,6 @@ export default class AuthController {
         return res.status(422).json({ error: "Email inconnu", isSuccess: false })
       }
 
-      // TODO send email with token and email
       const twoFactorSecret = uid2(128)
       const twoFactorRecoveryCode = generateHash(twoFactorSecret, email)
       user.twoFactorSecret = twoFactorSecret
