@@ -76,5 +76,5 @@ export const userSearchableFields = [
   'lastName',
   'companyName',
   'siret',
-  // 'subscription',
+  'subscription',
 ]

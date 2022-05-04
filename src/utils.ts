@@ -3,6 +3,8 @@ import { SHA256 } from "crypto-js"
 import encBase64 from "crypto-js/enc-base64"
 import { Like } from 'typeorm'
 import { FileEntity, UserEntity } from './entity'
+import { isSubscriptionOptionField } from './utils/userHelper'
+import { SubscriptionEnum } from './types/Subscription'
 
 /**
  * create hash password
@@ -62,7 +64,22 @@ export const paginator = (req: Request, searchableField: string[]) => {
  */
 export const generateWhereFieldsByEntity = (searchableFields: string[], req: Request) => {
   const search = req.query.search ? Like(`%${req.query.search}%`) : null
-  const filters = searchableFields.map(field => {
+  let fields = searchableFields
+
+  // Need to filter fields for searching if isSubscriptionOptionField is false
+  // because typeorm doesn't support search string in Enum field
+  if (!isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
+    const index = fields.findIndex(field => field === 'subscription')
+    if (index !== -1) {
+      fields.splice(index, 1)
+    }
+  }
+  const filters = fields.map(field => {
+    if (isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
+      return {
+        ['subscription']: search,
+      }
+    }
     return {
       [field]: search,
     }
