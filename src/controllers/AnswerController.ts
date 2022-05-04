@@ -97,10 +97,13 @@ export default class AnswerController {
   public static deleteOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const answerToDelete = await AnswerService.getOne(id)
-      const answer = await AnswerService.deleteOne(id)
-      await EventService.multipleUpdateForEvent(answerToDelete.event)
-      return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no deleted" })
+      if (id) {
+        const answerToDelete = await AnswerService.getOne(id)
+        const answer = await AnswerService.deleteOne(id)
+        await EventService.multipleUpdateForEvent(answerToDelete.event)
+        return res.status(200).json(answer)
+      }
+      return res.status(422).json({ message: "no id" })
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })

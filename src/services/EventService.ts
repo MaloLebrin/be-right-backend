@@ -1,12 +1,9 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import EventEntity from "../entity/EventEntity"
 import { getManager } from "typeorm"
-import { UserEntity } from "../entity/UserEntity"
 import AnswerService from "./AnswerService"
-import { updateStatusEventBasedOnStartEndTodayDate } from "../utils/eventHelpers"
-import { isAnswerSigned } from "../utils/answerHelper"
 import { EventStatusEnum } from "../types/Event"
-
+import { isUserEntity, updateStatusEventBasedOnStartEndTodayDate, isAnswerSigned } from "../utils/index"
 export default class EventService {
 
   public static async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {
@@ -34,29 +31,38 @@ export default class EventService {
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
     const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner"] })
     const answers = await AnswerService.getAllAnswersForEvent(finded.id)
-    const user = finded.createdByUser as UserEntity
-    const partner = finded.partner as UserEntity
+    if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
+      const user = finded.createdByUser
+      const partner = finded.partner
 
-    return {
-      ...finded,
-      totalSignatureNeeded: answers.length,
-      createdByUser: user?.id,
-      partner: partner?.id,
+      return {
+        ...finded,
+        totalSignatureNeeded: answers.length,
+        createdByUser: user.id,
+        partner: partner.id,
+      }
+    } else {
+      return {
+        ...finded,
+        totalSignatureNeeded: answers.length,
+      }
     }
   }
 
   public static async getManyEvents(eventIds: number[]) {
     const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser", "partner"] })
     return Promise.all(finded.map(async (event) => {
-      const user = event.createdByUser as UserEntity
-      const answers = await AnswerService.getAllAnswersForEvent(event.id)
-      const partner = event.partner as UserEntity
+      if (isUserEntity(event.createdByUser) && isUserEntity(event.partner)) {
+        const user = event.createdByUser
+        const partner = event.partner
+        const answers = await AnswerService.getAllAnswersForEvent(event.id)
 
-      return {
-        ...event,
-        totalSignatureNeeded: answers.length,
-        createdByUser: user?.id,
-        partner: partner?.id,
+        return {
+          ...event,
+          totalSignatureNeeded: answers.length,
+          createdByUser: user?.id,
+          partner: partner?.id,
+        }
       }
     }))
   }

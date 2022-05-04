@@ -67,9 +67,12 @@ export default class FileController {
   public static createProfilePicture = async (req: Request, res: Response) => {
     try {
       const fileRecieved = req.file
-      const ctx = Context.get(req)
-      const profilePicture = await FileService.createProfilePicture(fileRecieved, ctx.user)
-      return res.status(200).json(profilePicture)
+      if (fileRecieved) {
+        const ctx = Context.get(req)
+        const profilePicture = await FileService.createProfilePicture(fileRecieved, ctx.user)
+        return res.status(200).json(profilePicture)
+      }
+      return res.status(422).json({ error: 'fichier non envoyé' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -82,9 +85,12 @@ export default class FileController {
   public static createLogo = async (req: Request, res: Response) => {
     try {
       const fileRecieved = req.file
-      const ctx = Context.get(req)
-      const logo = await FileService.createLogo(fileRecieved, ctx.user)
-      return res.status(200).json(logo)
+      if (fileRecieved) {
+        const ctx = Context.get(req)
+        const logo = await FileService.createLogo(fileRecieved, ctx.user)
+        return res.status(200).json(logo)
+      }
+      return res.status(422).json({ error: 'fichier non envoyé' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -102,8 +108,11 @@ export default class FileController {
     try {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
-      const fileUpdated = await FileService.updateFile(id, file as FileEntity)
-      return res.status(200).json(fileUpdated)
+      if (id) {
+        const fileUpdated = await FileService.updateFile(id, file as FileEntity)
+        return res.status(200).json(fileUpdated)
+      }
+      return res.status(422).json({ message: 'identitfiant du fichier manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -117,12 +126,15 @@ export default class FileController {
   public static getFile = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const file = await getManager().findOne(FileEntity, id)
-      if (file) {
-        return res.status(200).json(file)
-      } else {
-        return res.status(400).json({ message: 'File not found' })
+      if (id) {
+        const file = await getManager().findOne(FileEntity, id)
+        if (file) {
+          return res.status(200).json(file)
+        } else {
+          return res.status(400).json({ message: 'fichier non trouvé' })
+        }
       }
+      return res.status(422).json({ message: 'identitfiant du fichier manquant' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -141,8 +153,11 @@ export default class FileController {
   public static getFilesByUser = async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.id)
-      const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
-      return res.status(200).json(files)
+      if (userId) {
+        const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
+        return res.status(200).json(files)
+      }
+      return res.status(422).json({ message: 'Identifiant de l\'utilisateur manquant' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -151,8 +166,11 @@ export default class FileController {
   public static getFilesByEvent = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.params.id)
-      const files = await getManager().find(FileEntity, { where: { event: eventId } })
-      return res.status(200).json(files)
+      if (eventId) {
+        const files = await getManager().find(FileEntity, { where: { event: eventId } })
+        return res.status(200).json(files)
+      }
+      return res.status(422).json({ message: 'Identifiant de l\'événement manquant' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -161,8 +179,11 @@ export default class FileController {
   public static getFilesByEmployee = async (req: Request, res: Response) => {
     try {
       const employeeId = parseInt(req.params.id)
-      const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
-      return res.status(200).json(files)
+      if (employeeId) {
+        const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
+        return res.status(200).json(files)
+      }
+      return res.status(422).json({ message: 'Identifiant de l\'employé manquant' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -172,11 +193,14 @@ export default class FileController {
     try {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
-      const files = await getManager().find(FileEntity, { where: { createdByUser: userId, event: eventId } })
-      if (files.length > 0) {
-        return res.status(200).json(files)
+      if (userId && eventId) {
+        const files = await getManager().find(FileEntity, { where: { createdByUser: userId, event: eventId } })
+        if (files.length > 0) {
+          return res.status(200).json(files)
+        }
+        return res.status(200).json({ message: 'Files not found' })
       }
-      return res.status(200).json({ message: 'Files not found' })
+      return res.status(422).json({ message: 'Identifiant de l\'utilisateur ou de l\'événement manquant' })
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -195,12 +219,15 @@ export default class FileController {
   public static deleteFile = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const file = await getManager().findOne(FileEntity, id)
-      if (file) {
-        await cloudinary.v2.uploader.destroy(file.public_id)
-        const deleted = await FileService.deleteFile(id)
-        return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'File not found' })
+      if (id) {
+        const file = await getManager().findOne(FileEntity, id)
+        if (file) {
+          await cloudinary.v2.uploader.destroy(file.public_id)
+          const deleted = await FileService.deleteFile(id)
+          return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'fichier non trouvé' })
+        }
       }
+      return res.status(422).json({ message: 'Identifiant du fichier manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {

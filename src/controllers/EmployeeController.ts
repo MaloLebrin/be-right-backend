@@ -9,6 +9,7 @@ import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
+import { isArrayOfNumbers, isUserEntity } from "../utils/index"
 
 export default class EmployeeController {
 
@@ -22,7 +23,7 @@ export default class EmployeeController {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (ctx.user.roles === Role.ADMIN) {
+      if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
@@ -48,7 +49,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
@@ -84,7 +85,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
@@ -118,8 +119,11 @@ export default class EmployeeController {
   public static getOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const employee = await EmployeeService.getOne(id)
-      return res.status(200).json(employee)
+      if (id) {
+        const employee = await EmployeeService.getOne(id)
+        return res.status(200).json(employee)
+      }
+      return res.status(422).json({ error: "identifiant du destinataire manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -138,12 +142,15 @@ export default class EmployeeController {
   public static getManyByUserId = async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.id)
-      const employees = await EmployeeService.getAllForUser(userId)
-      const entitiesReturned = employees.map(employee => ({
-        ...employee,
-        createdByUser: userId,
-      }))
-      return res.status(200).json(entitiesReturned)
+      if (userId) {
+        const employees = await EmployeeService.getAllForUser(userId)
+        const entitiesReturned = employees.map(employee => ({
+          ...employee,
+          createdByUser: userId,
+        }))
+        return res.status(200).json(entitiesReturned)
+      }
+      return res.status(422).json({ error: "identifiant de l\'utilisateur manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -161,19 +168,22 @@ export default class EmployeeController {
   public static getManyByEventId = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.params.id)
-      const user = await EventService.getOneEvent(eventId)
-      const answers = await AnswerService.getAllAnswersForEvent(eventId)
-      const employeesWithAnswers = answers.map(answer => {
-        const employee = {
-          ...answer.employee as unknown as EmployeeEntity,
-          answer: answer,
-          event: eventId,
-          createdByUser: user.id,
-        }
-        delete employee.answer.employee
-        return employee
-      })
-      return res.status(200).json({ data: employeesWithAnswers })
+      if (eventId) {
+        const user = await EventService.getOneEvent(eventId)
+        const answers = await AnswerService.getAllAnswersForEvent(eventId)
+        const employeesWithAnswers = answers.map(answer => {
+          const employee = {
+            ...answer.employee as unknown as EmployeeEntity,
+            answer: answer,
+            event: eventId,
+            createdByUser: user.id,
+          }
+          delete employee.answer.employee
+          return employee
+        })
+        return res.status(200).json({ data: employeesWithAnswers })
+      }
+      return res.status(422).json({ error: "identifiant de l'événement manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -225,8 +235,11 @@ export default class EmployeeController {
     try {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const id = parseInt(req.params.id)
-      const employeeUpdated = await EmployeeService.updateOne(id, employee)
-      return res.status(200).json(employeeUpdated)
+      if (id) {
+        const employeeUpdated = await EmployeeService.updateOne(id, employee)
+        return res.status(200).json(employeeUpdated)
+      }
+      return res.status(422).json({ error: "identifiant du destinataire manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -240,8 +253,11 @@ export default class EmployeeController {
   public static patchOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const event = await EventService.getNumberSignatureNeededForEvent(id)
-      res.status(200).json(event)
+      if (id) {
+        const event = await EventService.getNumberSignatureNeededForEvent(id)
+        return res.status(200).json(event)
+      }
+      return res.status(422).json({ error: "identifiant du destinataire manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -254,18 +270,24 @@ export default class EmployeeController {
   public static deleteOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      const userId = ctx.user.id
-      const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
-      const employeeUser = getEmployee.createdByUser as UserEntity
-      if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
-        await EmployeeService.deleteOne(id)
-        // TODO remove count signature if employee is on event
-        // await EventService.getNumberSignatureNeededForEvent(id)
-        return res.status(204).json(getEmployee)
-      } else {
-        return res.status(401).json('Unauthorized')
+      if (id) {
+        const ctx = Context.get(req)
+        const userId = ctx.user.id
+        const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+        const employeeUser = getEmployee.createdByUser as UserEntity
+        if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
+          await EmployeeService.deleteOne(id)
+          if (employeeUser.events && employeeUser.events.length && isArrayOfNumbers(employeeUser.events)) {
+            employeeUser.events.forEach(async (eventId) => {
+              await EventService.getNumberSignatureNeededForEvent(eventId)
+            })
+          }
+          return res.status(204).json(getEmployee)
+        } else {
+          return res.status(401).json('Unauthorized')
+        }
       }
+      return res.status(422).json({ error: "identifiant du destinataire manquant" })
     } catch (error) {
       console.error(error)
       if (error.status) {

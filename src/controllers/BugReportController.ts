@@ -34,7 +34,7 @@ export default class BugReportController {
     try {
       const id = parseInt(req.params.id)
       const { status } = req.body
-      if (status) {
+      if (status && id) {
         const updatedBugReport = await BugReportService.updateStatus(id, status)
         return res.status(200).json(updatedBugReport)
       } else {
@@ -53,7 +53,7 @@ export default class BugReportController {
     try {
       const id = parseInt(req.params.id)
       const { bugReport }: { bugReport: BugReportEntity } = req.body
-      if (bugReport) {
+      if (bugReport && id) {
         const updatedBugReport = await BugReportService.updateOne(id, bugReport)
         return res.status(200).json(updatedBugReport)
       } else {
@@ -75,8 +75,12 @@ export default class BugReportController {
   public static getOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const bugReport = await BugReportService.getOne(id)
-      return bugReport ? res.status(200).json(bugReport) : res.status(400).json('user not found')
+      if (id) {
+        const bugReport = await BugReportService.getOne(id)
+        return bugReport ? res.status(200).json(bugReport) : res.status(400).json('user not found')
+      } else {
+        return res.status(422).json({ error: "id is required" })
+      }
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -103,8 +107,11 @@ export default class BugReportController {
   public static deleteOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
-      const deletedBugReport = await BugReportService.deleteOne(id)
-      return res.status(200).json(deletedBugReport)
+      if (id) {
+        const deletedBugReport = await BugReportService.deleteOne(id)
+        return res.status(200).json(deletedBugReport)
+      }
+      return res.status(422).json({ error: "id is required" })
     } catch (error) {
       console.error(error)
       if (error.status) {

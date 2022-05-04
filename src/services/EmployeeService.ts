@@ -4,6 +4,7 @@ import { UserEntity } from "../entity/UserEntity"
 import uid2 from 'uid2'
 import { SHA256 } from 'crypto-js'
 import AnswerService from "./AnswerService"
+import { isUserEntity } from "../utils/index"
 
 export default class EmployeeService {
 
@@ -20,7 +21,8 @@ export default class EmployeeService {
 
   public static async getOne(id: number) {
     const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser", "answers"] })
-    const user = employeefinded.createdByUser as UserEntity
+
+    const user = isUserEntity(employeefinded.createdByUser) && employeefinded.createdByUser
     return {
       ...employeefinded,
       createdByUser: user.id,
@@ -31,7 +33,7 @@ export default class EmployeeService {
   public static async getMany(ids: number[]) {
     const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["createdByUser", "answers"] })
     return finded.map((employee) => {
-      const user = employee.createdByUser as UserEntity
+      const user = isUserEntity(employee.createdByUser) && employee.createdByUser
       return {
         ...employee,
         createdByUser: user.id,
@@ -45,7 +47,7 @@ export default class EmployeeService {
       where: {
         createdByUser: userId
       },
-      relations: ["createdByUser", "answers"],
+      relations: ["answers"],
     })
 
     return employees.map((employee) => ({
