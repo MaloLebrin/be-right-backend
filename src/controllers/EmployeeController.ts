@@ -9,7 +9,7 @@ import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
-import { isUserEntity } from "../utils/index"
+import { isArrayOfNumbers, isUserEntity } from "../utils/index"
 
 export default class EmployeeController {
 
@@ -277,7 +277,11 @@ export default class EmployeeController {
         const employeeUser = getEmployee.createdByUser as UserEntity
         if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
           await EmployeeService.deleteOne(id)
-          // TODO remove count signature if employee is on event
+          if (employeeUser.events && employeeUser.events.length && isArrayOfNumbers(employeeUser.events)) {
+            employeeUser.events.forEach(async (eventId) => {
+              await EventService.getNumberSignatureNeededForEvent(eventId)
+            })
+          }
           return res.status(204).json(getEmployee)
         } else {
           return res.status(401).json('Unauthorized')
