@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
 import { BaseEntity } from "./BaseEntity"
 import { EmployeeEntity } from "./EmployeeEntity"
 import EventEntity from "./EventEntity"
+import { FileEntity } from "./FileEntity"
 
 @Entity()
 export default class AnswerEntity extends BaseEntity {
@@ -22,6 +23,10 @@ export default class AnswerEntity extends BaseEntity {
   @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: "eventId" })
   event: number
+
+  @OneToOne(() => FileEntity, file => file.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: "imageRight", referencedColumnName: 'id' })
+  imageRight: number | FileEntity
 }
 
 export const answerSearchFields = [
