@@ -81,6 +81,7 @@ export default class EventService {
     }
 
     await getManager().update(EventEntity, eventId, eventToSave)
+    await this.multipleUpdateForEvent(eventId)
     return this.getOneEvent(eventId)
   }
 
