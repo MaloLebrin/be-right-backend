@@ -59,6 +59,6 @@ export default class UserService {
 
   public static async getMany(ids: number[]) {
     const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
-    return users.map(user => userResponse(user))
+    return users.length > 0 ? users.filter(user => user).map(user => userResponse(user)) : []
   }
 }

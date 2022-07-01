@@ -75,6 +75,7 @@ export const generateWhereFieldsByEntity = (searchableFields: string[], req: Req
     }
   }
   const filters = fields.map(field => {
+    // here we need to check if field is a subscription field beacause Typeorm doesn't support search string in Enum field
     if (isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
       return {
         ['subscription']: search,

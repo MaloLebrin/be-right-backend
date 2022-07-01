@@ -7,7 +7,6 @@ import { getfullUsername } from '../utils/userHelper'
 
 export default class FileService {
 
-
   public static async deleteFile(fileId: number) {
     const doc = await getManager().findOne(FileEntity, fileId)
     if (doc) {
