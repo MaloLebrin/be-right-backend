@@ -89,6 +89,7 @@ export default class EventService {
     event.createdByUser = userId
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)
+    await this.multipleUpdateForEvent(newEvent.id)
     return this.getOneEvent(newEvent.id)
   }
 
