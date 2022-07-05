@@ -20,7 +20,10 @@ export default class EventService {
       },
     })
     const totalSignatureNeeded = answers.length
-    await getManager().update(EventEntity, eventId, { totalSignatureNeeded, updatedAt: new Date() })
+    const eventToSave = await this.getOneEvent(eventId)
+    eventToSave.updatedAt = new Date()
+    eventToSave.totalSignatureNeeded = totalSignatureNeeded
+    await getManager().update(EventEntity, eventId, eventToSave)
     return this.getOneEvent(eventId)
   }
 
