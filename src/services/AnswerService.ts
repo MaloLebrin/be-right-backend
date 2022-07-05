@@ -14,12 +14,7 @@ export default class AnswerService {
   }
 
   public static createMany = async (eventId: number, employeeIds: number[]) => {
-    const newAnswers = employeeIds.map(employeeId => getManager().create(AnswerEntity, {
-      event: eventId,
-      employee: employeeId,
-    }))
-    await getManager().save(newAnswers)
-    return newAnswers
+    return employeeIds.map(employeeId => this.createOne(eventId, employeeId))
   }
 
   public static getOneAnswerForEventEmployee = async (eventId: number, employeeId: number) => {
