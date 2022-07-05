@@ -5,9 +5,18 @@ export function formatEntityRelationWithId(entities: EntityRelationWithId[]): nu
   if (entities && entities.length > 0) {
     if (!isArrayOfNumbers(entities)) {
       return entities.map(entity => entity.id).filter(id => id)
-    } else {
-      return entities as unknown as number[]
     }
+    return entities as unknown as number[]
+  }
+  return []
+}
+
+export function addUserToEntityRelation<T>(entities: T[], userId: number): T[] {
+  if (entities && entities.length > 0 && userId) {
+    return entities.map(entity => ({
+      ...entity,
+      createdByUser: userId,
+    }))
   }
   return []
 }

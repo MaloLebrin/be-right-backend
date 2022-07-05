@@ -12,6 +12,7 @@ import UserService from '../services/UserService'
 import EventEntity from '../entity/EventEntity'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { FileEntity } from '../entity/FileEntity'
+import { addUserToEntityRelation } from '../utils/'
 
 export default class UserController {
 
@@ -81,18 +82,9 @@ export default class UserController {
         const files = user.files as FileEntity[]
         return {
           ...user,
-          events: events.map(event => ({
-            ...event,
-            createdByUser: user.id,
-          })),
-          employee: employees.map(employee => ({
-            ...employee,
-            createdByUser: user.id,
-          })),
-          files: files.map(file => ({
-            ...file,
-            createdByUser: user.id,
-          })),
+          events: addUserToEntityRelation(events, user.id),
+          employee: addUserToEntityRelation(employees, user.id),
+          files: addUserToEntityRelation(files, user.id),
         }
       })
       const usersToSend = users.map(user => userResponse(user))
@@ -268,18 +260,9 @@ export default class UserController {
         const files = userFinded.files as FileEntity[]
         const user = {
           ...userFinded,
-          events: events.length > 0 ? events.map(event => ({
-            ...event,
-            createdByUser: userFinded.id,
-          })) : [],
-          employee: employees.length > 0 ? employees.map(employee => ({
-            ...employee,
-            createdByUser: userFinded.id,
-          })) : [],
-          files: files.length > 0 ? files.map(file => ({
-            ...file,
-            createdByUser: userFinded.id,
-          })) : [],
+          events: addUserToEntityRelation(events, userFinded.id),
+          employee: addUserToEntityRelation(employees, userFinded.id),
+          files: addUserToEntityRelation(files, userFinded.id),
         }
         const passwordHashed = generateHash(user.salt, password)
         if (user.password === passwordHashed) {

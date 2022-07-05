@@ -4,7 +4,7 @@ import { getManager } from "typeorm"
 import { ThemeEnum, UserEntity } from "../entity/UserEntity"
 import { FileEntity } from "../entity/FileEntity"
 import { userResponse } from "../utils"
-import { formatEntityRelationWithId } from "../utils/entityHelper"
+import { addUserToEntityRelation, formatEntityRelationWithId } from "../utils/entityHelper"
 
 export default class UserService {
 
@@ -14,21 +14,12 @@ export default class UserService {
       const events = userFinded.events as EventEntity[]
       const employees = userFinded.employee as EmployeeEntity[]
       const files = userFinded.files as FileEntity[]
-      // FIXME if arrrays are empty, send array empty
+
       return {
         ...userFinded,
-        events: events.map(event => ({
-          ...event,
-          createdByUser: userFinded.id,
-        })),
-        employee: employees.map(employee => ({
-          ...employee,
-          createdByUser: userFinded.id,
-        })),
-        files: files.map(file => ({
-          ...file,
-          createdByUser: userFinded.id,
-        })),
+        events: addUserToEntityRelation(events, userFinded.id),
+        employee: addUserToEntityRelation(employees, userFinded.id),
+        files: addUserToEntityRelation(files, userFinded.id),
       }
     }
   }
