@@ -1,5 +1,6 @@
 export * from './AnswerEntity'
 export * from './BaseEntity'
+export * from './BugReportEntity'
 export * from './EmployeeEntity'
 export * from './EventEntity'
 export * from './FileEntity'

@@ -1,5 +1,4 @@
-import { EmployeeEntity, FileEntity, UserEntity } from "../entity"
-import { BugReportEntity } from "../entity/BugReportEntity"
+import type { BugReportEntity, EmployeeEntity, FileEntity, UserEntity } from "../entity"
 import EventEntity from "../entity/EventEntity"
 
 export type EntityRelationWithId =
