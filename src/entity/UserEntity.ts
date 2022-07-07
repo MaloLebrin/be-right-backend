@@ -1,10 +1,8 @@
-import { Entity, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm"
+import { Entity, Column, OneToMany, OneToOne, JoinColumn } from "typeorm"
 import { Role } from "../types/Role"
 import { SubscriptionEnum } from "../types/Subscription"
-import { BaseEntity } from "./BaseEntity"
-import { EmployeeEntity } from "./EmployeeEntity"
+import { AddressEntity, EmployeeEntity, FileEntity, BaseEntity } from "./"
 import EventEntity from "./EventEntity"
-import { FileEntity } from "./FileEntity"
 
 export enum ThemeEnum {
   LIGHT = 'light',
@@ -53,6 +51,12 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   subscription: SubscriptionEnum
 
+  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
+  theme: ThemeEnum
+
+  @OneToMany(() => AddressEntity, address => address.user, { cascade: true })
+  address: AddressEntity[] | number[]
+
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
 
@@ -66,8 +70,6 @@ export class UserEntity extends BaseEntity {
   @JoinColumn()
   profilePicture: FileEntity | number
 
-  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
-  theme: ThemeEnum
 }
 
 export const userSearchableFields = [
