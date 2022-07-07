@@ -1,6 +1,5 @@
 import { EmployeeEntity } from "../entity/EmployeeEntity"
 import { getManager } from "typeorm"
-import { UserEntity } from "../entity/UserEntity"
 import uid2 from 'uid2'
 import { SHA256 } from 'crypto-js'
 import AnswerService from "./AnswerService"
