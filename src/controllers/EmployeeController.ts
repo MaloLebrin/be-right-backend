@@ -11,6 +11,7 @@ import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
 import { isArrayOfNumbers, isUserAdmin, isUserEntity } from "../utils/index"
 import { AddressEntity } from "../entity"
+import { AddressService } from "@/services"
 
 export default class EmployeeController {
 
@@ -34,10 +35,16 @@ export default class EmployeeController {
         return res.status(422).json({ error: 'cet email existe déjà' })
       }
       const newEmployee = await EmployeeService.createOne(employee, userId)
-      if (newEmployee && address) {
-
+      if (newEmployee) {
+        if (address) {
+          await AddressService.createOne({
+            address,
+            employeeId: newEmployee.id
+          })
+        }
+        const employeeToSend = await EmployeeService.getOne(newEmployee.id)
+        return res.status(200).json({ ...employeeToSend, createdByUser: userId })
       }
-      return res.status(200).json({ ...newEmployee, createdByUser: userId })
     } catch (error) {
       console.error(error)
       if (error.status) {
