@@ -1,6 +1,7 @@
 export * from './Address'
 export * from './BugReport'
 export * from './Entities'
+export * from './Employee'
 export * from './Event'
 export * from './File'
 export * from './Role'

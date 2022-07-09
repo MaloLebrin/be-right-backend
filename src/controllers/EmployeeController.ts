@@ -10,8 +10,8 @@ import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
 import { isArrayOfNumbers, isUserAdmin, isUserEntity } from "../utils/index"
-import { AddressEntity } from "../entity"
-import { AddressService } from "@/services"
+import { AddressService } from "../services"
+import { EmployeeCreateOneRequest } from "../types"
 
 export default class EmployeeController {
 
@@ -22,7 +22,7 @@ export default class EmployeeController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { employee, address }: { employee: Partial<EmployeeEntity>, address: Partial<AddressEntity> } = req.body
+      const { employee, address }: EmployeeCreateOneRequest = req.body
       const ctx = Context.get(req)
       let userId = null
       if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
@@ -56,7 +56,7 @@ export default class EmployeeController {
 
   public static createMany = async (req: Request, res: Response) => {
     try {
-      const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+      const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
@@ -65,14 +65,14 @@ export default class EmployeeController {
         } else {
           userId = ctx.user.id
         }
-        const newEmployees = await Promise.all(employees.map(async (employee) => {
+        const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
           if (!isEmployeeAlreadyExist) {
             const emp = await EmployeeService.createOne(employee, userId)
-            return {
-              ...emp,
-              createdByUser: userId,
+            if (emp) {
+              await AddressService.createOne({ address, employeeId: emp.id })
             }
+            return EmployeeService.getOne(emp.id)
           }
         }))
         return res.status(200).json(newEmployees)
@@ -92,7 +92,7 @@ export default class EmployeeController {
   public static createManyEmployeeByEventId = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.params.eventId)
-      const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+      const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
@@ -101,7 +101,16 @@ export default class EmployeeController {
         } else {
           userId = ctx.user.id
         }
-        const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
+        const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
+          const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+          if (!isEmployeeAlreadyExist) {
+            const emp = await EmployeeService.createOne(employee, userId)
+            if (emp) {
+              await AddressService.createOne({ address, employeeId: emp.id })
+            }
+            return EmployeeService.getOne(emp.id)
+          }
+        }))
         const newEmployeesIds = newEmployees.map(employee => employee.id)
         await AnswerService.createMany(eventId, newEmployeesIds)
         await EventService.getNumberSignatureNeededForEvent(eventId)
