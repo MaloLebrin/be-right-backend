@@ -1,5 +1,5 @@
 export * from './AnswerEntity'
-export * from './AdressEntitiy'
+export * from './AddressEntitiy'
 export * from './BaseEntity'
 export * from './BugReportEntity'
 export * from './EmployeeEntity'
