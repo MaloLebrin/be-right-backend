@@ -37,6 +37,7 @@
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
     "tsc": "tsc",
+    "tsc:dev": "tsc -noEmit",
     "build": "node build/index.js"
   },
   "keywords": [],
