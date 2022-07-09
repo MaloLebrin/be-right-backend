@@ -8,6 +8,30 @@ export class UserService {
     return getManager().findOne(AddressEntity, id)
   }
 
+  public static async getOneByUserId(userId: number) {
+    return getManager().findOne(AddressEntity, {
+      where: {
+        user: userId
+      }
+    })
+  }
+
+  public static async getOneByEmployeeId(employeeId: number) {
+    return getManager().findOne(AddressEntity, {
+      where: {
+        employee: employeeId,
+      }
+    })
+  }
+
+  public static async getOneByEventId(eventId: number) {
+    return getManager().findOne(AddressEntity, {
+      where: {
+        event: eventId,
+      }
+    })
+  }
+
   public static async createOne(payload: AddressCreationServicePayload) {
     const { userId, eventId, employeeId, address } = payload
 
@@ -41,6 +65,10 @@ export class UserService {
   }
 
   public static async deleteOne(id: number) {
+    return getManager().delete(AddressEntity, id)
+  }
+
+  public static async softDelete(id: number) {
     return getManager().delete(AddressEntity, id)
   }
 }
