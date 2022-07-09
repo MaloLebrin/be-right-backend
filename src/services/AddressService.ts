@@ -2,7 +2,7 @@ import { AddressEntity } from "../entity"
 import { getManager } from "typeorm"
 import { AddressCreationServicePayload } from "../types"
 
-export class UserService {
+export class AddressService {
 
   public static async getOne(id: number) {
     return getManager().findOne(AddressEntity, id)
