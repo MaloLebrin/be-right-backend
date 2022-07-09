@@ -29,7 +29,7 @@ export default class EventController {
       }
 
       const newEvent = await EventService.createOneEvent(event, userId)
-      if (newEvent) {
+      if (newEvent && address) {
         const addressEvent = await AddressService.createOne({
           address,
           eventId: newEvent.id,
