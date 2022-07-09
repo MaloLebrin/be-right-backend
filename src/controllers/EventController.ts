@@ -7,7 +7,6 @@ import checkUserRole from "../middlewares/checkUserRole"
 import { paginator } from "../utils"
 import AnswerService from "../services/AnswerService"
 import { EmployeeEntity, UserEntity } from "../entity"
-import type { EventCreationRequestInterface } from "../types"
 import { Role } from '../types'
 import { isUserAdmin } from "../utils/"
 
