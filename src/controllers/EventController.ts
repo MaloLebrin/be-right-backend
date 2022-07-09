@@ -6,9 +6,10 @@ import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
 import checkUserRole from "../middlewares/checkUserRole"
 import { paginator } from "../utils"
 import AnswerService from "../services/AnswerService"
-import { EmployeeEntity, UserEntity } from "../entity"
+import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
 import { Role } from '../types'
 import { isUserAdmin } from "../utils/"
+import { AddressService } from "@/services"
 
 export default class EventController {
 
@@ -18,7 +19,7 @@ export default class EventController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { event }: { event: Partial<EventEntity> } = req.body
+      const { event, address }: { event: Partial<EventEntity>, address: Partial<AddressEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
       if (isUserAdmin(ctx.user)) {
@@ -28,7 +29,14 @@ export default class EventController {
       }
 
       const newEvent = await EventService.createOneEvent(event, userId)
-      return res.status(200).json(newEvent)
+      if (newEvent) {
+        const addressEvent = await AddressService.createOne({
+          address,
+          eventId: newEvent.id,
+        })
+      }
+      const eventToSend = await EventService.getOneEvent(newEvent.id)
+      return res.status(200).json(eventToSend)
     } catch (error) {
       console.error(error)
       if (error.status) {
