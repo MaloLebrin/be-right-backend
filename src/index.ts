@@ -8,7 +8,7 @@ import * as dotenv from "dotenv"
 import Context from "./context"
 import cloudinary from "cloudinary"
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
-import { answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
+import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
 
 async function startServer() {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -51,14 +51,15 @@ async function startServer() {
       res.send('Hello World')
     })
 
-    app.use('/user', userRoutes)
-    app.use('/event', eventRoutes)
-    app.use('/employee', employeeRoutes)
-    app.use('/newsletter', newsletterRoutes)
-    app.use('/file', fileRoutes)
+    app.use('/address', addressRoutes)
     app.use('/answer', answerRoutes)
-    app.use('/bugreport', bugreportRoutes)
     app.use('/auth', authRoutes)
+    app.use('/bugreport', bugreportRoutes)
+    app.use('/employee', employeeRoutes)
+    app.use('/event', eventRoutes)
+    app.use('/file', fileRoutes)
+    app.use('/newsletter', newsletterRoutes)
+    app.use('/user', userRoutes)
 
     const port = process.env.PORT || 5000
     app.listen(port, '0.0.0.0', () => {
