@@ -9,7 +9,8 @@ import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
-import { isArrayOfNumbers, isUserEntity } from "../utils/index"
+import { isArrayOfNumbers, isUserAdmin, isUserEntity } from "../utils/index"
+import { AddressEntity } from "../entity"
 
 export default class EmployeeController {
 
@@ -20,19 +21,22 @@ export default class EmployeeController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { employee }: { employee: Partial<EmployeeEntity> } = req.body
+      const { employee, address }: { employee: Partial<EmployeeEntity>, address: Partial<AddressEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+      if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
       }
-      const employeeAlreadyExist = await getManager().findOne(EmployeeEntity, { email: employee.email })
-      if (employeeAlreadyExist) {
+      const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+      if (isEmployeeAlreadyExist) {
         return res.status(422).json({ error: 'cet email existe déjà' })
       }
       const newEmployee = await EmployeeService.createOne(employee, userId)
+      if (newEmployee && address) {
+
+      }
       return res.status(200).json({ ...newEmployee, createdByUser: userId })
     } catch (error) {
       console.error(error)
@@ -49,7 +53,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
@@ -85,7 +89,7 @@ export default class EmployeeController {
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
