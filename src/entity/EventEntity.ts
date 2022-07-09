@@ -1,5 +1,5 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany } from "typeorm"
-import { UserEntity, AddressEntity, FileEntity } from "."
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
+import { UserEntity, AddressEntity, FileEntity, BaseEntity } from "."
 import { EventStatusEnum } from "../types/Event"
 
 @Entity()

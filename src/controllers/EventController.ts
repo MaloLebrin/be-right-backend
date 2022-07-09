@@ -3,12 +3,13 @@ import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import Context from "../context"
 import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
-import { UserEntity } from "../entity/UserEntity"
 import checkUserRole from "../middlewares/checkUserRole"
-import { Role } from "../types/Role"
 import { paginator } from "../utils"
 import AnswerService from "../services/AnswerService"
-import { EmployeeEntity } from "../entity"
+import { EmployeeEntity, UserEntity } from "../entity"
+import type { EventCreationRequestInterface } from "../types"
+import { Role } from '../types'
+import { isUserAdmin } from "../utils/"
 
 export default class EventController {
 
@@ -21,7 +22,7 @@ export default class EventController {
       const { event }: { event: Partial<EventEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (ctx.user.roles === Role.ADMIN) {
+      if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
