@@ -9,7 +9,7 @@ import { addUserToEntityRelation, formatEntityRelationWithId } from "../utils/en
 export default class UserService {
 
   public static async getByToken(token: string): Promise<UserEntity> {
-    const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ["events", "files", "employee", "profilePicture"] })
+    const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ["events", "files", "employee", "profilePicture", "address"] })
     if (userFinded) {
       const events = userFinded.events as EventEntity[]
       const employees = userFinded.employee as EmployeeEntity[]
@@ -31,7 +31,7 @@ export default class UserService {
   }
 
   public static async getOneWithRelations(id: number): Promise<UserEntity> {
-    const user = await getManager().findOne(UserEntity, id, { relations: ["events", "files", "employee", "profilePicture"] })
+    const user = await getManager().findOne(UserEntity, id, { relations: ["events", "files", "employee", "profilePicture", "address"] })
     if (user) {
       const events = user.events as EventEntity[]
       const employees = user.employee as EmployeeEntity[]
