@@ -83,7 +83,7 @@ export class AddresController {
         userId,
       })
       if (newAddress) {
-        return res.status(200).json(address)
+        return res.status(200).json(newAddress)
       }
       return res.status(500).json('Address not created')
     } catch (error) {
