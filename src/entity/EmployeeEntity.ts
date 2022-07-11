@@ -1,5 +1,5 @@
 import { UserEntity } from './UserEntity'
-import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm"
 import { FileEntity, AddressEntity } from "./"
 import AnswerEntity from './AnswerEntity'
 import { BaseEntity } from "./BaseEntity"
@@ -22,8 +22,9 @@ export class EmployeeEntity extends BaseEntity {
   @Column()
   lastName: string
 
-  @OneToMany(() => AddressEntity, address => address.employee, { cascade: true })
-  address: AddressEntity[] | number[]
+  @OneToOne(() => AddressEntity, { cascade: true })
+  @JoinColumn()
+  address: AddressEntity | number
 
   @ManyToOne(() => UserEntity, user => user.employee)
   createdByUser: number | UserEntity
@@ -33,7 +34,6 @@ export class EmployeeEntity extends BaseEntity {
 
   @OneToMany(() => FileEntity, file => file.employee, { cascade: true })
   files: FileEntity[]
-
 }
 
 export const employeeSearchablefields = [

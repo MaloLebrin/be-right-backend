@@ -1,6 +1,4 @@
-import { Column, Entity, ManyToOne } from "typeorm"
-import { UserEntity, EmployeeEntity } from "."
-import EventEntity from "./EventEntity"
+import { Column, Entity } from "typeorm"
 import { BaseEntity } from "./BaseEntity"
 
 @Entity()
@@ -31,13 +29,4 @@ export class AddressEntity extends BaseEntity {
 
   @Column({ nullable: true })
   lng: number
-
-  @ManyToOne(() => UserEntity, user => user.address, { nullable: true, onDelete: 'CASCADE' })
-  user: UserEntity | number
-
-  @ManyToOne(() => EventEntity, event => event.address, { nullable: true, onDelete: 'CASCADE' })
-  event: EventEntity | number
-
-  @ManyToOne(() => EmployeeEntity, employee => employee.address, { nullable: true, onDelete: 'CASCADE' })
-  employee: EmployeeEntity | number
 }

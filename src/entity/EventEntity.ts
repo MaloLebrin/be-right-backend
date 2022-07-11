@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
+import { Column, Entity, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm"
 import { UserEntity, AddressEntity, FileEntity } from "."
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
@@ -36,8 +36,9 @@ export default class EventEntity extends BaseEntity {
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })
   files: FileEntity[]
 
-  @OneToMany(() => AddressEntity, address => address.event, { cascade: true })
-  address: AddressEntity[] | number[]
+  @OneToOne(() => AddressEntity, { cascade: true })
+  @JoinColumn()
+  address: AddressEntity | number
 
 }
 

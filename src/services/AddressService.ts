@@ -1,6 +1,7 @@
-import { AddressEntity } from "../entity"
+import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
 import { getManager } from "typeorm"
 import { AddressCreationServicePayload } from "../types"
+import EventEntity from "../entity/EventEntity"
 
 export class AddressService {
 
@@ -35,20 +36,24 @@ export class AddressService {
   public static async createOne(payload: AddressCreationServicePayload) {
     const { userId, eventId, employeeId, address } = payload
 
-    const newAddress = {
-      ...address
-    }
-    if (userId) {
-      newAddress.user = userId
-    } else if (eventId) {
-      newAddress.event = eventId
-    } else if (employeeId) {
-      newAddress.employee = employeeId
-    }
+    const addressCreated = getManager().create(AddressEntity, address)
 
-    const addressCreated = getManager().create(AddressEntity, newAddress)
     await getManager().save(addressCreated)
-    return this.getOne(addressCreated.id)
+    const addressToSend = await this.getOne(addressCreated.id)
+    if (userId) {
+      await getManager().update(UserEntity, userId, {
+        address: addressToSend.id,
+      })
+    } else if (eventId) {
+      await getManager().update(EventEntity, eventId, {
+        address: addressToSend.id
+      })
+    } else if (employeeId) {
+      await getManager().update(EmployeeEntity, employeeId, {
+        address: addressToSend.id,
+      })
+    }
+    return addressToSend
   }
 
   public static async updateOne(id: number, address: Partial<AddressEntity>) {

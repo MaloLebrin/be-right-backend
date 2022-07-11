@@ -55,8 +55,10 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
   theme: ThemeEnum
 
-  @OneToMany(() => AddressEntity, address => address.user, { cascade: true })
-  address: AddressEntity[] | number[]
+  @OneToOne(() => AddressEntity, { cascade: true })
+  @JoinColumn()
+  address: AddressEntity | number
+
 
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
