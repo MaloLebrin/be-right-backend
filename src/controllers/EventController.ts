@@ -20,7 +20,6 @@ export default class EventController {
   public static createOne = async (req: Request, res: Response) => {
     try {
       const { event, address }: { event: Partial<EventEntity>, address?: Partial<AddressEntity> } = req.body
-      console.log(req.body, '<==== req.body')
       const ctx = Context.get(req)
       let userId = null
       if (isUserAdmin(ctx.user)) {
@@ -28,17 +27,14 @@ export default class EventController {
       } else {
         userId = ctx.user.id
       }
-      console.log('avant creation event');
       const newEvent = await EventService.createOneEvent(event, userId)
-      console.log(newEvent, '<==== newEvent')
       if (newEvent && address) {
-        const addressEvent = await AddressService.createOne({
+        await AddressService.createOne({
           address,
           eventId: newEvent.id,
         })
       }
       const eventToSend = await EventService.getOneEvent(newEvent.id)
-      console.log(eventToSend, '<==== eventToSend')
       return res.status(200).json(eventToSend)
     } catch (error) {
       console.error(error)
