@@ -23,6 +23,8 @@ export default class EventService {
     const eventToSave = await this.getOneEvent(eventId)
     eventToSave.updatedAt = new Date()
     eventToSave.totalSignatureNeeded = totalSignatureNeeded
+    delete eventToSave.files
+    delete eventToSave.address
     await getManager().update(EventEntity, eventId, eventToSave)
     return this.getOneEvent(eventId)
   }
@@ -129,7 +131,9 @@ export default class EventService {
         const signedAnswers = answers.filter(answer => isAnswerSigned(answer))
         if (signedAnswers.length === event.totalSignatureNeeded) {
           event.status = EventStatusEnum.COMPLETED
-          await getManager().save(event)
+          delete event.files
+          delete event.address
+          await getManager().update(EventEntity, event.id, event)
         }
       }
     }
@@ -138,12 +142,12 @@ export default class EventService {
 
   public static async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
-      const event = await this.getOneEvent(eventId)
-      delete event.files
-      delete event.address
       await this.getNumberSignatureNeededForEvent(eventId)
       await this.updateStatusForEvent(eventId)
+      const event = await this.getOneEvent(eventId)
       if (event) {
+        delete event.files
+        delete event.address
         await this.updateStatusEventWhenCompleted(event)
       }
     }
