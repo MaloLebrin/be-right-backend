@@ -52,4 +52,16 @@ export default class UserService {
     const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
     return users.length > 0 ? users.filter(user => user).map(user => userResponse(user)) : []
   }
+
+
+  public static async updateOne(id: number, payload: UserEntity) {
+    const userFinded = await getManager().findOne(UserEntity, id)
+    const userUpdated = {
+      ...userFinded,
+      ...payload,
+      updatedAt: new Date(),
+    }
+    await getManager().save(UserEntity, userUpdated)
+
+  }
 }
