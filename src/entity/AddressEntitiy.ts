@@ -35,7 +35,7 @@ export class AddressEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, user => user.address, { nullable: true })
   user: UserEntity | number
 
-  @ManyToOne(() => EventEntity, event => event.address, { nullable: true })
+  @ManyToOne(() => EventEntity, event => event.address, { nullable: true, onDelete: 'CASCADE' })
   event: EventEntity | number
 
   @ManyToOne(() => EmployeeEntity, employee => employee.address, { nullable: true })
