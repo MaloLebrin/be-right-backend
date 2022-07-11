@@ -10,7 +10,10 @@ export default class AnswerController {
     try {
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
+      console.log(eventId, '<==== eventId')
+      console.log(employeeId, '<==== employeeId')
       const answer = AnswerService.createOne(eventId, employeeId)
+      console.log(answer, '<==== answer')
       await EventService.multipleUpdateForEvent(eventId)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
     } catch (error) {

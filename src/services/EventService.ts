@@ -97,16 +97,25 @@ export default class EventService {
   }
 
   public static async updateStatusForEvent(eventId: number) {
-    const event = await this.getOneEvent(eventId)
+    const event = await getManager().findOne(EventEntity, eventId)
     if (!event) {
       return null
     }
-    return this.updateOneEvent(eventId, updateStatusEventBasedOnStartEndTodayDate(event))
+    const eventToUpdate = updateStatusEventBasedOnStartEndTodayDate(event)
+    delete eventToUpdate.files
+    delete eventToUpdate.address
+
+    await getManager().update(EventEntity, eventId, eventToUpdate)
   }
 
   public static async updateStatusForEventArray(events: EventEntity[]) {
     if (events.length > 0) {
-      const eventsToUpdate = events.map(event => updateStatusEventBasedOnStartEndTodayDate(event))
+      const eventsToUpdate = events.map(event => {
+        const eventToUpdate = updateStatusEventBasedOnStartEndTodayDate(event)
+        delete eventToUpdate.files
+        delete eventToUpdate.address
+        return eventToUpdate
+      })
       await getManager().save([...eventsToUpdate])
       return eventsToUpdate
     }
@@ -130,6 +139,8 @@ export default class EventService {
   public static async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
       const event = await this.getOneEvent(eventId)
+      delete event.files
+      delete event.address
       await this.getNumberSignatureNeededForEvent(eventId)
       await this.updateStatusForEvent(eventId)
       if (event) {
