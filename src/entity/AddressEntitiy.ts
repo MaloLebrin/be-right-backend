@@ -32,12 +32,12 @@ export class AddressEntity extends BaseEntity {
   @Column({ nullable: true })
   lng: number
 
-  @ManyToOne(() => UserEntity, user => user.address, { nullable: true })
+  @ManyToOne(() => UserEntity, user => user.address, { nullable: true, onDelete: 'CASCADE' })
   user: UserEntity | number
 
   @ManyToOne(() => EventEntity, event => event.address, { nullable: true, onDelete: 'CASCADE' })
   event: EventEntity | number
 
-  @ManyToOne(() => EmployeeEntity, employee => employee.address, { nullable: true })
+  @ManyToOne(() => EmployeeEntity, employee => employee.address, { nullable: true, onDelete: 'CASCADE' })
   employee: EmployeeEntity | number
 }
