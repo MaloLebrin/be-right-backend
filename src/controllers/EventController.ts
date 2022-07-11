@@ -20,6 +20,7 @@ export default class EventController {
   public static createOne = async (req: Request, res: Response) => {
     try {
       const { event, address }: { event: Partial<EventEntity>, address: Partial<AddressEntity> } = req.body
+      console.log(req.body, '<==== req.body')
       const ctx = Context.get(req)
       let userId = null
       if (isUserAdmin(ctx.user)) {

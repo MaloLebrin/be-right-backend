@@ -12,7 +12,7 @@ export class AddressEntity extends BaseEntity {
   addressLine2: string
 
   @Column()
-  postalCode: number
+  postalCode: string
 
   @Column()
   city: string
