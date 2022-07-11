@@ -92,7 +92,7 @@ export default class EventService {
     event.createdByUser = userId
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)
-    await this.multipleUpdateForEvent(newEvent.id)
+    await this.updateStatusForEvent(newEvent.id)
     return this.getOneEvent(newEvent.id)
   }
 
@@ -101,8 +101,7 @@ export default class EventService {
     if (!event) {
       return null
     }
-    await getManager().save(updateStatusEventBasedOnStartEndTodayDate(event))
-    return this.getOneEvent(eventId)
+    return this.updateOneEvent(eventId, updateStatusEventBasedOnStartEndTodayDate(event))
   }
 
   public static async updateStatusForEventArray(events: EventEntity[]) {
