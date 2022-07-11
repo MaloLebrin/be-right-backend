@@ -223,15 +223,14 @@ export default class EmployeeController {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
-        relations: ["createdByUser", "answers"],
+        relations: ["createdByUser", "answers", "address"],
       }
       const employees = await getManager().find(EmployeeEntity, employeeFilters)
-
       const entityReturned = employees.map(employee => {
         const user = employee.createdByUser as UserEntity
         return {
           ...employee,
-          event: employee.answers.map(answer => answer.event),
+          event: employee.answers.map(answer => answer.event).filter(id => id),
           createdByUser: user?.id,
         }
       })
@@ -317,28 +316,4 @@ export default class EmployeeController {
 
     }
   }
-
-  // public static deleteMany = async (req: Request, res: Response) => {
-  // 	try {
-  // 		const employeeIds: number[] = req.body.employeeIds
-  // 		const ctx = Context.get(req)
-  // 		const userId = ctx.user.id
-  // 		if (employeeIds.every(async (id) => {
-  // 			const employee = await EmployeeService.getOne(id)
-  // 			return employee.createdByUser === userId || checkUserRole(Role.ADMIN)
-  // 		})) {
-  // 			const deletedEmployees = await EmployeeService.deleteMany(employeeIds)
-  // 			return res.status(204).json({ data: deletedEmployees, message: 'Employees deleted' })
-  // 		} else {
-  // 			return res.status(401).json('Unauthorized')
-  // 		}
-  // 	} catch (error) {
-  // 		console.error(error)
-  // 		if (error.status) {
-  // 			return res.status(error.status || 500).json({ error: error.message })
-  // 		}
-  // 		return res.status(400).json({ error: error.message })
-
-  // 	}
-  // }
 }
