@@ -1,6 +1,6 @@
 import AnswerEntity from "../entity/AnswerEntity"
 import { getManager } from "typeorm"
-import { EmployeeEntity } from "@/entity"
+import { EmployeeEntity } from "../entity"
 
 export default class AnswerService {
 

@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
-import { UserEntity, AddressEntity, FileEntity, BaseEntity } from "."
+import { UserEntity, AddressEntity, FileEntity } from "."
 import { EventStatusEnum } from "../types/Event"
+import { BaseEntity } from "./BaseEntity"
 
 @Entity()
 export default class EventEntity extends BaseEntity {

@@ -1,7 +1,8 @@
 import { Entity, Column, OneToMany, OneToOne, JoinColumn } from "typeorm"
 import { Role } from "../types/Role"
 import { SubscriptionEnum } from "../types/Subscription"
-import { AddressEntity, EmployeeEntity, FileEntity, BaseEntity } from "./"
+import { AddressEntity, EmployeeEntity, FileEntity } from "./"
+import { BaseEntity } from "./BaseEntity"
 import EventEntity from "./EventEntity"
 
 export enum ThemeEnum {

@@ -1,7 +1,8 @@
 import { UserEntity } from './UserEntity'
 import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
-import { BaseEntity, FileEntity, AddressEntity } from "./"
+import { FileEntity, AddressEntity } from "./"
 import AnswerEntity from './AnswerEntity'
+import { BaseEntity } from "./BaseEntity"
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {

@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne } from "typeorm"
-import { UserEntity, BaseEntity, EmployeeEntity } from "."
+import { UserEntity, EmployeeEntity } from "."
 import EventEntity from "./EventEntity"
+import { BaseEntity } from "./BaseEntity"
 
 @Entity()
 export class AddressEntity extends BaseEntity {

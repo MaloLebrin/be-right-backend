@@ -9,7 +9,7 @@ import AnswerService from "../services/AnswerService"
 import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
 import { Role } from '../types'
 import { isUserAdmin } from "../utils/"
-import { AddressService } from "@/services"
+import { AddressService } from "../services"
 
 export default class EventController {
 
