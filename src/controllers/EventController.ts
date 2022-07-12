@@ -137,7 +137,7 @@ export default class EventController {
   public static getAll = async (req: Request, res: Response) => {
     try {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner"] })
+      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner", "address"] })
       const eventsReturned = events.length > 0 ?
         events.map(event => {
           const user = event.createdByUser as UserEntity

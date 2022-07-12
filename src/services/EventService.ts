@@ -34,7 +34,7 @@ export default class EventService {
   use this get every where
   */
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
-    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner"] })
+    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner", "address"] })
     const answers = await AnswerService.getAllAnswersForEvent(finded.id)
     if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
       const user = finded.createdByUser
