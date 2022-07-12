@@ -14,7 +14,7 @@ router.get('/employee/:id', isAuthenticated, AddresController.getOneByEmployee)
 
 router.post('/', isAuthenticated, AddresController.createOne)
 
-router.patch('/', isAuthenticated, AddresController.updateOne)
+router.patch('/:id', isAuthenticated, AddresController.updateOne)
 
 router.delete('/:id', isAuthenticated, AddresController.deleteOne)
 
