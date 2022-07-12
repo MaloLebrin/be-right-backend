@@ -1,5 +1,8 @@
-import { Column, Entity } from "typeorm"
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
+import { UserEntity } from "."
 import { BaseEntity } from "./BaseEntity"
+import { EmployeeEntity } from "./EmployeeEntity"
+import EventEntity from "./EventEntity"
 
 @Entity()
 export class AddressEntity extends BaseEntity {
@@ -29,4 +32,14 @@ export class AddressEntity extends BaseEntity {
 
   @Column({ nullable: true })
   lng: number
+
+  @OneToOne(() => EmployeeEntity, { cascade: true })
+  @JoinColumn()
+  employeeId: EmployeeEntity | number
+  @OneToOne(() => UserEntity, { cascade: true })
+  @JoinColumn()
+  userId: UserEntity | number
+  @OneToOne(() => EventEntity, { cascade: true })
+  @JoinColumn()
+  eventId: EventEntity | number
 }
