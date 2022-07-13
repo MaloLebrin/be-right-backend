@@ -1,8 +1,7 @@
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm"
+import { Column, Entity, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm"
+import { UserEntity, AddressEntity, FileEntity } from "."
 import { EventStatusEnum } from "../types/Event"
 import { BaseEntity } from "./BaseEntity"
-import { FileEntity } from "./FileEntity"
-import { UserEntity } from "./UserEntity"
 
 @Entity()
 export default class EventEntity extends BaseEntity {
@@ -22,18 +21,6 @@ export default class EventEntity extends BaseEntity {
   @Column({ type: 'enum', enum: EventStatusEnum, default: EventStatusEnum.CREATE })
   status: EventStatusEnum
 
-  @Column({ nullable: true })
-  address: string
-
-  @Column({ nullable: true })
-  postalCode: number
-
-  @Column({ nullable: true })
-  city: string
-
-  @Column({ nullable: true })
-  country: string
-
   @Column({ default: 0 })
   signatureCount: number
 
@@ -48,6 +35,10 @@ export default class EventEntity extends BaseEntity {
 
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })
   files: FileEntity[]
+
+  @OneToOne(() => AddressEntity, { cascade: true })
+  @JoinColumn()
+  address: AddressEntity | number
 
 }
 

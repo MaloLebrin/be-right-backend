@@ -23,6 +23,8 @@ export default class EventService {
     const eventToSave = await this.getOneEvent(eventId)
     eventToSave.updatedAt = new Date()
     eventToSave.totalSignatureNeeded = totalSignatureNeeded
+    delete eventToSave.files
+    delete eventToSave.address
     await getManager().update(EventEntity, eventId, eventToSave)
     return this.getOneEvent(eventId)
   }
@@ -32,7 +34,7 @@ export default class EventService {
   use this get every where
   */
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
-    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner"] })
+    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner", "address"] })
     const answers = await AnswerService.getAllAnswersForEvent(finded.id)
     if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
       const user = finded.createdByUser
@@ -92,22 +94,30 @@ export default class EventService {
     event.createdByUser = userId
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)
-    await this.multipleUpdateForEvent(newEvent.id)
+    await this.updateStatusForEvent(newEvent.id)
     return this.getOneEvent(newEvent.id)
   }
 
   public static async updateStatusForEvent(eventId: number) {
-    const event = await this.getOneEvent(eventId)
+    const event = await getManager().findOne(EventEntity, eventId)
     if (!event) {
       return null
     }
-    await getManager().save(updateStatusEventBasedOnStartEndTodayDate(event))
-    return this.getOneEvent(eventId)
+    const eventToUpdate = updateStatusEventBasedOnStartEndTodayDate(event)
+    delete eventToUpdate.files
+    delete eventToUpdate.address
+
+    await getManager().update(EventEntity, eventId, eventToUpdate)
   }
 
   public static async updateStatusForEventArray(events: EventEntity[]) {
     if (events.length > 0) {
-      const eventsToUpdate = events.map(event => updateStatusEventBasedOnStartEndTodayDate(event))
+      const eventsToUpdate = events.map(event => {
+        const eventToUpdate = updateStatusEventBasedOnStartEndTodayDate(event)
+        delete eventToUpdate.files
+        delete eventToUpdate.address
+        return eventToUpdate
+      })
       await getManager().save([...eventsToUpdate])
       return eventsToUpdate
     }
@@ -121,7 +131,9 @@ export default class EventService {
         const signedAnswers = answers.filter(answer => isAnswerSigned(answer))
         if (signedAnswers.length === event.totalSignatureNeeded) {
           event.status = EventStatusEnum.COMPLETED
-          await getManager().save(event)
+          delete event.files
+          delete event.address
+          await getManager().update(EventEntity, event.id, event)
         }
       }
     }
@@ -130,10 +142,12 @@ export default class EventService {
 
   public static async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
-      const event = await this.getOneEvent(eventId)
       await this.getNumberSignatureNeededForEvent(eventId)
       await this.updateStatusForEvent(eventId)
+      const event = await this.getOneEvent(eventId)
       if (event) {
+        delete event.files
+        delete event.address
         await this.updateStatusEventWhenCompleted(event)
       }
     }

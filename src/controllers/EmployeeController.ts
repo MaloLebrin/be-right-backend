@@ -9,7 +9,9 @@ import EmployeeService from '../services/EmployeeService'
 import AnswerService from "../services/AnswerService"
 import EventService from '../services/EventService'
 import { UserEntity } from "../entity/UserEntity"
-import { isArrayOfNumbers, isUserEntity } from "../utils/index"
+import { isArrayOfNumbers, isUserAdmin, isUserEntity } from "../utils/index"
+import { AddressService } from "../services"
+import { EmployeeCreateOneRequest } from "../types"
 
 export default class EmployeeController {
 
@@ -20,20 +22,29 @@ export default class EmployeeController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { employee }: { employee: Partial<EmployeeEntity> } = req.body
+      const { employee, address }: EmployeeCreateOneRequest = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+      if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
       }
-      const employeeAlreadyExist = await getManager().findOne(EmployeeEntity, { email: employee.email })
-      if (employeeAlreadyExist) {
+      const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+      if (isEmployeeAlreadyExist) {
         return res.status(422).json({ error: 'cet email existe déjà' })
       }
       const newEmployee = await EmployeeService.createOne(employee, userId)
-      return res.status(200).json({ ...newEmployee, createdByUser: userId })
+      if (newEmployee) {
+        if (address) {
+          await AddressService.createOne({
+            address,
+            employeeId: newEmployee.id
+          })
+        }
+        const employeeToSend = await EmployeeService.getOne(newEmployee.id)
+        return res.status(200).json({ ...employeeToSend, createdByUser: userId })
+      }
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -45,23 +56,23 @@ export default class EmployeeController {
 
   public static createMany = async (req: Request, res: Response) => {
     try {
-      const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+      const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
         }
-        const newEmployees = await Promise.all(employees.map(async (employee) => {
+        const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
           if (!isEmployeeAlreadyExist) {
             const emp = await EmployeeService.createOne(employee, userId)
-            return {
-              ...emp,
-              createdByUser: userId,
+            if (emp) {
+              await AddressService.createOne({ address, employeeId: emp.id })
             }
+            return EmployeeService.getOne(emp.id)
           }
         }))
         return res.status(200).json(newEmployees)
@@ -81,16 +92,25 @@ export default class EmployeeController {
   public static createManyEmployeeByEventId = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.params.eventId)
-      const { employees }: { employees: Partial<EmployeeEntity>[] } = req.body
+      const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
-        if (isUserEntity(ctx.user) && ctx.user.roles === Role.ADMIN) {
+        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
         } else {
           userId = ctx.user.id
         }
-        const newEmployees = await Promise.all(employees.map(employee => EmployeeService.createOne(employee, userId)))
+        const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
+          const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+          if (!isEmployeeAlreadyExist) {
+            const emp = await EmployeeService.createOne(employee, userId)
+            if (emp) {
+              await AddressService.createOne({ address, employeeId: emp.id })
+            }
+            return EmployeeService.getOne(emp.id)
+          }
+        }))
         const newEmployeesIds = newEmployees.map(employee => employee.id)
         await AnswerService.createMany(eventId, newEmployeesIds)
         await EventService.getNumberSignatureNeededForEvent(eventId)
@@ -203,15 +223,14 @@ export default class EmployeeController {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
-        relations: ["createdByUser", "answers"],
+        relations: ["createdByUser", "answers", "address"],
       }
       const employees = await getManager().find(EmployeeEntity, employeeFilters)
-
       const entityReturned = employees.map(employee => {
         const user = employee.createdByUser as UserEntity
         return {
           ...employee,
-          event: employee.answers.map(answer => answer.event),
+          event: employee.answers.map(answer => answer.event).filter(id => id),
           createdByUser: user?.id,
         }
       })
@@ -297,28 +316,4 @@ export default class EmployeeController {
 
     }
   }
-
-  // public static deleteMany = async (req: Request, res: Response) => {
-  // 	try {
-  // 		const employeeIds: number[] = req.body.employeeIds
-  // 		const ctx = Context.get(req)
-  // 		const userId = ctx.user.id
-  // 		if (employeeIds.every(async (id) => {
-  // 			const employee = await EmployeeService.getOne(id)
-  // 			return employee.createdByUser === userId || checkUserRole(Role.ADMIN)
-  // 		})) {
-  // 			const deletedEmployees = await EmployeeService.deleteMany(employeeIds)
-  // 			return res.status(204).json({ data: deletedEmployees, message: 'Employees deleted' })
-  // 		} else {
-  // 			return res.status(401).json('Unauthorized')
-  // 		}
-  // 	} catch (error) {
-  // 		console.error(error)
-  // 		if (error.status) {
-  // 			return res.status(error.status || 500).json({ error: error.message })
-  // 		}
-  // 		return res.status(400).json({ error: error.message })
-
-  // 	}
-  // }
 }

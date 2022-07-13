@@ -3,12 +3,13 @@ import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import Context from "../context"
 import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
-import { UserEntity } from "../entity/UserEntity"
 import checkUserRole from "../middlewares/checkUserRole"
-import { Role } from "../types/Role"
 import { paginator } from "../utils"
 import AnswerService from "../services/AnswerService"
-import { EmployeeEntity } from "../entity"
+import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
+import { Role } from '../types'
+import { isUserAdmin } from "../utils/"
+import { AddressService } from "../services"
 
 export default class EventController {
 
@@ -18,17 +19,23 @@ export default class EventController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { event }: { event: Partial<EventEntity> } = req.body
+      const { event, address }: { event: Partial<EventEntity>, address?: Partial<AddressEntity> } = req.body
       const ctx = Context.get(req)
       let userId = null
-      if (ctx.user.roles === Role.ADMIN) {
+      if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
       }
-
       const newEvent = await EventService.createOneEvent(event, userId)
-      return res.status(200).json(newEvent)
+      if (newEvent && address) {
+        await AddressService.createOne({
+          address,
+          eventId: newEvent.id,
+        })
+      }
+      const eventToSend = await EventService.getOneEvent(newEvent.id)
+      return res.status(200).json(eventToSend)
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -130,7 +137,7 @@ export default class EventController {
   public static getAll = async (req: Request, res: Response) => {
     try {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner"] })
+      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner", "address"] })
       const eventsReturned = events.length > 0 ?
         events.map(event => {
           const user = event.createdByUser as UserEntity
