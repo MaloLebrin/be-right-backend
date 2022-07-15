@@ -5,6 +5,8 @@ import { ThemeEnum, UserEntity } from "../entity/UserEntity"
 import { FileEntity } from "../entity/FileEntity"
 import { userResponse } from "../utils"
 import { addUserToEntityRelation, formatEntityRelationWithId } from "../utils/entityHelper"
+import { PhotographerCreatePayload, Role } from "../types"
+import uid2 from "uid2"
 
 export default class UserService {
 
@@ -62,6 +64,20 @@ export default class UserService {
       updatedAt: new Date(),
     }
     await getManager().save(UserEntity, userUpdated)
+  }
 
+  public static async findOneByEmail(email: string) {
+    return getManager().findOne(UserEntity, { email })
+  }
+
+  public static async createOnePhotoGrapher(user: PhotographerCreatePayload) {
+    const newUser = getManager().create(UserEntity, {
+      ...user,
+      salt: uid2(128),
+      token: uid2(128),
+      roles: Role.PHOTOGRAPHER,
+    })
+    await getManager().save(newUser)
+    return userResponse(newUser)
   }
 }

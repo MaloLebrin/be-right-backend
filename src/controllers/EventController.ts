@@ -7,9 +7,10 @@ import checkUserRole from "../middlewares/checkUserRole"
 import { paginator } from "../utils"
 import AnswerService from "../services/AnswerService"
 import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
-import { Role } from '../types'
+import { PhotographerCreatePayload, Role } from '../types'
 import { isUserAdmin } from "../utils/"
 import { AddressService } from "../services"
+import UserService from "../services/UserService"
 
 export default class EventController {
 
@@ -19,7 +20,7 @@ export default class EventController {
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { event, address }: { event: Partial<EventEntity>, address?: Partial<AddressEntity> } = req.body
+      const { event, address, photographerId }: { event: Partial<EventEntity>, address?: Partial<AddressEntity>, photographerId: number } = req.body
       const ctx = Context.get(req)
       let userId = null
       if (isUserAdmin(ctx.user)) {
@@ -27,6 +28,11 @@ export default class EventController {
       } else {
         userId = ctx.user.id
       }
+
+      if (photographerId) {
+        event.partner = photographerId
+      }
+
       const newEvent = await EventService.createOneEvent(event, userId)
       if (newEvent && address) {
         await AddressService.createOne({

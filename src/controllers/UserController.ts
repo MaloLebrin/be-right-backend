@@ -13,6 +13,7 @@ import EventEntity from '../entity/EventEntity'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation } from '../utils/'
+import { PhotographerCreatePayload } from '../types'
 
 export default class UserController {
 
@@ -274,6 +275,24 @@ export default class UserController {
       } else {
         return res.status(400).json('user not found')
       }
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static createPhotographer = async (req: Request, res: Response) => {
+    try {
+      const { photographer }: { photographer: PhotographerCreatePayload } = req.body
+      const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
+      if (userAlReadyExist) {
+        return res.status(400).json({ error: 'cet email existe déjà' })
+      }
+      const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
+      return res.status(200).json(newPhotographer)
     } catch (error) {
       console.error(error)
       if (error.status) {

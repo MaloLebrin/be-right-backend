@@ -1,3 +1,4 @@
+import { UserEntity } from "../entity"
 
 export enum EventStatusEnum {
   CREATE = 'CREATE',
@@ -5,3 +6,5 @@ export enum EventStatusEnum {
   COMPLETED = 'COMPLETED',
   CLOSED = 'CLOSED'
 }
+
+export type PhotographerCreatePayload = Pick<UserEntity, 'companyName' | 'firstName' | 'lastName' | 'email'>

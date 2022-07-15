@@ -17,6 +17,8 @@ router.post('/', UserController.newUser)
 
 router.post('/login', UserController.login)
 
+router.post('/photographer', UserController.createPhotographer)
+
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 
 router.patch('/theme/:id', [isAuthenticated], UserController.updateTheme)
