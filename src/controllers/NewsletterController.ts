@@ -2,6 +2,7 @@ import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../e
 import { Request, Response } from "express"
 import { getManager } from "typeorm"
 import { paginator } from "../utils"
+import { EmployeeEntity, UserEntity } from '../entity'
 
 export default class NewsletterController {
 
@@ -18,6 +19,18 @@ export default class NewsletterController {
       if (recipientAlreadyExist) {
         return res.status(422).json({ error: 'cet email existe déjà' })
       }
+      const employee = await getManager().findOne(EmployeeEntity, { email })
+      if (employee) {
+        newsletterRecipient.firstName = employee.firstName
+        newsletterRecipient.lastName = employee.lastName
+      }
+      const user = await getManager().findOne(UserEntity, { email })
+      if (user) {
+        newsletterRecipient.firstName = user.firstName
+        newsletterRecipient.lastName = user.lastName
+        newsletterRecipient.companyName = user.companyName
+      }
+
       const recipient = getManager().create(NewsletterRecipient, newsletterRecipient)
       await getManager().save(recipient)
       return res.status(200).json(recipient)
