@@ -15,8 +15,11 @@ COPY .env /app/.env
 COPY ormconfig-docker.json /app/ormconfig.json
 COPY tsconfig.json /app/
 COPY entrypoint.sh /app/
+COPY Heroku.yml /app/
 COPY ./src /app/src
 
 RUN npm run tsc
 # CMD ["npm", "run", "build"]
-CMD ["/bin/bash", "/app/entrypoint.sh"]
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
+# CMD ["/bin/bash", "/app/entrypoint.sh"]
