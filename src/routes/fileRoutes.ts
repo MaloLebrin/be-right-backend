@@ -1,8 +1,8 @@
 import { Router } from 'express'
+import multer from 'multer'
 import FileController from '../controllers/FileController'
-import multer from "multer"
 import isAuthenticated from '../middlewares/IsAuthenticated'
-const upload = multer({ dest: "uploads/" })
+const upload = multer({ dest: 'uploads/' })
 
 const router = Router()
 

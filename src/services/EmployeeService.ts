@@ -1,12 +1,11 @@
-import { EmployeeEntity } from "../entity/EmployeeEntity"
-import { getManager } from "typeorm"
+import { getManager } from 'typeorm'
 import uid2 from 'uid2'
 import { SHA256 } from 'crypto-js'
-import AnswerService from "./AnswerService"
-import { isUserEntity } from "../utils/index"
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { isUserEntity } from '../utils/index'
+import AnswerService from './AnswerService'
 
 export default class EmployeeService {
-
   public static async createOne(employee: Partial<EmployeeEntity>, userId: number) {
     employee.createdByUser = userId
     employee.slug = SHA256(uid2(32)).toString()
@@ -19,7 +18,7 @@ export default class EmployeeService {
   }
 
   public static async getOne(id: number) {
-    const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser", "answers"] })
+    const employeefinded = await getManager().findOne(EmployeeEntity, id, { relations: ['createdByUser', 'answers'] })
 
     const user = isUserEntity(employeefinded.createdByUser) && employeefinded.createdByUser
     return {
@@ -30,8 +29,8 @@ export default class EmployeeService {
   }
 
   public static async getMany(ids: number[]) {
-    const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ["createdByUser", "answers"] })
-    return finded.map((employee) => {
+    const finded = await getManager().findByIds(EmployeeEntity, ids, { relations: ['createdByUser', 'answers'] })
+    return finded.map(employee => {
       const user = isUserEntity(employee.createdByUser) && employee.createdByUser
       return {
         ...employee,
@@ -44,12 +43,12 @@ export default class EmployeeService {
   public static async getAllForUser(userId: number) {
     const employees = await getManager().find(EmployeeEntity, {
       where: {
-        createdByUser: userId
+        createdByUser: userId,
       },
-      relations: ["answers"],
+      relations: ['answers'],
     })
 
-    return employees.map((employee) => ({
+    return employees.map(employee => ({
       ...employee,
       createdByUser: userId,
       events: employee.answers.map(answer => answer.event),
@@ -84,6 +83,6 @@ export default class EmployeeService {
 
   public static async isEmployeeAlreadyExist(email: string) {
     const employee = await getManager().findOne(EmployeeEntity, { email })
-    return employee ? true : false
+    return !!employee
   }
 }

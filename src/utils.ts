@@ -1,10 +1,10 @@
-import { Request } from 'express'
-import { SHA256 } from "crypto-js"
-import encBase64 from "crypto-js/enc-base64"
+import type { Request } from 'express'
+import { SHA256 } from 'crypto-js'
+import encBase64 from 'crypto-js/enc-base64'
 import { Like } from 'typeorm'
-import { FileEntity, UserEntity } from './entity'
+import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
-import { SubscriptionEnum } from './types/Subscription'
+import type { SubscriptionEnum } from './types/Subscription'
 
 /**
  * create hash password
@@ -15,6 +15,38 @@ import { SubscriptionEnum } from './types/Subscription'
 export const generateHash = (salt: string, password: string) => {
   const hash = SHA256(password + salt).toString(encBase64)
   return hash
+}
+
+/**
+ * function to build where params for searchable request. Build for searchable inputs
+ * @param searchableFields form an entity must be strings[]
+ * @param req req to find query and search value
+ * @returns filters build with searchable fields form entity as key, and search value
+ */
+export const generateWhereFieldsByEntity = (searchableFields: string[], req: Request) => {
+  const search = req.query.search ? Like(`%${req.query.search}%`) : null
+  const fields = searchableFields
+
+  // Need to filter fields for searching if isSubscriptionOptionField is false
+  // because typeorm doesn't support search string in Enum field
+  if (!isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
+    const index = fields.findIndex(field => field === 'subscription')
+    if (index !== -1) {
+      fields.splice(index, 1)
+    }
+  }
+  const filters = fields.map(field => {
+    // here we need to check if field is a subscription field beacause Typeorm doesn't support search string in Enum field
+    if (isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
+      return {
+        subscription: search,
+      }
+    }
+    return {
+      [field]: search,
+    }
+  })
+  return filters
 }
 
 /**
@@ -54,38 +86,6 @@ export const paginator = (req: Request, searchableField: string[]) => {
     where: req.query.filters ? req.query.filters : search && searchableField.length ? generateWhereFieldsByEntity(searchableField, req) : null,
   }
   return queries
-}
-
-/**
- * function to build where params for searchable request. Build for searchable inputs
- * @param searchableFields form an entity must be strings[]
- * @param req req to find query and search value
- * @returns filters build with searchable fields form entity as key, and search value  
- */
-export const generateWhereFieldsByEntity = (searchableFields: string[], req: Request) => {
-  const search = req.query.search ? Like(`%${req.query.search}%`) : null
-  let fields = searchableFields
-
-  // Need to filter fields for searching if isSubscriptionOptionField is false
-  // because typeorm doesn't support search string in Enum field
-  if (!isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
-    const index = fields.findIndex(field => field === 'subscription')
-    if (index !== -1) {
-      fields.splice(index, 1)
-    }
-  }
-  const filters = fields.map(field => {
-    // here we need to check if field is a subscription field beacause Typeorm doesn't support search string in Enum field
-    if (isSubscriptionOptionField(search as unknown as SubscriptionEnum)) {
-      return {
-        ['subscription']: search,
-      }
-    }
-    return {
-      [field]: search,
-    }
-  })
-  return filters
 }
 
 export function toCent(value: number) {

@@ -1,19 +1,18 @@
-import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity';
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import { paginator } from "../utils"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import { paginator } from '../utils'
 import { EmployeeEntity, UserEntity } from '../entity'
+import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
 export default class NewsletterController {
-
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { email, firstName, lastName, companyName }: { email: string, firstName: string, lastName: string, companyName: string } = req.body
+      const { email, firstName, lastName, companyName }: { email: string; firstName: string; lastName: string; companyName: string } = req.body
       const newsletterRecipient = {
         email,
-        firstName: firstName ? firstName : null,
-        lastName: lastName ? lastName : null,
-        companyName: companyName ? companyName : null,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        companyName: companyName || null,
       }
       const recipientAlreadyExist = await getManager().findOne(NewsletterRecipient, { email })
       if (recipientAlreadyExist) {

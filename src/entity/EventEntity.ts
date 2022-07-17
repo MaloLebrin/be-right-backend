@@ -1,11 +1,10 @@
-import { Column, Entity, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm"
-import { UserEntity, AddressEntity, FileEntity } from "."
-import { EventStatusEnum } from "../types/Event"
-import { BaseEntity } from "./BaseEntity"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
+import { EventStatusEnum } from '../types/Event'
+import { BaseEntity } from './BaseEntity'
+import { AddressEntity, FileEntity, UserEntity } from '.'
 
 @Entity()
 export default class EventEntity extends BaseEntity {
-
   @Column()
   name: string
 
@@ -39,7 +38,6 @@ export default class EventEntity extends BaseEntity {
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity | number
-
 }
 
 export const eventSearchableFields = [

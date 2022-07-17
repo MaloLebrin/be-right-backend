@@ -1,9 +1,8 @@
-import { getManager } from "typeorm"
-import { BugReportStatus } from "../types/BugReport"
-import { BugReportEntity } from "../entity/BugReportEntity"
+import { getManager } from 'typeorm'
+import type { BugReportStatus } from '../types/BugReport'
+import { BugReportEntity } from '../entity/BugReportEntity'
 
 export default class BugReportService {
-
   public static async createOne(BugReport: BugReportEntity): Promise<BugReportEntity> {
     const bugReport = getManager().create(BugReportEntity, BugReport)
     await getManager().save(bugReport)
@@ -11,7 +10,7 @@ export default class BugReportService {
   }
 
   public static async getOne(id: number): Promise<BugReportEntity> {
-    const bugReport = await getManager().findOne(BugReportEntity, id, { relations: ["file", "createdByUser"] })
+    const bugReport = await getManager().findOne(BugReportEntity, id, { relations: ['file', 'createdByUser'] })
     return bugReport
   }
 
@@ -29,7 +28,7 @@ export default class BugReportService {
     if (!bugReportFinded) {
       return null
     }
-    await getManager().update(BugReportEntity, id, { status: status, updatedAt: new Date() })
+    await getManager().update(BugReportEntity, id, { status, updatedAt: new Date() })
     return this.getOne(id)
   }
 

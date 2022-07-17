@@ -1,10 +1,10 @@
-import { createConnection, getConnectionOptions, getManager } from "typeorm"
-import { CronJobInterval } from "./utils/cronHelper"
+import { createConnection, getConnectionOptions } from 'typeorm'
 import cron from 'node-cron'
-import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
-import * as dotenv from "dotenv"
-import cloudinary from "cloudinary"
-import udpateEventStatusJob from "./jobs/updateEventsStatusJob"
+import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import * as dotenv from 'dotenv'
+import cloudinary from 'cloudinary'
+import { CronJobInterval } from './utils/cronHelper'
+import udpateEventStatusJob from './jobs/updateEventsStatusJob'
 
 (async () => {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -22,7 +22,7 @@ import udpateEventStatusJob from "./jobs/updateEventsStatusJob"
     }
   }
 
-  createConnection(connectionsOptions).then(async connection => {
+  createConnection(connectionsOptions).then(async () => {
     dotenv.config()
 
     cloudinary.v2.config({
@@ -35,7 +35,7 @@ import udpateEventStatusJob from "./jobs/updateEventsStatusJob"
       CronJobInterval.EVERY_DAY_4_AM,
       async () => {
         await udpateEventStatusJob()
-      }
+      },
     )
 
     // cron.schedule(

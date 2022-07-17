@@ -1,4 +1,4 @@
-import AnswerEntity from "../entity/AnswerEntity"
+import type AnswerEntity from '../entity/AnswerEntity'
 
 export function isAnswerSigned(answer: AnswerEntity): boolean {
   return answer.signedAt !== null

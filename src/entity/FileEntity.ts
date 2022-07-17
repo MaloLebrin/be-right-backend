@@ -1,13 +1,12 @@
-import { Column, Entity, ManyToOne } from "typeorm"
-import { FileTypeEnum } from "../types/File"
-import { BaseEntity } from "./BaseEntity"
-import { EmployeeEntity } from "./EmployeeEntity"
-import EventEntity from "./EventEntity"
-import { UserEntity } from "./UserEntity"
+import { Column, Entity, ManyToOne } from 'typeorm'
+import { FileTypeEnum } from '../types/File'
+import { BaseEntity } from './BaseEntity'
+import { EmployeeEntity } from './EmployeeEntity'
+import EventEntity from './EventEntity'
+import { UserEntity } from './UserEntity'
 
 @Entity()
 export class FileEntity extends BaseEntity {
-
   @Column()
   name: string
 
@@ -20,7 +19,7 @@ export class FileEntity extends BaseEntity {
   @Column()
   size: number
 
-  @Column({ type: "enum", enum: FileTypeEnum, default: FileTypeEnum.IMAGE_RIGHT })
+  @Column({ type: 'enum', enum: FileTypeEnum, default: FileTypeEnum.IMAGE_RIGHT })
   type: FileTypeEnum
 
   @Column({ nullable: true })

@@ -1,4 +1,4 @@
-import { getType, isNumber } from "./basicHelper"
+import { getType, isNumber } from './basicHelper'
 
 /**
  * Returns true if `value` is an array.

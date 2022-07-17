@@ -1,12 +1,11 @@
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
 import { UserEntity } from './UserEntity'
-import { Entity, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm"
-import { FileEntity, AddressEntity } from "./"
 import AnswerEntity from './AnswerEntity'
-import { BaseEntity } from "./BaseEntity"
+import { BaseEntity } from './BaseEntity'
+import { AddressEntity, FileEntity } from './'
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {
-
   @Column()
   email: string
 

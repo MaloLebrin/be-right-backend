@@ -1,6 +1,6 @@
+import { Router } from 'express'
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
-import { Router } from 'express'
 import BugReportController from '../controllers/BugReportController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 const router = Router()

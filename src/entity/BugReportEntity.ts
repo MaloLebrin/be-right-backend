@@ -1,12 +1,10 @@
-import { BugReportStatus, BugReportType } from "../types/BugReport"
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm"
-import { FileEntity, UserEntity } from "."
-import { BaseEntity } from "./BaseEntity"
-
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { BugReportStatus, BugReportType } from '../types/BugReport'
+import { BaseEntity } from './BaseEntity'
+import { FileEntity, UserEntity } from '.'
 
 @Entity()
 export class BugReportEntity extends BaseEntity {
-
   @Column()
   name: string
 

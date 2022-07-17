@@ -1,18 +1,17 @@
-import { Entity, Column, OneToMany, OneToOne, JoinColumn } from "typeorm"
-import { Role } from "../types/Role"
-import { SubscriptionEnum } from "../types/Subscription"
-import { AddressEntity, EmployeeEntity, FileEntity } from "./"
-import { BaseEntity } from "./BaseEntity"
-import EventEntity from "./EventEntity"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm'
+import { Role } from '../types/Role'
+import { SubscriptionEnum } from '../types/Subscription'
+import { BaseEntity } from './BaseEntity'
+import EventEntity from './EventEntity'
+import { AddressEntity, EmployeeEntity, FileEntity } from './'
 
 export enum ThemeEnum {
   LIGHT = 'light',
-  DARK = 'dark'
+  DARK = 'dark',
 }
 
 @Entity()
 export class UserEntity extends BaseEntity {
-
   @Column({ unique: true })
   email: string
 
@@ -59,7 +58,6 @@ export class UserEntity extends BaseEntity {
   @JoinColumn()
   address: AddressEntity | number
 
-
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
 
@@ -72,7 +70,6 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
   profilePicture: FileEntity | number
-
 }
 
 export const userSearchableFields = [

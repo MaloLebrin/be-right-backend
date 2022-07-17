@@ -1,26 +1,25 @@
-import EventService from "../services/EventService"
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import Context from "../context"
-import EventEntity, { eventSearchableFields } from "../entity/EventEntity"
-import checkUserRole from "../middlewares/checkUserRole"
-import { paginator } from "../utils"
-import AnswerService from "../services/AnswerService"
-import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import EventService from '../services/EventService'
+import Context from '../context'
+import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
+import checkUserRole from '../middlewares/checkUserRole'
+import { paginator } from '../utils'
+import AnswerService from '../services/AnswerService'
+import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import { PhotographerCreatePayload, Role } from '../types'
-import { isUserAdmin } from "../utils/"
-import { AddressService } from "../services"
-import UserService from "../services/UserService"
+import { isUserAdmin } from '../utils/'
+import { AddressService } from '../services'
+import UserService from '../services/UserService'
 
 export default class EventController {
-
   /**
    * @param event event: Partial<EventEntity>
    * @returns return event just created
    */
   public static createOne = async (req: Request, res: Response) => {
     try {
-      const { event, address, photographerId }: { event: Partial<EventEntity>, address?: Partial<AddressEntity>, photographerId: number } = req.body
+      const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
       let userId = null
       if (isUserAdmin(ctx.user)) {
@@ -93,26 +92,24 @@ export default class EventController {
     }
   }
 
-
   /**
-   * @param id userId 
+   * @param id userId
    * @returns all event link with user
    */
   public static getAllForUser = async (req: Request, res: Response) => {
     try {
       const ctx = Context.get(req)
       const userId = ctx.user.id
-      const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ["partner"] })
-      const eventsReturned = await Promise.all(events.map(async (event) => {
+      const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ['partner'] })
+      const eventsReturned = await Promise.all(events.map(async event => {
         const answers = await AnswerService.getAllAnswersForEvent(event.id)
         let employees = []
         if (answers.length > 0) {
-
           employees = answers.map(answer => {
             const employee = {
               ...answer.employee as unknown as EmployeeEntity,
-              answer: answer,
-              event: event.id
+              answer,
+              event: event.id,
             }
             delete employee.answer.employee
             return employee
@@ -143,9 +140,9 @@ export default class EventController {
   public static getAll = async (req: Request, res: Response) => {
     try {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ["createdByUser", "partner", "address"] })
-      const eventsReturned = events.length > 0 ?
-        events.map(event => {
+      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ['createdByUser', 'partner', 'address'] })
+      const eventsReturned = events.length > 0
+        ? events.map(event => {
           const user = event.createdByUser as UserEntity
           const partner = event.partner as UserEntity
           if (user && user.id) {

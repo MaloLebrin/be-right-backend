@@ -1,18 +1,17 @@
-import AnswerEntity from "../entity/AnswerEntity"
-import AnswerService from "../services/AnswerService"
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import EventService from "../services/EventService"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import type AnswerEntity from '../entity/AnswerEntity'
+import AnswerService from '../services/AnswerService'
+import EventService from '../services/EventService'
 
 export default class AnswerController {
-
   public static createOne = async (req: Request, res: Response) => {
     try {
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
       const answer = AnswerService.createOne(eventId, employeeId)
       await EventService.multipleUpdateForEvent(eventId)
-      return answer ? res.status(200).json(answer) : res.status(400).json({ message: "no created" })
+      return answer ? res.status(200).json(answer) : res.status(400).json({ message: 'no created' })
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
@@ -27,7 +26,7 @@ export default class AnswerController {
       const employeeIds = req.body.employeeIds
       const answers = AnswerService.createMany(eventId, employeeIds)
       await EventService.multipleUpdateForEvent(eventId)
-      return answers ? res.status(200).json(answers) : res.status(400).json({ message: "no created" })
+      return answers ? res.status(200).json(answers) : res.status(400).json({ message: 'no created' })
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
@@ -43,7 +42,7 @@ export default class AnswerController {
         const answers = await AnswerService.getAllAnswersForEvent(id, false)
         return res.status(200).json(answers)
       }
-      return res.status(400).json({ message: "no id" })
+      return res.status(400).json({ message: 'no id' })
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
@@ -76,16 +75,15 @@ export default class AnswerController {
       if (eventId && employeeId && isSigned !== undefined) {
         const answer = await AnswerService.getOneAnswerForEventEmployee(eventId, employeeId)
         if (answer) {
-          answer.hasSigned = isSigned ? true : false
+          answer.hasSigned = !!isSigned
           answer.signedAt = new Date()
           await getManager().save(answer)
           await EventService.multipleUpdateForEvent(answer.event)
           return res.status(200).json(answer)
         }
       } else {
-        return res.status(400).json({ error: "Missing parametters" })
+        return res.status(400).json({ error: 'Missing parametters' })
       }
-
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
@@ -103,7 +101,7 @@ export default class AnswerController {
         await EventService.multipleUpdateForEvent(answerToDelete.event)
         return res.status(200).json(answer)
       }
-      return res.status(422).json({ message: "no id" })
+      return res.status(422).json({ message: 'no id' })
     } catch (error) {
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
