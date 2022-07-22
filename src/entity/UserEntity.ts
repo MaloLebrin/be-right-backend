@@ -61,6 +61,9 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
 
+  @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
+  shootingEvent: EventEntity[] | number[]
+
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
   employee: EmployeeEntity[] | number[]
 

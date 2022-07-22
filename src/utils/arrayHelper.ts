@@ -21,3 +21,12 @@ export function isArrayOfNumbers(value: any): boolean {
     return false
   return value.every(i => isNumber(i))
 }
+
+/**
+ * Unique an Array
+ *
+ * @category Array
+ */
+export function uniq<T>(array: readonly T[]): T[] {
+  return Array.from(new Set(array))
+}

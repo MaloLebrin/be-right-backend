@@ -7,10 +7,9 @@ import checkUserRole from '../middlewares/checkUserRole'
 import { paginator } from '../utils'
 import AnswerService from '../services/AnswerService'
 import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
-import { PhotographerCreatePayload, Role } from '../types'
+import { Role } from '../types'
 import { isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
-import UserService from '../services/UserService'
 
 export default class EventController {
   /**
@@ -27,20 +26,22 @@ export default class EventController {
       } else {
         userId = ctx.user.id
       }
+      if (event && userId) {
+        if (photographerId) {
+          event.partner = photographerId
+        }
 
-      if (photographerId) {
-        event.partner = photographerId
+        const newEvent = await EventService.createOneEvent(event, userId)
+        if (newEvent && address) {
+          await AddressService.createOne({
+            address,
+            eventId: newEvent.id,
+          })
+        }
+        const eventToSend = await EventService.getOneEvent(newEvent.id)
+        return res.status(200).json(eventToSend)
       }
-
-      const newEvent = await EventService.createOneEvent(event, userId)
-      if (newEvent && address) {
-        await AddressService.createOne({
-          address,
-          eventId: newEvent.id,
-        })
-      }
-      const eventToSend = await EventService.getOneEvent(newEvent.id)
-      return res.status(200).json(eventToSend)
+      return res.status(422).json({ error: 'Formulaire imcomplet' })
     } catch (error) {
       console.error(error)
       if (error.status) {

@@ -11,6 +11,8 @@ router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.get
 
 router.get('/:id', UserController.getOne)
 
+router.get('/partners/:id', [isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
+
 router.post('/token', UserController.getOneByToken)
 
 router.post('/', UserController.newUser)

@@ -11,7 +11,7 @@ import UserService from '../services/UserService'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { FileEntity } from '../entity/FileEntity'
-import { addUserToEntityRelation } from '../utils/'
+import { addUserToEntityRelation, uniq } from '../utils/'
 import type { PhotographerCreatePayload } from '../types'
 
 export default class UserController {
@@ -290,6 +290,32 @@ export default class UserController {
       }
       const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
       return res.status(200).json(newPhotographer)
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id)
+      if (id) {
+        const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
+        console.log(user, '<==== user')
+        const events = user.events
+        console.log(events, '<==== events')
+        const partners = events.map(event => event.partner) as UserEntity[]
+        console.log(partners, '<==== partners')
+        const uniqPartnersIds = uniq(partners.map(user => user.id))
+        console.log(uniqPartnersIds, '<==== uniqPartnersIds')
+        const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+        console.log(uniqPartners, '<==== uniqPartners')
+        return res.status(200).json(uniqPartners)
+      }
+      return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
     } catch (error) {
       console.error(error)
       if (error.status) {
