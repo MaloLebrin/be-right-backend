@@ -304,15 +304,10 @@ export default class UserController {
       const id = parseInt(req.params.id)
       if (id) {
         const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
-        console.log(user, '<==== user')
         const events = user.events
-        console.log(events, '<==== events')
         const partners = events.map(event => event.partner) as UserEntity[]
-        console.log(partners, '<==== partners')
         const uniqPartnersIds = uniq(partners.map(user => user.id))
-        console.log(uniqPartnersIds, '<==== uniqPartnersIds')
         const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
-        console.log(uniqPartners, '<==== uniqPartners')
         return res.status(200).json(uniqPartners)
       }
       return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })

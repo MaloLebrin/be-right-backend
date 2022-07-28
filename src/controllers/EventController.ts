@@ -27,11 +27,7 @@ export default class EventController {
         userId = ctx.user.id
       }
       if (event && userId) {
-        if (photographerId) {
-          event.partner = photographerId
-        }
-
-        const newEvent = await EventService.createOneEvent(event, userId)
+        const newEvent = await EventService.createOneEvent(event, userId, photographerId)
         if (newEvent && address) {
           await AddressService.createOne({
             address,
