@@ -1,12 +1,11 @@
 import cloudinary from 'cloudinary'
-import { FileEntity } from "../entity/FileEntity"
 import { getManager } from 'typeorm'
+import { FileEntity } from '../entity/FileEntity'
 import { UserEntity } from '../entity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 
 export default class FileService {
-
   public static async deleteFile(fileId: number) {
     const doc = await getManager().findOne(FileEntity, fileId)
     if (doc) {
@@ -21,7 +20,7 @@ export default class FileService {
   }
 
   public static async getFile(fileId: number) {
-    const doc = await getManager().findOne(FileEntity, fileId, { relations: ["createdByUser"] })
+    const doc = await getManager().findOne(FileEntity, fileId, { relations: ['createdByUser'] })
     return doc
   }
 
@@ -33,8 +32,8 @@ export default class FileService {
   public static async getFilesByUser(id: number) {
     const docs = await getManager().find(FileEntity, {
       where: {
-        createdByUser: id
-      }
+        createdByUser: id,
+      },
     })
     return docs
   }
@@ -42,8 +41,8 @@ export default class FileService {
   public static async getFilesByEvent(id: number) {
     const docs = await getManager().find(FileEntity, {
       where: {
-        event: id
-      }
+        event: id,
+      },
     })
     return docs
   }
@@ -51,9 +50,9 @@ export default class FileService {
   public static async getFilesByType(type: FileTypeEnum) {
     const docs = await getManager().find(FileEntity, {
       where: {
-        type
+        type,
       },
-      relations: ["createdByUser"]
+      relations: ['createdByUser'],
     })
     return docs.map(doc => {
       const user = doc.createdByUser as unknown as UserEntity

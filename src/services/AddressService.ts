@@ -1,10 +1,9 @@
-import { AddressEntity, EmployeeEntity, UserEntity } from "../entity"
-import { getManager } from "typeorm"
-import { AddressCreationServicePayload } from "../types"
-import EventEntity from "../entity/EventEntity"
+import { getManager } from 'typeorm'
+import { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
+import type { AddressCreationServicePayload } from '../types'
+import EventEntity from '../entity/EventEntity'
 
 export class AddressService {
-
   public static async getOne(id: number) {
     return getManager().findOne(AddressEntity, id)
   }
@@ -12,8 +11,8 @@ export class AddressService {
   public static async getOneByUserId(userId: number) {
     return getManager().findOne(AddressEntity, {
       where: {
-        user: userId
-      }
+        user: userId,
+      },
     })
   }
 
@@ -21,7 +20,7 @@ export class AddressService {
     return getManager().findOne(AddressEntity, {
       where: {
         employee: employeeId,
-      }
+      },
     })
   }
 
@@ -29,7 +28,7 @@ export class AddressService {
     return getManager().findOne(AddressEntity, {
       where: {
         event: eventId,
-      }
+      },
     })
   }
 
@@ -47,7 +46,7 @@ export class AddressService {
       addressToSend.userId = userId
     } else if (eventId) {
       await getManager().update(EventEntity, eventId, {
-        address: addressToSend.id
+        address: addressToSend.id,
       })
       addressToSend.eventId = eventId
     } else if (employeeId) {

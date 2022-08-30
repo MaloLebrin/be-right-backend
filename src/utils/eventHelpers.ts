@@ -1,6 +1,6 @@
-import EventEntity from "../entity/EventEntity"
-import dayjs from "dayjs"
-import { EventStatusEnum } from "../types/Event"
+import dayjs from 'dayjs'
+import type EventEntity from '../entity/EventEntity'
+import { EventStatusEnum } from '../types/Event'
 
 export function isEventOver(event: EventEntity): boolean {
   const now = dayjs()
@@ -22,8 +22,8 @@ export function hasNotEventStartedYet(event: EventEntity): boolean {
 }
 
 /**
- * 
- * @param event 
+ *
+ * @param event
  * @description update event based on his dates (start, end) and date of excution of this function
  * @return event as EventEntity
  */

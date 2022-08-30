@@ -1,9 +1,8 @@
-import AnswerEntity from "../entity/AnswerEntity"
-import { getManager } from "typeorm"
-import { EmployeeEntity } from "../entity"
+import { getManager } from 'typeorm'
+import AnswerEntity from '../entity/AnswerEntity'
+import type { EmployeeEntity } from '../entity'
 
 export default class AnswerService {
-
   public static createOne = async (eventId: number, employeeId: number) => {
     const newAnswer = getManager().create(AnswerEntity, {
       event: eventId,
@@ -23,7 +22,7 @@ export default class AnswerService {
         event: eventId,
         employee: employeeId,
       },
-      relations: ["employee"],
+      relations: ['employee'],
     })
   }
 
@@ -32,7 +31,7 @@ export default class AnswerService {
       where: {
         event: eventId,
       },
-      relations: ["employee"],
+      relations: ['employee'],
     })
     if (withRelation) {
       return answers.map(answer => ({ ...answer, event: eventId }))
@@ -48,7 +47,6 @@ export default class AnswerService {
     }
   }
 
-
   public static getAllAnswersForEmployee = async (employeeId: number) => {
     return await getManager().find(AnswerEntity, {
       where: {
@@ -59,7 +57,7 @@ export default class AnswerService {
 
   public static async getOne(answerId: number): Promise<AnswerEntity> {
     return await getManager().findOne(AnswerEntity, answerId, {
-      relations: ["employee"],
+      relations: ['employee'],
     })
   }
 

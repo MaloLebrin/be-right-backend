@@ -1,4 +1,4 @@
-import { AddressEntity, EmployeeEntity } from "../entity"
+import type { AddressEntity, EmployeeEntity } from '../entity'
 
 export type EmployeeCreationRequest = Omit<EmployeeEntity, 'address'>
 

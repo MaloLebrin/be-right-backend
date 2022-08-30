@@ -1,11 +1,10 @@
-import { Column, Entity, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm"
-import { UserEntity, AddressEntity, FileEntity } from "."
-import { EventStatusEnum } from "../types/Event"
-import { BaseEntity } from "./BaseEntity"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { EventStatusEnum } from '../types/Event'
+import { BaseEntity } from './BaseEntity'
+import { AddressEntity, FileEntity, UserEntity } from '.'
 
 @Entity()
 export default class EventEntity extends BaseEntity {
-
   @Column()
   name: string
 
@@ -27,23 +26,24 @@ export default class EventEntity extends BaseEntity {
   @Column({ default: 0 })
   totalSignatureNeeded: number
 
-  @ManyToOne(() => UserEntity, user => user.events, { nullable: true })
+  @ManyToOne(() => UserEntity, user => user, { nullable: true })
   partner: UserEntity | number
 
+  @RelationId((event: EventEntity) => event.partner)
+  partnerId: number
+
   @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  @JoinColumn()
   createdByUser: UserEntity | number
 
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })
   files: FileEntity[]
 
-  @OneToOne(() => AddressEntity, { cascade: true })
+  @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
   address: AddressEntity | number
-
 }
 
 export const eventSearchableFields = [
   'name',
-  'address',
-  'city',
 ]

@@ -1,20 +1,19 @@
 import cloudinary from 'cloudinary'
-import { FileEntity, filesSearchableFields } from "../entity/FileEntity"
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
 import { paginator } from '../utils'
 import FileService from '../services/FileService'
-import { FileTypeEnum } from '../types/File'
+import type { FileTypeEnum } from '../types/File'
 import Context from '../context'
 import { Role } from '../types/Role'
 import { UserEntity } from '../entity'
 export default class FileController {
-
   public static newFile = async (req: Request, res: Response) => {
     try {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
-        { name: string, description: string, event?: number, employee?: number, type: FileTypeEnum } = req.body
+        { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
       const ctx = Context.get(req)
 
@@ -119,7 +118,6 @@ export default class FileController {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 

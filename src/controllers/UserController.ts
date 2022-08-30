@@ -1,21 +1,20 @@
-import { paginator } from '../utils'
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import uid2 from "uid2"
-import Context from "../context"
-import { UserEntity, userSearchableFields } from "../entity/UserEntity"
-import checkUserRole from "../middlewares/checkUserRole"
-import { Role } from "../types/Role"
-import { generateHash, userResponse } from "../utils"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import uid2 from 'uid2'
+import { generateHash, paginator, userResponse } from '../utils'
+import Context from '../context'
+import { UserEntity, userSearchableFields } from '../entity/UserEntity'
+import checkUserRole from '../middlewares/checkUserRole'
+import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import EventEntity from '../entity/EventEntity'
-import { EmployeeEntity } from '../entity/EmployeeEntity'
-import { FileEntity } from '../entity/FileEntity'
-import { addUserToEntityRelation } from '../utils/'
+import type EventEntity from '../entity/EventEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
+import type { FileEntity } from '../entity/FileEntity'
+import { addUserToEntityRelation, uniq } from '../utils/'
+import type { PhotographerCreatePayload } from '../types'
 
 export default class UserController {
-
   /**
    * @param user user: Partial<userEntity>
    * @returns return user just created
@@ -30,12 +29,12 @@ export default class UserController {
       role,
     }:
       {
-        companyName: string,
-        email: string,
-        firstName: string,
-        lastName: string,
-        password: string,
-        role: Role,
+        companyName: string
+        email: string
+        firstName: string
+        lastName: string
+        password: string
+        role: Role
       } = req.body
     try {
       const userAlReadyExist = await getManager().findOne(UserEntity, { email })
@@ -53,7 +52,7 @@ export default class UserController {
         roles: role,
         token,
         password: generateHash(salt, password),
-        events: []
+        events: [],
       }
       const newUser = getManager().create(UserEntity, user)
       await getManager().save(newUser)
@@ -72,7 +71,7 @@ export default class UserController {
       const queriesFilters = paginator(req, userSearchableFields)
       const usersFilters = {
         ...queriesFilters,
-        relations: ["events", "files", "employee", "profilePicture"],
+        relations: ['events', 'files', 'employee', 'profilePicture'],
         // TODO find a way to not filter with search filed on subscription
       }
       const search = await getManager().find(UserEntity, usersFilters)
@@ -141,7 +140,7 @@ export default class UserController {
         const user = await UserService.getByToken(token)
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       } else {
-        return res.status(400).json({ error: "token is required" })
+        return res.status(400).json({ error: 'token is required' })
       }
     } catch (error) {
       console.error(error)
@@ -187,7 +186,7 @@ export default class UserController {
           await getManager().save(UserEntity, userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
-          return res.status(401).json({ error: "unauthorized" })
+          return res.status(401).json({ error: 'unauthorized' })
         }
       }
       return res.status(422).json({ error: 'id required' })
@@ -230,7 +229,7 @@ export default class UserController {
         const userDeleted = await getManager().delete(UserEntity, id)
         return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
-        return res.status(401).json({ error: "unauthorized" })
+        return res.status(401).json({ error: 'unauthorized' })
       }
     } catch (error) {
       console.error(error)
@@ -243,8 +242,8 @@ export default class UserController {
 
   public static login = async (req: Request, res: Response) => {
     try {
-      const { email, password }: { email: string, password: string } = req.body
-      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ["events", "files", "employee", "profilePicture"] })
+      const { email, password }: { email: string; password: string } = req.body
+      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ['events', 'files', 'employee', 'profilePicture'] })
       // TODO remove this in prod
       if (userFinded && userFinded.email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
@@ -270,10 +269,79 @@ export default class UserController {
         } else {
           return res.status(401).json('wrong password')
         }
-
       } else {
         return res.status(400).json('user not found')
       }
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static createPhotographer = async (req: Request, res: Response) => {
+    try {
+      const { photographer }: { photographer: PhotographerCreatePayload } = req.body
+      const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
+      if (userAlReadyExist) {
+        await UserService.updateOne(userAlReadyExist.id, {
+          ...userAlReadyExist,
+          ...photographer,
+        })
+        const newPhotographer = await UserService.getOneWithRelations(userAlReadyExist.id)
+        return res.status(200).json(newPhotographer)
+      }
+      const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
+      return res.status(200).json(newPhotographer)
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id)
+      if (id) {
+        const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
+        const events = user.events
+        const partners = events.map(event => event.partner) as UserEntity[]
+        const uniqPartnersIds = uniq(partners.map(user => user.id))
+        const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+        return res.status(200).json(uniqPartners)
+      }
+      return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
+  public static isMailAlreadyUsed = async (req: Request, res: Response) => {
+    try {
+      const { email }: { email: string } = req.body
+      if (email) {
+        const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+        if (userAlReadyExist) {
+          return res.status(200).json({
+            success: false,
+            message: 'Cet email est déjà utilisée',
+          })
+        }
+        return res.status(200).json({
+          success: true,
+          message: 'Cet email n\'est pas déjà utilisée',
+        })
+      }
+      return res.status(422).json({ error: 'Veuillez renseigner l\'email' })
     } catch (error) {
       console.error(error)
       if (error.status) {

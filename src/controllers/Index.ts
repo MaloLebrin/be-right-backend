@@ -1,4 +1,4 @@
-import { AddresController } from "./AddressController"
+import { AddresController } from './AddressController'
 import AnswerController from './AnswerController'
 import AuthController from './AuthController'
 import BugReportController from './BugReportController'
@@ -17,5 +17,5 @@ export default {
   EventController,
   FileController,
   NewsletterController,
-  UserController
+  UserController,
 }

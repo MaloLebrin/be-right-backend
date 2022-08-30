@@ -1,20 +1,19 @@
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import Context from "../context"
-import { EmployeeEntity, employeeSearchablefields } from "../entity/EmployeeEntity"
-import { paginator } from "../utils"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import Context from '../context'
+import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
+import { paginator } from '../utils'
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
 import EmployeeService from '../services/EmployeeService'
-import AnswerService from "../services/AnswerService"
+import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
-import { UserEntity } from "../entity/UserEntity"
-import { isArrayOfNumbers, isUserAdmin, isUserEntity } from "../utils/index"
-import { AddressService } from "../services"
-import { EmployeeCreateOneRequest } from "../types"
+import type { UserEntity } from '../entity/UserEntity'
+import { isArrayOfNumbers, isUserAdmin, isUserEntity } from '../utils/index'
+import { AddressService } from '../services'
+import type { EmployeeCreateOneRequest } from '../types'
 
 export default class EmployeeController {
-
   /**
    * employee must have event id
    * @param employee employee: Partial<employeeEntity>
@@ -39,7 +38,7 @@ export default class EmployeeController {
         if (address) {
           await AddressService.createOne({
             address,
-            employeeId: newEmployee.id
+            employeeId: newEmployee.id,
           })
         }
         const employeeToSend = await EmployeeService.getOne(newEmployee.id)
@@ -77,7 +76,7 @@ export default class EmployeeController {
         }))
         return res.status(200).json(newEmployees)
       } else {
-        return res.status(400).json({ error: "employees is empty" })
+        return res.status(400).json({ error: 'employees is empty' })
       }
     } catch (error) {
       console.error(error)
@@ -85,7 +84,6 @@ export default class EmployeeController {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
@@ -128,7 +126,6 @@ export default class EmployeeController {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
@@ -143,17 +140,15 @@ export default class EmployeeController {
         const employee = await EmployeeService.getOne(id)
         return res.status(200).json(employee)
       }
-      return res.status(422).json({ error: "identifiant du destinataire manquant" })
+      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
-
 
   /**
    * @param id user id
@@ -170,14 +165,13 @@ export default class EmployeeController {
         }))
         return res.status(200).json(entitiesReturned)
       }
-      return res.status(422).json({ error: "identifiant de l\'utilisateur manquant" })
+      return res.status(422).json({ error: 'identifiant de l\'utilisateur manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
@@ -194,7 +188,7 @@ export default class EmployeeController {
         const employeesWithAnswers = answers.map(answer => {
           const employee = {
             ...answer.employee as unknown as EmployeeEntity,
-            answer: answer,
+            answer,
             event: eventId,
             createdByUser: user.id,
           }
@@ -203,14 +197,13 @@ export default class EmployeeController {
         })
         return res.status(200).json({ data: employeesWithAnswers })
       }
-      return res.status(422).json({ error: "identifiant de l'événement manquant" })
+      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
@@ -223,7 +216,7 @@ export default class EmployeeController {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
-        relations: ["createdByUser", "answers", "address"],
+        relations: ['createdByUser', 'answers', 'address'],
       }
       const employees = await getManager().find(EmployeeEntity, employeeFilters)
       const entityReturned = employees.map(employee => {
@@ -258,14 +251,13 @@ export default class EmployeeController {
         const employeeUpdated = await EmployeeService.updateOne(id, employee)
         return res.status(200).json(employeeUpdated)
       }
-      return res.status(422).json({ error: "identifiant du destinataire manquant" })
+      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 
@@ -276,7 +268,7 @@ export default class EmployeeController {
         const event = await EventService.getNumberSignatureNeededForEvent(id)
         return res.status(200).json(event)
       }
-      return res.status(422).json({ error: "identifiant du destinataire manquant" })
+      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -292,12 +284,12 @@ export default class EmployeeController {
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ["createdByUser"] })
+        const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ['createdByUser'] })
         const employeeUser = getEmployee.createdByUser as UserEntity
         if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
           await EmployeeService.deleteOne(id)
           if (employeeUser.events && employeeUser.events.length && isArrayOfNumbers(employeeUser.events)) {
-            employeeUser.events.forEach(async (eventId) => {
+            employeeUser.events.forEach(async eventId => {
               await EventService.getNumberSignatureNeededForEvent(eventId)
             })
           }
@@ -306,14 +298,13 @@ export default class EmployeeController {
           return res.status(401).json('Unauthorized')
         }
       }
-      return res.status(422).json({ error: "identifiant du destinataire manquant" })
+      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     } catch (error) {
       console.error(error)
       if (error.status) {
         return res.status(error.status || 500).json({ error: error.message })
       }
       return res.status(400).json({ error: error.message })
-
     }
   }
 }

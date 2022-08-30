@@ -1,6 +1,6 @@
-import { UserEntity } from '../entity'
 import Mailgen from 'mailgen'
 import nodemailer from 'nodemailer'
+import type { UserEntity } from '../entity'
 import { getfullUsername } from '../utils/userHelper'
 
 export default class MailService {
@@ -10,7 +10,7 @@ export default class MailService {
       auth: {
         user: `${process.env.MAIL_ADRESS}`,
         pass: `${process.env.MAIL_MDP}`,
-      }
+      },
     })
   }
 
@@ -20,10 +20,10 @@ export default class MailService {
       product: {
         // Appears in header & footer of e-mails
         name: 'BeRight',
-        link: 'https://mailgen.js/'
+        link: 'https://mailgen.js/',
         // Optional logo
         // logo: 'https://mailgen.js/img/logo.png'
-      }
+      },
     })
     const email = {
       body: {
@@ -34,13 +34,13 @@ export default class MailService {
           button: {
             color: '#1b1e3dF2',
             text: 'Réinitialiser le mot de passe',
-            link: `${process.env.FRONT_URL}/reset-password/${twoFactorRecoveryCode}/?email=${recipient.email}`
+            link: `${process.env.FRONT_URL}/reset-password/${twoFactorRecoveryCode}/?email=${recipient.email}`,
           },
         },
       },
     }
     // Generate an HTML email with the provided contents
-    const emailBody = mailGenerator.generate(email);
+    const emailBody = mailGenerator.generate(email)
 
     // Generate the plaintext version of the e-mail (for clients that do not support HTML)
     const emailText = mailGenerator.generatePlaintext(email)

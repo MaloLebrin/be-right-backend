@@ -1,11 +1,10 @@
-import AnswerEntity from "../entity/AnswerEntity"
-import EventEntity from "../entity/EventEntity"
-import { getManager } from "typeorm"
-import AnswerService from "./AnswerService"
-import { EventStatusEnum } from "../types/Event"
-import { isUserEntity, updateStatusEventBasedOnStartEndTodayDate, isAnswerSigned } from "../utils/index"
+import { getManager } from 'typeorm'
+import AnswerEntity from '../entity/AnswerEntity'
+import EventEntity from '../entity/EventEntity'
+import { EventStatusEnum } from '../types/Event'
+import { isAnswerSigned, isUserEntity, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import AnswerService from './AnswerService'
 export default class EventService {
-
   public static async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {
     const event = await getManager().findOne(EventEntity, eventId)
     event.totalSignatureNeeded = signatureNeeded
@@ -29,12 +28,12 @@ export default class EventService {
     return this.getOneEvent(eventId)
   }
 
-  /* TODO 
+  /* TODO
   in this operation get total answers for event and set as totalSignatureNeeded use answer service
   use this get every where
   */
   public static async getOneEvent(eventId: number): Promise<EventEntity> {
-    const finded = await getManager().findOne(EventEntity, eventId, { relations: ["createdByUser", "partner", "address"] })
+    const finded = await getManager().findOne(EventEntity, eventId, { relations: ['createdByUser', 'partner', 'address'] })
     const answers = await AnswerService.getAllAnswersForEvent(finded.id)
     if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
       const user = finded.createdByUser
@@ -55,8 +54,8 @@ export default class EventService {
   }
 
   public static async getManyEvents(eventIds: number[]) {
-    const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ["createdByUser", "partner"] })
-    return Promise.all(finded.map(async (event) => {
+    const finded = await getManager().findByIds(EventEntity, eventIds, { relations: ['createdByUser', 'partner'] })
+    return Promise.all(finded.map(async event => {
       if (isUserEntity(event.createdByUser) && isUserEntity(event.partner)) {
         const user = event.createdByUser
         const partner = event.partner
@@ -90,7 +89,10 @@ export default class EventService {
     return this.getOneEvent(eventId)
   }
 
-  public static async createOneEvent(event: Partial<EventEntity>, userId: number) {
+  public static async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
+    if (photographerId) {
+      event.partner = photographerId
+    }
     event.createdByUser = userId
     const newEvent = getManager().create(EventEntity, event)
     await getManager().save(newEvent)

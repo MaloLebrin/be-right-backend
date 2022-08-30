@@ -1,9 +1,8 @@
-import { AddressService } from "../services"
-import { Request, Response } from "express"
-import { AddressEntity } from "../entity"
+import type { Request, Response } from 'express'
+import { AddressService } from '../services'
+import type { AddressEntity } from '../entity'
 
 export class AddresController {
-
   public static getOne = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id)
@@ -75,7 +74,7 @@ export class AddresController {
   public static createOne = async (req: Request, res: Response) => {
     try {
       const { address, eventId, employeeId, userId }:
-        { address: Partial<AddressEntity>, eventId?: number, employeeId?: number, userId?: number } = req.body
+        { address: Partial<AddressEntity>; eventId?: number; employeeId?: number; userId?: number } = req.body
       const newAddress = await AddressService.createOne({
         address,
         employeeId,

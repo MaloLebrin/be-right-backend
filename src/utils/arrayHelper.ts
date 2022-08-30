@@ -1,4 +1,4 @@
-import { getType, isNumber } from "./basicHelper"
+import { getType, isNumber } from './basicHelper'
 
 /**
  * Returns true if `value` is an array.
@@ -20,4 +20,13 @@ export function isArrayOfNumbers(value: any): boolean {
   if (!isArray(value) || !value.length)
     return false
   return value.every(i => isNumber(i))
+}
+
+/**
+ * Unique an Array
+ *
+ * @category Array
+ */
+export function uniq<T>(array: readonly T[]): T[] {
+  return Array.from(new Set(array))
 }

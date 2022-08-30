@@ -1,4 +1,4 @@
-import { AddressEntity } from "../entity"
+import type { AddressEntity } from '../entity'
 
 export interface AddressCreationServicePayload {
   address: Partial<AddressEntity>

@@ -1,5 +1,5 @@
-import { AddresController } from '../controllers/AddressController'
 import { Router } from 'express'
+import { AddresController } from '../controllers/AddressController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 
 const router = Router()

@@ -1,6 +1,6 @@
-import { SubscriptionEntitiy } from "../entity"
-import { SubscriptionEnum } from "../types/Subscription"
-import { getManager } from "typeorm"
+import { getManager } from 'typeorm'
+import { SubscriptionEntitiy } from '../entity'
+import type { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
   public createOne = async (subscriptionType: SubscriptionEnum, userId: number) => {
@@ -13,15 +13,15 @@ export class SubscriptionService {
   }
 
   public getOne = async (id: number) => {
-    return getManager().findOne(SubscriptionEntitiy, id, { relations: ["user", "payment"] })
+    return getManager().findOne(SubscriptionEntitiy, id, { relations: ['user', 'payment'] })
   }
 
   public getMany = async (ids: number[]) => {
-    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ["user", "payment"] })
+    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ['user', 'payment'] })
   }
 
   public getOneByUserId = async (userId: number) => {
-    return getManager().findOne(SubscriptionEntitiy, { user: userId }, { relations: ["payment"] })
+    return getManager().findOne(SubscriptionEntitiy, { user: userId }, { relations: ['payment'] })
   }
 
   public updateOne = async (id: number, subscription: SubscriptionEntitiy) => {

@@ -11,11 +11,17 @@ router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.get
 
 router.get('/:id', UserController.getOne)
 
+router.get('/partners/:id', [isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
+
 router.post('/token', UserController.getOneByToken)
 
 router.post('/', UserController.newUser)
 
 router.post('/login', UserController.login)
+
+router.post('/photographer', UserController.createPhotographer)
+
+router.post('/isMailAlreadyExist', UserController.isMailAlreadyUsed)
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 

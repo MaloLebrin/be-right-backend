@@ -3,7 +3,6 @@ import EmployeeController from '../controllers/EmployeeController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 const router = Router()
 
-
 router.get('/', [isAuthenticated], EmployeeController.getAll)
 
 router.get('/:id', [isAuthenticated], EmployeeController.getOne)

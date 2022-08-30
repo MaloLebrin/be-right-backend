@@ -1,18 +1,17 @@
-import { UserEntity } from "../entity"
-import { generateHash } from "../utils"
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import uid2 from "uid2"
-import MailService from "../services/MailService"
+import type { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import uid2 from 'uid2'
+import { generateHash } from '../utils'
+import { UserEntity } from '../entity'
+import MailService from '../services/MailService'
 
 export default class AuthController {
-
   public static forgotPassword = async (req: Request, res: Response) => {
     try {
       const { email }: { email: string } = req.body
       const user = await getManager().findOne(UserEntity, { email })
       if (!user) {
-        return res.status(422).json({ error: "Email inconnu", isSuccess: false })
+        return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
       }
 
       const twoFactorSecret = uid2(128)
@@ -27,13 +26,14 @@ export default class AuthController {
         subject: 'Récupération de mot de passe Be-Right',
         html: emailBody,
         text: emailText,
-      }, function(err) {
-        if (err) return console.log(err);
-        console.log('Message sent successfully.');
-      });
+      }, err => {
+        if (err)
+          return console.log(err)
+        console.log('Message sent successfully.')
+      })
 
       await getManager().save(user)
-      return res.status(200).json({ message: "Email envoyé", isSuccess: true })
+      return res.status(200).json({ message: 'Email envoyé', isSuccess: true })
     } catch (error) {
       console.error(error)
       if (error.status) {
@@ -45,20 +45,20 @@ export default class AuthController {
 
   public static resetPassword = async (req: Request, res: Response) => {
     try {
-      const { email, twoFactorRecoveryCode, password }: { email: string, twoFactorRecoveryCode: string, password: string } = req.body
+      const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       const user = await getManager().findOne(UserEntity, { email })
       if (!user) {
-        return res.status(422).json({ error: "Email inconnu", isSuccess: false })
+        return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
       }
       if (user.twoFactorRecoveryCode !== twoFactorRecoveryCode || email !== user.email) {
-        return res.status(422).json({ error: "Vous n'êtes pas autorizé à effectuer cette action", isSuccess: false })
+        return res.status(422).json({ error: 'Vous n\'êtes pas autorizé à effectuer cette action', isSuccess: false })
       }
       user.password = generateHash(user.salt, password)
       user.twoFactorRecoveryCode = null
       user.twoFactorSecret = null
       await getManager().save(user)
-      return res.status(200).json({ message: "Mot de passe mis à jour", isSuccess: true })
+      return res.status(200).json({ message: 'Mot de passe mis à jour', isSuccess: true })
     } catch (error) {
       console.error(error)
       if (error.status) {

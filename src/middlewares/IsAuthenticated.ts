@@ -1,8 +1,8 @@
-import { isUserEntity } from "../utils/index"
-import { Request, Response, NextFunction } from "express"
-import { getManager } from "typeorm"
-import Context from "../context"
-import { UserEntity } from "../entity/UserEntity"
+import type { NextFunction, Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import { isUserEntity } from '../utils/index'
+import Context from '../context'
+import { UserEntity } from '../entity/UserEntity'
 
 export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
   if (req.headers.authorization) {
@@ -14,7 +14,7 @@ export default async function isAuthenticated(req: Request, res: Response, next:
       ctx.user = user
       return next()
     } else {
-      return res.status(401).json({ error: "unauthorized" })
+      return res.status(401).json({ error: 'unauthorized' })
     }
   } else {
     return res.status(401).json({ error: 'unauthorized' })

@@ -1,11 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
-import { BaseEntity } from "./BaseEntity"
-import { EmployeeEntity } from "./EmployeeEntity"
-import EventEntity from "./EventEntity"
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { BaseEntity } from './BaseEntity'
+import { EmployeeEntity } from './EmployeeEntity'
+import EventEntity from './EventEntity'
 
 @Entity()
 export default class AnswerEntity extends BaseEntity {
-
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
 
@@ -16,11 +15,11 @@ export default class AnswerEntity extends BaseEntity {
   reason: string | null
 
   @ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: "employeeId" })
+  @JoinColumn({ name: 'employeeId' })
   employee: number | EmployeeEntity
 
   @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: "eventId" })
+  @JoinColumn({ name: 'eventId' })
   event: number
 }
 

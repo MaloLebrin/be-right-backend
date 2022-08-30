@@ -1,13 +1,14 @@
-import "reflect-metadata"
-import { createConnection, getConnectionOptions } from "typeorm"
+import 'reflect-metadata'
+import { createConnection, getConnectionOptions } from 'typeorm'
 import { createExpressServer } from 'routing-controllers'
-import express, { NextFunction, Request, Response } from 'express'
-import cors from "cors"
-import helmet from "helmet"
-import * as dotenv from "dotenv"
-import Context from "./context"
-import cloudinary from "cloudinary"
-import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import type { NextFunction, Request, Response } from 'express'
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import * as dotenv from 'dotenv'
+import cloudinary from 'cloudinary'
+import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import Context from './context'
 import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
 
 async function startServer() {
@@ -26,14 +27,14 @@ async function startServer() {
     }
   }
 
-  createConnection({ ...connectionsOptions, name: 'default' }).then(async connection => {
+  createConnection({ ...connectionsOptions, name: 'default' }).then(async () => {
     const app = createExpressServer()
     dotenv.config()
     app.use(cors())
     app.use(helmet())
     app.use(express.json())
     app.use(express.urlencoded({
-      extended: true
+      extended: true,
     }))
 
     cloudinary.v2.config({
@@ -63,9 +64,8 @@ async function startServer() {
 
     const port = process.env.PORT || 5000
     app.listen(port, '0.0.0.0', () => {
-      console.log('Application is running in ' + process.env.NODE_ENV + ' mode on port : ' + port)
+      console.log(`Application is running in ${process.env.NODE_ENV} mode on port : ${port}`)
     })
-
   }).catch(error => console.log(error))
 }
 startServer()
