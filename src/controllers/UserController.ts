@@ -286,7 +286,12 @@ export default class UserController {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
       const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
       if (userAlReadyExist) {
-        return res.status(400).json({ error: 'cet email existe déjà' })
+        await UserService.updateOne(userAlReadyExist.id, {
+          ...userAlReadyExist,
+          ...photographer,
+        })
+        const newPhotographer = await UserService.getOneWithRelations(userAlReadyExist.id)
+        return res.status(200).json(newPhotographer)
       }
       const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
       return res.status(200).json(newPhotographer)
