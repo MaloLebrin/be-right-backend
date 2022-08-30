@@ -320,6 +320,32 @@ export default class UserController {
     }
   }
 
+  public static isMailAlreadyUsed = async (req: Request, res: Response) => {
+    try {
+      const { email }: { email: string } = req.body
+      if (email) {
+        const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+        if (userAlReadyExist) {
+          return res.status(200).json({
+            success: false,
+            message: 'Cet email est déjà utilisée',
+          })
+        }
+        return res.status(200).json({
+          success: true,
+          message: 'Cet email n\'est pas déjà utilisée',
+        })
+      }
+      return res.status(422).json({ error: 'Veuillez renseigner l\'email' })
+    } catch (error) {
+      console.error(error)
+      if (error.status) {
+        return res.status(error.status || 500).json({ error: error.message })
+      }
+      return res.status(400).json({ error: error.message })
+    }
+  }
+
   // public static clear = async (req: Request, res: Response) => {
   //   try {
   //     return await getManager().clear(UserEntity)
