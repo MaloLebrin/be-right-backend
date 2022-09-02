@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import { BaseEntity } from './BaseEntity'
@@ -57,6 +57,9 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity | number
+
+  @RelationId((user: UserEntity) => user.address)
+  addressId: number
 
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]

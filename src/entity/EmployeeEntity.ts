@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { UserEntity } from './UserEntity'
 import AnswerEntity from './AnswerEntity'
 import { BaseEntity } from './BaseEntity'
@@ -24,6 +24,9 @@ export class EmployeeEntity extends BaseEntity {
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity | number
+
+  @RelationId((employee: EmployeeEntity) => employee.address)
+  addressId: number
 
   @ManyToOne(() => UserEntity, user => user.employee)
   createdByUser: number | UserEntity

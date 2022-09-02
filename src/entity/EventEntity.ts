@@ -42,6 +42,9 @@ export default class EventEntity extends BaseEntity {
   @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
   address: AddressEntity | number
+
+  @RelationId((event: EventEntity) => event.address)
+  addressId: number
 }
 
 export const eventSearchableFields = [
