@@ -34,8 +34,7 @@ export default class EventController {
             eventId: newEvent.id,
           })
         }
-        const eventToSend = await EventService.getOneEvent(newEvent.id)
-        return res.status(200).json(eventToSend)
+        return res.status(200).json(newEvent)
       }
       return res.status(422).json({ error: 'Formulaire imcomplet' })
     } catch (error) {
