@@ -84,7 +84,6 @@ export default class EventService {
       ...event,
       updatedAt: new Date(),
     }
-
     await getManager().update(EventEntity, eventId, removeUnecessaryFieldsEvent(eventToSave))
     await this.multipleUpdateForEvent(eventId)
     return this.getOneEvent(eventId)
@@ -134,9 +133,7 @@ export default class EventService {
       await this.updateStatusForEvent(eventId)
       const event = await this.getOneWithoutRelations(eventId)
       if (event) {
-        delete event.files
-        delete event.address
-        await this.updateStatusEventWhenCompleted(event)
+        await this.updateStatusEventWhenCompleted(removeUnecessaryFieldsEvent(event))
       }
     }
   }

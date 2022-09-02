@@ -2,7 +2,7 @@ import { Column, Entity } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
 
 @Entity()
-export default class ImageRightConditionEntity extends BaseEntity {
+export class ImageRightConditionEntity extends BaseEntity {
   @Column()
   name: string
 
