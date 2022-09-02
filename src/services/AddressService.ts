@@ -25,10 +25,14 @@ export class AddressService {
   }
 
   public static async getOneByEventId(eventId: number) {
+    const event = await getManager().findOne(EventEntity, eventId)
+    console.log(event, '<==== event')
+    // const addressId = event.addressId
     return getManager().findOne(AddressEntity, {
       where: {
         event: eventId,
       },
+      relations: ['addressId'],
     })
   }
 
@@ -43,17 +47,14 @@ export class AddressService {
       await getManager().update(UserEntity, userId, {
         address: addressToSend.id,
       })
-      addressToSend.userId = userId
     } else if (eventId) {
       await getManager().update(EventEntity, eventId, {
         address: addressToSend.id,
       })
-      addressToSend.eventId = eventId
     } else if (employeeId) {
       await getManager().update(EmployeeEntity, employeeId, {
         address: addressToSend.id,
       })
-      addressToSend.employeeId = employeeId
     }
     return addressToSend
   }
