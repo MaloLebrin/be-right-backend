@@ -1,7 +1,7 @@
-import { Request, Response } from "express"
-import { getManager } from "typeorm"
-import EventEntity from "../entity/EventEntity"
-import ImageRightConditionEntity from "../entity/ImageRightConditionEntity"
+import { Request, Response } from 'express'
+import { getManager } from 'typeorm'
+import EventEntity from '../entity/EventEntity'
+import { ImageRightConditionEntity } from '../entity/ImageRightConditionEntity'
 
 export default class ImageRightConditionController {
 
