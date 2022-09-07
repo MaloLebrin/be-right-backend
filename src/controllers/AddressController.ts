@@ -74,7 +74,7 @@ export class AddresController {
   public static createOne = async (req: Request, res: Response) => {
     try {
       const { address, eventId, employeeId, userId }:
-        { address: Partial<AddressEntity>; eventId?: number; employeeId?: number; userId?: number } = req.body
+      { address: Partial<AddressEntity>; eventId?: number; employeeId?: number; userId?: number } = req.body
       const newAddress = await AddressService.createOne({
         address,
         employeeId,

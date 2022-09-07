@@ -1,7 +1,23 @@
 {
   "name": "be-right-backend",
   "version": "0.0.2",
+  "packageManager": "pnpm@7.11.0",
   "description": "Awesome project developed with TypeORM.",
+  "author": {
+    "name": "Malo Lebrin",
+    "email": "malolebrin@gmail.com"
+  },
+  "license": "ISC",
+  "keywords": [],
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "npx nodemon index.ts",
+    "tsc": "tsc",
+    "type:check": "tsc -noEmit",
+    "build": "node build/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
   "dependencies": {
     "cloudinary": "^1.27.1",
     "cors": "^2.8.5",
@@ -34,17 +50,5 @@
     "@types/uid2": "0.0.0",
     "eslint": "^8.20.0",
     "typescript": "^4.4.4"
-  },
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "dev": "npx nodemon index.ts",
-    "tsc": "tsc",
-    "tsc:dev": "tsc -noEmit",
-    "build": "node build/index.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }

@@ -8,7 +8,7 @@ export default async function udpateEventStatusJob() {
     const dateStart = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
     console.warn(`Sarting update event status at ${dateStart}`)
     const events = await getManager().find(EventEntity)
-    console.log(events.length, 'events')
+    console.info(events.length, 'events')
     if (events.length > 0) {
       await Promise.all(events.map(event => EventService.getNumberSignatureNeededForEvent(event.id)))
       await Promise.all(events.map(event => EventService.updateStatusEventWhenCompleted(event)))
