@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/indent */
+
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { UserEntity } from './UserEntity'
 import AnswerEntity from './AnswerEntity'

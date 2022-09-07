@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'

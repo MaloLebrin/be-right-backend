@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
 import { SubscriptionEnum } from '../types/Subscription'
 import { BaseEntity, PaymentEntity, UserEntity } from '.'

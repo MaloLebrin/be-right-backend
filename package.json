@@ -39,7 +39,7 @@
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
     "tsc": "tsc",
-    "tsc:dev": "tsc -noEmit",
+    "type:check": "tsc -noEmit",
     "build": "node build/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
