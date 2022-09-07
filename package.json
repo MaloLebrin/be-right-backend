@@ -5,6 +5,7 @@
   "author": "",
   "license": "ISC",
   "keywords": [],
+  "packageManager": "pnpm@7.11.0",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
