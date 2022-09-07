@@ -1,11 +1,14 @@
 {
   "name": "be-right-backend",
   "version": "0.0.2",
+  "packageManager": "pnpm@7.11.0",
   "description": "Awesome project developed with TypeORM.",
-  "author": "",
+  "author": {
+    "name": "Malo Lebrin",
+    "email": "malolebrin@gmail.com"
+  },
   "license": "ISC",
   "keywords": [],
-  "packageManager": "pnpm@7.11.0",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",

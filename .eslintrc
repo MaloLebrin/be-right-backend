@@ -11,7 +11,7 @@
   },
   "ignorePatterns": [
     "*/migrations/**",
-    "*/.github/**",
+    "*/workflows/**",
     "docker-compose.yml"
   ]
 }
