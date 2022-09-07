@@ -64,8 +64,8 @@ async function startServer() {
 
     const port = process.env.PORT || 5000
     app.listen(port, '0.0.0.0', () => {
-      console.log(`Application is running in ${process.env.NODE_ENV} mode on port : ${port}`)
+      console.info(`Application is running in ${process.env.NODE_ENV} mode on port : ${port}`)
     })
-  }).catch(error => console.log(error))
+  }).catch(error => console.info(error))
 }
 startServer()

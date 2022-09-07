@@ -28,8 +28,8 @@ export default class AuthController {
         text: emailText,
       }, err => {
         if (err)
-          return console.log(err)
-        console.log('Message sent successfully.')
+          return console.error(err)
+        console.error('Message sent successfully.')
       })
 
       await getManager().save(user)

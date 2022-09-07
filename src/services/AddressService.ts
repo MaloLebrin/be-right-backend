@@ -26,7 +26,7 @@ export class AddressService {
 
   public static async getOneByEventId(eventId: number) {
     const event = await getManager().findOne(EventEntity, eventId)
-    console.log(event, '<==== event')
+    console.warn(event, '<==== event')
     // const addressId = event.addressId
     return getManager().findOne(AddressEntity, {
       where: {
