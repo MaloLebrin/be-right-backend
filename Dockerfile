@@ -4,8 +4,13 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY package.json /app/
+COPY pnpm-lock.yaml /app/
 
-RUN npm install
+# RUN npm install
+RUN npm i -g pnpm
+RUN npm i -g @antfu/ni
+
+RUN nci
 
 # Be careful with this env variable
 ARG NODE_ENV
@@ -18,7 +23,7 @@ COPY entrypoint.sh /app/
 COPY Heroku.yml /app/
 COPY ./src /app/src
 
-RUN npm run tsc
+RUN nr tsc
 # CMD ["npm", "run", "build"]
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
