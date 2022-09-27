@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { createConnection, getConnectionOptions } from 'typeorm'
-import { createExpressServer } from 'routing-controllers'
+// import { createExpressServer } from 'routing-controllers'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
@@ -28,7 +28,7 @@ async function startServer() {
   }
 
   createConnection({ ...connectionsOptions, name: 'default' }).then(async () => {
-    const app = createExpressServer()
+    const app = express()
     dotenv.config()
     app.use(cors())
     app.use(helmet())
@@ -62,7 +62,7 @@ async function startServer() {
     app.use('/newsletter', newsletterRoutes)
     app.use('/user', userRoutes)
 
-    const port = process.env.PORT || 5000
+    const port = parseInt(process.env.PORT) || 5000
     app.listen(port, '0.0.0.0', () => {
       console.info(`Application is running in ${process.env.NODE_ENV} mode on port : ${port}`)
     })
