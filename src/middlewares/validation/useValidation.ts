@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
+import { number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
-import { object, string } from 'yup'
 import { Role, ThemeEnumArray } from '../../types'
 
 export function useValidation() {
@@ -46,6 +46,9 @@ export function useValidation() {
     body: object({
       theme: string().oneOf(ThemeEnumArray),
     }),
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
   })
 
   const tokenSchema = object({
@@ -54,12 +57,29 @@ export function useValidation() {
     }),
   })
 
+  const createPhotographerSchema = object({
+    body: object({
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      firstName: string().required('Le prenom est requis'),
+      lastName: string().required('Le nom est requis'),
+      companyName: string().nullable(),
+    }),
+  })
+
+  const idParamsSchema = object({
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
   return {
     validate,
     emailAlreadyExistSchema,
+    createPhotographerSchema,
     loginSchema,
     registerSchema,
     themeSchema,
     tokenSchema,
+    idParamsSchema,
   }
 }
