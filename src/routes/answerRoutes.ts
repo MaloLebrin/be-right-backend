@@ -1,19 +1,28 @@
 import { Router } from 'express'
+import { useValidation } from '../middlewares'
 import AnswerController from '../controllers/AnswerController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 
 const router = Router()
 
-router.get('/event/:id', isAuthenticated, AnswerController.getManyForEvent)
+const {
+  idParamsSchema,
+  createManyAnswersSchema,
+  createOneAnswerSchema,
+  updateAnswerStatusSchema,
+  validate,
+} = useValidation()
 
-router.post('/', isAuthenticated, AnswerController.createOne)
+router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], AnswerController.getManyForEvent)
 
-router.post('/many', isAuthenticated, AnswerController.createMany)
+router.post('/', [validate(createOneAnswerSchema), isAuthenticated], AnswerController.createOne)
 
-router.patch('/', isAuthenticated, AnswerController.updateOne)
+router.post('/many', [validate(createManyAnswersSchema), isAuthenticated], AnswerController.createMany)
 
-router.patch('/status', isAuthenticated, AnswerController.updateAnswerStatus)
+router.patch('/', [isAuthenticated], AnswerController.updateOne)
 
-router.delete('/:id', isAuthenticated, AnswerController.deleteOne)
+router.patch('/status', [validate(updateAnswerStatusSchema), isAuthenticated], AnswerController.updateAnswerStatus)
+
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], AnswerController.deleteOne)
 
 export default router

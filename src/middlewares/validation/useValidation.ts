@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
-import { number, object, string } from 'yup'
+import { array, boolean, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
 import { Role, ThemeEnumArray } from '../../types'
 
@@ -82,14 +82,44 @@ export function useValidation() {
     }),
   })
 
+  const createManyAnswersSchema = object({
+    body: object({
+      eventId: number().required('L\'adresse est requise'),
+      employeeIds: array().of(number()).min(1, 'Sélectionnez au moins un destinataire')
+        .required('Les destinataires sont obligatoire'),
+    }),
+  })
+
+  const createOneAnswerSchema = object({
+    body: object({
+      eventId: number().required('L\'adresse est requise'),
+      employeeId: number()
+        .required('Les destinataires sont obligatoire'),
+    }),
+  })
+
+  const updateAnswerStatusSchema = object({
+    body: object({
+      eventId: number().required('L\'adresse est requise'),
+      employeeId: number()
+        .required('Les destinataires sont obligatoire'),
+    }),
+    query: object({
+      isSigned: boolean().required(),
+    }),
+  })
+
   return {
     validate,
     emailAlreadyExistSchema,
     createPhotographerSchema,
     createAddressSchema,
+    createManyAnswersSchema,
+    createOneAnswerSchema,
     loginSchema,
     registerSchema,
     themeSchema,
+    updateAnswerStatusSchema,
     tokenSchema,
     idParamsSchema,
   }
