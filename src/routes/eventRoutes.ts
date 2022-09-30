@@ -1,21 +1,28 @@
 import { Router } from 'express'
 import EventController from '../controllers/EventController'
-import isAuthenticated from '../middlewares/IsAuthenticated'
+import { isAuthenticated, useValidation } from '../middlewares'
+
 const router = Router()
+
+const {
+  idParamsSchema,
+  createOneEventSchema,
+  validate,
+} = useValidation()
 
 router.get('/many', [isAuthenticated], EventController.getMany)
 
 router.get('/', [isAuthenticated], EventController.getAll)
 
-router.get('/:id', [isAuthenticated], EventController.getOne)
+router.get('/:id', [validate(idParamsSchema), isAuthenticated], EventController.getOne)
 
-router.post('/:id', [isAuthenticated], EventController.createOne)
+router.post('/:id', [validate(createOneEventSchema), isAuthenticated], EventController.createOne)
 
-router.get('/user/:id', [isAuthenticated], EventController.getAllForUser)
+router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], EventController.getAllForUser)
 
-router.patch('/:id', [isAuthenticated], EventController.updateOne)
+router.patch('/:id', [validate(idParamsSchema), isAuthenticated], EventController.updateOne)
 
-router.delete('/:id', [isAuthenticated], EventController.deleteOne)
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], EventController.deleteOne)
 
 // router.get('/clear', EventController.clear)
 

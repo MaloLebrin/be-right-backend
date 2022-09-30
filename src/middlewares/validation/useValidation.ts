@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
-import { array, boolean, number, object, string } from 'yup'
+import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
 import { Role, ThemeEnumArray } from '../../types'
 
@@ -182,6 +182,30 @@ export function useValidation() {
     }),
   })
 
+  const createOneEventSchema = object({
+    body: object({
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }),
+      event: object({
+        name: string().required('le nom de l\'événement est obligatoire'),
+        description: string().nullable(),
+        period: object().shape({
+          start: date().required('La date de début est obligatoire'),
+          end: date().required('La date de fin est obligatoire'),
+        }).required('L\'événement doit avoir une date de début et une date de fin'),
+      }),
+      photographerId: number().required('L\'identifiant du photographe est requis'),
+    }),
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
   return {
     validate,
     emailAlreadyExistSchema,
@@ -192,6 +216,7 @@ export function useValidation() {
     createEmployeeSchema,
     createManyEmployeesSchema,
     createManyEmployeesOnEventSchema,
+    createOneEventSchema,
     loginSchema,
     registerSchema,
     themeSchema,
