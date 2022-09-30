@@ -1,31 +1,42 @@
 import { Router } from 'express'
 import UserController from '../controllers/UserController'
-import checkUserRole from '../middlewares/checkUserRole'
-import isAuthenticated from '../middlewares/IsAuthenticated'
 import { Role } from '../types/Role'
+import { checkUserRole, isAuthenticated, useValidation } from '../middlewares'
+
 const router = Router()
+
+const {
+  createPhotographerSchema,
+  emailAlreadyExistSchema,
+  idParamsSchema,
+  loginSchema,
+  registerSchema,
+  themeSchema,
+  tokenSchema,
+  validate,
+} = useValidation()
 
 router.get('/many', [isAuthenticated], UserController.getMany)
 
 router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.getAll)
 
-router.get('/:id', UserController.getOne)
+router.get('/:id', [validate(idParamsSchema)], UserController.getOne)
 
-router.get('/partners/:id', [isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
+router.get('/partners/:id', [validate(idParamsSchema), isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
 
-router.post('/token', UserController.getOneByToken)
+router.post('/token', [validate(tokenSchema)], UserController.getOneByToken)
 
-router.post('/', UserController.newUser)
+router.post('/', [validate(registerSchema)], UserController.newUser)
 
-router.post('/login', UserController.login)
+router.post('/login', [validate(loginSchema)], UserController.login)
 
-router.post('/photographer', UserController.createPhotographer)
+router.post('/photographer', [validate(createPhotographerSchema)], UserController.createPhotographer)
 
-router.post('/isMailAlreadyExist', UserController.isMailAlreadyUsed)
+router.post('/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], UserController.isMailAlreadyUsed)
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 
-router.patch('/theme/:id', [isAuthenticated], UserController.updateTheme)
+router.patch('/theme/:id', [validate(themeSchema), isAuthenticated], UserController.updateTheme)
 
 router.delete('/:id', [isAuthenticated], UserController.deleteOne)
 

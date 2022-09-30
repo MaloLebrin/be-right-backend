@@ -1,16 +1,11 @@
 /* eslint-disable @typescript-eslint/indent */
 
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { Role } from '../types/Role'
+import { Role, ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { BaseEntity } from './BaseEntity'
 import EventEntity from './EventEntity'
 import { AddressEntity, EmployeeEntity, FileEntity } from './'
-
-export enum ThemeEnum {
-  LIGHT = 'light',
-  DARK = 'dark',
-}
 
 @Entity()
 export class UserEntity extends BaseEntity {

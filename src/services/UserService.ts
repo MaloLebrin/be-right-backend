@@ -2,12 +2,11 @@ import { getManager } from 'typeorm'
 import uid2 from 'uid2'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type EventEntity from '../entity/EventEntity'
-import type { ThemeEnum } from '../entity/UserEntity'
 import { UserEntity } from '../entity/UserEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { userResponse } from '../utils'
 import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
-import type { PhotographerCreatePayload } from '../types'
+import type { PhotographerCreatePayload, ThemeEnum } from '../types'
 import { Role } from '../types'
 
 export default class UserService {
