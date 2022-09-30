@@ -1,21 +1,28 @@
 import { Router } from 'express'
+import { useValidation } from '../middlewares'
 import { AddresController } from '../controllers/AddressController'
 import isAuthenticated from '../middlewares/IsAuthenticated'
 
 const router = Router()
 
-router.get('/:id', isAuthenticated, AddresController.getOne)
+const {
+  idParamsSchema,
+  createAddressSchema,
+  validate,
+} = useValidation()
 
-router.get('/event/:id', isAuthenticated, AddresController.getOneByEvent)
+router.get('/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOne)
 
-router.get('/user/:id', isAuthenticated, AddresController.getOneByUser)
+router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEvent)
 
-router.get('/employee/:id', isAuthenticated, AddresController.getOneByEmployee)
+router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByUser)
 
-router.post('/', isAuthenticated, AddresController.createOne)
+router.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEmployee)
 
-router.patch('/:id', isAuthenticated, AddresController.updateOne)
+router.post('/', [validate(createAddressSchema), isAuthenticated], AddresController.createOne)
 
-router.delete('/:id', isAuthenticated, AddresController.deleteOne)
+router.patch('/:id', [isAuthenticated], AddresController.updateOne)
+
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], AddresController.deleteOne)
 
 export default router
