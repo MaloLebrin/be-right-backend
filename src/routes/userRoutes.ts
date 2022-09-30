@@ -9,6 +9,9 @@ const {
   validate,
   emailAlreadyExistSchema,
   loginSchema,
+  registerSchema,
+  themeSchema,
+  tokenSchema,
 } = useValidation()
 
 router.get('/many', [isAuthenticated], UserController.getMany)
@@ -19,9 +22,9 @@ router.get('/:id', UserController.getOne)
 
 router.get('/partners/:id', [isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
 
-router.post('/token', UserController.getOneByToken)
+router.post('/token', [validate(tokenSchema)], UserController.getOneByToken)
 
-router.post('/', UserController.newUser)
+router.post('/', [validate(registerSchema)], UserController.newUser)
 
 router.post('/login', [validate(loginSchema)], UserController.login)
 
@@ -31,7 +34,7 @@ router.post('/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], UserCont
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 
-router.patch('/theme/:id', [isAuthenticated], UserController.updateTheme)
+router.patch('/theme/:id', [validate(themeSchema), isAuthenticated], UserController.updateTheme)
 
 router.delete('/:id', [isAuthenticated], UserController.deleteOne)
 
