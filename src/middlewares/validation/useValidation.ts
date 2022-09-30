@@ -125,6 +125,63 @@ export function useValidation() {
     }),
   })
 
+  const createEmployeeSchema = object({
+    body: object({
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }),
+      employee: object({
+        email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+        firstName: string().required('Le prénom est requis'),
+        lastName: string().required('Le nom est requis'),
+        phone: string().required('Le numéro de téléphone est requis'),
+      }),
+    }),
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
+  const createManyEmployeesSchema = object({
+    body: array().of(object({
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }),
+      employee: object({
+        email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+        firstName: string().required('Le prénom est requis'),
+        lastName: string().required('Le nom est requis'),
+        phone: string().required('Le numéro de téléphone est requis'),
+      }),
+    })),
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
+  const createManyEmployeesOnEventSchema = object({
+    body: array().of(object({
+      employee: object({
+        email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+        firstName: string().required('Le prénom est requis'),
+        lastName: string().required('Le nom est requis'),
+        phone: string().required('Le numéro de téléphone est requis'),
+      }),
+    })),
+    params: object({
+      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+      eventId: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
   return {
     validate,
     emailAlreadyExistSchema,
@@ -132,6 +189,9 @@ export function useValidation() {
     createAddressSchema,
     createManyAnswersSchema,
     createOneAnswerSchema,
+    createEmployeeSchema,
+    createManyEmployeesSchema,
+    createManyEmployeesOnEventSchema,
     loginSchema,
     registerSchema,
     themeSchema,
