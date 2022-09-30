@@ -1,9 +1,11 @@
 import { Router } from 'express'
 import UserController from '../controllers/UserController'
-import checkUserRole from '../middlewares/checkUserRole'
-import isAuthenticated from '../middlewares/IsAuthenticated'
 import { Role } from '../types/Role'
+import { checkUserRole, isAuthenticated, useEmailValidation } from '@/middlewares'
+
 const router = Router()
+
+const { body, isEmail } = useEmailValidation()
 
 router.get('/many', [isAuthenticated], UserController.getMany)
 
@@ -21,7 +23,7 @@ router.post('/login', UserController.login)
 
 router.post('/photographer', UserController.createPhotographer)
 
-router.post('/isMailAlreadyExist', UserController.isMailAlreadyUsed)
+router.post('/isMailAlreadyExist', [body, isEmail], UserController.isMailAlreadyUsed)
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 

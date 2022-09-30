@@ -28,14 +28,14 @@ export default class UserController {
       password,
       role,
     }:
-    {
-      companyName: string
-      email: string
-      firstName: string
-      lastName: string
-      password: string
-      role: Role
-    } = req.body
+      {
+        companyName: string
+        email: string
+        firstName: string
+        lastName: string
+        password: string
+        role: Role
+      } = req.body
     try {
       const userAlReadyExist = await getManager().findOne(UserEntity, { email })
       if (userAlReadyExist) {
