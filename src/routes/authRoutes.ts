@@ -1,9 +1,17 @@
 import { Router } from 'express'
+import { useValidation } from '../middlewares'
 import AuthController from '../controllers/AuthController'
+
 const router = Router()
 
-router.post('/forgot-password', AuthController.forgotPassword)
+const {
+  emailAlreadyExistSchema,
+  resetPasswordSchema,
+  validate,
+} = useValidation()
 
-router.post('/reset-password', AuthController.resetPassword)
+router.post('/forgot-password', [validate(emailAlreadyExistSchema)], AuthController.forgotPassword)
+
+router.post('/reset-password', [validate(resetPasswordSchema)], AuthController.resetPassword)
 
 export default router

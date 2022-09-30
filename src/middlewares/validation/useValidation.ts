@@ -109,6 +109,22 @@ export function useValidation() {
     }),
   })
 
+  const resetPasswordSchema = object({
+    body: object({
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      password: string().required('Le mot de passe est requis'),
+      twoFactorRecoveryCode: string().required('Le twoFactorRecoveryCode est requis'),
+    }),
+  })
+
+  const createbugSchema = object({
+    body: object({
+      name: string().required('Le nom est obligatoire'),
+      url: string().url('L\'url est invalide'),
+      description: string().required('La description est obligatoire'),
+    }),
+  })
+
   return {
     validate,
     emailAlreadyExistSchema,
@@ -122,5 +138,7 @@ export function useValidation() {
     updateAnswerStatusSchema,
     tokenSchema,
     idParamsSchema,
+    resetPasswordSchema,
+    createbugSchema,
   }
 }
