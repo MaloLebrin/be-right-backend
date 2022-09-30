@@ -1,1 +1,1 @@
-export * from './useEmailValidation'
+export * from './useValidation'

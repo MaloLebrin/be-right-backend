@@ -1,11 +1,15 @@
 import { Router } from 'express'
 import UserController from '../controllers/UserController'
 import { Role } from '../types/Role'
-import { checkUserRole, isAuthenticated, useEmailValidation } from '@/middlewares'
+import { checkUserRole, isAuthenticated, useValidation } from '../middlewares'
 
 const router = Router()
 
-const { body, isEmail } = useEmailValidation()
+const {
+  validate,
+  emailAlreadyExistSchema,
+  loginSchema,
+} = useValidation()
 
 router.get('/many', [isAuthenticated], UserController.getMany)
 
@@ -19,11 +23,11 @@ router.post('/token', UserController.getOneByToken)
 
 router.post('/', UserController.newUser)
 
-router.post('/login', UserController.login)
+router.post('/login', [validate(loginSchema)], UserController.login)
 
 router.post('/photographer', UserController.createPhotographer)
 
-router.post('/isMailAlreadyExist', [body, isEmail], UserController.isMailAlreadyUsed)
+router.post('/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], UserController.isMailAlreadyUsed)
 
 router.patch('/:id', [isAuthenticated], UserController.updateOne)
 
