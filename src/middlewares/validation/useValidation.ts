@@ -3,17 +3,23 @@ import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
 import { Role, ThemeEnumArray } from '../../types'
+import { useLogger } from '../loggerService'
 
 export function useValidation() {
   const validate = <T extends ObjectShape>(schema: ObjectSchema<T>) => async (req: Request, res: Response, next: NextFunction) => {
+    const { logger } = useLogger()
+    logger.info(`${req.url} validation started`)
+
     try {
       await schema.validate({
         body: req.body,
         query: req.query,
         params: req.params,
       })
+      logger.info(`${req.url} validation ended with success`)
       return next()
     } catch (err) {
+      logger.debug({ type: err.name, message: err.message })
       return res.status(500).json({ type: err.name, message: err.message })
     }
   }
@@ -207,23 +213,23 @@ export function useValidation() {
   })
 
   return {
-    validate,
-    emailAlreadyExistSchema,
-    createPhotographerSchema,
     createAddressSchema,
-    createManyAnswersSchema,
-    createOneAnswerSchema,
+    createbugSchema,
     createEmployeeSchema,
-    createManyEmployeesSchema,
+    createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
+    createManyEmployeesSchema,
+    createOneAnswerSchema,
     createOneEventSchema,
+    createPhotographerSchema,
+    emailAlreadyExistSchema,
+    idParamsSchema,
     loginSchema,
     registerSchema,
-    themeSchema,
-    updateAnswerStatusSchema,
-    tokenSchema,
-    idParamsSchema,
     resetPasswordSchema,
-    createbugSchema,
+    themeSchema,
+    tokenSchema,
+    updateAnswerStatusSchema,
+    validate,
   }
 }

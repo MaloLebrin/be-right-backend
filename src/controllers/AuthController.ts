@@ -1,13 +1,16 @@
 import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
 import uid2 from 'uid2'
-import { generateHash } from '../utils'
+import { generateHash, wrapperRequest } from '../utils'
 import { UserEntity } from '../entity'
 import MailService from '../services/MailService'
+import { useLogger } from '../middlewares/loggerService'
 
 export default class AuthController {
+  static logger = useLogger().logger
+
   public static forgotPassword = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       const user = await getManager().findOne(UserEntity, { email })
       if (!user) {
@@ -27,24 +30,20 @@ export default class AuthController {
         html: emailBody,
         text: emailText,
       }, err => {
-        if (err)
+        if (err) {
+          this.logger.debug(err)
           return console.error(err)
-        console.error('Message sent successfully.')
+        }
+        this.logger.info('Message sent successfully.')
       })
 
       await getManager().save(user)
       return res.status(200).json({ message: 'Email envoyé', isSuccess: true })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message, isSuccess: false })
-      }
-      return res.status(400).json({ error: error.message, isSuccess: false })
-    }
+    })
   }
 
   public static resetPassword = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       const user = await getManager().findOne(UserEntity, { email })
@@ -59,12 +58,6 @@ export default class AuthController {
       user.twoFactorSecret = null
       await getManager().save(user)
       return res.status(200).json({ message: 'Mot de passe mis à jour', isSuccess: true })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message, isSuccess: false })
-      }
-      return res.status(400).json({ error: error.message, isSuccess: false })
-    }
+    })
   }
 }

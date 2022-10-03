@@ -2,7 +2,7 @@
 import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
 import uid2 from 'uid2'
-import { generateHash, paginator, userResponse } from '../utils'
+import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
 import checkUserRole from '../middlewares/checkUserRole'
@@ -21,23 +21,23 @@ export default class UserController {
    * @returns return user just created
    */
   public static newUser = async (req: Request, res: Response) => {
-    const {
-      companyName,
-      email,
-      firstName,
-      lastName,
-      password,
-      role,
-    }:
-      {
-        companyName: string
-        email: string
-        firstName: string
-        lastName: string
-        password: string
-        role: Role
-      } = req.body
-    try {
+    await wrapperRequest(req, res, async () => {
+      const {
+        companyName,
+        email,
+        firstName,
+        lastName,
+        password,
+        role,
+      }:
+        {
+          companyName: string
+          email: string
+          firstName: string
+          lastName: string
+          password: string
+          role: Role
+        } = req.body
       const userAlReadyExist = await getManager().findOne(UserEntity, { email })
       if (userAlReadyExist) {
         return res.status(400).json({ error: 'cet email existe déjà' })
@@ -58,9 +58,7 @@ export default class UserController {
       const newUser = getManager().create(UserEntity, user)
       await getManager().save(newUser)
       return res.status(200).json(userResponse(newUser))
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -68,7 +66,7 @@ export default class UserController {
   * @returns paginate response
   */
   public static getAll = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, userSearchableFields)
       const usersFilters = {
         ...queriesFilters,
@@ -90,12 +88,7 @@ export default class UserController {
       const usersToSend = users.map(user => userResponse(user))
       const total = await getManager().count(UserEntity, usersFilters)
       return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
-    } catch (error) {
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -103,20 +96,18 @@ export default class UserController {
    * @returns entity form given id
   */
   public static getOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const user = await UserService.getOneWithRelations(id)
         return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
       }
       return res.status(422).json({ error: 'id required' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getMany = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -125,46 +116,27 @@ export default class UserController {
           return res.status(200).json(users)
         }
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getOneByToken = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const token = req.body.token
       if (token) {
         const user = await UserService.getByToken(token)
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
-      } else {
-        return res.status(400).json({ error: 'token is required' })
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+      return res.status(400).json({ error: 'token is required' })
+    })
   }
 
   public static updateTheme = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const { theme } = req.body
       const user = await UserService.updateTheme(id, theme)
       return res.status(200).json(userResponse(user))
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -172,7 +144,7 @@ export default class UserController {
    * @returns return event just updated
    */
   public static updateOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -191,17 +163,11 @@ export default class UserController {
         }
       }
       return res.status(422).json({ error: 'id required' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static updatesubscription = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       const { subscription }: { subscription: SubscriptionEnum } = req.body
       if (userId) {
@@ -213,17 +179,11 @@ export default class UserController {
         }
       }
       return res.status(422).json({ error: 'id required' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static deleteOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
@@ -232,17 +192,11 @@ export default class UserController {
       } else {
         return res.status(401).json({ error: 'unauthorized' })
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static login = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
       const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ['events', 'files', 'employee', 'profilePicture'] })
       // TODO remove this in prod
@@ -273,17 +227,11 @@ export default class UserController {
       } else {
         return res.status(400).json('user not found')
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static createPhotographer = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
       const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
       if (userAlReadyExist) {
@@ -296,17 +244,11 @@ export default class UserController {
       }
       const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
       return res.status(200).json(newPhotographer)
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
@@ -317,17 +259,11 @@ export default class UserController {
         return res.status(200).json(uniqPartners)
       }
       return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static isMailAlreadyUsed = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       if (email) {
         const userAlReadyExist = await getManager().findOne(UserEntity, { email })
@@ -343,12 +279,6 @@ export default class UserController {
         })
       }
       return res.status(422).json({ error: 'Veuillez renseigner l\'email' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 }

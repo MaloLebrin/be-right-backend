@@ -1,10 +1,11 @@
-import type { Request } from 'express'
+import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
 import { Like } from 'typeorm'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
+import { useLogger } from './middlewares/loggerService'
 
 /**
  * create hash password
@@ -90,4 +91,21 @@ export const paginator = (req: Request, searchableField: string[]) => {
 
 export function toCent(value: number) {
   return value * 100
+}
+
+export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {
+  const { logger } = useLogger()
+  try {
+    logger.info(`${req.url} route accessed`)
+    await request()
+  } catch (error) {
+    console.error(error)
+    logger.debug(error.message)
+    if (error.status) {
+      return res.status(error.status || 500).json({ error: error.message })
+    }
+    return res.status(400).json({ error: error.message })
+  } finally {
+    logger.info(`${req.url} route ended`)
+  }
 }
