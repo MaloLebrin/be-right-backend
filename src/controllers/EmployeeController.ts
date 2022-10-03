@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
 import Context from '../context'
 import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
-import { paginator } from '../utils'
+import { paginator, wrapperRequest } from '../utils'
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
 import EmployeeService from '../services/EmployeeService'
@@ -20,7 +20,7 @@ export default class EmployeeController {
    * @returns return employee just created
    */
   public static createOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
       const ctx = Context.get(req)
       let userId = null
@@ -44,17 +44,11 @@ export default class EmployeeController {
         const employeeToSend = await EmployeeService.getOne(newEmployee.id)
         return res.status(200).json({ ...employeeToSend, createdByUser: userId })
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static createMany = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
         const ctx = Context.get(req)
@@ -75,20 +69,13 @@ export default class EmployeeController {
           }
         }))
         return res.status(200).json(newEmployees)
-      } else {
-        return res.status(400).json({ error: 'employees is empty' })
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+      return res.status(400).json({ error: 'employees is empty' })
+    })
   }
 
   public static createManyEmployeeByEventId = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.eventId)
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
@@ -120,13 +107,7 @@ export default class EmployeeController {
 
         return res.status(200).json(returnedEmployees)
       }
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -134,20 +115,14 @@ export default class EmployeeController {
    * @returns entity form given id
    */
   public static getOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const employee = await EmployeeService.getOne(id)
         return res.status(200).json(employee)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -155,7 +130,7 @@ export default class EmployeeController {
    * @returns all employees from user Id
    */
   public static getManyByUserId = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
         const employees = await EmployeeService.getAllForUser(userId)
@@ -166,13 +141,7 @@ export default class EmployeeController {
         return res.status(200).json(entitiesReturned)
       }
       return res.status(422).json({ error: 'identifiant de l\'utilisateur manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -180,7 +149,7 @@ export default class EmployeeController {
    * @returns all employees from event Id
    */
   public static getManyByEventId = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const user = await EventService.getOneEvent(eventId)
@@ -198,13 +167,7 @@ export default class EmployeeController {
         return res.status(200).json({ data: employeesWithAnswers })
       }
       return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -212,7 +175,7 @@ export default class EmployeeController {
    * @returns paginate response
    */
   public static getAll = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
@@ -230,13 +193,7 @@ export default class EmployeeController {
 
       const total = await getManager().count(EmployeeEntity, queriesFilters)
       return res.status(200).json({ data: entityReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -244,7 +201,7 @@ export default class EmployeeController {
    * @returns return employee just updated
    */
   public static updateOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -252,34 +209,22 @@ export default class EmployeeController {
         return res.status(200).json(employeeUpdated)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static patchOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const event = await EventService.getNumberSignatureNeededForEvent(id)
         return res.status(200).json(event)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static deleteOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
@@ -294,17 +239,10 @@ export default class EmployeeController {
             })
           }
           return res.status(204).json(getEmployee)
-        } else {
-          return res.status(401).json('Unauthorized')
         }
+        return res.status(401).json('Unauthorized')
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 }
