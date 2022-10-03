@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/indent */
 
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { Role, ThemeEnum } from '../types/'
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { BaseEntity } from './BaseEntity'
 import EventEntity from './EventEntity'
+import { RoleEntity } from './RoleEntity'
 import { AddressEntity, EmployeeEntity, FileEntity } from './'
 
 @Entity()
@@ -42,8 +43,9 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   apiKey: string
 
-  @Column({ type: 'enum', enum: Role, default: Role.USER })
-  roles: Role
+  @ManyToMany(() => RoleEntity)
+  @JoinTable()
+  roles: RoleEntity[]
 
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   subscription: SubscriptionEnum
