@@ -2,15 +2,16 @@ import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
 import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
-import { paginator } from '../utils'
+import { paginator, wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
 import type { FileTypeEnum } from '../types/File'
 import Context from '../context'
 import { Role } from '../types/Role'
 import { UserEntity } from '../entity'
+
 export default class FileController {
   public static newFile = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
       { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
@@ -58,13 +59,11 @@ export default class FileController {
       const file = getManager().create(FileEntity, fileToPost)
       await getManager().save(file)
       return res.status(200).json(file)
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static createProfilePicture = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
@@ -72,17 +71,11 @@ export default class FileController {
         return res.status(200).json(profilePicture)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static createLogo = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
@@ -90,13 +83,7 @@ export default class FileController {
         return res.status(200).json(logo)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -104,7 +91,7 @@ export default class FileController {
    * @returns return file just updated
    */
   public static updateOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -112,17 +99,11 @@ export default class FileController {
         return res.status(200).json(fileUpdated)
       }
       return res.status(422).json({ message: 'identitfiant du fichier manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFile = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const file = await getManager().findOne(FileEntity, id)
@@ -133,62 +114,52 @@ export default class FileController {
         }
       }
       return res.status(422).json({ message: 'identitfiant du fichier manquant' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFiles = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { ids }: { ids: number[] } = req.body
       const files = await Promise.all(ids.map(id => getManager().findOne(FileEntity, id)))
       return res.status(200).json(files)
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFilesByUser = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
         const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'utilisateur manquant' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFilesByEvent = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const files = await getManager().find(FileEntity, { where: { event: eventId } })
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'événement manquant' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFilesByEmployee = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const employeeId = parseInt(req.params.id)
       if (employeeId) {
         const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'employé manquant' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getFilesByUserAndEvent = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
       if (userId && eventId) {
@@ -199,23 +170,19 @@ export default class FileController {
         return res.status(200).json({ message: 'Files not found' })
       }
       return res.status(422).json({ message: 'Identifiant de l\'utilisateur ou de l\'événement manquant' })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getAllPaginate = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, filesSearchableFields)
       const [files, count] = await getManager().findAndCount(FileEntity, queriesFilters)
       return res.status(200).json({ data: files, total: count, currentPage: queriesFilters.page, limit: queriesFilters.take })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static deleteFile = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const file = await getManager().findOne(FileEntity, id)
@@ -226,13 +193,7 @@ export default class FileController {
         }
       }
       return res.status(422).json({ message: 'Identifiant du fichier manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
   // TODO add update file
 }
