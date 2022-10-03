@@ -1,12 +1,12 @@
 import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
-import { paginator } from '../utils'
+import { paginator, wrapperRequest } from '../utils'
 import { EmployeeEntity, UserEntity } from '../entity'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
 export default class NewsletterController {
   public static createOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { email, firstName, lastName, companyName }: { email: string; firstName: string; lastName: string; companyName: string } = req.body
       const newsletterRecipient = {
         email,
@@ -33,13 +33,11 @@ export default class NewsletterController {
       const recipient = getManager().create(NewsletterRecipient, newsletterRecipient)
       await getManager().save(recipient)
       return res.status(200).json(recipient)
-    } catch (error) {
-      return res.status(error.status || 500).json({ error: error.message })
-    }
+    })
   }
 
   public static getAllPaginate = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, newsletterRecipientSearchableFields)
       const newsletterRecipients = await getManager().find(NewsletterRecipient, queriesFilters)
       const total = await getManager().count(NewsletterRecipient, queriesFilters)
@@ -49,23 +47,18 @@ export default class NewsletterController {
         limit: queriesFilters.take,
         total,
       })
-    } catch (error) {
-      return res.status(error.status || 500).json({ error: error.message })
-    }
+    })
   }
 
   public static deleteOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const recipient = await getManager().findOne(NewsletterRecipient, id)
       if (recipient) {
         await getManager().delete(NewsletterRecipient, id)
         return res.status(204).json({ data: recipient, message: 'event deleted' })
-      } else {
-        return res.status(401).json('Not allowed')
       }
-    } catch (error) {
-      return res.status(error.status || 500).json({ error: error.message })
-    }
+      return res.status(401).json('Not allowed')
+    })
   }
 }
