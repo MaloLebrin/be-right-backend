@@ -4,7 +4,7 @@ import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
 import checkUserRole from '../middlewares/checkUserRole'
-import { paginator } from '../utils'
+import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import { Role } from '../types'
@@ -17,7 +17,7 @@ export default class EventController {
    * @returns return event just created
    */
   public static createOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
       let userId = null
@@ -37,13 +37,7 @@ export default class EventController {
         return res.status(200).json(newEvent)
       }
       return res.status(422).json({ error: 'Formulaire imcomplet' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -51,7 +45,7 @@ export default class EventController {
    * @returns entity form given id
    */
   public static getOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
@@ -64,28 +58,16 @@ export default class EventController {
         }
       }
       return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static getMany = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
       const events = await EventService.getManyEvents(eventsIds)
       return res.status(200).json(events)
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -93,7 +75,7 @@ export default class EventController {
    * @returns all event link with user
    */
   public static getAllForUser = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
       const userId = ctx.user.id
       const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ['partner'] })
@@ -120,13 +102,7 @@ export default class EventController {
         }
       }))
       return res.status(200).json(eventsReturned)
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -134,7 +110,7 @@ export default class EventController {
    * @returns paginate response
    */
   public static getAll = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, eventSearchableFields)
       const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ['createdByUser', 'partner', 'address'] })
       const eventsReturned = events.length > 0
@@ -153,13 +129,7 @@ export default class EventController {
         : []
       const total = await getManager().count(EventEntity, queriesFilters)
       return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   /**
@@ -167,7 +137,7 @@ export default class EventController {
    * @returns return event just updated
    */
   public static updateOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const { event }: { event: Partial<EventEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -184,17 +154,11 @@ export default class EventController {
         }
       }
       return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 
   public static deleteOne = async (req: Request, res: Response) => {
-    try {
+    await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
@@ -208,12 +172,6 @@ export default class EventController {
         }
       }
       return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
-    } catch (error) {
-      console.error(error)
-      if (error.status) {
-        return res.status(error.status || 500).json({ error: error.message })
-      }
-      return res.status(400).json({ error: error.message })
-    }
+    })
   }
 }
