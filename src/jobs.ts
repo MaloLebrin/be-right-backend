@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import { CronJobInterval } from './utils/cronHelper'
 import udpateEventStatusJob from './jobs/updateEventsStatusJob'
+import { useLogger } from './middlewares/loggerService'
 
 (async () => {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -23,6 +24,7 @@ import udpateEventStatusJob from './jobs/updateEventsStatusJob'
   }
 
   createConnection(connectionsOptions).then(async () => {
+    const { logger } = useLogger()
     dotenv.config()
 
     cloudinary.v2.config({
@@ -34,7 +36,9 @@ import udpateEventStatusJob from './jobs/updateEventsStatusJob'
     cron.schedule(
       CronJobInterval.EVERY_DAY_4_AM,
       async () => {
+        logger.info('start udpateEventStatus jobs')
         await udpateEventStatusJob()
+        logger.info('end udpateEventStatus jobs')
       },
     )
 
