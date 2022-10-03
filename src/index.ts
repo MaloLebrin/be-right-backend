@@ -9,6 +9,7 @@ import cloudinary from 'cloudinary'
 import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import Context from './context'
 import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
+import { useLogger } from './middlewares/loggerService'
 
 async function startServer() {
   const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
@@ -28,6 +29,7 @@ async function startServer() {
 
   createConnection({ ...connectionsOptions, name: 'default' }).then(async () => {
     const app = express()
+    const { loggerMiddleware } = useLogger()
     dotenv.config()
     app.use(cors())
     app.use(helmet())
@@ -35,6 +37,7 @@ async function startServer() {
     app.use(express.urlencoded({
       extended: true,
     }))
+    app.use(loggerMiddleware)
 
     cloudinary.v2.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
