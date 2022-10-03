@@ -43,7 +43,7 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   apiKey: string
 
-  @ManyToMany(() => RoleEntity)
+  @ManyToMany(() => RoleEntity, { eager: true })
   @JoinTable()
   roles: RoleEntity[]
 
