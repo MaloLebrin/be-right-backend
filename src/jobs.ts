@@ -6,15 +6,24 @@ import cloudinary from 'cloudinary'
 import { CronJobInterval } from './utils/cronHelper'
 import udpateEventStatusJob from './jobs/updateEventsStatusJob'
 import { useLogger } from './middlewares/loggerService'
+import { useEnv } from './env'
 
 (async () => {
-  const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
+  const {
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    CLOUDINARY_CLOUD_NAME,
+    DATABASE_URL,
+    NODE_ENV,
+  } = useEnv()
+
+  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
   let connectionsOptions = config
 
-  if (process.env.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     connectionsOptions = {
       ...config,
-      url: process.env.DATABASE_URL!,
+      url: DATABASE_URL!,
     }
   } else {
     connectionsOptions = {
@@ -28,9 +37,9 @@ import { useLogger } from './middlewares/loggerService'
     dotenv.config()
 
     cloudinary.v2.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
     })
 
     cron.schedule(
@@ -41,10 +50,5 @@ import { useLogger } from './middlewares/loggerService'
         logger.info('end udpateEventStatus jobs')
       },
     )
-
-    // cron.schedule(
-    //   CronJobInterval.EVERY_MINUTE,
-    //   async () => deleteOldLogosJob()
-    // )
   })
 })()
