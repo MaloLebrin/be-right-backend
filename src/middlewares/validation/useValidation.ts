@@ -133,13 +133,13 @@ export function useValidation() {
 
   const createEmployeeSchema = object({
     body: object({
-      address: object({
-        addressLine: string().required('L\'adresse est requise'),
-        addressLine2: string().nullable(),
-        postalCode: string().required('Le code postal est requis'),
-        city: string().required('La ville est requise'),
-        country: string().required('Le pays est requis'),
-      }),
+      // address: object({
+      //   addressLine: string().required('L\'adresse est requise'),
+      //   addressLine2: string().nullable(),
+      //   postalCode: string().required('Le code postal est requis'),
+      //   city: string().required('La ville est requise'),
+      //   country: string().required('Le pays est requis'),
+      // }).required('l\'addresse est requise'),
       employee: object({
         email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
         firstName: string().required('Le prénom est requis'),
@@ -200,10 +200,10 @@ export function useValidation() {
       event: object({
         name: string().required('le nom de l\'événement est obligatoire'),
         description: string().nullable(),
-        period: object().shape({
-          start: date().required('La date de début est obligatoire'),
-          end: date().required('La date de fin est obligatoire'),
-        }).required('L\'événement doit avoir une date de début et une date de fin'),
+        // period: object().shape({
+        // }).required('L\'événement doit avoir une date de début et une date de fin'),
+        start: date().required('La date de début est obligatoire'),
+        end: date().required('La date de fin est obligatoire'),
       }),
       photographerId: number().required('L\'identifiant du photographe est requis'),
     }),
