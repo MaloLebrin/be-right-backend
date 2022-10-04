@@ -5,11 +5,14 @@ import { generateHash, wrapperRequest } from '../utils'
 import { UserEntity } from '../entity'
 import MailService from '../services/MailService'
 import { useLogger } from '../middlewares/loggerService'
+import { useEnv } from '../env'
 
 export default class AuthController {
   static logger = useLogger().logger
 
   public static forgotPassword = async (req: Request, res: Response) => {
+    const { MAIL_ADRESS } = useEnv()
+
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       const user = await getManager().findOne(UserEntity, { email })
@@ -24,7 +27,7 @@ export default class AuthController {
       const transporter = await MailService.getConnection()
       const { emailBody, emailText } = MailService.getResetPasswordTemplate(user, twoFactorRecoveryCode)
       transporter.sendMail({
-        from: `${process.env.MAIL_ADRESS}`,
+        from: `${MAIL_ADRESS}`,
         to: email,
         subject: 'Récupération de mot de passe Be-Right',
         html: emailBody,

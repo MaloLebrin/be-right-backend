@@ -4,6 +4,7 @@ import { FileEntity } from '../entity/FileEntity'
 import { UserEntity } from '../entity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
+import { useEnv } from '../env'
 
 export default class FileService {
   public static async deleteFile(fileId: number) {
@@ -77,6 +78,8 @@ export default class FileService {
   }
 
   public static async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
+    const { NODE_ENV } = useEnv()
+
     const existProfilePicture = await getManager().findOne(FileEntity, { createdByUser: user.id, type: FileTypeEnum.PROFILE_PICTURE })
     const userToSave = await getManager().findOne(UserEntity, user.id)
 
@@ -87,7 +90,7 @@ export default class FileService {
     }
 
     const result = await cloudinary.v2.uploader.upload(file.path, {
-      folder: `beright-${process.env.NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
+      folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
     })
 
     const picture = {
@@ -116,6 +119,8 @@ export default class FileService {
   }
 
   public static async createLogo(file: Express.Multer.File, user: UserEntity) {
+    const { NODE_ENV } = useEnv()
+
     const existLogos = await getManager().find(FileEntity, { createdByUser: user.id, type: FileTypeEnum.LOGO })
 
     if (existLogos.length > 0) {
@@ -123,7 +128,7 @@ export default class FileService {
       await this.deleteManyfiles(logosIds)
     }
     const result = await cloudinary.v2.uploader.upload(file.path, {
-      folder: `beright-${process.env.NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.LOGO}`,
+      folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.LOGO}`,
     })
 
     const picture = {

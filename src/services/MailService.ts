@@ -2,19 +2,24 @@ import Mailgen from 'mailgen'
 import nodemailer from 'nodemailer'
 import type { UserEntity } from '../entity'
 import { getfullUsername } from '../utils/userHelper'
+import { useEnv } from '../env'
 
 export default class MailService {
   public static async getConnection() {
+    const { MAIL_ADRESS, MAIL_MDP } = useEnv()
+
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: `${process.env.MAIL_ADRESS}`,
-        pass: `${process.env.MAIL_MDP}`,
+        user: `${MAIL_ADRESS}`,
+        pass: `${MAIL_MDP}`,
       },
     })
   }
 
   public static getResetPasswordTemplate(recipient: UserEntity, twoFactorRecoveryCode: string) {
+    const { FRONT_URL } = useEnv()
+
     const mailGenerator = new Mailgen({
       theme: 'default',
       product: {
@@ -34,7 +39,7 @@ export default class MailService {
           button: {
             color: '#1b1e3dF2',
             text: 'Réinitialiser le mot de passe',
-            link: `${process.env.FRONT_URL}/reset-password/${twoFactorRecoveryCode}/?email=${recipient.email}`,
+            link: `${FRONT_URL}/reset-password/${twoFactorRecoveryCode}/?email=${recipient.email}`,
           },
         },
       },

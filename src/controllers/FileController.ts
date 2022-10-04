@@ -8,9 +8,12 @@ import type { FileTypeEnum } from '../types/File'
 import Context from '../context'
 import { Role } from '../types/Role'
 import { UserEntity } from '../entity'
+import { useEnv } from '../env'
 
 export default class FileController {
   public static newFile = async (req: Request, res: Response) => {
+    const { NODE_ENV } = useEnv()
+
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
@@ -33,7 +36,7 @@ export default class FileController {
       }
 
       const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
-        folder: `beright-${process.env.NODE_ENV}/user-${userId}-${user.firstName}-${user.lastName}/${type}`,
+        folder: `beright-${NODE_ENV}/user-${userId}-${user.firstName}-${user.lastName}/${type}`,
       })
 
       const fileToPost = {

@@ -24,7 +24,6 @@ COPY Heroku.yml /app/
 COPY ./src /app/src
 
 RUN nr tsc
-# CMD ["npm", "run", "build"]
+
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
-# CMD ["/bin/bash", "/app/entrypoint.sh"]

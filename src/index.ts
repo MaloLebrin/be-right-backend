@@ -10,15 +10,25 @@ import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/Postgres
 import Context from './context'
 import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
 import { useLogger } from './middlewares/loggerService'
+import { useEnv } from './env'
 
 async function startServer() {
-  const config = await getConnectionOptions(process.env.NODE_ENV) as PostgresConnectionOptions
+  const {
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    CLOUDINARY_CLOUD_NAME,
+    DATABASE_URL,
+    NODE_ENV,
+    PORT,
+  } = useEnv()
+
+  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
   let connectionsOptions = config
 
-  if (process.env.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     connectionsOptions = {
       ...config,
-      url: process.env.DATABASE_URL!,
+      url: DATABASE_URL!,
     }
   } else {
     connectionsOptions = {
@@ -40,9 +50,9 @@ async function startServer() {
     app.use(loggerMiddleware)
 
     cloudinary.v2.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
     })
 
     app.use((req: Request, res: Response, next: NextFunction) => {
@@ -64,9 +74,9 @@ async function startServer() {
     app.use('/newsletter', newsletterRoutes)
     app.use('/user', userRoutes)
 
-    const port = parseInt(process.env.PORT) || 5000
+    const port = PORT || 5000
     app.listen(port, '0.0.0.0', () => {
-      console.info(`Application is running in ${process.env.NODE_ENV} mode on port : ${port}`)
+      console.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
     })
   }).catch(error => console.info(error))
 }

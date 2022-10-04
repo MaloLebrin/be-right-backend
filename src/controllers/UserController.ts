@@ -14,6 +14,7 @@ import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, uniq } from '../utils/'
 import type { PhotographerCreatePayload } from '../types'
+import { useEnv } from '../env'
 
 export default class UserController {
   /**
@@ -196,11 +197,13 @@ export default class UserController {
   }
 
   public static login = async (req: Request, res: Response) => {
+    const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
+
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
       const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ['events', 'files', 'employee', 'profilePicture'] })
       // TODO remove this in prod
-      if (userFinded && userFinded.email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+      if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
           userFinded.subscription = SubscriptionEnum.PREMIUM
           userFinded.roles = Role.ADMIN
