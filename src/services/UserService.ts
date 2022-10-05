@@ -8,6 +8,7 @@ import { userResponse } from '../utils'
 import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
 import type { PhotographerCreatePayload, ThemeEnum } from '../types'
 import { Role } from '../types'
+import { createJwtToken } from '../utils/'
 
 export default class UserService {
   public static async getByToken(token: string): Promise<UserEntity> {
@@ -62,6 +63,7 @@ export default class UserService {
       ...userFinded,
       ...payload,
       updatedAt: new Date(),
+      token: payload.roles !== userFinded.roles ? createJwtToken(payload) : userFinded.token,
     }
     await getManager().save(UserEntity, userUpdated)
   }
@@ -74,7 +76,11 @@ export default class UserService {
     const newUser = getManager().create(UserEntity, {
       ...user,
       salt: uid2(128),
-      token: uid2(128),
+      token: createJwtToken({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: Role.PHOTOGRAPHER,
+      }),
       roles: Role.PHOTOGRAPHER,
     })
     await getManager().save(newUser)

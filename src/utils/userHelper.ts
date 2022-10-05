@@ -1,8 +1,11 @@
+import { sign } from 'jsonwebtoken'
+import { useEnv } from '../env'
 import type { UserEntity } from '../entity'
+import type { JWTTokenPayload } from '../types'
 import { Role, SubscriptionEnum } from '../types'
 import { hasOwnProperty } from './objectHelper'
 
-export function getfullUsername(user: UserEntity): string {
+export function getfullUsername(user: UserEntity | Pick<UserEntity, 'firstName' | 'lastName'>): string {
   return `${user.firstName} ${user.lastName}`
 }
 
@@ -16,4 +19,18 @@ export function isSubscriptionOptionField(field: string): boolean {
 
 export function isUserAdmin(user: UserEntity) {
   return user.roles === Role.ADMIN
+}
+
+export function createJwtToken(user: JWTTokenPayload) {
+  const { JWT_SECRET } = useEnv()
+  return sign(
+    {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: getfullUsername(user),
+      roles: [user.roles],
+      subscription: user.subscription ?? SubscriptionEnum.BASIC,
+    },
+    JWT_SECRET,
+  )
 }
