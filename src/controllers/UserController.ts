@@ -12,8 +12,8 @@ import UserService from '../services/UserService'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { FileEntity } from '../entity/FileEntity'
-import { addUserToEntityRelation, uniq } from '../utils/'
-import type { PhotographerCreatePayload } from '../types'
+import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
+import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
 import { useEnv } from '../env'
 
 export default class UserController {
@@ -44,7 +44,6 @@ export default class UserController {
         return res.status(400).json({ error: 'cet email existe déjà' })
       }
       const salt = uid2(128)
-      const token = uid2(128)
       const user = {
         companyName,
         email,
@@ -52,7 +51,12 @@ export default class UserController {
         lastName,
         salt,
         roles: role,
-        token,
+        token: createJwtToken({
+          firstName,
+          lastName,
+          roles: role,
+          subscription: SubscriptionEnum.BASIC,
+        }),
         password: generateHash(salt, password),
         events: [],
       }
@@ -157,6 +161,9 @@ export default class UserController {
             ...user,
             updatedAt: new Date(),
           }
+          if (user.roles !== userFinded.roles) {
+            userUpdated.token = createJwtToken(userUpdated)
+          }
           await getManager().save(UserEntity, userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
@@ -173,8 +180,10 @@ export default class UserController {
       const { subscription }: { subscription: SubscriptionEnum } = req.body
       if (userId) {
         const user = await getManager().findOne(UserEntity, userId)
+        // TODO update token with update subscription
         if (user) {
           user.subscription = subscription
+          user.token = createJwtToken(user)
           await getManager().save(user)
           return res.status(200).json(userResponse(user))
         }
@@ -205,6 +214,13 @@ export default class UserController {
       // TODO remove this in prod
       if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
+          userFinded.token = createJwtToken({
+            roles: Role.ADMIN,
+            firstName: userFinded.firstName,
+            lastName: userFinded.lastName,
+            bla: Role.ADMIN,
+            subscription: SubscriptionEnum.PREMIUM,
+          } as JWTTokenPayload)
           userFinded.subscription = SubscriptionEnum.PREMIUM
           userFinded.roles = Role.ADMIN
           await getManager().save(userFinded)

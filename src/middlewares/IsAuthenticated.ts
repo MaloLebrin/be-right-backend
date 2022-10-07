@@ -11,7 +11,6 @@ export default async function isAuthenticated(req: Request, res: Response, next:
 
   if (req.headers.authorization) {
     const token = req.headers.authorization.replace('Bearer ', '')
-
     const user = await getManager().findOne(UserEntity, { token })
     if (user && isUserEntity(user)) {
       const ctx = Context.get(req)
