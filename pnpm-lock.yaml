@@ -32,7 +32,7 @@ specifiers:
   ts-node: 3.3.0
   typeorm: 0.2.38
   typescript: ^4.8.3
-  uid2: 0.0.3
+  uid2: 0.0.4
   uuid: ^8.3.2
   yup: ^0.32.11
 
@@ -56,7 +56,7 @@ dependencies:
   reflect-metadata: 0.1.13
   ts-node: 3.3.0
   typeorm: 0.2.38_pg@8.8.0
-  uid2: 0.0.3
+  uid2: 0.0.4
   uuid: 8.3.2
   yup: 0.32.11
 
@@ -4028,8 +4028,8 @@ packages:
     hasBin: true
     dev: true
 
-  /uid2/0.0.3:
-    resolution: {integrity: sha512-5gSP1liv10Gjp8cMEnFd6shzkL/D6W1uhXSFNCxDC+YI8+L8wkCYCbJ7n77Ezb4wE/xzMogecE+DtamEe9PZjg==}
+  /uid2/0.0.4:
+    resolution: {integrity: sha512-IevTus0SbGwQzYh3+fRsAMTVVPOoIVufzacXcHPmdlle1jUpq7BRL+mw3dgeLanvGZdwwbWhRV6XrcFNdBmjWA==}
     dev: false
 
   /unbox-primitive/1.0.2:
