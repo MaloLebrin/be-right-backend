@@ -36,7 +36,7 @@
     "pino": "8.7.0",
     "pino-pretty": "9.1.1",
     "reflect-metadata": "^0.1.13",
-    "ts-node": "3.3.0",
+    "ts-node": "10.9.1",
     "typeorm": "0.2.38",
     "uid2": "0.0.4",
     "uuid": "^9.0.0",
