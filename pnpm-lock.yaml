@@ -26,7 +26,7 @@ specifiers:
   node-cron: ^3.0.2
   nodemailer: ^6.7.8
   pg: ^8.8.0
-  pino: 8.7.0
+  pino: 8.8.0
   pino-pretty: 9.1.1
   reflect-metadata: ^0.1.13
   ts-node: 10.9.1
@@ -51,7 +51,7 @@ dependencies:
   node-cron: 3.0.2
   nodemailer: 6.7.8
   pg: 8.8.0
-  pino: 8.7.0
+  pino: 8.8.0
   pino-pretty: 9.1.1
   reflect-metadata: 0.1.13
   ts-node: 10.9.1_4zwnqpttgf4jk6glmakanhruye
@@ -3189,8 +3189,8 @@ packages:
       thread-stream: 0.15.2
     dev: false
 
-  /pino/8.7.0:
-    resolution: {integrity: sha512-l9sA5uPxmZzwydhMWUcm1gI0YxNnYl8MfSr2h8cwLvOAzQLBLewzF247h/vqHe3/tt6fgtXeG9wdjjoetdI/vA==}
+  /pino/8.8.0:
+    resolution: {integrity: sha512-cF8iGYeu2ODg2gIwgAHcPrtR63ILJz3f7gkogaHC/TXVVXxZgInmNYiIpDYEwgEkxZti2Se6P2W2DxlBIZe6eQ==}
     hasBin: true
     dependencies:
       atomic-sleep: 1.0.0
