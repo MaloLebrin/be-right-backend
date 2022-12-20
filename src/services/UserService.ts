@@ -6,8 +6,8 @@ import { UserEntity } from '../entity/UserEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { generateHash, userResponse } from '../utils'
 import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
-import { CreateUserPayload, PhotographerCreatePayload, SubscriptionEnum, ThemeEnum } from '../types'
 import { Role } from '../types'
+import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
 
 export default class UserService {
@@ -118,5 +118,18 @@ export default class UserService {
     const newUser = getManager().create(UserEntity, user)
     await getManager().save(newUser)
     return newUser
+  }
+
+  public static async createPhotographer(photographer: PhotographerCreatePayload) {
+    const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
+    if (userAlReadyExist) {
+      await this.updateOne(userAlReadyExist.id, {
+        ...userAlReadyExist,
+        ...photographer,
+      })
+      const newPhotographer = await this.getOneWithRelations(userAlReadyExist.id)
+      return newPhotographer
+    }
+    return await this.createOnePhotoGrapher(photographer)
   }
 }

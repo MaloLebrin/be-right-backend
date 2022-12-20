@@ -241,16 +241,7 @@ export default class UserController {
   public static createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
-      const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
-      if (userAlReadyExist) {
-        await UserService.updateOne(userAlReadyExist.id, {
-          ...userAlReadyExist,
-          ...photographer,
-        })
-        const newPhotographer = await UserService.getOneWithRelations(userAlReadyExist.id)
-        return res.status(200).json(newPhotographer)
-      }
-      const newPhotographer = await UserService.createOnePhotoGrapher(photographer)
+      const newPhotographer = await UserService.createPhotographer(photographer)
       return res.status(200).json(newPhotographer)
     })
   }
