@@ -6,7 +6,7 @@ import { useEnv } from '../env'
 import { clearDB } from '../utils'
 import { createAdminUser } from './admin'
 import { createPhotographers } from './shared/photographerFixtures'
-import { seedUserCompany } from './UserCompany'
+import { seedMediumUserData, seedUserCompany } from './UserCompany'
 
 async function createDevSeeders() {
   const {
@@ -31,9 +31,11 @@ async function createDevSeeders() {
       logger.info('Clear DB end')
 
       logger.info('start seeds jobs')
+
       await createPhotographers()
       await createAdminUser()
       await seedUserCompany()
+      await seedMediumUserData()
 
       logger.info('end seeds jobs')
     })
