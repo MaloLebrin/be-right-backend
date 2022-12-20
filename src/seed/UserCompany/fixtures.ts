@@ -98,3 +98,86 @@ export const eventFixtureCompanyPremium = {
     end: dayjs().add(7, 'week'),
   },
 }
+
+export const userCompanyFixtureMedium = {
+  companyName: 'Mangemorts',
+  email: 'tom.elvis.jedusor@poudlard.com',
+  firstName: 'Tom',
+  lastName: 'Jedusor',
+  password: 'password',
+  role: Role.COMPANY,
+  subscription: SubscriptionEnum.MEDIUM,
+}
+
+export const addressFixtureCompanyMedium = {
+  addressLine: 'Rue du chaudron baveur',
+  addressLine2: '',
+  postalCode: '44000',
+  city: 'Godric\'s Hollow',
+  country: 'Angleterre',
+}
+
+export const employeesFixtureCompanyMedium = [
+  {
+    employee: {
+      email: 'bellatrix@mangemorts.com',
+      firstName: 'Bellatrix',
+      lastName: 'Lestrange',
+      phone: '0987654321',
+    },
+    address: {
+      addressLine: 'prison \'Azkaban',
+      addressLine2: '',
+      postalCode: '44000',
+      city: 'No were',
+      country: 'Ecosse',
+    },
+  },
+  {
+    employee: {
+      email: 'severus@poudlard.com',
+      firstName: 'Severus',
+      lastName: 'Rogue',
+      phone: '0987654321',
+    },
+    address: {
+      addressLine: 'Cachos salle commune serpentard',
+      addressLine2: '',
+      postalCode: '44000',
+      city: 'Poudlard',
+      country: 'Ecosse',
+    },
+
+  },
+  {
+    employee: {
+      email: 'lucius@manoirdesmalfoy.com',
+      firstName: 'Lucius',
+      lastName: 'Malfoy',
+      phone: '0987654321',
+    },
+    address: {
+      addressLine: 'Manoir des Malfoy',
+      addressLine2: '',
+      postalCode: '44000',
+      city: 'No were',
+      country: 'Ecosse',
+    },
+  },
+]
+
+export const eventFixtureCompanyMedium = {
+  address: {
+    addressLine: 'Cimetière',
+    addressLine2: '',
+    postalCode: '44000',
+    city: 'Godric\'s Hollow',
+    country: 'Angleterre',
+  },
+  event: {
+    name: 'Tournoi des Trois Sorciers',
+    description: 'Le Tournoi des Trois Sorciers est un concours de magie où s\'affrontent les trois principales écoles de sorcellerie européennes : Poudlard, Durmstrang et Beauxbâtons. Le vainqueur se voit décerner la Coupe du Tournoi des Trois Sorciers et mille Gallions. ',
+    start: dayjs(),
+    end: dayjs().add(7, 'week'),
+  },
+}
