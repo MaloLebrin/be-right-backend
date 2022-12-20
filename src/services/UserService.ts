@@ -4,10 +4,10 @@ import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
 import type { FileEntity } from '../entity/FileEntity'
-import { userResponse } from '../utils'
+import { generateHash, userResponse } from '../utils'
 import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
-import type { PhotographerCreatePayload, ThemeEnum } from '../types'
 import { Role } from '../types'
+import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
 
 export default class UserService {
@@ -85,5 +85,51 @@ export default class UserService {
     })
     await getManager().save(newUser)
     return userResponse(newUser)
+  }
+
+  public static async createOneUser(payload: CreateUserPayload) {
+    const {
+      companyName,
+      email,
+      firstName,
+      lastName,
+      password,
+      role,
+      subscription,
+    } = payload
+
+    const salt = uid2(128)
+    const user = {
+      companyName,
+      email,
+      firstName,
+      lastName,
+      salt,
+      roles: role,
+      token: createJwtToken({
+        firstName,
+        lastName,
+        roles: role,
+        subscription,
+      }),
+      password: generateHash(salt, password),
+      events: [],
+    }
+    const newUser = getManager().create(UserEntity, user)
+    await getManager().save(newUser)
+    return newUser
+  }
+
+  public static async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
+    const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
+    if (userAlReadyExist) {
+      await this.updateOne(userAlReadyExist.id, {
+        ...userAlReadyExist,
+        ...photographer,
+      })
+      const newPhotographer = await this.getOneWithRelations(userAlReadyExist.id)
+      return newPhotographer
+    }
+    return await this.createOnePhotoGrapher(photographer) as UserEntity
   }
 }

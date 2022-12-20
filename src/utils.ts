@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
-import { Like } from 'typeorm'
+import { Like, getConnection } from 'typeorm'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
@@ -107,5 +107,13 @@ export async function wrapperRequest<T>(req: Request, res: Response, request: ()
     return res.status(400).json({ error: error.message })
   } finally {
     logger.info(`${req.url} route ended`)
+  }
+}
+
+export async function clearDB() {
+  const entities = getConnection().entityMetadatas
+  for (const entity of entities) {
+    const repository = await getConnection().getRepository(entity.name)
+    await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`)
   }
 }
