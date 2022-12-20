@@ -120,7 +120,7 @@ export default class UserService {
     return newUser
   }
 
-  public static async createPhotographer(photographer: PhotographerCreatePayload) {
+  public static async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
     const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
     if (userAlReadyExist) {
       await this.updateOne(userAlReadyExist.id, {
@@ -130,6 +130,6 @@ export default class UserService {
       const newPhotographer = await this.getOneWithRelations(userAlReadyExist.id)
       return newPhotographer
     }
-    return await this.createOnePhotoGrapher(photographer)
+    return await this.createOnePhotoGrapher(photographer) as UserEntity
   }
 }

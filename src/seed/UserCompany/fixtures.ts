@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { Role, SubscriptionEnum } from '../../types'
 
 export const userCompanyFixturePremium = {
@@ -81,3 +82,19 @@ export const employeesFixtureCompanyPremium = [
     },
   },
 ]
+
+export const eventFixtureCompanyPremium = {
+  address: {
+    addressLine: 'Rue du chaudron baveur',
+    addressLine2: '',
+    postalCode: '44000',
+    city: 'Godric\'s Hollow',
+    country: 'Angleterre',
+  },
+  event: {
+    name: 'Coupe du monde de Quiddich',
+    description: 'La Coupe du Monde de Quidditch est régulée par la Commission de Quidditch de la Confédération internationale des sorciers. D\'après les rumeurs, le règlement concernant l\'usage de la magie sur et en dehors du terrain remplirait dix-neuf volumes. Parmi ces règles, on peut noter l\'interdiction de l\'introduction d\'un dragon sur le terrain ou la prohibition de l\'altération de n\'importe quelle partie du corps de l\'arbitre, que celui-ci le veuille ou non. Les matchs sont organisés dans des lieux à l\'abri des Moldus fouineurs comme les landes isolées, les déserts ou les îles inhabitées, pour éviter les infractions au Code International du Secret Magique.',
+    start: dayjs(),
+    end: dayjs().add(7, 'week'),
+  },
+}
