@@ -27,7 +27,7 @@ export async function seedUserCompany() {
 
   const event = await EventService.createOneEvent(
     {
-      ...eventFixtureCompanyPremium,
+      ...eventFixtureCompanyPremium.event,
       employeeIds,
       createdByUser: user.id,
     } as unknown as Partial<EventEntity>,
@@ -35,8 +35,10 @@ export async function seedUserCompany() {
     1,
   )
 
-  console.log(event, '<==== event')
+  await AddressService.createOne({
+    address: eventFixtureCompanyPremium.address,
+    eventId: event.id,
+  })
 
-  const answers = await AnswerService.createMany(event.id, employeeIds)
-  console.log(answers, '<==== answers')
+  await AnswerService.createMany(event.id, employeeIds)
 }
