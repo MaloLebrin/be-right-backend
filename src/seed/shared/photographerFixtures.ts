@@ -1,4 +1,4 @@
-import UserService from '@/services/UserService'
+import UserService from '../../services/UserService'
 
 export const photographerFixture1 = {
   email: 'rita.skitter@gazette.com',

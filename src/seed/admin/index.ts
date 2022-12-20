@@ -3,7 +3,7 @@ import uid2 from 'uid2'
 import { createJwtToken } from '../../utils/'
 import { UserEntity } from '../../entity'
 import { generateHash } from '../../utils'
-import { Role, SubscriptionEnum } from '@/types'
+import { Role, SubscriptionEnum } from '../../types'
 
 export async function createAdminUser() {
   const salt = uid2(128)
