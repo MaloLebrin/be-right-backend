@@ -12,7 +12,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "npx nodemon index.ts",
-    "tsc": "tsc",
+    "tsc": "rm -rf build/ && tsc",
     "type:check": "tsc -noEmit",
     "build": "node build/index.js",
     "lint": "eslint .",
