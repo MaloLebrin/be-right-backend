@@ -7,3 +7,5 @@ async function createDevSeeders() {
   await createAdminUser()
   await seedUserCompany()
 }
+
+createDevSeeders()
