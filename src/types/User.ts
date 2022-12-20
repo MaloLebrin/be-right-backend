@@ -14,3 +14,13 @@ export interface JWTTokenPayload {
   roles: Role
   subscription?: SubscriptionEnum
 }
+
+export interface CreateUserPayload {
+  companyName: string
+  email: string
+  firstName: string
+  lastName: string
+  password: string
+  role: Role
+  subscription: SubscriptionEnum
+}
