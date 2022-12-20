@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
 import { getManager } from 'typeorm'
-import uid2 from 'uid2'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -43,25 +42,15 @@ export default class UserController {
       if (userAlReadyExist) {
         return res.status(400).json({ error: 'cet email existe déjà' })
       }
-      const salt = uid2(128)
-      const user = {
+      const newUser = await UserService.createOneUser({
         companyName,
         email,
         firstName,
         lastName,
-        salt,
-        roles: role,
-        token: createJwtToken({
-          firstName,
-          lastName,
-          roles: role,
-          subscription: SubscriptionEnum.BASIC,
-        }),
-        password: generateHash(salt, password),
-        events: [],
-      }
-      const newUser = getManager().create(UserEntity, user)
-      await getManager().save(newUser)
+        password,
+        role,
+        subscription: SubscriptionEnum.BASIC,
+      })
       return res.status(200).json(userResponse(newUser))
     })
   }
