@@ -1,4 +1,3 @@
-import { getManager } from 'typeorm'
 import uid2 from 'uid2'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type EventEntity from '../entity/EventEntity'
@@ -9,10 +8,17 @@ import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/en
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
+import { APP_SOURCE } from '..'
 
 export default class UserService {
+  static repository = APP_SOURCE.getRepository(UserEntity)
+
   public static async getByToken(token: string): Promise<UserEntity> {
-    const userFinded = await getManager().findOne(UserEntity, { token }, { relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'] })
+    const userFinded = await this.repository.findOne({
+      where: { token },
+      relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'],
+    })
+
     if (userFinded) {
       const events = userFinded.events as EventEntity[]
       const employees = userFinded.employee as EmployeeEntity[]
@@ -28,14 +34,21 @@ export default class UserService {
   }
 
   public static async updateTheme(id: number, theme: ThemeEnum) {
-    const user = await getManager().findOne(UserEntity, id)
+    const user = await await this.repository.findOne({
+      where: { id },
+    })
+
     user.theme = theme
-    await getManager().save(user)
+    await this.repository.save(user)
     return user
   }
 
   public static async getOneWithRelations(id: number): Promise<UserEntity> {
-    const user = await getManager().findOne(UserEntity, id, { relations: ['events', 'files', 'employee', 'profilePicture', 'address'] })
+    const user = await this.repository.findOne({
+      where: { id },
+      relations: ['events', 'files', 'employee', 'profilePicture', 'address'],
+    })
+
     if (user) {
       const events = user.events as EventEntity[]
       const employees = user.employee as EmployeeEntity[]
@@ -58,22 +71,23 @@ export default class UserService {
   }
 
   public static async updateOne(id: number, payload: UserEntity) {
-    const userFinded = await getManager().findOne(UserEntity, id)
+    const userFinded = await this.repository.findOne({ where: { id } })
+
     const userUpdated = {
       ...userFinded,
       ...payload,
       updatedAt: new Date(),
       token: payload.roles !== userFinded.roles ? createJwtToken(payload) : userFinded.token,
     }
-    await getManager().save(UserEntity, userUpdated)
+    await this.repository.save(userUpdated)
   }
 
   public static async findOneByEmail(email: string) {
-    return getManager().findOne(UserEntity, { email })
+    return this.repository.findOne({ where: { email } })
   }
 
   public static async createOnePhotoGrapher(user: PhotographerCreatePayload) {
-    const newUser = getManager().create(UserEntity, {
+    const newUser = this.repository.create({
       ...user,
       salt: uid2(128),
       token: createJwtToken({
@@ -83,7 +97,7 @@ export default class UserService {
       }),
       roles: Role.PHOTOGRAPHER,
     })
-    await getManager().save(newUser)
+    await this.repository.save(newUser)
     return userResponse(newUser)
   }
 
@@ -115,13 +129,14 @@ export default class UserService {
       password: generateHash(salt, password),
       events: [],
     }
-    const newUser = getManager().create(UserEntity, user)
-    await getManager().save(newUser)
+    const newUser = this.repository.create(user)
+    await this.repository.save(newUser)
     return newUser
   }
 
   public static async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
-    const userAlReadyExist = await getManager().findOne(UserEntity, { email: photographer.email })
+    const userAlReadyExist = await this.findOneByEmail(photographer.email)
+
     if (userAlReadyExist) {
       await this.updateOne(userAlReadyExist.id, {
         ...userAlReadyExist,

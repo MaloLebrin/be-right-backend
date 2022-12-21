@@ -1,12 +1,16 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import { BugReportEntity } from '../entity/BugReportEntity'
 import BugReportService from '../services/BugReportService'
 import Context from '../context'
 import { paginator, wrapperRequest } from '../utils'
 import { bugReportSearchableFields } from '../types/BugReport'
+import { APP_SOURCE } from '..'
 
 export default class BugReportController {
+  static getManager = APP_SOURCE.manager
+  static bugRepository = APP_SOURCE.getRepository(BugReportEntity)
+
   public static createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { bugReport }: { bugReport: BugReportEntity } = req.body
@@ -65,8 +69,13 @@ export default class BugReportController {
   public static getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, bugReportSearchableFields)
-      const [bugReports, count] = await getManager().findAndCount(BugReportEntity, queriesFilters)
-      return res.status(200).json({ data: bugReports, currentPage: queriesFilters.page, limit: queriesFilters.take, total: count })
+      const bugReports = await this.bugRepository.find({
+        ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<BugReportEntity>,
+        },
+      })
+      return res.status(200).json({ data: bugReports, currentPage: queriesFilters.page, limit: queriesFilters.take })
     })
   }
 

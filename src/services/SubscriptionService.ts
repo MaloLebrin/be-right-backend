@@ -1,30 +1,47 @@
-import { getManager } from 'typeorm'
+import { In } from 'typeorm'
+import { APP_SOURCE } from '..'
 import { SubscriptionEntitiy } from '../entity'
 import type { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
-  public createOne = async (subscriptionType: SubscriptionEnum, userId: number) => {
-    const subscription = getManager().create(SubscriptionEntitiy, {
+  static repository = APP_SOURCE.getRepository(SubscriptionEntitiy)
+
+  public static async createOne(subscriptionType: SubscriptionEnum, userId: number) {
+    const subscription = this.repository.create({
       type: subscriptionType,
       user: userId,
       expireAt: new Date(), // TODO generate date with payment and  type
     })
+    await this.repository.save(subscription)
     return subscription
   }
 
-  public getOne = async (id: number) => {
-    return getManager().findOne(SubscriptionEntitiy, id, { relations: ['user', 'payment'] })
+  public static async getOne(id: number) {
+    return this.repository.findOne({
+      where: { id },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public getMany = async (ids: number[]) => {
-    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ['user', 'payment'] })
+  public static async getMany(ids: number[]) {
+    return this.repository.find({
+      where: {
+        id: In(ids),
+      },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public getOneByUserId = async (userId: number) => {
-    return getManager().findOne(SubscriptionEntitiy, { user: userId }, { relations: ['payment'] })
+  public static async getOneByUserId(userId: number) {
+    return this.repository.findOne({
+      where: {
+        user: userId,
+      },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public updateOne = async (id: number, subscription: SubscriptionEntitiy) => {
-    return getManager().update(SubscriptionEntitiy, id, subscription)
+  public static async updateOne(id: number, subscription: SubscriptionEntitiy) {
+    return this.repository.update(id, subscription)
   }
 }

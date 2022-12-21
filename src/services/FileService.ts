@@ -1,17 +1,22 @@
 import cloudinary from 'cloudinary'
-import { getManager } from 'typeorm'
+import { In } from 'typeorm'
 import { FileEntity } from '../entity/FileEntity'
 import { UserEntity } from '../entity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
+import { APP_SOURCE } from '..'
 
 export default class FileService {
+  static getManager = APP_SOURCE.manager
+
+  static repository = APP_SOURCE.getRepository(FileEntity)
+
   public static async deleteFile(fileId: number) {
-    const doc = await getManager().findOne(FileEntity, fileId)
+    const doc = await this.getFile(fileId)
     if (doc) {
       await cloudinary.v2.uploader.destroy(doc.public_id)
-      const deleted = await getManager().delete(FileEntity, fileId)
+      const deleted = await this.repository.delete(fileId)
       return deleted
     }
   }
@@ -21,17 +26,26 @@ export default class FileService {
   }
 
   public static async getFile(fileId: number) {
-    const doc = await getManager().findOne(FileEntity, fileId, { relations: ['createdByUser'] })
+    const doc = await this.repository.findOne({
+      where: {
+        id: fileId,
+      },
+      relations: ['createdByUser'],
+    })
     return doc
   }
 
   public static async getManyFiles(ids: number[]) {
-    const docs = await getManager().findByIds(FileEntity, ids)
+    const docs = await this.repository.find({
+      where: {
+        id: In(ids),
+      },
+    })
     return docs
   }
 
   public static async getFilesByUser(id: number) {
-    const docs = await getManager().find(FileEntity, {
+    const docs = await this.repository.find({
       where: {
         createdByUser: id,
       },
@@ -40,7 +54,7 @@ export default class FileService {
   }
 
   public static async getFilesByEvent(id: number) {
-    const docs = await getManager().find(FileEntity, {
+    const docs = await this.repository.find({
       where: {
         event: id,
       },
@@ -49,7 +63,7 @@ export default class FileService {
   }
 
   public static async getFilesByType(type: FileTypeEnum) {
-    const docs = await getManager().find(FileEntity, {
+    const docs = await this.repository.find({
       where: {
         type,
       },
@@ -65,7 +79,7 @@ export default class FileService {
   }
 
   public static async updateFile(id: number, file: FileEntity) {
-    const updatedfile = await getManager().findOne(FileEntity, id)
+    const updatedfile = await this.getFile(id)
     if (!updatedfile) {
       return null
     }
@@ -73,19 +87,24 @@ export default class FileService {
       ...file,
       updatedAt: new Date(),
     }
-    await getManager().update(FileEntity, id, fileToSave)
+    await this.repository.update(id, fileToSave)
     return this.getFile(id)
   }
 
   public static async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
     const { NODE_ENV } = useEnv()
 
-    const existProfilePicture = await getManager().findOne(FileEntity, { createdByUser: user.id, type: FileTypeEnum.PROFILE_PICTURE })
-    const userToSave = await getManager().findOne(UserEntity, user.id)
+    const existProfilePicture = await this.repository.findOne({
+      where: {
+        createdByUser: user.id,
+        type: FileTypeEnum.PROFILE_PICTURE,
+      },
+    })
+    const userToSave = await this.getManager.findOne(UserEntity, { where: { id: user.id } })
 
     if (existProfilePicture) {
       userToSave.profilePicture = null
-      await getManager().save(userToSave)
+      await this.getManager.save(userToSave)
       await this.deleteFile(existProfilePicture.id)
     }
 
@@ -110,10 +129,12 @@ export default class FileService {
       signature: result.signature,
       mimeType: file.mimetype,
     }
-    const fileUploaded = getManager().create(FileEntity, picture)
+
+    const fileUploaded = this.repository.create(picture)
+
     if (fileUploaded) {
       userToSave.profilePicture = fileUploaded
-      await getManager().save([fileUploaded, userToSave])
+      await this.getManager.save([fileUploaded, userToSave])
       return fileUploaded
     }
   }
@@ -121,7 +142,12 @@ export default class FileService {
   public static async createLogo(file: Express.Multer.File, user: UserEntity) {
     const { NODE_ENV } = useEnv()
 
-    const existLogos = await getManager().find(FileEntity, { createdByUser: user.id, type: FileTypeEnum.LOGO })
+    const existLogos = await this.repository.find({
+      where: {
+        createdByUser: user.id,
+        type: FileTypeEnum.LOGO,
+      },
+    })
 
     if (existLogos.length > 0) {
       const logosIds = existLogos.map(logo => logo.id)
@@ -148,9 +174,9 @@ export default class FileService {
       signature: result.signature,
       mimeType: file.mimetype,
     }
-    const fileUploaded = getManager().create(FileEntity, picture)
+    const fileUploaded = this.repository.create(picture)
     if (fileUploaded) {
-      await getManager().save(fileUploaded)
+      await this.repository.save(fileUploaded)
       return fileUploaded
     }
   }

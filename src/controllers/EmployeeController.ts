@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import Context from '../context'
 import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
 import { paginator, wrapperRequest } from '../utils'
@@ -12,8 +12,12 @@ import type { UserEntity } from '../entity/UserEntity'
 import { isArrayOfNumbers, isUserAdmin, isUserEntity } from '../utils/index'
 import { AddressService } from '../services'
 import type { EmployeeCreateOneRequest } from '../types'
+import { APP_SOURCE } from '..'
 
 export default class EmployeeController {
+  static getManager = APP_SOURCE.manager
+  static employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
+
   /**
    * employee must have event id
    * @param employee employee: Partial<employeeEntity>
@@ -179,9 +183,12 @@ export default class EmployeeController {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<EmployeeEntity>,
+        },
         relations: ['createdByUser', 'answers', 'address'],
       }
-      const employees = await getManager().find(EmployeeEntity, employeeFilters)
+      const employees = await this.employeeRepository.find(employeeFilters)
       const entityReturned = employees.map(employee => {
         const user = employee.createdByUser as UserEntity
         return {
@@ -191,7 +198,7 @@ export default class EmployeeController {
         }
       })
 
-      const total = await getManager().count(EmployeeEntity, queriesFilters)
+      const total = await this.employeeRepository.countBy(queriesFilters as FindOptionsWhere<EmployeeEntity>)
       return res.status(200).json({ data: entityReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
     })
   }
@@ -229,8 +236,8 @@ export default class EmployeeController {
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ['createdByUser'] })
-        const employeeUser = getEmployee.createdByUser as UserEntity
+        const getEmployee = await EmployeeService.getOne(id)
+        const employeeUser = getEmployee.createdByUser as unknown as UserEntity
         if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
           await EmployeeService.deleteOne(id)
           if (employeeUser.events && employeeUser.events.length && isArrayOfNumbers(employeeUser.events)) {
