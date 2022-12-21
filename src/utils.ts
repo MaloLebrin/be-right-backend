@@ -112,9 +112,9 @@ export async function wrapperRequest<T>(req: Request, res: Response, request: ()
 }
 
 export async function clearDB() {
-  const entities = getConnection().entityMetadatas
+  const entities = createAppSource().entityMetadatas
   for (const entity of entities) {
-    const repository = await getConnection().getRepository(entity.name)
+    const repository = await createAppSource().getRepository(entity.name)
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`)
   }
 }

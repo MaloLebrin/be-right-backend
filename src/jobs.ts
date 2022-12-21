@@ -1,38 +1,20 @@
-import { createConnection, getConnectionOptions } from 'typeorm'
 import cron from 'node-cron'
-import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import * as dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import { CronJobInterval } from './utils/cronHelper'
 import udpateEventStatusJob from './jobs/updateEventsStatusJob'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import { createAppSource } from './utils'
 
 (async () => {
   const {
     CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
-    DATABASE_URL,
-    NODE_ENV,
   } = useEnv()
 
-  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
-  let connectionsOptions = config
-
-  if (NODE_ENV === 'production') {
-    connectionsOptions = {
-      ...config,
-      url: DATABASE_URL!,
-    }
-  } else {
-    connectionsOptions = {
-      ...config,
-      name: 'default',
-    }
-  }
-
-  createConnection(connectionsOptions).then(async () => {
+  createAppSource().initialize().then(async () => {
     const { logger } = useLogger()
     dotenv.config()
 
