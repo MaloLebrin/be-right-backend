@@ -11,6 +11,8 @@ import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 
+export const APP_SOURCE = createAppSource()
+
 async function startServer() {
   const {
     CLOUDINARY_API_KEY,
@@ -20,7 +22,7 @@ async function startServer() {
     PORT,
   } = useEnv()
 
-  createAppSource().initialize().then(async () => {
+  APP_SOURCE.initialize().then(async () => {
     const app = express()
     const { loggerMiddleware } = useLogger()
     dotenv.config()
