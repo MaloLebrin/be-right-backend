@@ -1,11 +1,12 @@
 import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
-import { Like, getConnection } from 'typeorm'
+import { DataSource, Like, getConnection } from 'typeorm'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
 import { useLogger } from './middlewares/loggerService'
+import { useEnv } from './env'
 
 /**
  * create hash password
@@ -116,4 +117,27 @@ export async function clearDB() {
     const repository = await getConnection().getRepository(entity.name)
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`)
   }
+}
+
+export function createAppSource() {
+  const {
+    DATABASE_URL,
+    NODE_ENV,
+  } = useEnv()
+
+  let connectionsOptions
+
+  if (NODE_ENV === 'production') {
+    connectionsOptions = {
+      url: DATABASE_URL!,
+    }
+  } else {
+    connectionsOptions = {
+      name: 'default',
+    }
+  }
+
+  return new DataSource({
+    ...connectionsOptions,
+  })
 }

@@ -1,43 +1,26 @@
 import 'reflect-metadata'
-import { createConnection, getConnectionOptions } from 'typeorm'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
-import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import Context from './context'
 import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import { createAppSource } from './utils'
 
 async function startServer() {
   const {
     CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
-    DATABASE_URL,
     NODE_ENV,
     PORT,
   } = useEnv()
 
-  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
-  let connectionsOptions = config
-
-  if (NODE_ENV === 'production') {
-    connectionsOptions = {
-      ...config,
-      url: DATABASE_URL!,
-    }
-  } else {
-    connectionsOptions = {
-      ...config,
-      name: 'default',
-    }
-  }
-
-  createConnection({ ...connectionsOptions, name: 'default' }).then(async () => {
+  createAppSource().initialize().then(async () => {
     const app = express()
     const { loggerMiddleware } = useLogger()
     dotenv.config()
