@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
-import { DataSource, Like, getConnection } from 'typeorm'
+import { DataSource, Like } from 'typeorm'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
@@ -79,15 +79,12 @@ export const paginator = (req: Request, searchableField: string[]) => {
   const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
   const search = req.query.search ? Like(`%${req.query.search}%`) : null
 
-  const queries = {
+  return {
     page,
     take: limit,
     skip: (page - 1) * limit,
-    orderBy: req.query.orderBy ? req.query.orderBy : 'id',
-    orderDir: req.query.orderDir ? req.query.orderDir : 'desc',
     where: req.query.filters ? req.query.filters : search && searchableField.length ? generateWhereFieldsByEntity(searchableField, req) : null,
   }
-  return queries
 }
 
 export function toCent(value: number) {
