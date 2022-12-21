@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import type AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
+import { APP_SOURCE } from '..'
 
 export default class AnswerController {
   public static createOne = async (req: Request, res: Response) => {
@@ -58,7 +58,7 @@ export default class AnswerController {
         if (answer) {
           answer.hasSigned = !!isSigned
           answer.signedAt = new Date()
-          await getManager().save(answer)
+          await APP_SOURCE.manager.save(answer)
           await EventService.multipleUpdateForEvent(answer.event)
           return res.status(200).json(answer)
         }

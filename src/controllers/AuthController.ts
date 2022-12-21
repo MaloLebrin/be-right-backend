@@ -1,21 +1,22 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
 import uid2 from 'uid2'
 import { generateHash, wrapperRequest } from '../utils'
 import { UserEntity } from '../entity'
 import MailService from '../services/MailService'
 import { useLogger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
+import { APP_SOURCE } from '..'
 
 export default class AuthController {
   static logger = useLogger().logger
+  static getManager = APP_SOURCE.manager
 
   public static forgotPassword = async (req: Request, res: Response) => {
     const { MAIL_ADRESS } = useEnv()
 
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
-      const user = await getManager().findOne(UserEntity, { email })
+      const user = await this.getManager.findOneBy(UserEntity, { email })
       if (!user) {
         return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
       }
@@ -24,8 +25,10 @@ export default class AuthController {
       const twoFactorRecoveryCode = generateHash(twoFactorSecret, email)
       user.twoFactorSecret = twoFactorSecret
       user.twoFactorRecoveryCode = twoFactorRecoveryCode
+
       const transporter = await MailService.getConnection()
       const { emailBody, emailText } = MailService.getResetPasswordTemplate(user, twoFactorRecoveryCode)
+
       transporter.sendMail({
         from: `${MAIL_ADRESS}`,
         to: email,
@@ -40,7 +43,7 @@ export default class AuthController {
         this.logger.info('Message sent successfully.')
       })
 
-      await getManager().save(user)
+      await this.getManager.save(user)
       return res.status(200).json({ message: 'Email envoyé', isSuccess: true })
     })
   }
@@ -49,7 +52,7 @@ export default class AuthController {
     await wrapperRequest(req, res, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
-      const user = await getManager().findOne(UserEntity, { email })
+      const user = await this.getManager.findOneBy(UserEntity, { email })
       if (!user) {
         return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
       }
@@ -59,7 +62,7 @@ export default class AuthController {
       user.password = generateHash(user.salt, password)
       user.twoFactorRecoveryCode = null
       user.twoFactorSecret = null
-      await getManager().save(user)
+      await this.getManager.save(user)
       return res.status(200).json({ message: 'Mot de passe mis à jour', isSuccess: true })
     })
   }
