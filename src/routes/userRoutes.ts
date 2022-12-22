@@ -16,32 +16,32 @@ const {
   validate,
 } = useValidation()
 
-router.get('/many', [isAuthenticated], UserController.getMany)
+router.get('/many', [isAuthenticated], new UserController().getMany)
 
-router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], UserController.getAll)
+router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], new UserController().getAll)
 
-router.get('/:id', [validate(idParamsSchema)], UserController.getOne)
+router.get('/:id', [validate(idParamsSchema)], new UserController().getOne)
 
-router.get('/partners/:id', [validate(idParamsSchema), isAuthenticated], UserController.getPhotographerAlreadyWorkWith)
+router.get('/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
 
-router.post('/token', [validate(tokenSchema)], UserController.getOneByToken)
+router.post('/token', [validate(tokenSchema)], new UserController().getOneByToken)
 
-router.post('/', [validate(registerSchema)], UserController.newUser)
+router.post('/', [validate(registerSchema)], new UserController().newUser)
 
-router.post('/login', [validate(loginSchema)], UserController.login)
+router.post('/login', [validate(loginSchema)], new UserController().login)
 
-router.post('/photographer', [validate(createPhotographerSchema)], UserController.createPhotographer)
+router.post('/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
 
-router.post('/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], UserController.isMailAlreadyUsed)
+router.post('/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
 
-router.patch('/:id', [isAuthenticated], UserController.updateOne)
+router.patch('/:id', [isAuthenticated], new UserController().updateOne)
 
-router.patch('/theme/:id', [validate(themeSchema), isAuthenticated], UserController.updateTheme)
+router.patch('/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
 
-router.delete('/:id', [isAuthenticated], UserController.deleteOne)
+router.delete('/:id', [isAuthenticated], new UserController().deleteOne)
 
-router.patch('/subscription/:id', [checkUserRole(Role.ADMIN)], UserController.updatesubscription)
+router.patch('/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
 
-// router.get('/clear', UserController.clear)
+// router.get('/clear', new UserController().clear)
 
 export default router

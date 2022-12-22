@@ -10,8 +10,8 @@ const {
   validate,
 } = useValidation()
 
-router.post('/forgot-password', [validate(emailAlreadyExistSchema)], AuthController.forgotPassword)
+router.post('/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
 
-router.post('/reset-password', [validate(resetPasswordSchema)], AuthController.resetPassword)
+router.post('/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
 
 export default router

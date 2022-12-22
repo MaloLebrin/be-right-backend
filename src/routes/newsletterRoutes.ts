@@ -11,10 +11,10 @@ const {
   validate,
 } = useValidation()
 
-router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], NewsletterController.getAllPaginate)
+router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], new NewsletterController().getAllPaginate)
 
-router.delete('/:id', [validate(idParamsSchema), isAuthenticated], NewsletterController.deleteOne)
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new NewsletterController().deleteOne)
 
-router.post('/', [validate(emailAlreadyExistSchema)], NewsletterController.createOne)
+router.post('/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
 
 export default router

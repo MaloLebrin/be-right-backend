@@ -1,18 +1,22 @@
 import dayjs from 'dayjs'
-import { getManager } from 'typeorm'
+import type { DataSource } from 'typeorm'
 import EventEntity from '../entity/EventEntity'
 import EventService from '../services/EventService'
 
-export default async function udpateEventStatusJob() {
+export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
   try {
     const dateStart = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
     console.warn(`Sarting update event status at ${dateStart}`)
-    const events = await getManager().find(EventEntity)
+
+    const eventService = new EventService()
+
+    const events = await APP_SOURCE.manager.find(EventEntity)
     console.info(events.length, 'events')
+
     if (events.length > 0) {
-      await Promise.all(events.map(event => EventService.getNumberSignatureNeededForEvent(event.id)))
-      await Promise.all(events.map(event => EventService.updateStatusEventWhenCompleted(event)))
-      await EventService.updateStatusForEventArray(events)
+      await Promise.all(events.map(event => eventService.getNumberSignatureNeededForEvent(event.id)))
+      await Promise.all(events.map(event => eventService.updateStatusEventWhenCompleted(event)))
+      await eventService.updateStatusForEventArray(events)
     }
   } catch (error) {
     console.error(error, 'error')

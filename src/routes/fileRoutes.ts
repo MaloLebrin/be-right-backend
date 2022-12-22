@@ -12,24 +12,24 @@ const {
   validate,
 } = useValidation()
 
-router.post('/profile', [isAuthenticated], upload.single('file'), FileController.createProfilePicture)
+router.post('/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
 
-router.post('/logo', [isAuthenticated], upload.single('file'), FileController.createLogo)
+router.post('/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
 
-router.post('/:id', [isAuthenticated], upload.single('file'), FileController.newFile)
+router.post('/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
 
-router.patch('/:id', [isAuthenticated], FileController.updateOne)
+router.patch('/:id', [isAuthenticated], new FileController().updateOne)
 
-router.get('/', [isAuthenticated], FileController.getAllPaginate)
+router.get('/', [isAuthenticated], new FileController().getAllPaginate)
 
-router.get('/:id', [validate(idParamsSchema), isAuthenticated], FileController.getFile)
+router.get('/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
 
-router.get('/many', [isAuthenticated], FileController.getFiles)
+router.get('/many', [isAuthenticated], new FileController().getFiles)
 
-router.get('/user/:id', [isAuthenticated], FileController.getFilesByUser)
+router.get('/user/:id', [isAuthenticated], new FileController().getFilesByUser)
 
-router.get('/event/:id', [isAuthenticated], FileController.getFilesByEvent)
+router.get('/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
 
-router.delete('/:id', [validate(idParamsSchema), isAuthenticated], FileController.deleteFile)
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
 
 export default router

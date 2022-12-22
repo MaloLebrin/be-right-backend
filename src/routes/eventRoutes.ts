@@ -10,20 +10,20 @@ const {
   validate,
 } = useValidation()
 
-router.get('/many', [isAuthenticated], EventController.getMany)
+router.get('/many', [isAuthenticated], new EventController().getMany)
 
-router.get('/', [isAuthenticated], EventController.getAll)
+router.get('/', [isAuthenticated], new EventController().getAll)
 
-router.get('/:id', [validate(idParamsSchema), isAuthenticated], EventController.getOne)
+router.get('/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
 
-router.post('/:id', [validate(createOneEventSchema), isAuthenticated], EventController.createOne)
+router.post('/:id', [validate(createOneEventSchema), isAuthenticated], new EventController().createOne)
 
-router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], EventController.getAllForUser)
+router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getAllForUser)
 
-router.patch('/:id', [validate(idParamsSchema), isAuthenticated], EventController.updateOne)
+router.patch('/:id', [validate(idParamsSchema), isAuthenticated], new EventController().updateOne)
 
-router.delete('/:id', [validate(idParamsSchema), isAuthenticated], EventController.deleteOne)
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
 
-// router.get('/clear', EventController.clear)
+// router.get('/clear', new EventController().clear)
 
 export default router

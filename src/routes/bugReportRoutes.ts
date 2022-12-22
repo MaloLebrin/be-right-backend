@@ -13,32 +13,32 @@ const {
   validate,
 } = useValidation()
 
-router.get('/', [isAuthenticated], BugReportController.getAll)
+router.get('/', [isAuthenticated], new BugReportController().getAll)
 
 router.get('/:id', [
   validate(idParamsSchema),
   isAuthenticated,
   checkUserRole(Role.ADMIN),
-], BugReportController.getOne)
+], new BugReportController().getOne)
 
-router.post('/', [validate(createbugSchema), isAuthenticated], BugReportController.createOne)
+router.post('/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
 
 router.patch('/:id', [
   validate(idParamsSchema),
   isAuthenticated,
   checkUserRole(Role.ADMIN),
-], BugReportController.updateOne)
+], new BugReportController().updateOne)
 
 router.patch('/status/:id', [
   validate(idParamsSchema),
   isAuthenticated,
   checkUserRole(Role.ADMIN),
-], BugReportController.updateStatus)
+], new BugReportController().updateStatus)
 
 router.delete('/:id', [
   validate(idParamsSchema),
   isAuthenticated,
   checkUserRole(Role.ADMIN),
-], BugReportController.deleteOne)
+], new BugReportController().deleteOne)
 
 export default router

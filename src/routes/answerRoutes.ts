@@ -13,16 +13,16 @@ const {
   validate,
 } = useValidation()
 
-router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], AnswerController.getManyForEvent)
+router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
 
-router.post('/', [validate(createOneAnswerSchema), isAuthenticated], AnswerController.createOne)
+router.post('/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
 
-router.post('/many', [validate(createManyAnswersSchema), isAuthenticated], AnswerController.createMany)
+router.post('/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
 
-router.patch('/', [isAuthenticated], AnswerController.updateOne)
+router.patch('/', [isAuthenticated], new AnswerController().updateOne)
 
-router.patch('/status', [validate(updateAnswerStatusSchema), isAuthenticated], AnswerController.updateAnswerStatus)
+router.patch('/status', [validate(updateAnswerStatusSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
 
-router.delete('/:id', [validate(idParamsSchema), isAuthenticated], AnswerController.deleteOne)
+router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
 
 export default router
