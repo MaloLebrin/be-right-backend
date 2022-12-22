@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { EventStatusEnum } from '../types/Event'
 import { BaseEntity } from './BaseEntity'
