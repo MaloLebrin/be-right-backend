@@ -13,11 +13,11 @@ const {
 
 router.get('/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOne)
 
-router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEvent)
+// router.get('/event/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEvent)
 
-router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByUser)
+// router.get('/user/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByUser)
 
-router.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEmployee)
+// router.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], AddresController.getOneByEmployee)
 
 router.post('/', [validate(createAddressSchema), isAuthenticated], AddresController.createOne)
 
