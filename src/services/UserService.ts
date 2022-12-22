@@ -1,4 +1,5 @@
 import uid2 from 'uid2'
+import type { Repository } from 'typeorm'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
@@ -11,9 +12,13 @@ import { createJwtToken } from '../utils/'
 import { APP_SOURCE } from '..'
 
 export default class UserService {
-  static repository = APP_SOURCE.getRepository(UserEntity)
+  repository: Repository<UserEntity>
 
-  public static async getByToken(token: string): Promise<UserEntity> {
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(UserEntity)
+  }
+
+  async getByToken(token: string): Promise<UserEntity> {
     const userFinded = await this.repository.findOne({
       where: { token },
       relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'],
@@ -33,7 +38,7 @@ export default class UserService {
     }
   }
 
-  public static async updateTheme(id: number, theme: ThemeEnum) {
+  async updateTheme(id: number, theme: ThemeEnum) {
     const user = await this.repository.findOne({
       where: { id },
     })
@@ -43,7 +48,7 @@ export default class UserService {
     return user
   }
 
-  public static async getOne(id: number, withRelation?: boolean) {
+  async getOne(id: number, withRelation?: boolean) {
     if (withRelation) {
       return this.getOneWithRelations(id)
     }
@@ -53,7 +58,7 @@ export default class UserService {
     })
   }
 
-  public static async getOneWithRelations(id: number): Promise<UserEntity> {
+  async getOneWithRelations(id: number): Promise<UserEntity> {
     const user = await this.repository.findOne({
       where: { id },
       relations: ['events', 'files', 'employee', 'profilePicture', 'address'],
@@ -75,12 +80,12 @@ export default class UserService {
     }
   }
 
-  public static async getMany(ids: number[]) {
+  async getMany(ids: number[]) {
     const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
     return users.length > 0 ? users.filter(user => user).map(user => userResponse(user)) : []
   }
 
-  public static async updateOne(id: number, payload: UserEntity) {
+  async updateOne(id: number, payload: UserEntity) {
     const userFinded = await this.repository.findOne({ where: { id } })
 
     const userUpdated = {
@@ -92,11 +97,11 @@ export default class UserService {
     await this.repository.save(userUpdated)
   }
 
-  public static async findOneByEmail(email: string) {
+  async findOneByEmail(email: string) {
     return this.repository.findOne({ where: { email } })
   }
 
-  public static async createOnePhotoGrapher(user: PhotographerCreatePayload) {
+  async createOnePhotoGrapher(user: PhotographerCreatePayload) {
     const newUser = this.repository.create({
       ...user,
       salt: uid2(128),
@@ -111,7 +116,7 @@ export default class UserService {
     return userResponse(newUser)
   }
 
-  public static async createOneUser(payload: CreateUserPayload) {
+  async createOneUser(payload: CreateUserPayload) {
     const {
       companyName,
       email,
@@ -144,7 +149,7 @@ export default class UserService {
     return newUser
   }
 
-  public static async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
+  async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
     const userAlReadyExist = await this.findOneByEmail(photographer.email)
 
     if (userAlReadyExist) {

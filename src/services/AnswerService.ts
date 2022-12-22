@@ -1,11 +1,19 @@
+import type { EntityManager, Repository } from 'typeorm'
 import type { EmployeeEntity } from '../entity/'
 import { APP_SOURCE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
 
 export default class AnswerService {
-  static repository = APP_SOURCE.getRepository(AnswerEntity)
+  getManager: EntityManager
 
-  public static createOne = async (eventId: number, employeeId: number) => {
+  repository: Repository<AnswerEntity>
+
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(AnswerEntity)
+    this.getManager = APP_SOURCE.manager
+  }
+
+  async createOne(eventId: number, employeeId: number) {
     const newAnswer = this.repository.create({
       event: eventId,
       employee: employeeId,
@@ -14,11 +22,11 @@ export default class AnswerService {
     return newAnswer
   }
 
-  public static createMany = async (eventId: number, employeeIds: number[]) => {
+  async createMany(eventId: number, employeeIds: number[]) {
     return employeeIds.map(employeeId => this.createOne(eventId, employeeId))
   }
 
-  public static getOneAnswerForEventEmployee = async (eventId: number, employeeId: number) => {
+  async getOneAnswerForEventEmployee(eventId: number, employeeId: number) {
     return await this.repository.findOne({
       where: {
         event: eventId,
@@ -28,7 +36,7 @@ export default class AnswerService {
     })
   }
 
-  public static getAllAnswersForEvent = async (eventId: number, withRelation = true) => {
+  async getAllAnswersForEvent(eventId: number, withRelation = true) {
     const answers = await this.repository.find({
       where: {
         event: eventId,
@@ -50,7 +58,7 @@ export default class AnswerService {
     }
   }
 
-  public static getAllAnswersForEmployee = async (employeeId: number) => {
+  async getAllAnswersForEmployee(employeeId: number) {
     return await this.repository.find({
       where: {
         employee: employeeId,
@@ -58,7 +66,7 @@ export default class AnswerService {
     })
   }
 
-  public static async getOne(answerId: number): Promise<AnswerEntity> {
+  async getOne(answerId: number): Promise<AnswerEntity> {
     return await this.repository.findOne({
       where: {
         id: answerId,
@@ -67,7 +75,7 @@ export default class AnswerService {
     })
   }
 
-  public static updateOneAnswer = async (id: number, answer: AnswerEntity) => {
+  async updateOneAnswer(id: number, answer: AnswerEntity) {
     const answerToUpdate = await this.getOne(id)
     const updatedAnswer = {
       ...answerToUpdate,
@@ -79,8 +87,8 @@ export default class AnswerService {
     return updatedAnswer
   }
 
-  public static deleteOne = async (id: number) => {
-    const deleted = await this.repository.delete(id)
+  async deleteOne(id: number) {
+    const deleted = await this.repository.softDelete(id)
     return deleted
   }
 }

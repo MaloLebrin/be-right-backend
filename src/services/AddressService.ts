@@ -1,20 +1,26 @@
+import type { EntityManager, Repository } from 'typeorm'
 import { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import type { AddressCreationServicePayload } from '../types'
 import EventEntity from '../entity/EventEntity'
 import { APP_SOURCE } from '..'
 
 export class AddressService {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
 
-  static repository = APP_SOURCE.getRepository(AddressEntity)
+  repository: Repository<AddressEntity>
 
-  public static async getOne(id: number) {
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(AddressEntity)
+    this.getManager = APP_SOURCE.manager
+  }
+
+  async getOne(id: number) {
     return this.repository.findOne({
       where: { id },
     })
   }
 
-  // public static async getOneByUserId(userId: number) {
+  // async getOneByUserId(userId: number) {
   //   return this.repository.findOne({
   //     where: {
   //       user: userId,
@@ -22,7 +28,7 @@ export class AddressService {
   //   })
   // }
 
-  // public static async getOneByEmployeeId(employeeId: number) {
+  // async getOneByEmployeeId(employeeId: number) {
   //   return getManager().findOne(AddressEntity, {
   //     where: {
   //       employee: employeeId,
@@ -30,7 +36,7 @@ export class AddressService {
   //   })
   // }
 
-  // public static async getOneByEventId(eventId: number) {
+  // async getOneByEventId(eventId: number) {
   //   const event = await getManager().findOne(EventEntity, eventId)
   //   console.warn(event, '<==== event')
   //   // const addressId = event.addressId
@@ -42,7 +48,7 @@ export class AddressService {
   //   })
   // }
 
-  public static async createOne(payload: AddressCreationServicePayload) {
+  async createOne(payload: AddressCreationServicePayload) {
     const { userId, eventId, employeeId, address } = payload
 
     const addressCreated = this.repository.create(address)
@@ -65,7 +71,7 @@ export class AddressService {
     return addressToSend
   }
 
-  public static async updateOne(id: number, address: Partial<AddressEntity>) {
+  async updateOne(id: number, address: Partial<AddressEntity>) {
     const addressToUpdate = await this.getOne(id)
     if (!addressToUpdate) {
       return null
@@ -78,11 +84,11 @@ export class AddressService {
     return this.getOne(id)
   }
 
-  public static async deleteOne(id: number) {
+  async deleteOne(id: number) {
     return this.repository.delete(id)
   }
 
-  public static async softDelete(id: number) {
+  async softDelete(id: number) {
     return this.repository.delete(id)
   }
 }

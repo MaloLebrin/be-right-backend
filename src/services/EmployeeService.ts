@@ -1,3 +1,4 @@
+import type { Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { isUserEntity } from '../utils/index'
@@ -5,9 +6,13 @@ import { APP_SOURCE } from '..'
 import AnswerService from './AnswerService'
 
 export default class EmployeeService {
-  static repository = APP_SOURCE.getRepository(EmployeeEntity)
+  repository: Repository<EmployeeEntity>
 
-  public static async createOne(employee: Partial<EmployeeEntity>, userId: number) {
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(EmployeeEntity)
+  }
+
+  async createOne(employee: Partial<EmployeeEntity>, userId: number) {
     employee.createdByUser = userId
     const newEmployee = this.repository.create(employee)
     employee.slug = `${employee.id}-${employee.firstName}-${employee.lastName}`
@@ -18,7 +23,7 @@ export default class EmployeeService {
     }
   }
 
-  public static async getOne(id: number) {
+  async getOne(id: number) {
     const employeefinded = await this.repository.findOne({
       where: {
         id,
@@ -34,7 +39,7 @@ export default class EmployeeService {
     }
   }
 
-  public static async getMany(ids: number[]) {
+  async getMany(ids: number[]) {
     const finded = await this.repository.find({
       where: {
         id: In(ids),
@@ -52,7 +57,7 @@ export default class EmployeeService {
     })
   }
 
-  public static async getAllForUser(userId: number) {
+  async getAllForUser(userId: number) {
     const employees = await this.repository.find({
       where: {
         createdByUser: userId,
@@ -67,12 +72,12 @@ export default class EmployeeService {
     }))
   }
 
-  public static async getAllForEvent(eventId: number) {
-    const answers = await AnswerService.getAllAnswersForEvent(eventId)
+  async getAllForEvent(eventId: number) {
+    const answers = await new AnswerService().getAllAnswersForEvent(eventId)
     return answers.map(answer => answer.employee as EmployeeEntity)
   }
 
-  public static async updateOne(id: number, employee: Partial<EmployeeEntity>) {
+  async updateOne(id: number, employee: Partial<EmployeeEntity>) {
     const updatedEmployee = await this.getOne(id)
     if (!updatedEmployee) {
       return null
@@ -85,15 +90,15 @@ export default class EmployeeService {
     return this.getOne(id)
   }
 
-  public static async deleteOne(id: number) {
+  async deleteOne(id: number) {
     return this.repository.delete(id)
   }
 
-  public static async deleteMany(ids: number[]) {
+  async deleteMany(ids: number[]) {
     return this.repository.delete(ids)
   }
 
-  public static async isEmployeeAlreadyExist(email: string) {
+  async isEmployeeAlreadyExist(email: string) {
     const employee = await this.repository.findOneBy({ email })
     return !!employee
   }

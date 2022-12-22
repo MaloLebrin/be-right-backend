@@ -1,3 +1,4 @@
+import type { EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { APP_SOURCE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
@@ -7,11 +8,19 @@ import { isAnswerSigned, isUserEntity, removeUnecessaryFieldsEvent, updateStatus
 import AnswerService from './AnswerService'
 
 export default class EventService {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
 
-  static repository = APP_SOURCE.getRepository(EventEntity)
+  repository: Repository<EventEntity>
 
-  public static async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {
+  answerService: AnswerService
+
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(EventEntity)
+    this.getManager = APP_SOURCE.manager
+    this.answerService = new AnswerService()
+  }
+
+  async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {
     await this.repository.update(eventId, {
       updatedAt: new Date(),
       totalSignatureNeeded: signatureNeeded,
@@ -19,7 +28,7 @@ export default class EventService {
     return this.getOneWithoutRelations(eventId)
   }
 
-  public static getNumberSignatureNeededForEvent = async (id: number) => {
+  async getNumberSignatureNeededForEvent(id: number) {
     const answers = await this.getManager.find(AnswerEntity, {
       where: {
         event: id,
@@ -36,7 +45,7 @@ export default class EventService {
   in this operation get total answers for event and set as totalSignatureNeeded use answer service
   use this get every where
   */
-  public static async getOneEvent(eventId: number): Promise<EventEntity> {
+  async getOneEvent(eventId: number): Promise<EventEntity> {
     const finded = await this.repository.findOne({
       where: {
         id: eventId,
@@ -44,7 +53,7 @@ export default class EventService {
       relations: ['createdByUser', 'partner', 'address'],
     })
 
-    const answers = await AnswerService.getAllAnswersForEvent(finded.id)
+    const answers = await this.answerService.getAllAnswersForEvent(finded.id)
 
     if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
       const user = finded.createdByUser
@@ -64,11 +73,11 @@ export default class EventService {
     }
   }
 
-  public static async getOneWithoutRelations(eventId: number) {
+  async getOneWithoutRelations(eventId: number) {
     return this.repository.findOne({ where: { id: eventId } })
   }
 
-  public static async getManyEvents(eventIds: number[]) {
+  async getManyEvents(eventIds: number[]) {
     const finded = await this.repository.find({
       where: {
         id: In(eventIds),
@@ -80,7 +89,7 @@ export default class EventService {
       if (isUserEntity(event.createdByUser) && isUserEntity(event.partner)) {
         const user = event.createdByUser
         const partner = event.partner
-        const answers = await AnswerService.getAllAnswersForEvent(event.id)
+        const answers = await this.answerService.getAllAnswersForEvent(event.id)
 
         return {
           ...event,
@@ -92,7 +101,7 @@ export default class EventService {
     }))
   }
 
-  public static async updateOneEvent(eventId: number, event: EventEntity) {
+  async updateOneEvent(eventId: number, event: EventEntity) {
     const finded = await this.getOneWithoutRelations(eventId)
     if (!finded) {
       return null
@@ -107,7 +116,7 @@ export default class EventService {
     return this.getOneEvent(eventId)
   }
 
-  public static async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
+  async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
     if (photographerId) {
       event.partnerId = photographerId
     }
@@ -117,7 +126,7 @@ export default class EventService {
     return newEvent
   }
 
-  public static async updateStatusForEvent(eventId: number) {
+  async updateStatusForEvent(eventId: number) {
     const event = await this.getOneWithoutRelations(eventId)
     if (!event) {
       return null
@@ -126,15 +135,15 @@ export default class EventService {
     await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToUpdate))
   }
 
-  public static async updateStatusForEventArray(events: EventEntity[]) {
+  async updateStatusForEventArray(events: EventEntity[]) {
     if (events.length > 0) {
       events.forEach(event => this.updateStatusForEvent(event.id))
     }
   }
 
-  public static async updateStatusEventWhenCompleted(event: EventEntity) {
+  async updateStatusEventWhenCompleted(event: EventEntity) {
     if (event.totalSignatureNeeded > 0) {
-      const answers = await AnswerService.getAllAnswersForEvent(event.id)
+      const answers = await this.answerService.getAllAnswersForEvent(event.id)
       if (answers.length > 0) {
         const signedAnswers = answers.filter(answer => isAnswerSigned(answer))
         if (signedAnswers.length === event.totalSignatureNeeded) {
@@ -145,7 +154,7 @@ export default class EventService {
     return event
   }
 
-  public static async multipleUpdateForEvent(eventId: number) {
+  async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
       await this.getNumberSignatureNeededForEvent(eventId)
       await this.updateStatusForEvent(eventId)

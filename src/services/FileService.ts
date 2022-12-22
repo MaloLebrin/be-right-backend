@@ -1,4 +1,5 @@
 import cloudinary from 'cloudinary'
+import type { EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { FileEntity } from '../entity/FileEntity'
 import { UserEntity } from '../entity'
@@ -8,11 +9,16 @@ import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 
 export default class FileService {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
 
-  static repository = APP_SOURCE.getRepository(FileEntity)
+  repository: Repository<FileEntity>
 
-  public static async deleteFile(fileId: number) {
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(FileEntity)
+    this.getManager = APP_SOURCE.manager
+  }
+
+  async deleteFile(fileId: number) {
     const doc = await this.getFile(fileId)
     if (doc) {
       await cloudinary.v2.uploader.destroy(doc.public_id)
@@ -21,11 +27,11 @@ export default class FileService {
     }
   }
 
-  public static async deleteManyfiles(fileIds: number[]) {
+  async deleteManyfiles(fileIds: number[]) {
     await Promise.all(fileIds.map(fileId => this.deleteFile(fileId)))
   }
 
-  public static async getFile(fileId: number) {
+  async getFile(fileId: number) {
     const doc = await this.repository.findOne({
       where: {
         id: fileId,
@@ -35,7 +41,7 @@ export default class FileService {
     return doc
   }
 
-  public static async getManyFiles(ids: number[]) {
+  async getManyFiles(ids: number[]) {
     const docs = await this.repository.find({
       where: {
         id: In(ids),
@@ -44,7 +50,7 @@ export default class FileService {
     return docs
   }
 
-  public static async getFilesByUser(id: number) {
+  async getFilesByUser(id: number) {
     const docs = await this.repository.find({
       where: {
         createdByUser: id,
@@ -53,7 +59,7 @@ export default class FileService {
     return docs
   }
 
-  public static async getFilesByEvent(id: number) {
+  async getFilesByEvent(id: number) {
     const docs = await this.repository.find({
       where: {
         event: id,
@@ -62,7 +68,7 @@ export default class FileService {
     return docs
   }
 
-  public static async getFilesByType(type: FileTypeEnum) {
+  async getFilesByType(type: FileTypeEnum) {
     const docs = await this.repository.find({
       where: {
         type,
@@ -78,7 +84,7 @@ export default class FileService {
     })
   }
 
-  public static async updateFile(id: number, file: FileEntity) {
+  async updateFile(id: number, file: FileEntity) {
     const updatedfile = await this.getFile(id)
     if (!updatedfile) {
       return null
@@ -91,7 +97,7 @@ export default class FileService {
     return this.getFile(id)
   }
 
-  public static async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
+  async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
     const { NODE_ENV } = useEnv()
 
     const existProfilePicture = await this.repository.findOne({
@@ -139,7 +145,7 @@ export default class FileService {
     }
   }
 
-  public static async createLogo(file: Express.Multer.File, user: UserEntity) {
+  async createLogo(file: Express.Multer.File, user: UserEntity) {
     const { NODE_ENV } = useEnv()
 
     const existLogos = await this.repository.find({
