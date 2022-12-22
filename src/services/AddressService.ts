@@ -1,65 +1,77 @@
-import { getManager } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import type { AddressCreationServicePayload } from '../types'
 import EventEntity from '../entity/EventEntity'
+import { APP_SOURCE } from '..'
 
 export class AddressService {
-  public static async getOne(id: number) {
-    return getManager().findOne(AddressEntity, id)
+  getManager: EntityManager
+
+  repository: Repository<AddressEntity>
+
+  constructor() {
+    this.repository = APP_SOURCE.getRepository(AddressEntity)
+    this.getManager = APP_SOURCE.manager
   }
 
-  public static async getOneByUserId(userId: number) {
-    return getManager().findOne(AddressEntity, {
-      where: {
-        user: userId,
-      },
+  async getOne(id: number) {
+    return this.repository.findOne({
+      where: { id },
     })
   }
 
-  public static async getOneByEmployeeId(employeeId: number) {
-    return getManager().findOne(AddressEntity, {
-      where: {
-        employee: employeeId,
-      },
-    })
-  }
+  // async getOneByUserId(userId: number) {
+  //   return this.repository.findOne({
+  //     where: {
+  //       user: userId,
+  //     },
+  //   })
+  // }
 
-  public static async getOneByEventId(eventId: number) {
-    const event = await getManager().findOne(EventEntity, eventId)
-    console.warn(event, '<==== event')
-    // const addressId = event.addressId
-    return getManager().findOne(AddressEntity, {
-      where: {
-        event: eventId,
-      },
-      relations: ['addressId'],
-    })
-  }
+  // async getOneByEmployeeId(employeeId: number) {
+  //   return getManager().findOne(AddressEntity, {
+  //     where: {
+  //       employee: employeeId,
+  //     },
+  //   })
+  // }
 
-  public static async createOne(payload: AddressCreationServicePayload) {
+  // async getOneByEventId(eventId: number) {
+  //   const event = await getManager().findOne(EventEntity, eventId)
+  //   console.warn(event, '<==== event')
+  //   // const addressId = event.addressId
+  //   return getManager().findOne(AddressEntity, {
+  //     where: {
+  //       event: eventId,
+  //     },
+  //     relations: ['addressId'],
+  //   })
+  // }
+
+  async createOne(payload: AddressCreationServicePayload) {
     const { userId, eventId, employeeId, address } = payload
 
-    const addressCreated = getManager().create(AddressEntity, address)
+    const addressCreated = this.repository.create(address)
 
-    await getManager().save(addressCreated)
+    await this.repository.save(addressCreated)
     const addressToSend = await this.getOne(addressCreated.id)
     if (userId) {
-      await getManager().update(UserEntity, userId, {
+      await this.getManager.update(UserEntity, userId, {
         address: addressToSend.id,
       })
     } else if (eventId) {
-      await getManager().update(EventEntity, eventId, {
+      await this.getManager.update(EventEntity, eventId, {
         address: addressToSend.id,
       })
     } else if (employeeId) {
-      await getManager().update(EmployeeEntity, employeeId, {
+      await this.getManager.update(EmployeeEntity, employeeId, {
         address: addressToSend.id,
       })
     }
     return addressToSend
   }
 
-  public static async updateOne(id: number, address: Partial<AddressEntity>) {
+  async updateOne(id: number, address: Partial<AddressEntity>) {
     const addressToUpdate = await this.getOne(id)
     if (!addressToUpdate) {
       return null
@@ -68,15 +80,15 @@ export class AddressService {
       ...address,
       updatedAt: new Date(),
     }
-    await getManager().update(AddressEntity, id, addressToStore)
+    await this.repository.update(id, addressToStore)
     return this.getOne(id)
   }
 
-  public static async deleteOne(id: number) {
-    return getManager().delete(AddressEntity, id)
+  async deleteOne(id: number) {
+    return this.repository.delete(id)
   }
 
-  public static async softDelete(id: number) {
-    return getManager().delete(AddressEntity, id)
+  async softDelete(id: number) {
+    return this.repository.delete(id)
   }
 }

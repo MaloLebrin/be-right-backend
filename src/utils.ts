@@ -1,11 +1,14 @@
 import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
-import { Like, getConnection } from 'typeorm'
+import { DataSource, Like } from 'typeorm'
+import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import { dataBaseConfig } from '../ormconfig'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
 import { useLogger } from './middlewares/loggerService'
+import { useEnv } from './env'
 
 /**
  * create hash password
@@ -78,15 +81,12 @@ export const paginator = (req: Request, searchableField: string[]) => {
   const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
   const search = req.query.search ? Like(`%${req.query.search}%`) : null
 
-  const queries = {
+  return {
     page,
     take: limit,
     skip: (page - 1) * limit,
-    orderBy: req.query.orderBy ? req.query.orderBy : 'id',
-    orderDir: req.query.orderDir ? req.query.orderDir : 'desc',
     where: req.query.filters ? req.query.filters : search && searchableField.length ? generateWhereFieldsByEntity(searchableField, req) : null,
   }
-  return queries
 }
 
 export function toCent(value: number) {
@@ -111,9 +111,32 @@ export async function wrapperRequest<T>(req: Request, res: Response, request: ()
 }
 
 export async function clearDB() {
-  const entities = getConnection().entityMetadatas
+  const entities = createAppSource().entityMetadatas
   for (const entity of entities) {
-    const repository = await getConnection().getRepository(entity.name)
+    const repository = await createAppSource().getRepository(entity.name)
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`)
   }
+}
+
+export function createAppSource() {
+  const {
+    NODE_ENV,
+  } = useEnv()
+
+  let connectionsOptions: PostgresConnectionOptions
+
+  if (NODE_ENV === 'production') {
+    connectionsOptions = {
+      ...dataBaseConfig.production as PostgresConnectionOptions,
+    }
+  } else {
+    connectionsOptions = {
+      ...dataBaseConfig.dev as PostgresConnectionOptions,
+      name: 'default',
+    }
+  }
+
+  return new DataSource({
+    ...connectionsOptions,
+  })
 }

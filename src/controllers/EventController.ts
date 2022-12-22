@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { FindOptionsWhere, Repository } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
@@ -10,13 +10,26 @@ import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import { Role } from '../types'
 import { isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
+import { APP_SOURCE } from '..'
 
 export default class EventController {
+  AddressService: AddressService
+  AnswerService: AnswerService
+  EventService: EventService
+  repository: Repository<EventEntity>
+
+  constructor() {
+    this.EventService = new EventService()
+    this.AnswerService = new AnswerService()
+    this.AddressService = new AddressService()
+    this.repository = APP_SOURCE.getRepository(EventEntity)
+  }
+
   /**
    * @param event event: Partial<EventEntity>
    * @returns return event just created
    */
-  public static createOne = async (req: Request, res: Response) => {
+  public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
@@ -27,9 +40,9 @@ export default class EventController {
         userId = ctx.user.id
       }
       if (event && userId) {
-        const newEvent = await EventService.createOneEvent(event, userId, photographerId)
+        const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
         if (newEvent && address) {
-          await AddressService.createOne({
+          await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
           })
@@ -44,13 +57,13 @@ export default class EventController {
    * @param Id number
    * @returns entity form given id
    */
-  public static getOne = async (req: Request, res: Response) => {
+  public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const event = await EventService.getOneEvent(id)
+        const event = await this.EventService.getOneEvent(id)
         if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
           return res.status(200).json(event)
         } else {
@@ -61,11 +74,11 @@ export default class EventController {
     })
   }
 
-  public static getMany = async (req: Request, res: Response) => {
+  public getMany = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
-      const events = await EventService.getManyEvents(eventsIds)
+      const events = await this.EventService.getManyEvents(eventsIds)
       return res.status(200).json(events)
     })
   }
@@ -74,13 +87,14 @@ export default class EventController {
    * @param id userId
    * @returns all event link with user
    */
-  public static getAllForUser = async (req: Request, res: Response) => {
+  public getAllForUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
       const userId = ctx.user.id
-      const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ['partner'] })
+      const events = await this.repository.find({ where: { createdByUser: userId }, relations: ['partner'] })
+
       const eventsReturned = await Promise.all(events.map(async event => {
-        const answers = await AnswerService.getAllAnswersForEvent(event.id)
+        const answers = await this.AnswerService.getAllAnswersForEvent(event.id)
         let employees = []
         if (answers.length > 0) {
           employees = answers.map(answer => {
@@ -101,6 +115,7 @@ export default class EventController {
           partner: partner?.id,
         }
       }))
+
       return res.status(200).json(eventsReturned)
     })
   }
@@ -109,10 +124,18 @@ export default class EventController {
    * paginate function
    * @returns paginate response
    */
-  public static getAll = async (req: Request, res: Response) => {
+  public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ['createdByUser', 'partner', 'address'] })
+
+      const [events, count] = await this.repository.findAndCount({
+        ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<EventEntity>,
+        },
+        relations: ['createdByUser', 'partner', 'address'],
+      })
+
       const eventsReturned = events.length > 0
         ? events.map(event => {
           const user = event.createdByUser as UserEntity
@@ -127,8 +150,8 @@ export default class EventController {
           return event
         })
         : []
-      const total = await getManager().count(EventEntity, queriesFilters)
-      return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+
+      return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total: count })
     })
   }
 
@@ -136,18 +159,18 @@ export default class EventController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { event }: { event: Partial<EventEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const eventFinded = await EventService.getOneEvent(id)
+        const eventFinded = await this.EventService.getOneEvent(id)
 
         const user = eventFinded.createdByUser as UserEntity
         if (checkUserRole(Role.ADMIN) || user.id === userId) {
-          const eventUpdated = await EventService.updateOneEvent(id, event as EventEntity)
+          const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
           return res.status(200).json(eventUpdated)
         } else {
           return res.status(400).json('event not updated')
@@ -157,15 +180,16 @@ export default class EventController {
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const eventToDelete = await getManager().findOne(EventEntity, id)
+        const eventToDelete = await this.EventService.getOneWithoutRelations(id)
+
         if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
-          await getManager().delete(EventEntity, id)
+          await this.repository.delete(id)
           return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
         } else {
           return res.status(401).json('Not allowed')

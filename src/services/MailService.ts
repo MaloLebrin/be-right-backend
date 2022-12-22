@@ -7,7 +7,7 @@ import type AnswerEntity from '../entity/AnswerEntity'
 import type EventEntity from '../entity/EventEntity'
 
 export default class MailService {
-  public static async getConnection() {
+  public async getConnection() {
     const { MAIL_ADRESS, MAIL_MDP } = useEnv()
 
     return nodemailer.createTransport({
@@ -19,7 +19,7 @@ export default class MailService {
     })
   }
 
-  public static getResetPasswordTemplate(recipient: UserEntity, twoFactorRecoveryCode: string) {
+  public getResetPasswordTemplate(recipient: UserEntity, twoFactorRecoveryCode: string) {
     const { FRONT_URL } = useEnv()
 
     const mailGenerator = new Mailgen({
@@ -54,7 +54,7 @@ export default class MailService {
     return { emailBody, emailText }
   }
 
-  public static getSendImageRightTemplate({ recipient, event, answer }: { recipient: UserEntity; answer: AnswerEntity; event: EventEntity }) {
+  public getSendImageRightTemplate({ recipient, event, answer }: { recipient: UserEntity; answer: AnswerEntity; event: EventEntity }) {
     if (!recipient || !event || !answer) {
       throw new Error('manque parametre pour envoyer l\'email')
     }

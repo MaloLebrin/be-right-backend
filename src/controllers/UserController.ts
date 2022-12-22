@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -14,13 +14,24 @@ import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
 import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
 import { useEnv } from '../env'
+import { APP_SOURCE } from '..'
 
 export default class UserController {
+  getManager: EntityManager
+  UserService: UserService
+  repository: Repository<UserEntity>
+
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.UserService = new UserService()
+    this.repository = APP_SOURCE.getRepository(UserEntity)
+  }
+
   /**
    * @param user user: Partial<userEntity>
    * @returns return user just created
    */
-  public static newUser = async (req: Request, res: Response) => {
+  public newUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const {
         companyName,
@@ -38,11 +49,13 @@ export default class UserController {
           password: string
           role: Role
         } = req.body
-      const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+
+      const userAlReadyExist = await this.UserService.findOneByEmail(email)
       if (userAlReadyExist) {
         return res.status(400).json({ error: 'cet email existe déjà' })
       }
-      const newUser = await UserService.createOneUser({
+
+      const newUser = await this.UserService.createOneUser({
         companyName,
         email,
         firstName,
@@ -51,6 +64,7 @@ export default class UserController {
         role,
         subscription: SubscriptionEnum.BASIC,
       })
+
       return res.status(200).json(userResponse(newUser))
     })
   }
@@ -59,7 +73,7 @@ export default class UserController {
   * paginate function
   * @returns paginate response
   */
-  public static getAll = async (req: Request, res: Response) => {
+  public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, userSearchableFields)
       const usersFilters = {
@@ -67,7 +81,14 @@ export default class UserController {
         relations: ['events', 'files', 'employee', 'profilePicture'],
         // TODO find a way to not filter with search filed on subscription
       }
-      const search = await getManager().find(UserEntity, usersFilters)
+
+      const [search, total] = await this.repository.findAndCount({
+        ...usersFilters,
+        where: {
+          ...usersFilters.where as FindOptionsWhere<UserEntity>,
+        },
+      })
+
       const users = search.map(user => {
         const events = user.events as EventEntity[]
         const employees = user.employee as EmployeeEntity[]
@@ -80,8 +101,13 @@ export default class UserController {
         }
       })
       const usersToSend = users.map(user => userResponse(user))
-      const total = await getManager().count(UserEntity, usersFilters)
-      return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+
+      return res.status(200).json({
+        data: usersToSend,
+        currentPage: queriesFilters.page,
+        limit: queriesFilters.take,
+        total,
+      })
     })
   }
 
@@ -89,46 +115,46 @@ export default class UserController {
    * @param Id number
    * @returns entity form given id
   */
-  public static getOne = async (req: Request, res: Response) => {
+  public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await UserService.getOneWithRelations(id)
+        const user = await this.UserService.getOneWithRelations(id)
         return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
       }
       return res.status(422).json({ error: 'id required' })
     })
   }
 
-  public static getMany = async (req: Request, res: Response) => {
+  public getMany = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
         if (userIds) {
-          const users = await UserService.getMany(userIds)
+          const users = await this.UserService.getMany(userIds)
           return res.status(200).json(users)
         }
       }
     })
   }
 
-  public static getOneByToken = async (req: Request, res: Response) => {
+  public getOneByToken = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const token = req.body.token
       if (token) {
-        const user = await UserService.getByToken(token)
+        const user = await this.UserService.getByToken(token)
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
     })
   }
 
-  public static updateTheme = async (req: Request, res: Response) => {
+  public updateTheme = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const { theme } = req.body
-      const user = await UserService.updateTheme(id, theme)
+      const user = await this.UserService.updateTheme(id, theme)
       return res.status(200).json(userResponse(user))
     })
   }
@@ -137,14 +163,15 @@ export default class UserController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-          const userFinded = await getManager().findOne(UserEntity, id)
+          const userFinded = await this.UserService.getOne(id)
+
           const userUpdated = {
             ...userFinded,
             ...user,
@@ -153,7 +180,8 @@ export default class UserController {
           if (user.roles !== userFinded.roles) {
             userUpdated.token = createJwtToken(userUpdated)
           }
-          await getManager().save(UserEntity, userUpdated)
+
+          await this.repository.save(userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
           return res.status(401).json({ error: 'unauthorized' })
@@ -163,17 +191,18 @@ export default class UserController {
     })
   }
 
-  public static updatesubscription = async (req: Request, res: Response) => {
+  public updatesubscription = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       const { subscription }: { subscription: SubscriptionEnum } = req.body
+
       if (userId) {
-        const user = await getManager().findOne(UserEntity, userId)
-        // TODO update token with update subscription
+        const user = await this.UserService.getOne(userId)
+
         if (user) {
           user.subscription = subscription
           user.token = createJwtToken(user)
-          await getManager().save(user)
+          await this.repository.save(user)
           return res.status(200).json(userResponse(user))
         }
       }
@@ -181,12 +210,12 @@ export default class UserController {
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-        const userDeleted = await getManager().delete(UserEntity, id)
+        const userDeleted = await this.repository.softDelete(id)
         return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
         return res.status(401).json({ error: 'unauthorized' })
@@ -194,12 +223,16 @@ export default class UserController {
     })
   }
 
-  public static login = async (req: Request, res: Response) => {
+  public login = async (req: Request, res: Response) => {
     const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
 
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
-      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ['events', 'files', 'employee', 'profilePicture'] })
+      const userFinded = await this.repository.findOne({
+        where: { email },
+        relations: ['events', 'files', 'employee', 'profilePicture'],
+      })
+
       // TODO remove this in prod
       if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
@@ -212,7 +245,7 @@ export default class UserController {
           } as JWTTokenPayload)
           userFinded.subscription = SubscriptionEnum.PREMIUM
           userFinded.roles = Role.ADMIN
-          await getManager().save(userFinded)
+          await this.repository.save(userFinded)
         }
       }
 
@@ -226,7 +259,9 @@ export default class UserController {
           employee: addUserToEntityRelation(employees, userFinded.id),
           files: addUserToEntityRelation(files, userFinded.id),
         }
+
         const passwordHashed = generateHash(user.salt, password)
+
         if (user.password === passwordHashed) {
           return res.status(200).json(userResponse(user))
         } else {
@@ -238,19 +273,23 @@ export default class UserController {
     })
   }
 
-  public static createPhotographer = async (req: Request, res: Response) => {
+  public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
-      const newPhotographer = await UserService.createPhotographer(photographer)
+      const newPhotographer = await this.UserService.createPhotographer(photographer)
       return res.status(200).json(newPhotographer)
     })
   }
 
-  public static getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
+  public getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
+        const user = await await this.repository.findOne({
+          where: { id },
+          relations: ['events', 'events.partner'],
+        })
+
         const events = user.events
         const partners = events.map(event => event.partner) as UserEntity[]
         const uniqPartnersIds = uniq(partners.map(user => user.id))
@@ -261,11 +300,12 @@ export default class UserController {
     })
   }
 
-  public static isMailAlreadyUsed = async (req: Request, res: Response) => {
+  public isMailAlreadyUsed = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       if (email) {
-        const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+        const userAlReadyExist = await this.UserService.findOneByEmail(email)
+
         if (userAlReadyExist) {
           return res.status(200).json({
             success: false,

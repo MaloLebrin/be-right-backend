@@ -1,83 +1,173 @@
 import 'reflect-metadata'
-import { createConnection, getConnectionOptions } from 'typeorm'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
-import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import multer from 'multer'
 import Context from './context'
-import { addressRoutes, answerRoutes, authRoutes, bugreportRoutes, employeeRoutes, eventRoutes, fileRoutes, newsletterRoutes, userRoutes } from './routes'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import { createAppSource } from './utils'
+import { checkUserRole, isAuthenticated, useValidation } from './middlewares'
+import { Role } from './types'
+import NewsletterController from './controllers/NewsletterController'
+import { AddresController } from './controllers/AddressController'
+import AnswerController from './controllers/AnswerController'
+import AuthController from './controllers/AuthController'
+import BugReportController from './controllers/BugReportController'
+import EmployeeController from './controllers/EmployeeController'
+import EventController from './controllers/EventController'
+import FileController from './controllers/FileController'
+import UserController from './controllers/UserController'
 
-async function startServer() {
-  const {
-    CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET,
-    CLOUDINARY_CLOUD_NAME,
-    DATABASE_URL,
-    NODE_ENV,
-    PORT,
-  } = useEnv()
+const {
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+  CLOUDINARY_CLOUD_NAME,
+  NODE_ENV,
+  PORT,
+} = useEnv()
 
-  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
-  let connectionsOptions = config
+export const APP_SOURCE = createAppSource()
 
-  if (NODE_ENV === 'production') {
-    connectionsOptions = {
-      ...config,
-      url: DATABASE_URL!,
-    }
-  } else {
-    connectionsOptions = {
-      ...config,
-      name: 'default',
-    }
-  }
+APP_SOURCE.initialize()
+  .then(() => {
+    console.info('Data Source has been initialized!')
+  })
+  .catch(err => {
+    console.error('Error during Data Source initialization:', err)
+  })
 
-  createConnection({ ...connectionsOptions, name: 'default' }).then(async () => {
-    const app = express()
-    const { loggerMiddleware } = useLogger()
-    dotenv.config()
-    app.use(cors())
-    app.use(helmet())
-    app.use(express.json())
-    app.use(express.urlencoded({
-      extended: true,
-    }))
-    app.use(loggerMiddleware)
+const app = express()
+const { loggerMiddleware } = useLogger()
+dotenv.config()
+app.use(cors())
+app.use(helmet())
+app.use(express.json())
+app.use(express.urlencoded({
+  extended: true,
+}))
+app.use(loggerMiddleware)
 
-    cloudinary.v2.config({
-      cloud_name: CLOUDINARY_CLOUD_NAME,
-      api_key: CLOUDINARY_API_KEY,
-      api_secret: CLOUDINARY_API_SECRET,
-    })
+cloudinary.v2.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+})
 
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      Context.bind(req)
-      next()
-    })
+app.use((req: Request, res: Response, next: NextFunction) => {
+  Context.bind(req)
+  next()
+})
 
-    app.get('/', (req: Request, res: Response) => {
-      res.send('Hello World')
-    })
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello World')
+})
 
-    app.use('/address', addressRoutes)
-    app.use('/answer', answerRoutes)
-    app.use('/auth', authRoutes)
-    app.use('/bugreport', bugreportRoutes)
-    app.use('/employee', employeeRoutes)
-    app.use('/event', eventRoutes)
-    app.use('/file', fileRoutes)
-    app.use('/newsletter', newsletterRoutes)
-    app.use('/user', userRoutes)
+const {
+  idParamsSchema,
+  emailAlreadyExistSchema,
+  createAddressSchema,
+  createManyAnswersSchema,
+  createOneAnswerSchema,
+  updateAnswerStatusSchema,
+  resetPasswordSchema,
+  createbugSchema,
+  createEmployeeSchema,
+  createManyEmployeesSchema,
+  createManyEmployeesOnEventSchema,
+  createOneEventSchema,
+  createPhotographerSchema,
+  loginSchema,
+  registerSchema,
+  themeSchema,
+  tokenSchema,
+  validate,
+} = useValidation()
 
-    const port = PORT || 5000
-    app.listen(port, '0.0.0.0', () => {
-      console.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
-    })
-  }).catch(error => console.info(error))
-}
-startServer()
+// Newsletter
+app.get('/newsletter/', [isAuthenticated, checkUserRole(Role.ADMIN)], new NewsletterController().getAllPaginate)
+app.delete('/newsletter/:id', [validate(idParamsSchema), isAuthenticated], new NewsletterController().deleteOne)
+app.post('/newsletter/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
+
+// Address
+app.get('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().getOne)
+app.post('/address/', [validate(createAddressSchema), isAuthenticated], new AddresController().createOne)
+app.patch('/address/:id', [isAuthenticated], new AddresController().updateOne)
+app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
+
+// Answer
+app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
+app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
+app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
+app.patch('/answer/', [isAuthenticated], new AnswerController().updateOne)
+app.patch('/answer/status', [validate(updateAnswerStatusSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
+app.delete('/answer/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
+
+// Auth
+app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
+app.post('/auth/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
+
+// Bug
+app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
+app.get('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().getOne)
+app.post('/bugreport/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
+app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
+app.patch('/bugreport/status/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateStatus)
+app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
+
+// Employee
+app.get('/employee/', [isAuthenticated], new EmployeeController().getAll)
+app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
+app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
+app.get('/employee/event/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByEventId)
+app.post('/employee/:id', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
+app.post('/employee/many/:id', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
+app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId)
+app.put('/employee/updateTotalSignatureNeeded/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().patchOne)
+app.patch('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().updateOne)
+app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne)
+
+// Event
+app.get('/event/many', [isAuthenticated], new EventController().getMany)
+app.get('/event/', [isAuthenticated], new EventController().getAll)
+app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
+app.post('/event/:id', [validate(createOneEventSchema), isAuthenticated], new EventController().createOne)
+app.get('/event/user/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getAllForUser)
+app.patch('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().updateOne)
+app.delete('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
+
+// File
+const upload = multer({ dest: 'uploads/' })
+app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
+app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
+app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
+app.patch('/file/:id', [isAuthenticated], new FileController().updateOne)
+app.get('/file/', [isAuthenticated], new FileController().getAllPaginate)
+app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
+app.get('/file/many', [isAuthenticated], new FileController().getFiles)
+app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
+app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
+app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
+
+// User
+app.get('/user/many', [isAuthenticated], new UserController().getMany)
+app.get('/user/', [isAuthenticated, checkUserRole(Role.ADMIN)], new UserController().getAll)
+app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
+app.get('/user/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
+app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
+app.post('/user/', [validate(registerSchema)], new UserController().newUser)
+app.post('/user/login', [validate(loginSchema)], new UserController().login)
+app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
+app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
+app.patch('/user/:id', [isAuthenticated], new UserController().updateOne)
+app.patch('/user/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
+app.delete('/user/:id', [isAuthenticated], new UserController().deleteOne)
+app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
+
+const port = PORT || 5555
+app.listen(port, '0.0.0.0', () => {
+  console.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
+})

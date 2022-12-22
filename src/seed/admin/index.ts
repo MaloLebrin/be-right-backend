@@ -1,13 +1,15 @@
-import { getManager } from 'typeorm'
 import uid2 from 'uid2'
+import type { DataSource } from 'typeorm'
 import { createJwtToken } from '../../utils/'
 import { UserEntity } from '../../entity'
 import { generateHash } from '../../utils'
 import { Role, SubscriptionEnum } from '../../types'
 
-export async function createAdminUser() {
+export async function createAdminUser(APP_SOURCE_SEEDER: DataSource) {
+  const manager = APP_SOURCE_SEEDER.getRepository(UserEntity)
+
   const salt = uid2(128)
-  const newUser = getManager().create(UserEntity, {
+  const newUser = manager.create({
     companyName: 'Zenika',
     email: process.env.ADMIN_EMAIL,
     firstName: 'Malo',
@@ -24,6 +26,6 @@ export async function createAdminUser() {
     events: [],
 
   })
-  await getManager().save(newUser)
+  await manager.save(newUser)
   return newUser
 }

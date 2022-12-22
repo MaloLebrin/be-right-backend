@@ -1,10 +1,15 @@
-import { getManager } from 'typeorm'
+import type { DataSource } from 'typeorm'
+import dayjs from 'dayjs'
 import UserService from '../../services/UserService'
 import { AddressService } from '../../services/AddressService'
 import EmployeeService from '../../services/EmployeeService'
 import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
+import { SubscriptionEnum } from '../../types'
+import AnswerEntity from '../../entity/AnswerEntity'
+// import { SubscriptionService } from '../../services'
+import { SubscriptionEntitiy } from '../../entity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -16,21 +21,34 @@ import {
   userCompanyFixturePremium,
 } from './fixtures'
 
-export async function seedUserCompany() {
-  const user = await UserService.createOneUser(userCompanyFixturePremium)
+export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
+  const getManager = APP_SOURCE_SEEDER.manager
+  const addressService = new AddressService()
+  const answerService = new AnswerService()
 
-  await AddressService.createOne({
+  const user = await new UserService().createOneUser(userCompanyFixturePremium)
+
+  // await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
+
+  const subscription = getManager.create(SubscriptionEntitiy, {
+    type: SubscriptionEnum.PREMIUM,
+    user: user.id,
+    expireAt: dayjs().add(1, 'year'),
+  })
+  await getManager.save(subscription)
+
+  await addressService.createOne({
     address: addressFixtureCompanyPremium,
     userId: user.id,
   })
 
   const employees = await Promise.all(employeesFixtureCompanyPremium.map(
-    async item => await EmployeeService.createOne(item.employee, user.id),
+    async item => await new EmployeeService().createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await EventService.createOneEvent(
+  const event = await new EventService().createOneEvent(
     {
       ...eventFixtureCompanyPremium.event,
       employeeIds,
@@ -40,35 +58,48 @@ export async function seedUserCompany() {
     1,
   )
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: eventFixtureCompanyPremium.address,
     eventId: event.id,
   })
 
-  await AnswerService.createMany(event.id, employeeIds)
-  const answer = await AnswerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
+  await answerService.createMany(event.id, employeeIds)
+  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
-    await getManager().save(answer)
+    await getManager.save(AnswerEntity, answer)
   }
 }
 
-export async function seedMediumUserData() {
-  const user = await UserService.createOneUser(userCompanyFixtureMedium)
+// MEDIUM
 
-  await AddressService.createOne({
+export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
+  const getManager = APP_SOURCE_SEEDER.manager
+  const addressService = new AddressService()
+  const answerService = new AnswerService()
+
+  const user = await new UserService().createOneUser(userCompanyFixtureMedium)
+
+  const subscription = getManager.create(SubscriptionEntitiy, {
+    type: SubscriptionEnum.MEDIUM,
+    user: user.id,
+    expireAt: dayjs().add(1, 'year'),
+  })
+  await getManager.save(subscription)
+
+  await addressService.createOne({
     address: addressFixtureCompanyMedium,
     userId: user.id,
   })
 
   const employees = await Promise.all(employeesFixtureCompanyMedium.map(
-    async item => await EmployeeService.createOne(item.employee, user.id),
+    async item => await new EmployeeService().createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await EventService.createOneEvent(
+  const event = await new EventService().createOneEvent(
     {
       ...eventFixtureCompanyMedium.event,
       employeeIds,
@@ -78,16 +109,16 @@ export async function seedMediumUserData() {
     1,
   )
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: eventFixtureCompanyMedium.address,
     eventId: event.id,
   })
 
-  await AnswerService.createMany(event.id, employeeIds)
-  const answer = await AnswerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
+  await answerService.createMany(event.id, employeeIds)
+  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
-    await getManager().save(answer)
+    await getManager.save(AnswerEntity, answer)
   }
 }

@@ -18,7 +18,7 @@ services:
     build:
       context: .
     ports:
-      - '8000:5000'
+      - '8000:5555'
     env_file:
       - .env
 

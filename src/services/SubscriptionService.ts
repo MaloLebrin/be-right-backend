@@ -1,30 +1,53 @@
-import { getManager } from 'typeorm'
+import dayjs from 'dayjs'
+import type { EntityManager } from 'typeorm'
+import { In } from 'typeorm'
+import { APP_SOURCE } from '..'
 import { SubscriptionEntitiy } from '../entity'
 import type { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
-  public createOne = async (subscriptionType: SubscriptionEnum, userId: number) => {
-    const subscription = getManager().create(SubscriptionEntitiy, {
+  repository: EntityManager
+
+  constructor() {
+    this.repository = APP_SOURCE.manager
+  }
+
+  async createOne(subscriptionType: SubscriptionEnum, userId: number) {
+    const subscription = this.repository.create(SubscriptionEntitiy, {
       type: subscriptionType,
       user: userId,
-      expireAt: new Date(), // TODO generate date with payment and  type
+      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
     })
+    await this.repository.save(subscription)
     return subscription
   }
 
-  public getOne = async (id: number) => {
-    return getManager().findOne(SubscriptionEntitiy, id, { relations: ['user', 'payment'] })
+  async getOne(id: number) {
+    return this.repository.findOne(SubscriptionEntitiy, {
+      where: { id },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public getMany = async (ids: number[]) => {
-    return getManager().findByIds(SubscriptionEntitiy, ids, { relations: ['user', 'payment'] })
+  async getMany(ids: number[]) {
+    return this.repository.find(SubscriptionEntitiy, {
+      where: {
+        id: In(ids),
+      },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public getOneByUserId = async (userId: number) => {
-    return getManager().findOne(SubscriptionEntitiy, { user: userId }, { relations: ['payment'] })
+  async getOneByUserId(userId: number) {
+    return this.repository.findOne(SubscriptionEntitiy, {
+      where: {
+        user: userId,
+      },
+      relations: ['user', 'payment'],
+    })
   }
 
-  public updateOne = async (id: number, subscription: SubscriptionEntitiy) => {
-    return getManager().update(SubscriptionEntitiy, id, subscription)
+  async updateOne(id: number, subscription: SubscriptionEntitiy) {
+    return this.repository.update(SubscriptionEntitiy, id, subscription)
   }
 }

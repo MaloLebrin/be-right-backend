@@ -1,65 +1,73 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import type AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
+import { APP_SOURCE } from '..'
 
 export default class AnswerController {
-  public static createOne = async (req: Request, res: Response) => {
+  AnswerService: AnswerService
+  EventService: EventService
+
+  constructor() {
+    this.AnswerService = new AnswerService()
+    this.EventService = new EventService()
+  }
+
+  async createOne(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
-      const answer = AnswerService.createOne(eventId, employeeId)
-      await EventService.multipleUpdateForEvent(eventId)
+      const answer = this.AnswerService.createOne(eventId, employeeId)
+      await this.EventService.multipleUpdateForEvent(eventId)
       return answer ? res.status(200).json(answer) : res.status(400).json({ message: 'no created' })
     })
   }
 
-  public static createMany = async (req: Request, res: Response) => {
+  async createMany(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
-      const answers = AnswerService.createMany(eventId, employeeIds)
-      await EventService.multipleUpdateForEvent(eventId)
+      const answers = this.AnswerService.createMany(eventId, employeeIds)
+      await this.EventService.multipleUpdateForEvent(eventId)
       return answers ? res.status(200).json(answers) : res.status(400).json({ message: 'no created' })
     })
   }
 
-  public static getManyForEvent = async (req: Request, res: Response) => {
+  async getManyForEvent(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const answers = await AnswerService.getAllAnswersForEvent(id, false)
+        const answers = await this.AnswerService.getAllAnswersForEvent(id, false)
         return res.status(200).json(answers)
       }
       return res.status(400).json({ message: 'no id' })
     })
   }
 
-  public static updateOne = async (req: Request, res: Response) => {
+  async updateOne(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
-      const answerUpdated = await AnswerService.updateOneAnswer(id, answer)
-      await EventService.multipleUpdateForEvent(answerUpdated.event)
+      const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
+      await this.EventService.multipleUpdateForEvent(answerUpdated.event)
       return res.status(200).json(answerUpdated)
     })
   }
 
-  public static updateAnswerStatus = async (req: Request, res: Response) => {
+  async updateAnswerStatus(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeId = parseInt(req.body.employeeId)
       const isSigned = req.query.isSigned
 
       if (eventId && employeeId && isSigned !== undefined) {
-        const answer = await AnswerService.getOneAnswerForEventEmployee(eventId, employeeId)
+        const answer = await this.AnswerService.getOneAnswerForEventEmployee(eventId, employeeId)
         if (answer) {
           answer.hasSigned = !!isSigned
           answer.signedAt = new Date()
-          await getManager().save(answer)
-          await EventService.multipleUpdateForEvent(answer.event)
+          await APP_SOURCE.manager.save(answer)
+          await this.EventService.multipleUpdateForEvent(answer.event)
           return res.status(200).json(answer)
         }
       }
@@ -67,13 +75,13 @@ export default class AnswerController {
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  async deleteOne(req: Request, res: Response) {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const answerToDelete = await AnswerService.getOne(id)
-        const answer = await AnswerService.deleteOne(id)
-        await EventService.multipleUpdateForEvent(answerToDelete.event)
+        const answerToDelete = await this.AnswerService.getOne(id)
+        const answer = await this.AnswerService.deleteOne(id)
+        await this.EventService.multipleUpdateForEvent(answerToDelete.event)
         return res.status(200).json(answer)
       }
       return res.status(422).json({ message: 'no id' })

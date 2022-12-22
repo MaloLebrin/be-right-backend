@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import Context from '../context'
 import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
 import { paginator, wrapperRequest } from '../utils'
@@ -12,14 +12,31 @@ import type { UserEntity } from '../entity/UserEntity'
 import { isArrayOfNumbers, isUserAdmin, isUserEntity } from '../utils/index'
 import { AddressService } from '../services'
 import type { EmployeeCreateOneRequest } from '../types'
+import { APP_SOURCE } from '..'
 
 export default class EmployeeController {
+  getManager: EntityManager
+  EmployeeService: EmployeeService
+  AddressService: AddressService
+  AnswerService: AnswerService
+  EventService: EventService
+  employeeRepository: Repository<EmployeeEntity>
+
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.EmployeeService = new EmployeeService()
+    this.EventService = new EventService()
+    this.AnswerService = new AnswerService()
+    this.AddressService = new AddressService()
+    this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
+  }
+
   /**
    * employee must have event id
    * @param employee employee: Partial<employeeEntity>
    * @returns return employee just created
    */
-  public static createOne = async (req: Request, res: Response) => {
+  public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
       const ctx = Context.get(req)
@@ -29,25 +46,25 @@ export default class EmployeeController {
       } else {
         userId = ctx.user.id
       }
-      const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+      const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
       if (isEmployeeAlreadyExist) {
         return res.status(422).json({ error: 'cet email existe déjà' })
       }
-      const newEmployee = await EmployeeService.createOne(employee, userId)
+      const newEmployee = await this.EmployeeService.createOne(employee, userId)
       if (newEmployee) {
         if (address) {
-          await AddressService.createOne({
+          await this.AddressService.createOne({
             address,
             employeeId: newEmployee.id,
           })
         }
-        const employeeToSend = await EmployeeService.getOne(newEmployee.id)
+        const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
         return res.status(200).json({ ...employeeToSend, createdByUser: userId })
       }
     })
   }
 
-  public static createMany = async (req: Request, res: Response) => {
+  public createMany = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
       if (employees.length > 0) {
@@ -59,13 +76,13 @@ export default class EmployeeController {
           userId = ctx.user.id
         }
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
-          const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+          const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
           if (!isEmployeeAlreadyExist) {
-            const emp = await EmployeeService.createOne(employee, userId)
+            const emp = await this.EmployeeService.createOne(employee, userId)
             if (emp) {
-              await AddressService.createOne({ address, employeeId: emp.id })
+              await this.AddressService.createOne({ address, employeeId: emp.id })
             }
-            return EmployeeService.getOne(emp.id)
+            return this.EmployeeService.getOne(emp.id)
           }
         }))
         return res.status(200).json(newEmployees)
@@ -74,7 +91,7 @@ export default class EmployeeController {
     })
   }
 
-  public static createManyEmployeeByEventId = async (req: Request, res: Response) => {
+  public createManyEmployeeByEventId = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.eventId)
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
@@ -87,18 +104,18 @@ export default class EmployeeController {
           userId = ctx.user.id
         }
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
-          const isEmployeeAlreadyExist = await EmployeeService.isEmployeeAlreadyExist(employee.email)
+          const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
           if (!isEmployeeAlreadyExist) {
-            const emp = await EmployeeService.createOne(employee, userId)
+            const emp = await this.EmployeeService.createOne(employee, userId)
             if (emp) {
-              await AddressService.createOne({ address, employeeId: emp.id })
+              await this.AddressService.createOne({ address, employeeId: emp.id })
             }
-            return EmployeeService.getOne(emp.id)
+            return this.EmployeeService.getOne(emp.id)
           }
         }))
         const newEmployeesIds = newEmployees.map(employee => employee.id)
-        await AnswerService.createMany(eventId, newEmployeesIds)
-        await EventService.getNumberSignatureNeededForEvent(eventId)
+        await this.AnswerService.createMany(eventId, newEmployeesIds)
+        await this.EventService.getNumberSignatureNeededForEvent(eventId)
         const returnedEmployees = newEmployees.map(employee => ({
           ...employee,
           eventId,
@@ -114,11 +131,11 @@ export default class EmployeeController {
    * @param Id number
    * @returns entity form given id
    */
-  public static getOne = async (req: Request, res: Response) => {
+  public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const employee = await EmployeeService.getOne(id)
+        const employee = await this.EmployeeService.getOne(id)
         return res.status(200).json(employee)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
@@ -129,11 +146,11 @@ export default class EmployeeController {
    * @param id user id
    * @returns all employees from user Id
    */
-  public static getManyByUserId = async (req: Request, res: Response) => {
+  public getManyByUserId = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
-        const employees = await EmployeeService.getAllForUser(userId)
+        const employees = await this.EmployeeService.getAllForUser(userId)
         const entitiesReturned = employees.map(employee => ({
           ...employee,
           createdByUser: userId,
@@ -148,12 +165,12 @@ export default class EmployeeController {
    * @param id event id
    * @returns all employees from event Id
    */
-  public static getManyByEventId = async (req: Request, res: Response) => {
+  public getManyByEventId = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
-        const user = await EventService.getOneEvent(eventId)
-        const answers = await AnswerService.getAllAnswersForEvent(eventId)
+        const user = await this.EventService.getOneEvent(eventId)
+        const answers = await this.AnswerService.getAllAnswersForEvent(eventId)
         const employeesWithAnswers = answers.map(answer => {
           const employee = {
             ...answer.employee as unknown as EmployeeEntity,
@@ -174,14 +191,17 @@ export default class EmployeeController {
    * paginate function
    * @returns paginate response
    */
-  public static getAll = async (req: Request, res: Response) => {
+  public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, employeeSearchablefields)
       const employeeFilters = {
         ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<EmployeeEntity>,
+        },
         relations: ['createdByUser', 'answers', 'address'],
       }
-      const employees = await getManager().find(EmployeeEntity, employeeFilters)
+      const employees = await this.employeeRepository.find(employeeFilters)
       const entityReturned = employees.map(employee => {
         const user = employee.createdByUser as UserEntity
         return {
@@ -191,7 +211,7 @@ export default class EmployeeController {
         }
       })
 
-      const total = await getManager().count(EmployeeEntity, queriesFilters)
+      const total = await this.employeeRepository.countBy(queriesFilters as FindOptionsWhere<EmployeeEntity>)
       return res.status(200).json({ data: entityReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
     })
   }
@@ -200,42 +220,42 @@ export default class EmployeeController {
    * @param employee employee: Partial<EmployeeEntity>
    * @returns return employee just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
-        const employeeUpdated = await EmployeeService.updateOne(id, employee)
+        const employeeUpdated = await this.EmployeeService.updateOne(id, employee)
         return res.status(200).json(employeeUpdated)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     })
   }
 
-  public static patchOne = async (req: Request, res: Response) => {
+  public patchOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const event = await EventService.getNumberSignatureNeededForEvent(id)
+        const event = await this.EventService.getNumberSignatureNeededForEvent(id)
         return res.status(200).json(event)
       }
       return res.status(422).json({ error: 'identifiant du destinataire manquant' })
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const getEmployee = await getManager().findOne(EmployeeEntity, id, { relations: ['createdByUser'] })
-        const employeeUser = getEmployee.createdByUser as UserEntity
+        const getEmployee = await this.EmployeeService.getOne(id)
+        const employeeUser = getEmployee.createdByUser as unknown as UserEntity
         if (employeeUser.id === userId || checkUserRole(Role.ADMIN)) {
-          await EmployeeService.deleteOne(id)
+          await this.EmployeeService.deleteOne(id)
           if (employeeUser.events && employeeUser.events.length && isArrayOfNumbers(employeeUser.events)) {
             employeeUser.events.forEach(async eventId => {
-              await EventService.getNumberSignatureNeededForEvent(eventId)
+              await this.EventService.getNumberSignatureNeededForEvent(eventId)
             })
           }
           return res.status(204).json(getEmployee)

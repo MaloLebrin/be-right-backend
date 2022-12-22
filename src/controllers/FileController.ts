@@ -1,6 +1,6 @@
 import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
 import { paginator, wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
@@ -9,9 +9,20 @@ import Context from '../context'
 import { Role } from '../types/Role'
 import { UserEntity } from '../entity'
 import { useEnv } from '../env'
+import { APP_SOURCE } from '..'
 
 export default class FileController {
-  public static newFile = async (req: Request, res: Response) => {
+  getManager: EntityManager
+  FileService: FileService
+  repository: Repository<FileEntity>
+
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.FileService = new FileService()
+    this.repository = APP_SOURCE.getRepository(FileEntity)
+  }
+
+  public newFile = async (req: Request, res: Response) => {
     const { NODE_ENV } = useEnv()
 
     await wrapperRequest(req, res, async () => {
@@ -27,7 +38,7 @@ export default class FileController {
       if (user.roles === Role.ADMIN) {
         if (req.params.id) {
           userId = parseInt(req.params.id)
-          user = await getManager().findOne(UserEntity, userId)
+          user = await this.getManager.findOne(UserEntity, userId)
         } else {
           userId = user.id
         }
@@ -59,30 +70,30 @@ export default class FileController {
         mimeType: fileRecieved.mimetype,
       }
 
-      const file = getManager().create(FileEntity, fileToPost)
-      await getManager().save(file)
+      const file = this.repository.create(fileToPost)
+      await this.repository.save(file)
       return res.status(200).json(file)
     })
   }
 
-  public static createProfilePicture = async (req: Request, res: Response) => {
+  public createProfilePicture = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
-        const profilePicture = await FileService.createProfilePicture(fileRecieved, ctx.user)
+        const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
         return res.status(200).json(profilePicture)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
     })
   }
 
-  public static createLogo = async (req: Request, res: Response) => {
+  public createLogo = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
-        const logo = await FileService.createLogo(fileRecieved, ctx.user)
+        const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
         return res.status(200).json(logo)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
@@ -93,23 +104,23 @@ export default class FileController {
    * @param file file: Partial<FileEntity>
    * @returns return file just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
-        const fileUpdated = await FileService.updateFile(id, file as FileEntity)
+        const fileUpdated = await this.FileService.updateFile(id, file as FileEntity)
         return res.status(200).json(fileUpdated)
       }
       return res.status(422).json({ message: 'identitfiant du fichier manquant' })
     })
   }
 
-  public static getFile = async (req: Request, res: Response) => {
+  public getFile = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const file = await getManager().findOne(FileEntity, id)
+        const file = await this.FileService.getFile(id)
         if (file) {
           return res.status(200).json(file)
         } else {
@@ -120,53 +131,53 @@ export default class FileController {
     })
   }
 
-  public static getFiles = async (req: Request, res: Response) => {
+  public getFiles = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { ids }: { ids: number[] } = req.body
-      const files = await Promise.all(ids.map(id => getManager().findOne(FileEntity, id)))
+      const files = await Promise.all(ids.map(id => this.FileService.getFile(id)))
       return res.status(200).json(files)
     })
   }
 
-  public static getFilesByUser = async (req: Request, res: Response) => {
+  public getFilesByUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
-        const files = await getManager().find(FileEntity, { where: { createdByUser: userId } })
+        const files = await this.FileService.getFilesByUser(userId)
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'utilisateur manquant' })
     })
   }
 
-  public static getFilesByEvent = async (req: Request, res: Response) => {
+  public getFilesByEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
-        const files = await getManager().find(FileEntity, { where: { event: eventId } })
+        const files = await this.FileService.getFilesByEvent(eventId)
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'événement manquant' })
     })
   }
 
-  public static getFilesByEmployee = async (req: Request, res: Response) => {
+  public getFilesByEmployee = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const employeeId = parseInt(req.params.id)
       if (employeeId) {
-        const files = await getManager().find(FileEntity, { where: { employee: employeeId } })
+        const files = await this.repository.find({ where: { employee: employeeId } })
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'employé manquant' })
     })
   }
 
-  public static getFilesByUserAndEvent = async (req: Request, res: Response) => {
+  public getFilesByUserAndEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
       if (userId && eventId) {
-        const files = await getManager().find(FileEntity, { where: { createdByUser: userId, event: eventId } })
+        const files = await this.repository.find({ where: { createdByUser: userId, event: eventId } })
         if (files.length > 0) {
           return res.status(200).json(files)
         }
@@ -176,22 +187,27 @@ export default class FileController {
     })
   }
 
-  public static getAllPaginate = async (req: Request, res: Response) => {
+  public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, filesSearchableFields)
-      const [files, count] = await getManager().findAndCount(FileEntity, queriesFilters)
+      const [files, count] = await this.repository.findAndCount({
+        ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<FileEntity>,
+        },
+      })
       return res.status(200).json({ data: files, total: count, currentPage: queriesFilters.page, limit: queriesFilters.take })
     })
   }
 
-  public static deleteFile = async (req: Request, res: Response) => {
+  public deleteFile = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const file = await getManager().findOne(FileEntity, id)
+        const file = await this.FileService.getFile(id)
         if (file) {
           await cloudinary.v2.uploader.destroy(file.public_id)
-          const deleted = await FileService.deleteFile(id)
+          const deleted = await this.FileService.deleteFile(id)
           return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'fichier non trouvé' })
         }
       }
