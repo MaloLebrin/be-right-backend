@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-
 import { Column, Entity, OneToOne, RelationId } from 'typeorm'
 import { BaseEntity, SubscriptionEntitiy } from '.'
 

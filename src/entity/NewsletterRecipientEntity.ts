@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-
 import { Column, Entity } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
 

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-
 import { Column, Entity, ManyToOne } from 'typeorm'
 import { FileTypeEnum } from '../types/File'
 import { BaseEntity } from './BaseEntity'
