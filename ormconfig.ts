@@ -1,5 +1,5 @@
-const config = [
-  {
+export const dataBaseConfig = {
+  production: {
     name: 'production',
     type: 'postgres',
     host: 'postgres',
@@ -17,13 +17,13 @@ const config = [
       },
     },
     entities: [
-      'build/entity/**/*.js',
+      'build/src/entity/**/*.js',
     ],
     migrations: [
-      'build/migration/**/*.js',
+      'build/src/migrations/**/*.js',
     ],
     subscribers: [
-      'build/subscriber/**/*.js',
+      'build/src/subscriber/**/*.js',
     ],
     cli: {
       entitiesDir: 'src/entity',
@@ -31,7 +31,8 @@ const config = [
       subscribersDir: 'src/subscriber',
     },
   },
-  {
+
+  dev: {
     name: 'dev',
     type: 'postgres',
     host: 'postgres',
@@ -42,13 +43,13 @@ const config = [
     synchronize: false,
     logging: false,
     entities: [
-      'build/entity/**/*.js',
+      'build/src/entity/**/*.js',
     ],
     migrations: [
-      'build/migration/**/*.js',
+      'build/src/migrations/**/*.js',
     ],
     subscribers: [
-      'build/subscriber/**/*.js',
+      'build/src/subscriber/**/*.js',
     ],
     cli: {
       entitiesDir: 'src/entity',
@@ -56,6 +57,4 @@ const config = [
       subscribersDir: 'src/subscriber',
     },
   },
-]
-
-export default config
+}

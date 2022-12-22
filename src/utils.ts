@@ -2,6 +2,8 @@ import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
 import { DataSource, Like } from 'typeorm'
+import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import { dataBaseConfig } from '../ormconfig'
 import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
@@ -118,18 +120,18 @@ export async function clearDB() {
 
 export function createAppSource() {
   const {
-    DATABASE_URL,
     NODE_ENV,
   } = useEnv()
 
-  let connectionsOptions
+  let connectionsOptions: PostgresConnectionOptions
 
   if (NODE_ENV === 'production') {
     connectionsOptions = {
-      url: DATABASE_URL!,
+      ...dataBaseConfig.production as PostgresConnectionOptions,
     }
   } else {
     connectionsOptions = {
+      ...dataBaseConfig.dev as PostgresConnectionOptions,
       name: 'default',
     }
   }

@@ -13,8 +13,6 @@ import { AddressService } from '../services'
 import { APP_SOURCE } from '..'
 
 export default class EventController {
-  static repository = APP_SOURCE.getRepository(EventEntity)
-
   AddressService: AddressService
   AnswerService: AnswerService
   EventService: EventService
