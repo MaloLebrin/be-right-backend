@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { In } from 'typeorm'
 import { APP_SOURCE } from '..'
 import { SubscriptionEntitiy } from '../entity'
@@ -10,7 +11,7 @@ export class SubscriptionService {
     const subscription = this.repository.create({
       type: subscriptionType,
       user: userId,
-      expireAt: new Date(), // TODO generate date with payment and  type
+      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
     })
     await this.repository.save(subscription)
     return subscription

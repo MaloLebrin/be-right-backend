@@ -1,28 +1,20 @@
 import * as dotenv from 'dotenv'
-import { createConnection, getConnectionOptions } from 'typeorm'
-import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { useLogger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
-import { clearDB } from '../utils'
+import { clearDB, createAppSource } from '../utils'
 import { createAdminUser } from './admin'
 import { createPhotographers } from './shared/photographerFixtures'
 import { seedMediumUserData, seedUserCompany } from './UserCompany'
+
+export const APP_SOURCE_SEEDER = createAppSource()
 
 async function createDevSeeders() {
   const {
     NODE_ENV,
   } = useEnv()
 
-  const config = await getConnectionOptions(NODE_ENV) as PostgresConnectionOptions
-  let connectionsOptions = config
-
   if (NODE_ENV !== 'production') {
-    connectionsOptions = {
-      ...config,
-      name: 'default',
-    }
-
-    createConnection(connectionsOptions).then(async () => {
+    APP_SOURCE_SEEDER.initialize().then(async () => {
       const { logger } = useLogger()
       dotenv.config()
 

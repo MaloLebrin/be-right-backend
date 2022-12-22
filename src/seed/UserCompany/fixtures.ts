@@ -11,6 +11,10 @@ export const userCompanyFixturePremium = {
   subscription: SubscriptionEnum.PREMIUM,
 }
 
+export const subscriptionUserCompanyFixturePremium = {
+  type: SubscriptionEnum.PREMIUM,
+}
+
 export const addressFixtureCompanyPremium = {
   addressLine: 'Rue du chaudron baveur',
   addressLine2: '',
@@ -99,6 +103,8 @@ export const eventFixtureCompanyPremium = {
   },
 }
 
+// MEDIUM
+
 export const userCompanyFixtureMedium = {
   companyName: 'Mangemorts',
   email: 'tom.elvis.jedusor@poudlard.com',
@@ -107,6 +113,10 @@ export const userCompanyFixtureMedium = {
   password: 'password',
   role: Role.COMPANY,
   subscription: SubscriptionEnum.MEDIUM,
+}
+
+export const subscriptionUserCompanyFixtureMedium = {
+  type: SubscriptionEnum.MEDIUM,
 }
 
 export const addressFixtureCompanyMedium = {

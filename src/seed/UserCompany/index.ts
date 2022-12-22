@@ -1,10 +1,13 @@
-import { getManager } from 'typeorm'
 import UserService from '../../services/UserService'
 import { AddressService } from '../../services/AddressService'
 import EmployeeService from '../../services/EmployeeService'
 import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
+import { SubscriptionEnum } from '../../types'
+import { APP_SOURCE_SEEDER } from '..'
+import AnswerEntity from '../../entity/AnswerEntity'
+import { SubscriptionService } from '../../services'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -17,7 +20,11 @@ import {
 } from './fixtures'
 
 export async function seedUserCompany() {
+  const getManager = APP_SOURCE_SEEDER.manager
+
   const user = await UserService.createOneUser(userCompanyFixturePremium)
+
+  await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
 
   await AddressService.createOne({
     address: addressFixtureCompanyPremium,
@@ -50,12 +57,16 @@ export async function seedUserCompany() {
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
-    await getManager().save(answer)
+    await getManager.save(AnswerEntity, answer)
   }
 }
 
 export async function seedMediumUserData() {
+  const getManager = APP_SOURCE_SEEDER.manager
+
   const user = await UserService.createOneUser(userCompanyFixtureMedium)
+
+  await SubscriptionService.createOne(SubscriptionEnum.MEDIUM, user.id)
 
   await AddressService.createOne({
     address: addressFixtureCompanyMedium,
@@ -88,6 +99,6 @@ export async function seedMediumUserData() {
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
-    await getManager().save(answer)
+    await getManager.save(AnswerEntity, answer)
   }
 }
