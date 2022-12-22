@@ -37,6 +37,6 @@ export async function createPhotographers() {
   ]
 
   return await Promise.all(photographersPayload.map(async photographer =>
-    await UserService.createPhotographer(photographer),
+    await new UserService().createPhotographer(photographer),
   ))
 }

@@ -14,7 +14,9 @@ import { createAppSource } from './utils'
     CLOUDINARY_CLOUD_NAME,
   } = useEnv()
 
-  createAppSource().initialize().then(async () => {
+  const JOB_APP_SOURCE = createAppSource()
+
+  JOB_APP_SOURCE.initialize().then(async () => {
     const { logger } = useLogger()
     dotenv.config()
 
@@ -28,7 +30,7 @@ import { createAppSource } from './utils'
       CronJobInterval.EVERY_DAY_4_AM,
       async () => {
         logger.info('start udpateEventStatus jobs')
-        await udpateEventStatusJob()
+        await udpateEventStatusJob(JOB_APP_SOURCE)
         logger.info('end udpateEventStatus jobs')
       },
     )

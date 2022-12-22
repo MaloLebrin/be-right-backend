@@ -23,8 +23,10 @@ import {
 
 export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
+  const addressService = new AddressService()
+  const answerService = new AnswerService()
 
-  const user = await UserService.createOneUser(userCompanyFixturePremium)
+  const user = await new UserService().createOneUser(userCompanyFixturePremium)
 
   // await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
 
@@ -35,18 +37,18 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   })
   await getManager.save(subscription)
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: addressFixtureCompanyPremium,
     userId: user.id,
   })
 
   const employees = await Promise.all(employeesFixtureCompanyPremium.map(
-    async item => await EmployeeService.createOne(item.employee, user.id),
+    async item => await new EmployeeService().createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await EventService.createOneEvent(
+  const event = await new EventService().createOneEvent(
     {
       ...eventFixtureCompanyPremium.event,
       employeeIds,
@@ -56,13 +58,13 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
     1,
   )
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: eventFixtureCompanyPremium.address,
     eventId: event.id,
   })
 
-  await AnswerService.createMany(event.id, employeeIds)
-  const answer = await AnswerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
+  await answerService.createMany(event.id, employeeIds)
+  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
@@ -70,10 +72,14 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   }
 }
 
+// MEDIUM
+
 export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
+  const addressService = new AddressService()
+  const answerService = new AnswerService()
 
-  const user = await UserService.createOneUser(userCompanyFixtureMedium)
+  const user = await new UserService().createOneUser(userCompanyFixtureMedium)
 
   const subscription = getManager.create(SubscriptionEntitiy, {
     type: SubscriptionEnum.MEDIUM,
@@ -82,18 +88,18 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   })
   await getManager.save(subscription)
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: addressFixtureCompanyMedium,
     userId: user.id,
   })
 
   const employees = await Promise.all(employeesFixtureCompanyMedium.map(
-    async item => await EmployeeService.createOne(item.employee, user.id),
+    async item => await new EmployeeService().createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await EventService.createOneEvent(
+  const event = await new EventService().createOneEvent(
     {
       ...eventFixtureCompanyMedium.event,
       employeeIds,
@@ -103,13 +109,13 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
     1,
   )
 
-  await AddressService.createOne({
+  await addressService.createOne({
     address: eventFixtureCompanyMedium.address,
     eventId: event.id,
   })
 
-  await AnswerService.createMany(event.id, employeeIds)
-  const answer = await AnswerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
+  await answerService.createMany(event.id, employeeIds)
+  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
   if (answer) {
     answer.hasSigned = true
     answer.signedAt = new Date()
