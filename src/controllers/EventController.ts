@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
@@ -10,8 +10,11 @@ import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import { Role } from '../types'
 import { isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
+import { APP_SOURCE } from '..'
 
 export default class EventController {
+  static repository = APP_SOURCE.getRepository(EventEntity)
+
   /**
    * @param event event: Partial<EventEntity>
    * @returns return event just created
@@ -78,7 +81,8 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
       const userId = ctx.user.id
-      const events = await getManager().find(EventEntity, { where: { createdByUser: userId }, relations: ['partner'] })
+      const events = await this.repository.find({ where: { createdByUser: userId }, relations: ['partner'] })
+
       const eventsReturned = await Promise.all(events.map(async event => {
         const answers = await AnswerService.getAllAnswersForEvent(event.id)
         let employees = []
@@ -101,6 +105,7 @@ export default class EventController {
           partner: partner?.id,
         }
       }))
+
       return res.status(200).json(eventsReturned)
     })
   }
@@ -112,7 +117,15 @@ export default class EventController {
   public static getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, eventSearchableFields)
-      const events = await getManager().find(EventEntity, { ...queriesFilters, relations: ['createdByUser', 'partner', 'address'] })
+
+      const [events, count] = await this.repository.findAndCount({
+        ...queriesFilters,
+        where: {
+          ...queriesFilters.where as FindOptionsWhere<EventEntity>,
+        },
+        relations: ['createdByUser', 'partner', 'address'],
+      })
+
       const eventsReturned = events.length > 0
         ? events.map(event => {
           const user = event.createdByUser as UserEntity
@@ -127,8 +140,8 @@ export default class EventController {
           return event
         })
         : []
-      const total = await getManager().count(EventEntity, queriesFilters)
-      return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+
+      return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total: count })
     })
   }
 
@@ -163,9 +176,10 @@ export default class EventController {
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const eventToDelete = await getManager().findOne(EventEntity, id)
+        const eventToDelete = await EventService.getOneWithoutRelations(id)
+
         if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
-          await getManager().delete(EventEntity, id)
+          await this.repository.delete(id)
           return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
         } else {
           return res.status(401).json('Not allowed')

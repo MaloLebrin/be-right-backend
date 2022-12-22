@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import { getManager } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -14,8 +14,13 @@ import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
 import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
 import { useEnv } from '../env'
+import { APP_SOURCE } from '..'
 
 export default class UserController {
+  static getManager = APP_SOURCE.manager
+
+  static repository = APP_SOURCE.getRepository(UserEntity)
+
   /**
    * @param user user: Partial<userEntity>
    * @returns return user just created
@@ -38,10 +43,12 @@ export default class UserController {
           password: string
           role: Role
         } = req.body
-      const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+
+      const userAlReadyExist = await UserService.findOneByEmail(email)
       if (userAlReadyExist) {
         return res.status(400).json({ error: 'cet email existe déjà' })
       }
+
       const newUser = await UserService.createOneUser({
         companyName,
         email,
@@ -51,6 +58,7 @@ export default class UserController {
         role,
         subscription: SubscriptionEnum.BASIC,
       })
+
       return res.status(200).json(userResponse(newUser))
     })
   }
@@ -67,7 +75,14 @@ export default class UserController {
         relations: ['events', 'files', 'employee', 'profilePicture'],
         // TODO find a way to not filter with search filed on subscription
       }
-      const search = await getManager().find(UserEntity, usersFilters)
+
+      const [search, total] = await this.repository.findAndCount({
+        ...usersFilters,
+        where: {
+          ...usersFilters.where as FindOptionsWhere<UserEntity>,
+        },
+      })
+
       const users = search.map(user => {
         const events = user.events as EventEntity[]
         const employees = user.employee as EmployeeEntity[]
@@ -80,8 +95,13 @@ export default class UserController {
         }
       })
       const usersToSend = users.map(user => userResponse(user))
-      const total = await getManager().count(UserEntity, usersFilters)
-      return res.status(200).json({ data: usersToSend, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+
+      return res.status(200).json({
+        data: usersToSend,
+        currentPage: queriesFilters.page,
+        limit: queriesFilters.take,
+        total,
+      })
     })
   }
 
@@ -144,7 +164,8 @@ export default class UserController {
       if (id) {
         const ctx = Context.get(req)
         if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-          const userFinded = await getManager().findOne(UserEntity, id)
+          const userFinded = await UserService.getOne(id)
+
           const userUpdated = {
             ...userFinded,
             ...user,
@@ -153,7 +174,8 @@ export default class UserController {
           if (user.roles !== userFinded.roles) {
             userUpdated.token = createJwtToken(userUpdated)
           }
-          await getManager().save(UserEntity, userUpdated)
+
+          await this.repository.save(userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
           return res.status(401).json({ error: 'unauthorized' })
@@ -167,13 +189,14 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       const { subscription }: { subscription: SubscriptionEnum } = req.body
+
       if (userId) {
-        const user = await getManager().findOne(UserEntity, userId)
-        // TODO update token with update subscription
+        const user = await UserService.getOne(userId)
+
         if (user) {
           user.subscription = subscription
           user.token = createJwtToken(user)
-          await getManager().save(user)
+          await this.repository.save(user)
           return res.status(200).json(userResponse(user))
         }
       }
@@ -186,7 +209,7 @@ export default class UserController {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-        const userDeleted = await getManager().delete(UserEntity, id)
+        const userDeleted = await this.repository.softDelete(id)
         return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
         return res.status(401).json({ error: 'unauthorized' })
@@ -199,7 +222,11 @@ export default class UserController {
 
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
-      const userFinded = await getManager().findOne(UserEntity, { email }, { relations: ['events', 'files', 'employee', 'profilePicture'] })
+      const userFinded = await this.repository.findOne({
+        where: { email },
+        relations: ['events', 'files', 'employee', 'profilePicture'],
+      })
+
       // TODO remove this in prod
       if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
@@ -212,7 +239,7 @@ export default class UserController {
           } as JWTTokenPayload)
           userFinded.subscription = SubscriptionEnum.PREMIUM
           userFinded.roles = Role.ADMIN
-          await getManager().save(userFinded)
+          await this.repository.save(userFinded)
         }
       }
 
@@ -226,7 +253,9 @@ export default class UserController {
           employee: addUserToEntityRelation(employees, userFinded.id),
           files: addUserToEntityRelation(files, userFinded.id),
         }
+
         const passwordHashed = generateHash(user.salt, password)
+
         if (user.password === passwordHashed) {
           return res.status(200).json(userResponse(user))
         } else {
@@ -250,7 +279,11 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await getManager().findOne(UserEntity, { id }, { relations: ['events', 'events.partner'] })
+        const user = await await this.repository.findOne({
+          where: { id },
+          relations: ['events', 'events.partner'],
+        })
+
         const events = user.events
         const partners = events.map(event => event.partner) as UserEntity[]
         const uniqPartnersIds = uniq(partners.map(user => user.id))
@@ -265,7 +298,8 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       if (email) {
-        const userAlReadyExist = await getManager().findOne(UserEntity, { email })
+        const userAlReadyExist = await UserService.findOneByEmail(email)
+
         if (userAlReadyExist) {
           return res.status(200).json({
             success: false,

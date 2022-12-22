@@ -15,38 +15,38 @@ export class AddresController {
     })
   }
 
-  public static getOneByEvent = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      if (id) {
-        const address = await AddressService.getOneByEventId(id)
-        return res.status(200).json(address)
-      }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
-    })
-  }
+  // public static getOneByEvent = async (req: Request, res: Response) => {
+  //   await wrapperRequest(req, res, async () => {
+  //     const id = parseInt(req.params.id)
+  //     if (id) {
+  //       const address = await AddressService.getOneByEventId(id)
+  //       return res.status(200).json(address)
+  //     }
+  //     return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+  //   })
+  // }
 
-  public static getOneByUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      if (id) {
-        const address = await AddressService.getOneByUserId(id)
-        return res.status(200).json(address)
-      }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
-    })
-  }
+  // public static getOneByUser = async (req: Request, res: Response) => {
+  //   await wrapperRequest(req, res, async () => {
+  //     const id = parseInt(req.params.id)
+  //     if (id) {
+  //       const address = await AddressService.getOneByUserId(id)
+  //       return res.status(200).json(address)
+  //     }
+  //     return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+  //   })
+  // }
 
-  public static getOneByEmployee = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      if (id) {
-        const address = await AddressService.getOneByEmployeeId(id)
-        return res.status(200).json(address)
-      }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
-    })
-  }
+  // public static getOneByEmployee = async (req: Request, res: Response) => {
+  //   await wrapperRequest(req, res, async () => {
+  //     const id = parseInt(req.params.id)
+  //     if (id) {
+  //       const address = await AddressService.getOneByEmployeeId(id)
+  //       return res.status(200).json(address)
+  //     }
+  //     return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+  //   })
+  // }
 
   public static createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {

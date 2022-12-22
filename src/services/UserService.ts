@@ -34,13 +34,23 @@ export default class UserService {
   }
 
   public static async updateTheme(id: number, theme: ThemeEnum) {
-    const user = await await this.repository.findOne({
+    const user = await this.repository.findOne({
       where: { id },
     })
 
     user.theme = theme
     await this.repository.save(user)
     return user
+  }
+
+  public static async getOne(id: number, withRelation?: boolean) {
+    if (withRelation) {
+      return this.getOneWithRelations(id)
+    }
+
+    return this.repository.findOne({
+      where: { id },
+    })
   }
 
   public static async getOneWithRelations(id: number): Promise<UserEntity> {
