@@ -1,3 +1,5 @@
+import type { DataSource } from 'typeorm'
+import dayjs from 'dayjs'
 import UserService from '../../services/UserService'
 import { AddressService } from '../../services/AddressService'
 import EmployeeService from '../../services/EmployeeService'
@@ -5,9 +7,9 @@ import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
 import { SubscriptionEnum } from '../../types'
-import { APP_SOURCE_SEEDER } from '..'
 import AnswerEntity from '../../entity/AnswerEntity'
-import { SubscriptionService } from '../../services'
+// import { SubscriptionService } from '../../services'
+import { SubscriptionEntitiy } from '../../entity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -19,12 +21,19 @@ import {
   userCompanyFixturePremium,
 } from './fixtures'
 
-export async function seedUserCompany() {
+export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
 
   const user = await UserService.createOneUser(userCompanyFixturePremium)
 
-  await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
+  // await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
+
+  const subscription = getManager.create(SubscriptionEntitiy, {
+    type: SubscriptionEnum.PREMIUM,
+    user: user.id,
+    expireAt: dayjs().add(1, 'year'),
+  })
+  await getManager.save(subscription)
 
   await AddressService.createOne({
     address: addressFixtureCompanyPremium,
@@ -61,12 +70,17 @@ export async function seedUserCompany() {
   }
 }
 
-export async function seedMediumUserData() {
+export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
 
   const user = await UserService.createOneUser(userCompanyFixtureMedium)
 
-  await SubscriptionService.createOne(SubscriptionEnum.MEDIUM, user.id)
+  const subscription = getManager.create(SubscriptionEntitiy, {
+    type: SubscriptionEnum.MEDIUM,
+    user: user.id,
+    expireAt: dayjs().add(1, 'year'),
+  })
+  await getManager.save(subscription)
 
   await AddressService.createOne({
     address: addressFixtureCompanyMedium,
