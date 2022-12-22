@@ -17,8 +17,6 @@ ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV:-dev}
 
 COPY .env /app/.env
-COPY ormconfig-docker.json /app/ormconfig.json
-# mayby delete configjson
 COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 COPY entrypoint.sh /app/
