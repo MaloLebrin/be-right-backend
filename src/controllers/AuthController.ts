@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express'
 import uid2 from 'uid2'
+import type { Logger } from 'pino'
+import type { EntityManager } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
 import { UserEntity } from '../entity'
 import MailService from '../services/MailService'
@@ -8,10 +10,25 @@ import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 
 export default class AuthController {
-  static logger = useLogger().logger
-  static getManager = APP_SOURCE.manager
+  logger: Logger<{
+    transport: {
+      target: string
+      options: {
+        colorize: boolean
+      }
+    }
+  }>
 
-  public static forgotPassword = async (req: Request, res: Response) => {
+  getManager: EntityManager
+  MailService: MailService
+
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.MailService = new MailService()
+    this.logger = useLogger().logger
+  }
+
+  public forgotPassword = async (req: Request, res: Response) => {
     const { MAIL_ADRESS } = useEnv()
 
     await wrapperRequest(req, res, async () => {
@@ -26,8 +43,8 @@ export default class AuthController {
       user.twoFactorSecret = twoFactorSecret
       user.twoFactorRecoveryCode = twoFactorRecoveryCode
 
-      const transporter = await MailService.getConnection()
-      const { emailBody, emailText } = MailService.getResetPasswordTemplate(user, twoFactorRecoveryCode)
+      const transporter = await this.MailService.getConnection()
+      const { emailBody, emailText } = this.MailService.getResetPasswordTemplate(user, twoFactorRecoveryCode)
 
       transporter.sendMail({
         from: `${MAIL_ADRESS}`,
@@ -48,7 +65,7 @@ export default class AuthController {
     })
   }
 
-  public static resetPassword = async (req: Request, res: Response) => {
+  public resetPassword = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 

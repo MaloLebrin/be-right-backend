@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import type { FindOptionsWhere } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -17,15 +17,21 @@ import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 
 export default class UserController {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
+  UserService: UserService
+  repository: Repository<UserEntity>
 
-  static repository = APP_SOURCE.getRepository(UserEntity)
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.UserService = new UserService()
+    this.repository = APP_SOURCE.getRepository(UserEntity)
+  }
 
   /**
    * @param user user: Partial<userEntity>
    * @returns return user just created
    */
-  public static newUser = async (req: Request, res: Response) => {
+  public newUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const {
         companyName,
@@ -44,12 +50,12 @@ export default class UserController {
           role: Role
         } = req.body
 
-      const userAlReadyExist = await UserService.findOneByEmail(email)
+      const userAlReadyExist = await this.UserService.findOneByEmail(email)
       if (userAlReadyExist) {
         return res.status(400).json({ error: 'cet email existe déjà' })
       }
 
-      const newUser = await UserService.createOneUser({
+      const newUser = await this.UserService.createOneUser({
         companyName,
         email,
         firstName,
@@ -67,7 +73,7 @@ export default class UserController {
   * paginate function
   * @returns paginate response
   */
-  public static getAll = async (req: Request, res: Response) => {
+  public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, userSearchableFields)
       const usersFilters = {
@@ -109,46 +115,46 @@ export default class UserController {
    * @param Id number
    * @returns entity form given id
   */
-  public static getOne = async (req: Request, res: Response) => {
+  public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await UserService.getOneWithRelations(id)
+        const user = await this.UserService.getOneWithRelations(id)
         return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
       }
       return res.status(422).json({ error: 'id required' })
     })
   }
 
-  public static getMany = async (req: Request, res: Response) => {
+  public getMany = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
         if (userIds) {
-          const users = await UserService.getMany(userIds)
+          const users = await this.UserService.getMany(userIds)
           return res.status(200).json(users)
         }
       }
     })
   }
 
-  public static getOneByToken = async (req: Request, res: Response) => {
+  public getOneByToken = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const token = req.body.token
       if (token) {
-        const user = await UserService.getByToken(token)
+        const user = await this.UserService.getByToken(token)
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
     })
   }
 
-  public static updateTheme = async (req: Request, res: Response) => {
+  public updateTheme = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const { theme } = req.body
-      const user = await UserService.updateTheme(id, theme)
+      const user = await this.UserService.updateTheme(id, theme)
       return res.status(200).json(userResponse(user))
     })
   }
@@ -157,14 +163,14 @@ export default class UserController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
         if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
-          const userFinded = await UserService.getOne(id)
+          const userFinded = await this.UserService.getOne(id)
 
           const userUpdated = {
             ...userFinded,
@@ -185,13 +191,13 @@ export default class UserController {
     })
   }
 
-  public static updatesubscription = async (req: Request, res: Response) => {
+  public updatesubscription = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       const { subscription }: { subscription: SubscriptionEnum } = req.body
 
       if (userId) {
-        const user = await UserService.getOne(userId)
+        const user = await this.UserService.getOne(userId)
 
         if (user) {
           user.subscription = subscription
@@ -204,7 +210,7 @@ export default class UserController {
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
@@ -217,7 +223,7 @@ export default class UserController {
     })
   }
 
-  public static login = async (req: Request, res: Response) => {
+  public login = async (req: Request, res: Response) => {
     const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
 
     await wrapperRequest(req, res, async () => {
@@ -267,15 +273,15 @@ export default class UserController {
     })
   }
 
-  public static createPhotographer = async (req: Request, res: Response) => {
+  public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
-      const newPhotographer = await UserService.createPhotographer(photographer)
+      const newPhotographer = await this.UserService.createPhotographer(photographer)
       return res.status(200).json(newPhotographer)
     })
   }
 
-  public static getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
+  public getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
@@ -294,11 +300,11 @@ export default class UserController {
     })
   }
 
-  public static isMailAlreadyUsed = async (req: Request, res: Response) => {
+  public isMailAlreadyUsed = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       if (email) {
-        const userAlReadyExist = await UserService.findOneByEmail(email)
+        const userAlReadyExist = await this.UserService.findOneByEmail(email)
 
         if (userAlReadyExist) {
           return res.status(200).json({

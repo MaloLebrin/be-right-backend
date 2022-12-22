@@ -1,6 +1,6 @@
 import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
-import type { FindOptionsWhere } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
 import { paginator, wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
@@ -12,11 +12,17 @@ import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 
 export default class FileController {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
+  FileService: FileService
+  repository: Repository<FileEntity>
 
-  static repository = APP_SOURCE.getRepository(FileEntity)
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.FileService = new FileService()
+    this.repository = APP_SOURCE.getRepository(FileEntity)
+  }
 
-  public static newFile = async (req: Request, res: Response) => {
+  public newFile = async (req: Request, res: Response) => {
     const { NODE_ENV } = useEnv()
 
     await wrapperRequest(req, res, async () => {
@@ -70,24 +76,24 @@ export default class FileController {
     })
   }
 
-  public static createProfilePicture = async (req: Request, res: Response) => {
+  public createProfilePicture = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
-        const profilePicture = await FileService.createProfilePicture(fileRecieved, ctx.user)
+        const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
         return res.status(200).json(profilePicture)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
     })
   }
 
-  public static createLogo = async (req: Request, res: Response) => {
+  public createLogo = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
-        const logo = await FileService.createLogo(fileRecieved, ctx.user)
+        const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
         return res.status(200).json(logo)
       }
       return res.status(422).json({ error: 'fichier non envoyé' })
@@ -98,23 +104,23 @@ export default class FileController {
    * @param file file: Partial<FileEntity>
    * @returns return file just updated
    */
-  public static updateOne = async (req: Request, res: Response) => {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
-        const fileUpdated = await FileService.updateFile(id, file as FileEntity)
+        const fileUpdated = await this.FileService.updateFile(id, file as FileEntity)
         return res.status(200).json(fileUpdated)
       }
       return res.status(422).json({ message: 'identitfiant du fichier manquant' })
     })
   }
 
-  public static getFile = async (req: Request, res: Response) => {
+  public getFile = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const file = await FileService.getFile(id)
+        const file = await this.FileService.getFile(id)
         if (file) {
           return res.status(200).json(file)
         } else {
@@ -125,37 +131,37 @@ export default class FileController {
     })
   }
 
-  public static getFiles = async (req: Request, res: Response) => {
+  public getFiles = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { ids }: { ids: number[] } = req.body
-      const files = await Promise.all(ids.map(id => FileService.getFile(id)))
+      const files = await Promise.all(ids.map(id => this.FileService.getFile(id)))
       return res.status(200).json(files)
     })
   }
 
-  public static getFilesByUser = async (req: Request, res: Response) => {
+  public getFilesByUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
-        const files = await FileService.getFilesByUser(userId)
+        const files = await this.FileService.getFilesByUser(userId)
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'utilisateur manquant' })
     })
   }
 
-  public static getFilesByEvent = async (req: Request, res: Response) => {
+  public getFilesByEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
-        const files = await FileService.getFilesByEvent(eventId)
+        const files = await this.FileService.getFilesByEvent(eventId)
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'événement manquant' })
     })
   }
 
-  public static getFilesByEmployee = async (req: Request, res: Response) => {
+  public getFilesByEmployee = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const employeeId = parseInt(req.params.id)
       if (employeeId) {
@@ -166,7 +172,7 @@ export default class FileController {
     })
   }
 
-  public static getFilesByUserAndEvent = async (req: Request, res: Response) => {
+  public getFilesByUserAndEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
@@ -181,7 +187,7 @@ export default class FileController {
     })
   }
 
-  public static getAllPaginate = async (req: Request, res: Response) => {
+  public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, filesSearchableFields)
       const [files, count] = await this.repository.findAndCount({
@@ -194,14 +200,14 @@ export default class FileController {
     })
   }
 
-  public static deleteFile = async (req: Request, res: Response) => {
+  public deleteFile = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const file = await FileService.getFile(id)
+        const file = await this.FileService.getFile(id)
         if (file) {
           await cloudinary.v2.uploader.destroy(file.public_id)
-          const deleted = await FileService.deleteFile(id)
+          const deleted = await this.FileService.deleteFile(id)
           return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'fichier non trouvé' })
         }
       }

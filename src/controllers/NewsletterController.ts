@@ -1,16 +1,20 @@
 import type { Request, Response } from 'express'
-import type { FindOptionsWhere } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { paginator, wrapperRequest } from '../utils'
 import { EmployeeEntity, UserEntity } from '../entity'
 import { APP_SOURCE } from '..'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
 export default class NewsletterController {
-  static getManager = APP_SOURCE.manager
+  getManager: EntityManager
+  repository: Repository<NewsletterRecipient>
 
-  static repository = APP_SOURCE.getRepository(NewsletterRecipient)
+  constructor() {
+    this.getManager = APP_SOURCE.manager
+    this.repository = APP_SOURCE.getRepository(NewsletterRecipient)
+  }
 
-  public static createOne = async (req: Request, res: Response) => {
+  public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email, firstName, lastName, companyName }: { email: string; firstName: string; lastName: string; companyName: string } = req.body
 
@@ -47,7 +51,7 @@ export default class NewsletterController {
     })
   }
 
-  public static getAllPaginate = async (req: Request, res: Response) => {
+  public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, newsletterRecipientSearchableFields)
 
@@ -67,7 +71,7 @@ export default class NewsletterController {
     })
   }
 
-  public static deleteOne = async (req: Request, res: Response) => {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const recipient = await this.repository.findOne({ where: { id } })
