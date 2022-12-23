@@ -1,6 +1,6 @@
 import Mailgen from 'mailgen'
 import nodemailer from 'nodemailer'
-import type { UserEntity } from '../entity'
+import type { UserEntity } from '../entity/UserEntity'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
 import type AnswerEntity from '../entity/AnswerEntity'

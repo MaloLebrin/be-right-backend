@@ -1,20 +1,19 @@
 import dayjs from 'dayjs'
-import type { DataSource, EntityManager } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { SubscriptionEntitiy } from '../entity'
+import { SubscriptionEntity } from '../entity/SubscriptionEntity'
 import type { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
-  repository: EntityManager
+  repository: Repository<SubscriptionEntity>
 
   constructor(APP_SOURCE: DataSource) {
-    this.repository = APP_SOURCE.manager
+    this.repository = APP_SOURCE.getRepository(SubscriptionEntity)
   }
 
-  async createOne(subscriptionType: SubscriptionEnum, userId: number) {
-    const subscription = this.repository.create(SubscriptionEntitiy, {
+  async createOne(subscriptionType: SubscriptionEnum) {
+    const subscription = this.repository.create({
       type: subscriptionType,
-      user: userId,
       expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
     })
     await this.repository.save(subscription)
@@ -22,14 +21,14 @@ export class SubscriptionService {
   }
 
   async getOne(id: number) {
-    return this.repository.findOne(SubscriptionEntitiy, {
+    return this.repository.findOne({
       where: { id },
       relations: ['user', 'payment'],
     })
   }
 
   async getMany(ids: number[]) {
-    return this.repository.find(SubscriptionEntitiy, {
+    return this.repository.find({
       where: {
         id: In(ids),
       },
@@ -37,16 +36,7 @@ export class SubscriptionService {
     })
   }
 
-  async getOneByUserId(userId: number) {
-    return this.repository.findOne(SubscriptionEntitiy, {
-      where: {
-        user: userId,
-      },
-      relations: ['user', 'payment'],
-    })
-  }
-
-  async updateOne(id: number, subscription: SubscriptionEntitiy) {
-    return this.repository.update(SubscriptionEntitiy, id, subscription)
+  async updateOne(id: number, subscription: SubscriptionEntity) {
+    return this.repository.update(id, subscription)
   }
 }

@@ -4,11 +4,12 @@ import encBase64 from 'crypto-js/enc-base64'
 import { DataSource, Like } from 'typeorm'
 import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { dataBaseConfig } from '../ormconfig'
-import type { FileEntity, UserEntity } from './entity'
 import { isSubscriptionOptionField } from './utils/userHelper'
 import type { SubscriptionEnum } from './types/Subscription'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import type { FileEntity } from './entity/FileEntity'
+import type { UserEntity } from './entity/UserEntity'
 
 /**
  * create hash password
@@ -127,13 +128,14 @@ export function createAppSource() {
 
   if (NODE_ENV === 'production') {
     connectionsOptions = {
-      ...dataBaseConfig.production as PostgresConnectionOptions,
+      ...dataBaseConfig.production as unknown as PostgresConnectionOptions,
     }
   } else {
     connectionsOptions = {
-      ...dataBaseConfig.dev as PostgresConnectionOptions,
+      ...dataBaseConfig.dev as unknown as PostgresConnectionOptions,
       name: 'default',
     }
+    console.info(connectionsOptions, '<==== connectionsOptions')
   }
 
   return new DataSource({

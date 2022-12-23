@@ -23,4 +23,5 @@ export interface CreateUserPayload {
   password: string
   role: Role
   subscription: SubscriptionEnum
+  subscriptionId?: number
 }

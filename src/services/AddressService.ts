@@ -1,7 +1,10 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
-import { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import type { AddressCreationServicePayload } from '../types'
 import EventEntity from '../entity/EventEntity'
+import { AddressEntity } from '../entity/AddressEntity'
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { UserEntity } from '../entity/UserEntity'
+import { isArray } from '../utils/'
 
 export class AddressService {
   getManager: EntityManager
@@ -53,7 +56,7 @@ export class AddressService {
     const addressCreated = this.repository.create(address)
 
     await this.repository.save(addressCreated)
-    const addressToSend = await this.getOne(addressCreated.id)
+    const addressToSend = isArray(addressCreated) ? addressCreated[0] : addressCreated as unknown as AddressEntity
     if (userId) {
       await this.getManager.update(UserEntity, userId, {
         address: addressToSend.id,

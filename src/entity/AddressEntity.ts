@@ -1,5 +1,6 @@
 import { Column, Entity } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
+
 @Entity()
 export class AddressEntity extends BaseEntity {
   @Column()

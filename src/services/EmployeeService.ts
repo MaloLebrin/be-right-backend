@@ -2,6 +2,7 @@ import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { isUserEntity } from '../utils/index'
+import type { UserEntity } from '../entity/UserEntity'
 import AnswerService from './AnswerService'
 
 export default class EmployeeService {
@@ -32,7 +33,7 @@ export default class EmployeeService {
       relations: ['createdByUser', 'answers'],
     })
 
-    const user = isUserEntity(employeefinded.createdByUser) && employeefinded.createdByUser
+    const user = isUserEntity(employeefinded.createdByUser) && employeefinded.createdByUser as UserEntity
     return {
       ...employeefinded,
       createdByUser: user.id,
@@ -49,7 +50,7 @@ export default class EmployeeService {
     })
 
     return finded.map(employee => {
-      const user = isUserEntity(employee.createdByUser) && employee.createdByUser
+      const user = isUserEntity(employee.createdByUser) && employee.createdByUser as UserEntity
       return {
         ...employee,
         createdByUser: user.id,

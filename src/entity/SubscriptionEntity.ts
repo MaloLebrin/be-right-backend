@@ -1,19 +1,17 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
 import { SubscriptionEnum } from '../types/Subscription'
-import { BaseEntity, PaymentEntity, UserEntity } from '.'
+import { BaseEntity } from './BaseEntity'
+import { PaymentEntity } from './PaymentEntity'
 
 @Entity()
-export class SubscriptionEntitiy extends BaseEntity {
+export class SubscriptionEntity extends BaseEntity {
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   type: SubscriptionEnum
 
   @Column({ nullable: true })
   expireAt: Date
 
-  @OneToOne(() => UserEntity, user => user.subscription)
-  user: UserEntity | number
-
   @OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
-  @JoinColumn({ name: 'paymentId', referencedColumnName: 'id' })
+  @JoinColumn()
   payment: PaymentEntity
 }

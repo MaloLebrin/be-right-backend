@@ -1,7 +1,7 @@
 import uid2 from 'uid2'
 import type { DataSource } from 'typeorm'
 import { createJwtToken } from '../../utils/'
-import { UserEntity } from '../../entity'
+import { UserEntity } from '../../entity/UserEntity'
 import { generateHash } from '../../utils'
 import { Role, SubscriptionEnum } from '../../types'
 

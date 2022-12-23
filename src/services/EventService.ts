@@ -1,5 +1,6 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
+import type { UserEntity } from '../entity/UserEntity'
 import AnswerEntity from '../entity/AnswerEntity'
 import EventEntity from '../entity/EventEntity'
 import { EventStatusEnum } from '../types/Event'
@@ -55,7 +56,7 @@ export default class EventService {
     const answers = await this.answerService.getAllAnswersForEvent(finded.id)
 
     if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
-      const user = finded.createdByUser
+      const user = finded.createdByUser as UserEntity
       const partner = finded.partnerId
 
       return {
@@ -86,8 +87,8 @@ export default class EventService {
 
     return Promise.all(finded.map(async event => {
       if (isUserEntity(event.createdByUser) && isUserEntity(event.partner)) {
-        const user = event.createdByUser
-        const partner = event.partner
+        const user = event.createdByUser as UserEntity
+        const partner = event.partner as UserEntity
         const answers = await this.answerService.getAllAnswersForEvent(event.id)
 
         return {

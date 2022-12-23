@@ -2,7 +2,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId 
 import { UserEntity } from './UserEntity'
 import AnswerEntity from './AnswerEntity'
 import { BaseEntity } from './BaseEntity'
-import { AddressEntity, FileEntity } from './'
+import { AddressEntity } from './AddressEntity'
+import { FileEntity } from './FileEntity'
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {

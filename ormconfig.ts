@@ -1,3 +1,5 @@
+import { entities } from './src/entity'
+
 export const dataBaseConfig = {
   production: {
     name: 'production',
@@ -17,18 +19,18 @@ export const dataBaseConfig = {
       },
     },
     entities: [
-      'build/src/entity/**/*.js',
+      ...entities,
     ],
     migrations: [
-      'build/src/migrations/**/*.js',
+      './src/migrations/**/*.js',
     ],
     subscribers: [
-      'build/src/subscriber/**/*.js',
+      './src/subscriber/**/*.js',
     ],
     cli: {
-      entitiesDir: 'src/entity',
-      migrationsDir: 'src/migration',
-      subscribersDir: 'src/subscriber',
+      entitiesDir: './src/entity',
+      migrationsDir: './src/migrations',
+      subscribersDir: './src/subscriber',
     },
   },
 
@@ -40,21 +42,22 @@ export const dataBaseConfig = {
     username: 'test',
     password: 'test',
     database: 'be-right-db',
-    synchronize: false,
+    synchronize: true,
     logging: false,
     entities: [
-      'build/src/entity/**/*.js',
+      // `${__dirname}/../**/*.entity{.ts,.js}`,
+      ...entities,
     ],
     migrations: [
-      'build/src/migrations/**/*.js',
+      './src/migrations/**/*.js',
     ],
     subscribers: [
-      'build/src/subscriber/**/*.js',
+      './src/subscriber/**/*.js',
     ],
     cli: {
-      entitiesDir: 'src/entity',
-      migrationsDir: 'src/migration',
-      subscribersDir: 'src/subscriber',
+      entitiesDir: './src/entity',
+      migrationsDir: './src/migrations',
+      subscribersDir: './src/subscriber',
     },
   },
 }

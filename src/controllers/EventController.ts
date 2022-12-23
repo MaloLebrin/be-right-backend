@@ -6,11 +6,13 @@ import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
 import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import type { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import { Role } from '../types'
 import { isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { APP_SOURCE } from '..'
+import type { AddressEntity } from '../entity/AddressEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
+import type { UserEntity } from '../entity/UserEntity'
 
 export default class EventController {
   AddressService: AddressService
