@@ -191,7 +191,7 @@ export default class EventController {
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
         if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
-          await this.repository.delete(id)
+          await this.repository.softDelete(id)
           return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
         } else {
           return res.status(401).json('Not allowed')

@@ -93,11 +93,11 @@ export default class EmployeeService {
   }
 
   async deleteOne(id: number) {
-    return this.repository.delete(id)
+    return this.repository.softDelete(id)
   }
 
   async deleteMany(ids: number[]) {
-    return this.repository.delete(ids)
+    return this.repository.softDelete(ids)
   }
 
   async isEmployeeAlreadyExist(email: string) {

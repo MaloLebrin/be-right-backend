@@ -91,6 +91,6 @@ export class AddressService {
   }
 
   async softDelete(id: number) {
-    return this.repository.delete(id)
+    return this.repository.softDelete(id)
   }
 }
