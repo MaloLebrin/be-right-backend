@@ -1,6 +1,5 @@
-import type { EntityManager, Repository } from 'typeorm'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { APP_SOURCE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
 import EventEntity from '../entity/EventEntity'
 import { EventStatusEnum } from '../types/Event'
@@ -14,10 +13,10 @@ export default class EventService {
 
   answerService: AnswerService
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EventEntity)
     this.getManager = APP_SOURCE.manager
-    this.answerService = new AnswerService()
+    this.answerService = new AnswerService(APP_SOURCE)
   }
 
   async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {

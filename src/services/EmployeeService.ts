@@ -73,7 +73,7 @@ export default class EmployeeService {
   }
 
   async getAllForEvent(eventId: number) {
-    const answers = await new AnswerService().getAllAnswersForEvent(eventId)
+    const answers = await new AnswerService(APP_SOURCE).getAllAnswersForEvent(eventId)
     return answers.map(answer => answer.employee as EmployeeEntity)
   }
 

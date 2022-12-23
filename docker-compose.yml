@@ -22,5 +22,17 @@ services:
     env_file:
       - .env
 
+  cron:
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: ./cron.Dockerfile
+    # ports:
+    #   - '8000:5555'
+    env_file:
+      - .env
+
+
 volumes:
   mysql-storage:

@@ -1,6 +1,5 @@
-import type { EntityManager, Repository } from 'typeorm'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
 import type { EmployeeEntity } from '../entity/'
-import { APP_SOURCE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
 
 export default class AnswerService {
@@ -8,7 +7,7 @@ export default class AnswerService {
 
   repository: Repository<AnswerEntity>
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(AnswerEntity)
     this.getManager = APP_SOURCE.manager
   }

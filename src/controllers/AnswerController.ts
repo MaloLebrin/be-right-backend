@@ -10,8 +10,8 @@ export default class AnswerController {
   EventService: EventService
 
   constructor() {
-    this.AnswerService = new AnswerService()
-    this.EventService = new EventService()
+    this.AnswerService = new AnswerService(APP_SOURCE)
+    this.EventService = new EventService(APP_SOURCE)
   }
 
   async createOne(req: Request, res: Response) {
