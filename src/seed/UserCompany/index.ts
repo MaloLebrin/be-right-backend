@@ -24,7 +24,7 @@ import {
 export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
   const addressService = new AddressService()
-  const answerService = new AnswerService()
+  const answerService = new AnswerService(APP_SOURCE_SEEDER)
 
   const user = await new UserService().createOneUser(userCompanyFixturePremium)
 
@@ -48,7 +48,7 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await new EventService().createOneEvent(
+  const event = await new EventService(APP_SOURCE_SEEDER).createOneEvent(
     {
       ...eventFixtureCompanyPremium.event,
       employeeIds,
@@ -77,7 +77,7 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
   const addressService = new AddressService()
-  const answerService = new AnswerService()
+  const answerService = new AnswerService(APP_SOURCE_SEEDER)
 
   const user = await new UserService().createOneUser(userCompanyFixtureMedium)
 
@@ -99,7 +99,7 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
 
   const employeeIds = employees.map(employee => employee.id)
 
-  const event = await new EventService().createOneEvent(
+  const event = await new EventService(APP_SOURCE_SEEDER).createOneEvent(
     {
       ...eventFixtureCompanyMedium.event,
       employeeIds,

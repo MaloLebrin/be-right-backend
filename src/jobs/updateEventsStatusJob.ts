@@ -8,7 +8,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
     const dateStart = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
     console.warn(`Sarting update event status at ${dateStart}`)
 
-    const eventService = new EventService()
+    const eventService = new EventService(APP_SOURCE)
 
     const events = await APP_SOURCE.manager.find(EventEntity)
     console.info(events.length, 'events')

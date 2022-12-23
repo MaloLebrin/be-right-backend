@@ -13,26 +13,33 @@ import { createAppSource } from './utils'
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
   } = useEnv()
+  const { logger } = useLogger()
+  dotenv.config()
 
   const JOB_APP_SOURCE = createAppSource()
 
-  JOB_APP_SOURCE.initialize().then(async () => {
-    const { logger } = useLogger()
-    dotenv.config()
-
-    cloudinary.v2.config({
-      cloud_name: CLOUDINARY_CLOUD_NAME,
-      api_key: CLOUDINARY_API_KEY,
-      api_secret: CLOUDINARY_API_SECRET,
+  JOB_APP_SOURCE.initialize()
+    .then(() => {
+      logger.info('Cron Job Data Source has been initialized!')
+      console.info('Cron JobData Source has been initialized!')
+    })
+    .catch(err => {
+      logger.error('Error during Cron Job Data Source initialization')
+      console.error('Error during Cron Job Data Source initialization:', err)
     })
 
-    cron.schedule(
-      CronJobInterval.EVERY_DAY_4_AM,
-      async () => {
-        logger.info('start udpateEventStatus jobs')
-        await udpateEventStatusJob(JOB_APP_SOURCE)
-        logger.info('end udpateEventStatus jobs')
-      },
-    )
+  cloudinary.v2.config({
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET,
   })
+
+  cron.schedule(
+    CronJobInterval.EVERY_DAY_4_AM,
+    async () => {
+      logger.info('start udpateEventStatus jobs')
+      await udpateEventStatusJob(JOB_APP_SOURCE)
+      logger.info('end udpateEventStatus jobs')
+    },
+  )
 })()
