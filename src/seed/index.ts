@@ -24,7 +24,7 @@ async function createDevSeeders() {
 
       logger.info('start seeds jobs')
 
-      await createPhotographers()
+      await createPhotographers(APP_SOURCE_SEEDER)
       await createAdminUser(APP_SOURCE_SEEDER)
       await seedUserCompany(APP_SOURCE_SEEDER)
       await seedMediumUserData(APP_SOURCE_SEEDER)

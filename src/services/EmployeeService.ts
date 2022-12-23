@@ -1,15 +1,16 @@
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { isUserEntity } from '../utils/index'
-import { APP_SOURCE } from '..'
 import AnswerService from './AnswerService'
 
 export default class EmployeeService {
   repository: Repository<EmployeeEntity>
+  answerService: AnswerService
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EmployeeEntity)
+    this.answerService = new AnswerService(APP_SOURCE)
   }
 
   async createOne(employee: Partial<EmployeeEntity>, userId: number) {
@@ -73,7 +74,7 @@ export default class EmployeeService {
   }
 
   async getAllForEvent(eventId: number) {
-    const answers = await new AnswerService(APP_SOURCE).getAllAnswersForEvent(eventId)
+    const answers = await this.answerService.getAllAnswersForEvent(eventId)
     return answers.map(answer => answer.employee as EmployeeEntity)
   }
 

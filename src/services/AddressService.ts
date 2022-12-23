@@ -1,15 +1,14 @@
-import type { EntityManager, Repository } from 'typeorm'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { AddressEntity, EmployeeEntity, UserEntity } from '../entity'
 import type { AddressCreationServicePayload } from '../types'
 import EventEntity from '../entity/EventEntity'
-import { APP_SOURCE } from '..'
 
 export class AddressService {
   getManager: EntityManager
 
   repository: Repository<AddressEntity>
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(AddressEntity)
     this.getManager = APP_SOURCE.manager
   }

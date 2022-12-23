@@ -2,12 +2,13 @@ import type { Request, Response } from 'express'
 import { AddressService } from '../services'
 import type { AddressEntity } from '../entity'
 import { wrapperRequest } from '../utils'
+import { APP_SOURCE } from '..'
 
 export class AddresController {
   AddressService: AddressService
 
   constructor() {
-    this.AddressService = new AddressService()
+    this.AddressService = new AddressService(APP_SOURCE)
   }
 
   public getOne = async (req: Request, res: Response) => {

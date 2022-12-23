@@ -1,3 +1,3 @@
 #!/app/bin/env bash
 
-exec node /app/build/seed/index.js
+exec node /app/build/src/seed/index.js

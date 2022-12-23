@@ -18,7 +18,7 @@ export default class FileController {
 
   constructor() {
     this.getManager = APP_SOURCE.manager
-    this.FileService = new FileService()
+    this.FileService = new FileService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(FileEntity)
   }
 

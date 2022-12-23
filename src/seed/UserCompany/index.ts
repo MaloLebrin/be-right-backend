@@ -23,10 +23,10 @@ import {
 
 export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
-  const addressService = new AddressService()
+  const addressService = new AddressService(APP_SOURCE_SEEDER)
   const answerService = new AnswerService(APP_SOURCE_SEEDER)
 
-  const user = await new UserService().createOneUser(userCompanyFixturePremium)
+  const user = await new UserService(APP_SOURCE_SEEDER).createOneUser(userCompanyFixturePremium)
 
   // await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
 
@@ -43,7 +43,7 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   })
 
   const employees = await Promise.all(employeesFixtureCompanyPremium.map(
-    async item => await new EmployeeService().createOne(item.employee, user.id),
+    async item => await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)
@@ -76,10 +76,10 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 
 export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
-  const addressService = new AddressService()
+  const addressService = new AddressService(APP_SOURCE_SEEDER)
   const answerService = new AnswerService(APP_SOURCE_SEEDER)
 
-  const user = await new UserService().createOneUser(userCompanyFixtureMedium)
+  const user = await new UserService(APP_SOURCE_SEEDER).createOneUser(userCompanyFixtureMedium)
 
   const subscription = getManager.create(SubscriptionEntitiy, {
     type: SubscriptionEnum.MEDIUM,
@@ -94,7 +94,7 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   })
 
   const employees = await Promise.all(employeesFixtureCompanyMedium.map(
-    async item => await new EmployeeService().createOne(item.employee, user.id),
+    async item => await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id),
   ))
 
   const employeeIds = employees.map(employee => employee.id)

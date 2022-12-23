@@ -23,7 +23,7 @@ export default class UserController {
 
   constructor() {
     this.getManager = APP_SOURCE.manager
-    this.UserService = new UserService()
+    this.UserService = new UserService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(UserEntity)
   }
 

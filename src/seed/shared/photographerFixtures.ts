@@ -1,3 +1,4 @@
+import type { DataSource } from 'typeorm'
 import UserService from '../../services/UserService'
 
 export const photographerFixture1 = {
@@ -28,7 +29,7 @@ export const photographerFixture4 = {
   companyName: 'Writter',
 }
 
-export async function createPhotographers() {
+export async function createPhotographers(APP_SOURCE: DataSource) {
   const photographersPayload = [
     photographerFixture1,
     photographerFixture2,
@@ -37,6 +38,6 @@ export async function createPhotographers() {
   ]
 
   return await Promise.all(photographersPayload.map(async photographer =>
-    await new UserService().createPhotographer(photographer),
+    await new UserService(APP_SOURCE).createPhotographer(photographer),
   ))
 }

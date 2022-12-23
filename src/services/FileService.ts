@@ -1,19 +1,18 @@
 import cloudinary from 'cloudinary'
-import type { EntityManager, Repository } from 'typeorm'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { FileEntity } from '../entity/FileEntity'
 import { UserEntity } from '../entity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
-import { APP_SOURCE } from '..'
 
 export default class FileService {
   getManager: EntityManager
 
   repository: Repository<FileEntity>
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(FileEntity)
     this.getManager = APP_SOURCE.manager
   }

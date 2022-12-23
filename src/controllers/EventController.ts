@@ -21,7 +21,7 @@ export default class EventController {
   constructor() {
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService()
+    this.AddressService = new AddressService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(EventEntity)
   }
 

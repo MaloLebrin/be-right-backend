@@ -1,14 +1,13 @@
 import dayjs from 'dayjs'
-import type { EntityManager } from 'typeorm'
+import type { DataSource, EntityManager } from 'typeorm'
 import { In } from 'typeorm'
-import { APP_SOURCE } from '..'
 import { SubscriptionEntitiy } from '../entity'
 import type { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
   repository: EntityManager
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.manager
   }
 

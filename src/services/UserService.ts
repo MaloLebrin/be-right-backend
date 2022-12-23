@@ -1,5 +1,5 @@
 import uid2 from 'uid2'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
@@ -9,12 +9,11 @@ import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/en
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
-import { APP_SOURCE } from '..'
 
 export default class UserService {
   repository: Repository<UserEntity>
 
-  constructor() {
+  constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(UserEntity)
   }
 

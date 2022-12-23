@@ -24,10 +24,10 @@ export default class EmployeeController {
 
   constructor() {
     this.getManager = APP_SOURCE.manager
-    this.EmployeeService = new EmployeeService()
+    this.EmployeeService = new EmployeeService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService()
+    this.AddressService = new AddressService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
   }
 
