@@ -1,4 +1,4 @@
-import type { UserEntity } from '../entity'
+import type { UserEntity } from '../entity/UserEntity'
 
 export enum EventStatusEnum {
   CREATE = 'CREATE',

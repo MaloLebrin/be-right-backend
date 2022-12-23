@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express'
 import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import { paginator, wrapperRequest } from '../utils'
-import { EmployeeEntity, UserEntity } from '../entity'
 import { APP_SOURCE } from '..'
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { UserEntity } from '../entity/UserEntity'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
 export default class NewsletterController {

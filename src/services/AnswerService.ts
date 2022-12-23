@@ -1,6 +1,6 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
-import type { EmployeeEntity } from '../entity/'
 import AnswerEntity from '../entity/AnswerEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
 
 export default class AnswerService {
   getManager: EntityManager

@@ -1,7 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { EventStatusEnum } from '../types/Event'
+import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './BaseEntity'
-import { AddressEntity, FileEntity, UserEntity } from '.'
+import { FileEntity } from './FileEntity'
+import { UserEntity } from './UserEntity'
 
 @Entity()
 export default class EventEntity extends BaseEntity {

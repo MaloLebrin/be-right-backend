@@ -1,7 +1,7 @@
 import { sign } from 'jsonwebtoken'
 import uid2 from 'uid2'
 import { useEnv } from '../env'
-import type { UserEntity } from '../entity'
+import type { UserEntity } from '../entity/UserEntity'
 import type { JWTTokenPayload } from '../types'
 import { Role, SubscriptionEnum } from '../types'
 import { hasOwnProperty } from './objectHelper'

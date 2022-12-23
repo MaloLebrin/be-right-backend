@@ -1,9 +1,12 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { Role, ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
+import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './BaseEntity'
+import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
-import { AddressEntity, EmployeeEntity, FileEntity } from './'
+import { FileEntity } from './FileEntity'
+import { SubscriptionEntity } from './SubscriptionEntity'
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -71,6 +74,10 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
   profilePicture: FileEntity | number
+
+  @OneToOne(() => SubscriptionEntity)
+  @JoinColumn()
+  subscriptionId: SubscriptionEntity
 }
 
 export const userSearchableFields = [

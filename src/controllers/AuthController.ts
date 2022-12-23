@@ -3,11 +3,11 @@ import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { EntityManager } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import { UserEntity } from '../entity'
 import MailService from '../services/MailService'
 import { useLogger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
+import { UserEntity } from '../entity/UserEntity'
 
 export default class AuthController {
   logger: Logger<{

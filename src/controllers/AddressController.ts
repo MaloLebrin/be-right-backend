@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express'
 import { AddressService } from '../services'
-import type { AddressEntity } from '../entity'
 import { wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
+import type { AddressEntity } from '../entity/AddressEntity'
 
 export class AddresController {
   AddressService: AddressService
@@ -58,7 +58,7 @@ export class AddresController {
   public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { address, eventId, employeeId, userId }:
-      { address: Partial<AddressEntity>; eventId?: number; employeeId?: number; userId?: number } = req.body
+        { address: Partial<AddressEntity>; eventId?: number; employeeId?: number; userId?: number } = req.body
       const newAddress = await this.AddressService.createOne({
         address,
         employeeId,

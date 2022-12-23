@@ -1,7 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { BugReportStatus, BugReportType } from '../types/BugReport'
 import { BaseEntity } from './BaseEntity'
-import { FileEntity, UserEntity } from '.'
+import { FileEntity } from './FileEntity'
+import { UserEntity } from './UserEntity'
 
 @Entity()
 export class BugReportEntity extends BaseEntity {
