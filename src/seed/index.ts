@@ -19,7 +19,7 @@ async function createDevSeeders() {
       dotenv.config()
 
       logger.info('Clear DB start')
-      await clearDB()
+      await clearDB(APP_SOURCE_SEEDER)
       logger.info('Clear DB end')
 
       logger.info('start seeds jobs')

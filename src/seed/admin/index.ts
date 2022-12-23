@@ -24,8 +24,8 @@ export async function createAdminUser(APP_SOURCE_SEEDER: DataSource) {
     }),
     password: generateHash(salt, process.env.ADMIN_PASSWORD),
     events: [],
-
   })
+
   await manager.save(newUser)
   return newUser
 }

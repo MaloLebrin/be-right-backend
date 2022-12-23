@@ -1,4 +1,5 @@
 import { sign } from 'jsonwebtoken'
+import uid2 from 'uid2'
 import { useEnv } from '../env'
 import type { UserEntity } from '../entity'
 import type { JWTTokenPayload } from '../types'
@@ -30,6 +31,7 @@ export function createJwtToken(user: JWTTokenPayload) {
       fullName: getfullUsername(user),
       roles: [user.roles],
       subscription: user.subscription ?? SubscriptionEnum.BASIC,
+      uniJWT: uid2(128),
     },
     JWT_SECRET,
   )
