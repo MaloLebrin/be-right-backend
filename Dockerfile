@@ -14,7 +14,7 @@ RUN nci
 
 # Be careful with this env variable
 ARG NODE_ENV
-ENV NODE_ENV=${NODE_ENV:-dev}
+ENV NODE_ENV=${NODE_ENV}
 
 COPY .env /app/.env
 COPY ormconfig.ts /app/ormconfig.ts

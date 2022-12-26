@@ -34,6 +34,7 @@ export const APP_SOURCE = createAppSource()
 
 APP_SOURCE.initialize()
   .then(() => {
+    console.info(NODE_ENV, '<==== NODE_ENV')
     console.info('Data Source has been initialized!')
   })
   .catch(err => {
