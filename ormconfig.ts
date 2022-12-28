@@ -60,4 +60,31 @@ export const dataBaseConfig = {
       subscribersDir: './src/subscriber',
     },
   },
+  test: {
+    name: 'test',
+    type: 'postgres',
+    host: process.env.HOSTNAME_TEST,
+    port: process.env.POSTGRES_PORT_TEST,
+    username: process.env.DB_USERNAME_TEST,
+    password: process.env.DB_PASSWORD_TEST,
+    url: process.env.DATABASE_URL,
+    database: 'be-right-backend-db',
+    synchronize: true,
+    logging: false,
+    entities: [
+      // `${__dirname}/../**/*.entity{.ts,.js}`,
+      ...entities,
+    ],
+    migrations: [
+      './src/migrations/**/*.js',
+    ],
+    subscribers: [
+      './src/subscriber/**/*.js',
+    ],
+    cli: {
+      entitiesDir: './src/entity',
+      migrationsDir: './src/migrations',
+      subscribersDir: './src/subscriber',
+    },
+  },
 }

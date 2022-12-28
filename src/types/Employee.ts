@@ -7,4 +7,3 @@ export interface EmployeeCreateOneRequest {
   employee: EmployeeEntity
   address?: Partial<AddressEntity>
 }
-
