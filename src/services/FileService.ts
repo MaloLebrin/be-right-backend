@@ -115,6 +115,9 @@ export default class FileService {
 
     const result = await cloudinary.v2.uploader.upload(file.path, {
       folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
+      quality: 'auto',
+      fetch_format: 'auto',
+      format: 'webp',
     })
 
     const picture = {
@@ -160,6 +163,9 @@ export default class FileService {
     }
     const result = await cloudinary.v2.uploader.upload(file.path, {
       folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.LOGO}`,
+      quality: 'auto',
+      fetch_format: 'auto',
+      format: 'webp',
     })
 
     const picture = {
