@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv'
+import type { DataSource } from 'typeorm'
 import { useLogger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
@@ -7,6 +8,14 @@ import { createPhotographers } from './shared/photographerFixtures'
 import { seedMediumUserData, seedUserCompany } from './UserCompany'
 
 export const APP_SOURCE_SEEDER = createAppSource()
+
+export async function seedersFunction(DATA_SOURCE: DataSource) {
+  await clearDB(DATA_SOURCE)
+  await createPhotographers(DATA_SOURCE)
+  await createAdminUser(DATA_SOURCE)
+  await seedUserCompany(DATA_SOURCE)
+  await seedMediumUserData(DATA_SOURCE)
+}
 
 async function createDevSeeders() {
   const {
@@ -19,17 +28,9 @@ async function createDevSeeders() {
       dotenv.config()
 
       logger.info('Clear DB start')
-      await clearDB(APP_SOURCE_SEEDER)
+      await seedersFunction(APP_SOURCE_SEEDER)
       logger.info('Clear DB end')
-
-      logger.info('start seeds jobs')
-
-      await createPhotographers(APP_SOURCE_SEEDER)
-      await createAdminUser(APP_SOURCE_SEEDER)
-      await seedUserCompany(APP_SOURCE_SEEDER)
-      await seedMediumUserData(APP_SOURCE_SEEDER)
-
-      logger.info('end seeds jobs')
+      logger.info('seeder done')
     })
   }
 }
