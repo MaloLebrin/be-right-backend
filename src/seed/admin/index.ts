@@ -16,6 +16,7 @@ export async function createAdminUser(APP_SOURCE_SEEDER: DataSource) {
     lastName: 'Lebrin',
     salt,
     roles: Role.ADMIN,
+    subscription: SubscriptionEnum.PREMIUM,
     token: createJwtToken({
       firstName: 'Malo',
       lastName: 'Lebrin',

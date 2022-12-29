@@ -134,6 +134,7 @@ export default class UserService {
       lastName,
       salt,
       roles: role,
+      subscription,
       token: createJwtToken({
         firstName,
         lastName,
