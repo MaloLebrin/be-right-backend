@@ -26,6 +26,7 @@ export function createJwtToken(user: JWTTokenPayload) {
   const { JWT_SECRET } = useEnv()
   return sign(
     {
+      email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       fullName: getfullUsername(user),

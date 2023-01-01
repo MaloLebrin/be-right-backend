@@ -105,6 +105,7 @@ export default class UserService {
       ...user,
       salt: uid2(128),
       token: createJwtToken({
+        email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         roles: Role.PHOTOGRAPHER,
@@ -136,6 +137,7 @@ export default class UserService {
       roles: role,
       subscription,
       token: createJwtToken({
+        email,
         firstName,
         lastName,
         roles: role,

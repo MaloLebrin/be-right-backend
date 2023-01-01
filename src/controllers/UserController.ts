@@ -237,6 +237,7 @@ export default class UserController {
       if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         if (userFinded.roles !== Role.ADMIN) {
           userFinded.token = createJwtToken({
+            email: userFinded.email,
             roles: Role.ADMIN,
             firstName: userFinded.firstName,
             lastName: userFinded.lastName,

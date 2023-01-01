@@ -9,6 +9,7 @@ export enum ThemeEnum {
 export const ThemeEnumArray = Object.values(ThemeEnum)
 
 export interface JWTTokenPayload {
+  email: string
   firstName: string
   lastName: string
   roles: Role
