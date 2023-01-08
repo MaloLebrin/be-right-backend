@@ -22,7 +22,7 @@ async function createDevSeeders() {
     NODE_ENV,
   } = useEnv()
 
-  if (NODE_ENV === 'test') {
+  if (NODE_ENV !== 'production') {
     APP_SOURCE_SEEDER.initialize().then(async () => {
       const { logger } = useLogger()
       dotenv.config()
