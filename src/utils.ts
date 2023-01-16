@@ -139,10 +139,12 @@ export function createAppSource() {
       ...dataBaseConfig.dev as unknown as PostgresConnectionOptions,
       name: 'default',
     }
-    console.info(connectionsOptions, '<==== connectionsOptions')
   }
 
   return new DataSource({
     ...connectionsOptions,
   })
 }
+
+// eslint-disable-next-line promise/param-names
+export const delay = (ms: number) => new Promise(res => setTimeout(res, ms))
