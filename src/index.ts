@@ -40,7 +40,7 @@ async function StartApp() {
 
   APP_SOURCE.initialize()
     .then(async () => {
-      console.info('Data Source has been initialized!')
+      logger.info('Data Source has been initialized!')
 
       if (NODE_ENV === 'test') {
         logger.info('seeders started')
@@ -49,7 +49,7 @@ async function StartApp() {
       }
     })
     .catch(err => {
-      console.error('Error during Data Source initialization:', err)
+      logger.error('Error during Data Source initialization:', err)
     })
 
   const app = express()
@@ -180,7 +180,7 @@ async function StartApp() {
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
-    console.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
+    logger.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
   })
 }
 
