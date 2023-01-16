@@ -22,6 +22,7 @@ import EventController from './controllers/EventController'
 import FileController from './controllers/FileController'
 import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
+import RedisCache from './RedisCache'
 
 const {
   CLOUDINARY_API_KEY,
@@ -32,6 +33,7 @@ const {
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
+export const REDIS_CACHE = new RedisCache()
 
 async function StartApp() {
   const { loggerMiddleware, logger } = useLogger()

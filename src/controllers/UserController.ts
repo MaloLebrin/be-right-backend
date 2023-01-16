@@ -14,17 +14,20 @@ import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
 import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
 import { useEnv } from '../env'
-import { APP_SOURCE } from '..'
+import { APP_SOURCE, REDIS_CACHE } from '..'
+import type RedisCache from '../RedisCache'
 
 export default class UserController {
   getManager: EntityManager
   UserService: UserService
   repository: Repository<UserEntity>
+  redisCache: RedisCache
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.UserService = new UserService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.redisCache = REDIS_CACHE
   }
 
   /**
@@ -142,8 +145,9 @@ export default class UserController {
   public getOneByToken = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const token = req.body.token
+
       if (token) {
-        const user = await this.UserService.getByToken(token)
+        const user = await this.redisCache.get<UserEntity>(`user-token-${token}`, () => this.UserService.getByToken(token))
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
@@ -228,6 +232,7 @@ export default class UserController {
 
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
+
       const userFinded = await this.repository.findOne({
         where: { email },
         relations: ['events', 'files', 'employee', 'profilePicture'],
