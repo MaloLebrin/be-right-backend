@@ -12,7 +12,8 @@ import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
-import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
+import type { JWTTokenPayload, PhotographerCreatePayload, RedisKeys } from '../types'
+import { EntitiesEnum } from '../types'
 import { useEnv } from '../env'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
@@ -122,7 +123,7 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await this.UserService.getOneWithRelations(id)
+        const user = await this.redisCache.get<UserEntity>(`user-id-${id}`, () => this.UserService.getOneWithRelations(id))
         return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
       }
       return res.status(422).json({ error: 'id required' })
@@ -135,7 +136,11 @@ export default class UserController {
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
         if (userIds) {
-          const users = await this.UserService.getMany(userIds)
+          const users = await this.redisCache.getMany<UserEntity>({
+            keys: userIds.map(id => `user-id-${id}`) as RedisKeys[],
+            typeofEntity: EntitiesEnum.USER,
+            fetcher: () => this.UserService.getMany(userIds),
+          })
           return res.status(200).json(users)
         }
       }
