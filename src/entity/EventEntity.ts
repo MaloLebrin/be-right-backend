@@ -38,8 +38,14 @@ export default class EventEntity extends BaseEntity {
   @JoinColumn()
   createdByUser: UserEntity | number
 
+  @RelationId((event: EventEntity) => event.createdByUser)
+  createdByUserId: number
+
   @OneToMany(() => FileEntity, file => file.event, { cascade: true })
   files: FileEntity[]
+
+  @RelationId((event: EventEntity) => event.files)
+  filesIds: number[]
 
   @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
   @JoinColumn()

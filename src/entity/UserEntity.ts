@@ -47,7 +47,7 @@ export class UserEntity extends BaseEntity {
   roles: Role
 
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
-  subscription: SubscriptionEnum
+  subscriptionLabel: SubscriptionEnum
 
   @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
   theme: ThemeEnum
@@ -84,9 +84,12 @@ export class UserEntity extends BaseEntity {
   @JoinColumn()
   profilePicture: FileEntity | number
 
-  @OneToOne(() => SubscriptionEntity)
+  @OneToOne(() => SubscriptionEntity, { cascade: true })
   @JoinColumn()
-  subscriptionId: SubscriptionEntity
+  subscription: SubscriptionEntity
+
+  @RelationId((user: UserEntity) => user.subscription)
+  subscriptionId: number
 }
 
 export const userSearchableFields = [
