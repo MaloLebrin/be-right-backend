@@ -4,7 +4,6 @@ import type { Logger } from 'pino'
 import type { BaseEntity } from './entity/BaseEntity'
 import { useLogger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
-import { delay } from './utils'
 
 export default class RedisCache {
   private client: RedisClient
@@ -37,6 +36,7 @@ export default class RedisCache {
 
   async save<T>(key: RedisKeys, value: T): Promise<void> {
     await this.client.set(key, JSON.stringify(value))
+    this.client.pexpire(key, 3600)
   }
 
   async multiSave<T extends BaseEntity>(payload: T[], typeofEntity: EntitiesEnum, objKey: RedisEntitiesField): Promise<void> {
@@ -91,7 +91,6 @@ export default class RedisCache {
     const field = objKey || 'id'
 
     if (!this.connected) {
-      await delay(1000)
       this.logger.info('redis not connected')
       return await fetcher()
     }
@@ -100,7 +99,6 @@ export default class RedisCache {
 
     if (!value || value.length < 1) {
       this.logger.info('no value in redis cache')
-      await delay(1000)
       const result = await fetcher()
       this.multiSave<T>(result, typeofEntity, field)
       return result
@@ -115,7 +113,6 @@ export default class RedisCache {
         return array
       } else {
         this.logger.info('no value in redis cache')
-        await delay(1000)
         const result = await fetcher()
         this.multiSave<T>(result, typeofEntity, field)
         return result
