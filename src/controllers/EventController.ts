@@ -6,25 +6,28 @@ import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
 import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import { Role } from '../types'
-import { isUserAdmin } from '../utils/'
+import { EntitiesEnum, Role } from '../types'
+import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
-import { APP_SOURCE } from '..'
+import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { UserEntity } from '../entity/UserEntity'
+import type RedisCache from '../RedisCache'
 
 export default class EventController {
   AddressService: AddressService
   AnswerService: AnswerService
   EventService: EventService
   repository: Repository<EventEntity>
+  redisCache: RedisCache
 
   constructor() {
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(EventEntity)
+    this.redisCache = REDIS_CACHE
   }
 
   /**
@@ -65,7 +68,16 @@ export default class EventController {
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const event = await this.EventService.getOneEvent(id)
+
+        // FIXME never retrieved from redis cache
+        const event = await this.redisCache.get<EventEntity>(
+          generateRedisKey({
+            field: 'id',
+            typeofEntity: EntitiesEnum.EVENT,
+            id,
+          }),
+          () => this.EventService.getOneEvent(id))
+
         if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
           return res.status(200).json(event)
         } else {
@@ -80,8 +92,20 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
-      const events = await this.EventService.getManyEvents(eventsIds)
-      return res.status(200).json(events)
+
+      if (eventsIds && eventsIds.length > 0) {
+        const events = await this.redisCache.getMany<EventEntity>({
+          keys: generateRedisKeysArray({
+            field: 'id',
+            typeofEntity: EntitiesEnum.EVENT,
+            ids: eventsIds,
+          }),
+          typeofEntity: EntitiesEnum.USER,
+          fetcher: () => this.EventService.getManyEvents(eventsIds),
+        })
+
+        return res.status(200).json(events)
+      }
     })
   }
 

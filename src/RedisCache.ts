@@ -82,7 +82,7 @@ export default class RedisCache {
     if (!value) {
       this.logger.info('no value in redis cache')
       const result = await fetcher()
-      this.save(key, result)
+      await this.save(key, result)
       return result
     }
   }
@@ -128,7 +128,7 @@ export default class RedisCache {
       } else {
         this.logger.info('no value in redis cache')
         const result = await fetcher()
-        this.multiSave<T>({
+        await this.multiSave<T>({
           payload: result,
           typeofEntity,
           objKey: field,

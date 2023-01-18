@@ -139,12 +139,14 @@ export default class UserController {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+
         if (userIds) {
           const users = await this.redisCache.getMany<UserEntity>({
             keys: userIds.map(id => `user-id-${id}`) as RedisKeys[],
             typeofEntity: EntitiesEnum.USER,
             fetcher: () => this.UserService.getMany(userIds),
           })
+
           return res.status(200).json(users)
         }
       }
