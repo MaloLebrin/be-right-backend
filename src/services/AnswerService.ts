@@ -1,6 +1,5 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import AnswerEntity from '../entity/AnswerEntity'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
 
 export default class AnswerService {
   getManager: EntityManager
@@ -36,23 +35,18 @@ export default class AnswerService {
   }
 
   async getAllAnswersForEvent(eventId: number, withRelation = true) {
-    const answers = await this.repository.find({
-      where: {
-        event: eventId,
-      },
-      relations: ['employee'],
-    })
-
     if (withRelation) {
-      return answers.map(answer => ({ ...answer, event: eventId }))
-    } else {
-      return answers.map(answer => {
-        const employee = answer.employee as EmployeeEntity
-        return {
-          ...answer,
+      return this.repository.find({
+        where: {
           event: eventId,
-          employee: employee.id,
-        }
+        },
+        relations: ['employee'],
+      })
+    } else {
+      return this.repository.find({
+        where: {
+          event: eventId,
+        },
       })
     }
   }
