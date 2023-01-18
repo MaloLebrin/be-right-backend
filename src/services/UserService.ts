@@ -5,7 +5,7 @@ import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { generateHash, userResponse } from '../utils'
-import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
+import { addUserToEntityRelation } from '../utils/entityHelper'
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
@@ -62,21 +62,7 @@ export default class UserService {
       where: { id },
       relations: ['events', 'files', 'employee', 'profilePicture', 'address'],
     })
-
-    if (user) {
-      const events = user.events as EventEntity[]
-      const employees = user.employee as EmployeeEntity[]
-      const files = user.files as FileEntity[]
-
-      return {
-        ...user,
-        events: formatEntityRelationWithId(events),
-        employee: formatEntityRelationWithId(employees),
-        files: formatEntityRelationWithId(files),
-      }
-    } else {
-      return user
-    }
+    return user
   }
 
   async getMany(ids: number[]): Promise<UserEntity[]> {

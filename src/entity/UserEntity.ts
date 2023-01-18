@@ -62,14 +62,23 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
 
+  @RelationId((user: UserEntity) => user.events)
+  eventIds: number[]
+
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[] | number[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
   employee: EmployeeEntity[] | number[]
 
+  @RelationId((user: UserEntity) => user.employee)
+  employeeIds: number[]
+
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
   files: FileEntity[] | number[]
+
+  @RelationId((user: UserEntity) => user.files)
+  filesIds: number[]
 
   @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
