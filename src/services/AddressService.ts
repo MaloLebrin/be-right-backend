@@ -18,7 +18,7 @@ export class AddressService {
     this.getManager = APP_SOURCE.manager
   }
 
-  async getOne(id: number) {
+  public getOne = async (id: number) => {
     return this.repository.findOne({
       where: { id },
     })
@@ -84,7 +84,7 @@ export class AddressService {
     const { postalCode, city, addressLine } = address
 
     if (GEO_CODING_API_URL) {
-      const street = addressLine.replace(' ', '+')
+      const street = addressLine?.replace(' ', '+')
 
       const res = await axios<GeoCodingResponse>(`${GEO_CODING_API_URL}?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
 
