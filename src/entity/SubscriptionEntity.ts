@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { SubscriptionEnum } from '../types/Subscription'
 import { BaseEntity } from './BaseEntity'
 import { PaymentEntity } from './PaymentEntity'
@@ -14,4 +14,7 @@ export class SubscriptionEntity extends BaseEntity {
   @OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
   @JoinColumn()
   payment: PaymentEntity
+
+  @RelationId((subscription: SubscriptionEntity) => subscription.payment)
+  paymentId: number
 }

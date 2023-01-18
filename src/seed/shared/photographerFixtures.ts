@@ -38,6 +38,6 @@ export async function createPhotographers(APP_SOURCE: DataSource) {
   ]
 
   return await Promise.all(photographersPayload.map(async photographer =>
-    await new UserService(APP_SOURCE).createPhotographer(photographer),
+    await new UserService(APP_SOURCE).createOnePhotoGrapher(photographer),
   ))
 }
