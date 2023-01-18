@@ -69,7 +69,11 @@ export default class UserController {
         subscription: SubscriptionEnum.BASIC,
       })
 
-      return res.status(200).json(userResponse(newUser))
+      const userToSend = userResponse(newUser)
+
+      await this.redisCache.save(`user-id-${userToSend.id}`, userToSend)
+
+      return res.status(200).json(userToSend)
     })
   }
 
@@ -274,7 +278,11 @@ export default class UserController {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
-          return res.status(200).json(userResponse(user))
+          const userToSend = userResponse(user)
+
+          await this.redisCache.save(`user-id-${userToSend.id}`, userToSend)
+
+          return res.status(200).json(userToSend)
         } else {
           return res.status(401).json('wrong password')
         }
@@ -296,7 +304,7 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await await this.repository.findOne({
+        const user = await this.repository.findOne({
           where: { id },
           relations: ['events', 'events.partner'],
         })
