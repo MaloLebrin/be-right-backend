@@ -12,19 +12,21 @@ import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { FileEntity } from '../entity/FileEntity'
 import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
-import type { JWTTokenPayload, PhotographerCreatePayload } from '../types'
-import { useEnv } from '../env'
+import type { PhotographerCreatePayload } from '../types'
 import { APP_SOURCE } from '..'
+import { SubscriptionService } from '../services/SubscriptionService'
 
 export default class UserController {
   getManager: EntityManager
   UserService: UserService
   repository: Repository<UserEntity>
+  SubscriptionService: SubscriptionService
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.UserService = new UserService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.SubscriptionService = new SubscriptionService(APP_SOURCE)
   }
 
   /**
@@ -178,7 +180,13 @@ export default class UserController {
             updatedAt: new Date(),
           }
           if (user.roles !== userFinded.roles) {
-            userUpdated.token = createJwtToken(userUpdated)
+            userUpdated.token = createJwtToken({
+              email: userUpdated.email,
+              roles: userUpdated.roles,
+              firstName: userUpdated.firstName,
+              lastName: userUpdated.lastName,
+              subscription: userUpdated.subscriptionLabel,
+            })
           }
 
           await this.repository.save(userUpdated)
@@ -198,10 +206,16 @@ export default class UserController {
 
       if (userId) {
         const user = await this.UserService.getOne(userId)
+        await this.SubscriptionService.updateSubscription(user.subscriptionId, subscription)
 
         if (user) {
-          user.subscription = subscription
-          user.token = createJwtToken(user)
+          user.token = createJwtToken({
+            email: user.email,
+            roles: user.roles,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            subscription,
+          })
           await this.repository.save(user)
           return res.status(200).json(userResponse(user))
         }
@@ -224,31 +238,13 @@ export default class UserController {
   }
 
   public login = async (req: Request, res: Response) => {
-    const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
-
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
+
       const userFinded = await this.repository.findOne({
         where: { email },
         relations: ['events', 'files', 'employee', 'profilePicture'],
       })
-
-      // TODO remove this in prod
-      if (userFinded && userFinded.email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        if (userFinded.roles !== Role.ADMIN) {
-          userFinded.token = createJwtToken({
-            email: userFinded.email,
-            roles: Role.ADMIN,
-            firstName: userFinded.firstName,
-            lastName: userFinded.lastName,
-            bla: Role.ADMIN,
-            subscription: SubscriptionEnum.PREMIUM,
-          } as JWTTokenPayload)
-          userFinded.subscription = SubscriptionEnum.PREMIUM
-          userFinded.roles = Role.ADMIN
-          await this.repository.save(userFinded)
-        }
-      }
 
       if (userFinded) {
         const events = userFinded.events as EventEntity[]
