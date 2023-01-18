@@ -40,7 +40,7 @@ async function StartApp() {
     .then(async () => {
       console.info('Data Source has been initialized!')
 
-      if (NODE_ENV === 'test') {
+      if (NODE_ENV !== 'test') {
         logger.info('seeders started')
         await seedersFunction(APP_SOURCE)
         logger.info('seeders ended')
