@@ -1,6 +1,5 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
-import axios from 'axios'
-import type { AddressCreationServicePayload, GeoCodingResponse } from '../types'
+import type { AddressCreationServicePayload } from '../types'
 import EventEntity from '../entity/EventEntity'
 import { AddressEntity } from '../entity/AddressEntity'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
@@ -17,13 +16,13 @@ export class AddressService {
     this.getManager = APP_SOURCE.manager
   }
 
-  public getOne = async (id: number) => {
+  async getOne(id: number) {
     return this.repository.findOne({
       where: { id },
     })
   }
 
-  // public getOneByUserId(userId: number) {
+  // async getOneByUserId(userId: number) {
   //   return this.repository.findOne({
   //     where: {
   //       user: userId,
@@ -31,7 +30,7 @@ export class AddressService {
   //   })
   // }
 
-  // public getOneByEmployeeId(employeeId: number) {
+  // async getOneByEmployeeId(employeeId: number) {
   //   return getManager().findOne(AddressEntity, {
   //     where: {
   //       employee: employeeId,
@@ -39,7 +38,7 @@ export class AddressService {
   //   })
   // }
 
-  // public getOneByEventId(eventId: number) {
+  // async getOneByEventId(eventId: number) {
   //   const event = await getManager().findOne(EventEntity, eventId)
   //   console.warn(event, '<==== event')
   //   // const addressId = event.addressId
@@ -51,16 +50,10 @@ export class AddressService {
   //   })
   // }
 
-  public createOne = async (payload: AddressCreationServicePayload) => {
+  async createOne(payload: AddressCreationServicePayload) {
     const { userId, eventId, employeeId, address } = payload
 
-    const coordinates = await this.geoLocalisation(address)
-
-    const addressCreated = this.repository.create({
-      ...address,
-      lat: coordinates?.lat || null,
-      lng: coordinates?.lng || null,
-    })
+    const addressCreated = this.repository.create(address)
 
     await this.repository.save(addressCreated)
     const addressToSend = isArray(addressCreated) ? addressCreated[0] : addressCreated as unknown as AddressEntity
@@ -80,45 +73,24 @@ export class AddressService {
     return addressToSend
   }
 
-  public updateOne = async (id: number, address: Partial<AddressEntity>) => {
+  async updateOne(id: number, address: Partial<AddressEntity>) {
     const addressToUpdate = await this.getOne(id)
     if (!addressToUpdate) {
       return null
     }
-
-    const coordinates = await this.geoLocalisation(address)
     const addressToStore = {
       ...address,
-      lat: coordinates?.lat || null,
-      lng: coordinates?.lng || null,
       updatedAt: new Date(),
     }
     await this.repository.update(id, addressToStore)
     return this.getOne(id)
   }
 
-  public deleteOne = async (id: number) => {
+  async deleteOne(id: number) {
     return this.repository.delete(id)
   }
 
-  public softDelete = async (id: number) => {
+  async softDelete(id: number) {
     return this.repository.softDelete(id)
-  }
-
-  private geoLocalisation = async (address: Partial<AddressEntity>) => {
-    const { postalCode, city, addressLine } = address
-    const street = addressLine.replace(' ', '+')
-    const res = await axios<GeoCodingResponse>(`https://api-adresse.data.gouv.fr/search/?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
-
-    const data = res.data as GeoCodingResponse
-
-    if (data && data.features?.length > 0) {
-      const coordinates = data.features[0].geometry.coordinates
-      return {
-        lat: coordinates[0],
-        lng: coordinates[1],
-      }
-    }
-    return null
   }
 }
