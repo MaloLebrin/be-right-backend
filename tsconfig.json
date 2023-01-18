@@ -3,7 +3,6 @@
     "lib": [
       "es5",
       "es6",
-      "es2018",
       "esnext"
     ],
     "target": "esnext",
