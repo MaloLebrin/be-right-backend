@@ -34,15 +34,25 @@ export default class RedisCache {
     })
   }
 
-  async save<T>(key: RedisKeys, value: T): Promise<void> {
+  async save<T>(key: RedisKeys, value: T, expireTime?: number): Promise<void> {
     await this.client.set(key, JSON.stringify(value))
-    this.client.pexpire(key, 3600)
+    await this.client.pexpire(key, expireTime || 3600)
   }
 
-  async multiSave<T extends BaseEntity>(payload: T[], typeofEntity: EntitiesEnum, objKey: RedisEntitiesField): Promise<void> {
+  async multiSave<T extends BaseEntity>({
+    payload,
+    typeofEntity,
+    objKey,
+    expireTime,
+  }: {
+    payload: T[]
+    typeofEntity: EntitiesEnum
+    objKey: RedisEntitiesField
+    expireTime?: number
+  }): Promise<void> {
     payload.forEach(item => {
       const redisKey = `${typeofEntity}-${objKey}-${item.id}` as RedisKeys
-      this.save(redisKey, item)
+      this.save(redisKey, item, expireTime)
     })
     // TODO do better more powerfull
     // await this.client.mset(payload)
@@ -100,7 +110,11 @@ export default class RedisCache {
     if (!value || value.length < 1) {
       this.logger.info('no value in redis cache')
       const result = await fetcher()
-      this.multiSave<T>(result, typeofEntity, field)
+      this.multiSave<T>({
+        payload: result,
+        typeofEntity,
+        objKey: field,
+      })
       return result
     }
 
@@ -114,7 +128,11 @@ export default class RedisCache {
       } else {
         this.logger.info('no value in redis cache')
         const result = await fetcher()
-        this.multiSave<T>(result, typeofEntity, field)
+        this.multiSave<T>({
+          payload: result,
+          typeofEntity,
+          objKey: field,
+        })
         return result
       }
     }
