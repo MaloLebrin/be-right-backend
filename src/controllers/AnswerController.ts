@@ -14,7 +14,7 @@ export default class AnswerController {
     this.EventService = new EventService(APP_SOURCE)
   }
 
-  async createOne(req: Request, res: Response) {
+  public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
@@ -24,7 +24,7 @@ export default class AnswerController {
     })
   }
 
-  async createMany(req: Request, res: Response) {
+  public createMany = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
@@ -34,7 +34,7 @@ export default class AnswerController {
     })
   }
 
-  async getManyForEvent(req: Request, res: Response) {
+  public getManyForEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
@@ -45,7 +45,7 @@ export default class AnswerController {
     })
   }
 
-  async updateOne(req: Request, res: Response) {
+  public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
@@ -55,7 +55,7 @@ export default class AnswerController {
     })
   }
 
-  async updateAnswerStatus(req: Request, res: Response) {
+  public updateAnswerStatus = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeId = parseInt(req.body.employeeId)
@@ -75,7 +75,7 @@ export default class AnswerController {
     })
   }
 
-  async deleteOne(req: Request, res: Response) {
+  public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
