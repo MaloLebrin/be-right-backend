@@ -19,8 +19,8 @@ export function useValidation() {
       logger.info(`${req.url} validation ended with success`)
       return next()
     } catch (err) {
-      logger.debug({ type: err.name, message: err.message })
-      return res.status(500).json({ type: err.name, message: err.message })
+      logger.debug({ type: err.name, message: err.message, request: req.url })
+      return res.status(500).json({ type: err.name, message: err.message, request: req.url })
     }
   }
 
