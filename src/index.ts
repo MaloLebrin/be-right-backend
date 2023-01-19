@@ -130,6 +130,7 @@ async function StartApp() {
   app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
   // Employee
+  app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
   app.get('/employee/', [isAuthenticated], new EmployeeController().getAll)
   app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
   app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
