@@ -132,6 +132,7 @@ export default class EventController {
 
       const eventsReturned = await Promise.all(events.map(async event => {
         const answers = await this.AnswerService.getAllAnswersForEvent(event.id)
+
         let employees = []
         if (answers.length > 0) {
           employees = answers.map(answer => {
@@ -140,11 +141,13 @@ export default class EventController {
               answer,
               event: event.id,
             }
+
             delete employee.answer.employee
             return employee
           }).filter(employee => employee)
         }
         const partner = event.partner as UserEntity
+
         return {
           ...event,
           employees: employees as EventEntity[],
@@ -209,6 +212,7 @@ export default class EventController {
 
         if (checkUserRole(Role.ADMIN) || user.id === userId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
+
           await this.saveEventRedisCache(eventUpdated)
 
           return res.status(200).json(eventUpdated)
