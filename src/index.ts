@@ -110,6 +110,7 @@ async function StartApp() {
   app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
 
   // Answer
+  app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
   app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
   app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
