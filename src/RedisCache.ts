@@ -36,7 +36,7 @@ export default class RedisCache {
 
   async save<T>(key: RedisKeys, value: T, expireTime?: number): Promise<void> {
     await this.client.set(key, JSON.stringify(value))
-    await this.client.pexpire(key, expireTime || 3600)
+    await this.client.expire(key, expireTime || 3600)
   }
 
   async multiSave<T extends BaseEntity>({
@@ -76,6 +76,7 @@ export default class RedisCache {
 
     if (value) {
       this.logger.info('redis value retrieved')
+      await this.client.expire(key, 3600)
       return JSON.parse(value)
     }
 
