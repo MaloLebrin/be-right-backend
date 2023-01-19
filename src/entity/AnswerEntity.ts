@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
@@ -18,9 +18,15 @@ export default class AnswerEntity extends BaseEntity {
   @JoinColumn({ name: 'employeeId' })
   employee: number | EmployeeEntity
 
+  @RelationId((answer: AnswerEntity) => answer.employee)
+  employeeId: number
+
   @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventId' })
   event: number
+
+  @RelationId((answer: AnswerEntity) => answer.event)
+  eventId: number
 }
 
 export const answerSearchFields = [

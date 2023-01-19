@@ -139,7 +139,6 @@ export function createAppSource() {
       ...dataBaseConfig.dev as unknown as PostgresConnectionOptions,
       name: 'default',
     }
-    console.info(connectionsOptions, '<==== connectionsOptions')
   }
 
   return new DataSource({

@@ -1,40 +1,26 @@
 import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
-import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
-import type { FileEntity } from '../entity/FileEntity'
 import { generateHash, userResponse } from '../utils'
-import { addUserToEntityRelation, formatEntityRelationWithId } from '../utils/entityHelper'
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
+import { SubscriptionService } from './SubscriptionService'
 
 export default class UserService {
   repository: Repository<UserEntity>
+  subscriptionService: SubscriptionService
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.subscriptionService = new SubscriptionService(APP_SOURCE)
   }
 
   async getByToken(token: string): Promise<UserEntity> {
-    const userFinded = await this.repository.findOne({
+    return await this.repository.findOne({
       where: { token },
       relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'],
     })
-
-    if (userFinded) {
-      const events = userFinded.events as EventEntity[]
-      const employees = userFinded.employee as EmployeeEntity[]
-      const files = userFinded.files as FileEntity[]
-
-      return {
-        ...userFinded,
-        events: addUserToEntityRelation(events, userFinded.id),
-        employee: addUserToEntityRelation(employees, userFinded.id),
-        files: addUserToEntityRelation(files, userFinded.id),
-      }
-    }
   }
 
   async updateTheme(id: number, theme: ThemeEnum) {
@@ -60,23 +46,9 @@ export default class UserService {
   async getOneWithRelations(id: number): Promise<UserEntity> {
     const user = await this.repository.findOne({
       where: { id },
-      relations: ['events', 'files', 'employee', 'profilePicture', 'address'],
+      relations: ['events', 'files', 'employee', 'profilePicture', 'address', 'subscription'],
     })
-
-    if (user) {
-      const events = user.events as EventEntity[]
-      const employees = user.employee as EmployeeEntity[]
-      const files = user.files as FileEntity[]
-
-      return {
-        ...user,
-        events: formatEntityRelationWithId(events),
-        employee: formatEntityRelationWithId(employees),
-        files: formatEntityRelationWithId(files),
-      }
-    } else {
-      return user
-    }
+    return user
   }
 
   async getMany(ids: number[]) {
@@ -91,7 +63,14 @@ export default class UserService {
       ...userFinded,
       ...payload,
       updatedAt: new Date(),
-      token: payload.roles !== userFinded.roles ? createJwtToken(payload) : userFinded.token,
+      token: payload.roles !== userFinded.roles
+        ? createJwtToken({
+          email: userFinded.email,
+          firstName: userFinded.firstName,
+          lastName: userFinded.lastName,
+          roles: payload.roles,
+        })
+        : userFinded.token,
     }
     await this.repository.save(userUpdated)
   }
@@ -101,6 +80,7 @@ export default class UserService {
   }
 
   async createOnePhotoGrapher(user: PhotographerCreatePayload) {
+    const subscription = await this.subscriptionService.createBasicSubscription()
     const newUser = this.repository.create({
       ...user,
       salt: uid2(128),
@@ -111,6 +91,8 @@ export default class UserService {
         roles: Role.PHOTOGRAPHER,
       }),
       roles: Role.PHOTOGRAPHER,
+      subscription,
+      subscriptionLabel: subscription.type,
     })
     await this.repository.save(newUser)
     return userResponse(newUser)
@@ -127,6 +109,8 @@ export default class UserService {
       subscription,
     } = payload
 
+    const subscriptionEntity = await this.subscriptionService.createOne(subscription)
+
     const salt = uid2(128)
     const user = {
       companyName,
@@ -135,7 +119,8 @@ export default class UserService {
       lastName,
       salt,
       roles: role,
-      subscription,
+      subscription: subscriptionEntity,
+      subscriptionLabel: subscriptionEntity.type,
       token: createJwtToken({
         email,
         firstName,

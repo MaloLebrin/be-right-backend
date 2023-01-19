@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { SubscriptionEntity } from '../entity/SubscriptionEntity'
-import type { SubscriptionEnum } from '../types/Subscription'
+import { SubscriptionEnum } from '../types/Subscription'
 
 export class SubscriptionService {
   repository: Repository<SubscriptionEntity>
@@ -11,7 +11,7 @@ export class SubscriptionService {
     this.repository = APP_SOURCE.getRepository(SubscriptionEntity)
   }
 
-  async createOne(subscriptionType: SubscriptionEnum) {
+  public createOne = async (subscriptionType: SubscriptionEnum) => {
     const subscription = this.repository.create({
       type: subscriptionType,
       expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
@@ -20,14 +20,23 @@ export class SubscriptionService {
     return subscription
   }
 
-  async getOne(id: number) {
+  public createBasicSubscription = async () => {
+    const subscription = this.repository.create({
+      type: SubscriptionEnum.BASIC,
+      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
+    })
+    await this.repository.save(subscription)
+    return subscription
+  }
+
+  public getOne = async (id: number) => {
     return this.repository.findOne({
       where: { id },
       relations: ['user', 'payment'],
     })
   }
 
-  async getMany(ids: number[]) {
+  public getMany = async (ids: number[]) => {
     return this.repository.find({
       where: {
         id: In(ids),
@@ -36,7 +45,15 @@ export class SubscriptionService {
     })
   }
 
-  async updateOne(id: number, subscription: SubscriptionEntity) {
+  public updateOne = async (id: number, subscription: SubscriptionEntity) => {
     return this.repository.update(id, subscription)
+  }
+
+  public updateSubscription = async (id: number, subscriptionType: SubscriptionEnum) => {
+    return this.repository.update(id, { type: subscriptionType })
+  }
+
+  public deleteOne = async (id: number) => {
+    return this.repository.softDelete(id)
   }
 }

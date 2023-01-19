@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm'
+import { Column, Entity, ManyToOne, RelationId } from 'typeorm'
 import { FileTypeEnum } from '../types/File'
 import { BaseEntity } from './BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
@@ -52,11 +52,20 @@ export class FileEntity extends BaseEntity {
   @ManyToOne(() => EventEntity, event => event.files)
   event: number
 
+  @RelationId((file: FileEntity) => file.event)
+  eventIds: number
+
   @ManyToOne(() => EmployeeEntity, employee => employee.files)
   employee: number
 
+  @RelationId((file: FileEntity) => file.employee)
+  employeeIds: number
+
   @ManyToOne(() => UserEntity, user => user.files)
   createdByUser: number
+
+  @RelationId((file: FileEntity) => file.createdByUser)
+  createdByUserId: number
 }
 
 export const filesSearchableFields = [

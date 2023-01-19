@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import { BugReportStatus, BugReportType } from '../types/BugReport'
 import { BaseEntity } from './BaseEntity'
 import { FileEntity } from './FileEntity'
@@ -25,7 +25,13 @@ export class BugReportEntity extends BaseEntity {
   @JoinColumn()
   file: FileEntity
 
+  @RelationId((bug: BugReportEntity) => bug.file)
+  fileId: number
+
   @ManyToOne(() => UserEntity)
   @JoinColumn()
   createdByUser: number
+
+  @RelationId((bug: BugReportEntity) => bug.createdByUser)
+  createdByUserId: number
 }

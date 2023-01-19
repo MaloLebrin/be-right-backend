@@ -37,6 +37,7 @@ export class AddressService {
 
     await this.repository.save(addressCreated)
     const addressToSend = isArray(addressCreated) ? addressCreated[0] : addressCreated as unknown as AddressEntity
+
     if (userId) {
       await this.getManager.update(UserEntity, userId, {
         address: addressToSend.id,

@@ -32,11 +32,20 @@ export class EmployeeEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, user => user.employee)
   createdByUser: number | UserEntity
 
+  @RelationId((employee: EmployeeEntity) => employee.createdByUser)
+  createdByUserId: number
+
   @OneToMany(() => AnswerEntity, answer => answer.employee, { cascade: true })
   answers: AnswerEntity[]
 
+  @RelationId((employee: EmployeeEntity) => employee.answers)
+  answersIds: number[]
+
   @OneToMany(() => FileEntity, file => file.employee, { cascade: true })
   files: FileEntity[]
+
+  @RelationId((employee: EmployeeEntity) => employee.files)
+  filesIds: number[]
 }
 
 export const employeeSearchablefields = [

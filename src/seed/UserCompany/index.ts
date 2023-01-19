@@ -8,7 +8,6 @@ import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
 import { SubscriptionEnum } from '../../types'
 import AnswerEntity from '../../entity/AnswerEntity'
-// import { SubscriptionService } from '../../services'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import {
   addressFixtureCompanyMedium,
@@ -34,10 +33,8 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 
   const user = await new UserService(APP_SOURCE_SEEDER).createOneUser({
     ...userCompanyFixturePremium,
-    subscriptionId: subscription.id,
+    subscription: SubscriptionEnum.PREMIUM,
   })
-
-  // await SubscriptionService.createOne(SubscriptionEnum.PREMIUM, user.id)
 
   await addressService.createOne({
     address: addressFixtureCompanyPremium,
@@ -81,15 +78,9 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   const addressService = new AddressService(APP_SOURCE_SEEDER)
   const answerService = new AnswerService(APP_SOURCE_SEEDER)
 
-  const subscription = getManager.create(SubscriptionEntity, {
-    type: SubscriptionEnum.MEDIUM,
-    expireAt: dayjs().add(1, 'year'),
-  })
-  await getManager.save(subscription)
-
   const user = await new UserService(APP_SOURCE_SEEDER).createOneUser({
     ...userCompanyFixtureMedium,
-    subscriptionId: subscription.id,
+    subscription: SubscriptionEnum.MEDIUM,
   })
 
   await addressService.createOne({

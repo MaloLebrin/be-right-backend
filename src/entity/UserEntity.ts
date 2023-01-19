@@ -47,7 +47,7 @@ export class UserEntity extends BaseEntity {
   roles: Role
 
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
-  subscription: SubscriptionEnum
+  subscriptionLabel: SubscriptionEnum
 
   @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
   theme: ThemeEnum
@@ -62,22 +62,34 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[] | number[]
 
+  @RelationId((user: UserEntity) => user.events)
+  eventIds: number[]
+
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[] | number[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
   employee: EmployeeEntity[] | number[]
 
+  @RelationId((user: UserEntity) => user.employee)
+  employeeIds: number[]
+
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
   files: FileEntity[] | number[]
+
+  @RelationId((user: UserEntity) => user.files)
+  filesIds: number[]
 
   @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
   profilePicture: FileEntity | number
 
-  @OneToOne(() => SubscriptionEntity)
+  @OneToOne(() => SubscriptionEntity, { cascade: true })
   @JoinColumn()
-  subscriptionId: SubscriptionEntity
+  subscription: SubscriptionEntity
+
+  @RelationId((user: UserEntity) => user.subscription)
+  subscriptionId: number
 }
 
 export const userSearchableFields = [
