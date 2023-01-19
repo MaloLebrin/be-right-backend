@@ -24,9 +24,9 @@ export class AddressEntity extends BaseEntity {
   @Column({ default: 'France' })
   country: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float8' })
   lat: number | null
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float8' })
   lng: number | null
 }

@@ -31,8 +31,8 @@ export class AddressService {
 
     const addressCreated = this.repository.create({
       ...address,
-      lat: coordinates.lat || null,
-      lng: coordinates.lng || null,
+      lat: coordinates?.lat || null,
+      lng: coordinates?.lng || null,
     })
 
     await this.repository.save(addressCreated)
@@ -63,8 +63,8 @@ export class AddressService {
     const coordinates = await this.geoLocalisation(address)
     const addressToStore = {
       ...address,
-      lat: coordinates.lat || null,
-      lng: coordinates.lng || null,
+      lat: coordinates?.lat || null,
+      lng: coordinates?.lng || null,
       updatedAt: new Date(),
     }
     await this.repository.update(id, addressToStore)
