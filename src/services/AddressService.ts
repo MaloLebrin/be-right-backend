@@ -18,7 +18,7 @@ export class AddressService {
     this.getManager = APP_SOURCE.manager
   }
 
-  async getOne(id: number) {
+  public getOne = async (id: number) => {
     return this.repository.findOne({
       where: { id },
     })
