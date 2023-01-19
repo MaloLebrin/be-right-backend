@@ -8,10 +8,7 @@ import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import type EventEntity from '../entity/EventEntity'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
-import type { FileEntity } from '../entity/FileEntity'
-import { addUserToEntityRelation, createJwtToken, uniq } from '../utils/'
+import { createJwtToken, uniq } from '../utils/'
 import type { PhotographerCreatePayload, RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -99,18 +96,7 @@ export default class UserController {
         },
       })
 
-      const users = search.map(user => {
-        const events = user.events as EventEntity[]
-        const employees = user.employee as EmployeeEntity[]
-        const files = user.files as FileEntity[]
-        return {
-          ...user,
-          events: addUserToEntityRelation(events, user.id),
-          employee: addUserToEntityRelation(employees, user.id),
-          files: addUserToEntityRelation(files, user.id),
-        }
-      })
-      const usersToSend = users.map(user => userResponse(user))
+      const usersToSend = search.map(user => userResponse(user))
 
       return res.status(200).json({
         data: usersToSend,
@@ -256,22 +242,12 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const { email, password }: { email: string; password: string } = req.body
 
-      const userFinded = await this.repository.findOne({
+      const user = await this.repository.findOne({
         where: { email },
         relations: ['events', 'files', 'employee', 'profilePicture'],
       })
 
-      if (userFinded) {
-        const events = userFinded.events as EventEntity[]
-        const employees = userFinded.employee as EmployeeEntity[]
-        const files = userFinded.files as FileEntity[]
-        const user = {
-          ...userFinded,
-          events: addUserToEntityRelation(events, userFinded.id),
-          employee: addUserToEntityRelation(employees, userFinded.id),
-          files: addUserToEntityRelation(files, userFinded.id),
-        }
-
+      if (user) {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
