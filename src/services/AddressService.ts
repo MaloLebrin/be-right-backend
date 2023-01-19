@@ -24,41 +24,20 @@ export class AddressService {
     })
   }
 
-  // async getOneByUserId(userId: number) {
-  //   return this.repository.findOne({
-  //     where: {
-  //       user: userId,
-  //     },
-  //   })
-  // }
-
-  // async getOneByEmployeeId(employeeId: number) {
-  //   return getManager().findOne(AddressEntity, {
-  //     where: {
-  //       employee: employeeId,
-  //     },
-  //   })
-  // }
-
-  // async getOneByEventId(eventId: number) {
-  //   const event = await getManager().findOne(EventEntity, eventId)
-  //   console.warn(event, '<==== event')
-  //   // const addressId = event.addressId
-  //   return getManager().findOne(AddressEntity, {
-  //     where: {
-  //       event: eventId,
-  //     },
-  //     relations: ['addressId'],
-  //   })
-  // }
-
-  async createOne(payload: AddressCreationServicePayload) {
+  public createOne = async (payload: AddressCreationServicePayload) => {
     const { userId, eventId, employeeId, address } = payload
 
-    const addressCreated = this.repository.create(address)
+    const coordinates = await this.geoLocalisation(address)
+
+    const addressCreated = this.repository.create({
+      ...address,
+      lat: coordinates.lat || null,
+      lng: coordinates.lng || null,
+    })
 
     await this.repository.save(addressCreated)
     const addressToSend = isArray(addressCreated) ? addressCreated[0] : addressCreated as unknown as AddressEntity
+
     if (userId) {
       await this.getManager.update(UserEntity, userId, {
         address: addressToSend.id,
@@ -80,19 +59,23 @@ export class AddressService {
     if (!addressToUpdate) {
       return null
     }
+
+    const coordinates = await this.geoLocalisation(address)
     const addressToStore = {
       ...address,
+      lat: coordinates.lat || null,
+      lng: coordinates.lng || null,
       updatedAt: new Date(),
     }
     await this.repository.update(id, addressToStore)
     return this.getOne(id)
   }
 
-  public deleteOne = (id: number) => {
+  public deleteOne = async (id: number) => {
     return this.repository.delete(id)
   }
 
-  public softDelete = (id: number) => {
+  public softDelete = async (id: number) => {
     return this.repository.softDelete(id)
   }
 
