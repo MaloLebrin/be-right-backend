@@ -111,7 +111,7 @@ export default class EventController {
             typeofEntity: EntitiesEnum.EVENT,
             ids: eventsIds,
           }),
-          typeofEntity: EntitiesEnum.USER,
+          typeofEntity: EntitiesEnum.EVENT,
           fetcher: () => this.EventService.getManyEvents(eventsIds),
         })
 

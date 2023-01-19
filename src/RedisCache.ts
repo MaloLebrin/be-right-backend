@@ -108,7 +108,7 @@ export default class RedisCache {
 
     const value = await this.client.mget(keys)
 
-    if (!value || value.length < 1) {
+    if (!value || value.filter(str => str).length < 1) {
       this.logger.info('no value in redis cache')
       const result = await fetcher()
       this.multiSave<T>({
@@ -128,7 +128,9 @@ export default class RedisCache {
         return array
       } else {
         this.logger.info('no value in redis cache')
+
         const result = await fetcher()
+
         await this.multiSave<T>({
           payload: result,
           typeofEntity,
