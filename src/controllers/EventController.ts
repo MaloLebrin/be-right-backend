@@ -30,6 +30,14 @@ export default class EventController {
     this.redisCache = REDIS_CACHE
   }
 
+  private saveEventRedisCache = async (event: EventEntity) => {
+    await this.redisCache.save(generateRedisKey({
+      typeofEntity: EntitiesEnum.EVENT,
+      field: 'id',
+      id: event.id,
+    }), event)
+  }
+
   /**
    * @param event event: Partial<EventEntity>
    * @returns return event just created
@@ -46,12 +54,15 @@ export default class EventController {
       }
       if (event && userId) {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
+
         if (newEvent && address) {
           await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
           })
         }
+
+        await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
       return res.status(422).json({ error: 'Formulaire imcomplet' })
@@ -195,8 +206,11 @@ export default class EventController {
         const eventFinded = await this.EventService.getOneEvent(id)
 
         const user = eventFinded.createdByUser as UserEntity
+
         if (checkUserRole(Role.ADMIN) || user.id === userId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
+          await this.saveEventRedisCache(eventUpdated)
+
           return res.status(200).json(eventUpdated)
         } else {
           return res.status(400).json('event not updated')
@@ -216,6 +230,13 @@ export default class EventController {
 
         if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
           await this.repository.softDelete(id)
+
+          await this.redisCache.invalidate(generateRedisKey({
+            typeofEntity: EntitiesEnum.EVENT,
+            field: 'id',
+            id,
+          }))
+
           return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
         } else {
           return res.status(401).json('Not allowed')
