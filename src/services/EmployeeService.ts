@@ -1,8 +1,6 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
-import { isUserEntity } from '../utils/index'
-import type { UserEntity } from '../entity/UserEntity'
 import AnswerService from './AnswerService'
 
 export default class EmployeeService {
@@ -26,52 +24,27 @@ export default class EmployeeService {
   }
 
   async getOne(id: number) {
-    const employeefinded = await this.repository.findOne({
+    return this.repository.findOne({
       where: {
         id,
       },
-      relations: ['createdByUser', 'answers'],
     })
-
-    const user = isUserEntity(employeefinded.createdByUser) && employeefinded.createdByUser as UserEntity
-    return {
-      ...employeefinded,
-      createdByUser: user.id,
-      events: employeefinded.answers.map(answer => answer.event),
-    }
   }
 
   async getMany(ids: number[]) {
-    const finded = await this.repository.find({
+    return this.repository.find({
       where: {
         id: In(ids),
       },
-      relations: ['createdByUser', 'answers'],
-    })
-
-    return finded.map(employee => {
-      const user = isUserEntity(employee.createdByUser) && employee.createdByUser as UserEntity
-      return {
-        ...employee,
-        createdByUser: user.id,
-        events: employee.answers.map(answer => answer.event),
-      }
     })
   }
 
   async getAllForUser(userId: number) {
-    const employees = await this.repository.find({
+    return this.repository.find({
       where: {
         createdByUser: userId,
       },
-      relations: ['answers'],
     })
-
-    return employees.map(employee => ({
-      ...employee,
-      createdByUser: userId,
-      events: employee.answers.map(answer => answer.event),
-    }))
   }
 
   async getAllForEvent(eventId: number) {
