@@ -23,34 +23,6 @@ export class AddressService {
     })
   }
 
-  // public getOneByUserId(userId: number) {
-  //   return this.repository.findOne({
-  //     where: {
-  //       user: userId,
-  //     },
-  //   })
-  // }
-
-  // public getOneByEmployeeId(employeeId: number) {
-  //   return getManager().findOne(AddressEntity, {
-  //     where: {
-  //       employee: employeeId,
-  //     },
-  //   })
-  // }
-
-  // public getOneByEventId(eventId: number) {
-  //   const event = await getManager().findOne(EventEntity, eventId)
-  //   console.warn(event, '<==== event')
-  //   // const addressId = event.addressId
-  //   return getManager().findOne(AddressEntity, {
-  //     where: {
-  //       event: eventId,
-  //     },
-  //     relations: ['addressId'],
-  //   })
-  // }
-
   public createOne = async (payload: AddressCreationServicePayload) => {
     const { userId, eventId, employeeId, address } = payload
 
