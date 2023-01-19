@@ -6,6 +6,7 @@ import { AddressEntity } from '../entity/AddressEntity'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import { isArray } from '../utils/'
+import { useEnv } from '../env'
 
 export class AddressService {
   getManager: EntityManager
@@ -78,17 +79,22 @@ export class AddressService {
   }
 
   private geoLocalisation = async (address: Partial<AddressEntity>) => {
+    const { GEO_CODING_API_URL } = useEnv()
     const { postalCode, city, addressLine } = address
-    const street = addressLine.replace(' ', '+')
-    const res = await axios<GeoCodingResponse>(`https://api-adresse.data.gouv.fr/search/?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
 
-    const data = res.data as GeoCodingResponse
+    if (GEO_CODING_API_URL) {
+      const street = addressLine.replace(' ', '+')
 
-    if (data && data.features?.length > 0) {
-      const coordinates = data.features[0].geometry.coordinates
-      return {
-        lat: coordinates[0],
-        lng: coordinates[1],
+      const res = await axios<GeoCodingResponse>(`${GEO_CODING_API_URL}?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
+
+      const data = res.data as GeoCodingResponse
+
+      if (data && data.features?.length > 0) {
+        const coordinates = data.features[0].geometry.coordinates
+        return {
+          lat: coordinates[0],
+          lng: coordinates[1],
+        }
       }
     }
     return null
