@@ -1,11 +1,7 @@
 import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
-import type EventEntity from '../entity/EventEntity'
 import { UserEntity } from '../entity/UserEntity'
-import type { FileEntity } from '../entity/FileEntity'
 import { generateHash, userResponse } from '../utils'
-import { addUserToEntityRelation } from '../utils/entityHelper'
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
 import { createJwtToken } from '../utils/'
@@ -21,23 +17,10 @@ export default class UserService {
   }
 
   async getByToken(token: string): Promise<UserEntity> {
-    const userFinded = await this.repository.findOne({
+    return await this.repository.findOne({
       where: { token },
       relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'],
     })
-
-    if (userFinded) {
-      const events = userFinded.events as EventEntity[]
-      const employees = userFinded.employee as EmployeeEntity[]
-      const files = userFinded.files as FileEntity[]
-
-      return {
-        ...userFinded,
-        events: addUserToEntityRelation(events, userFinded.id),
-        employee: addUserToEntityRelation(employees, userFinded.id),
-        files: addUserToEntityRelation(files, userFinded.id),
-      }
-    }
   }
 
   async updateTheme(id: number, theme: ThemeEnum) {
