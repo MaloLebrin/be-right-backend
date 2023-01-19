@@ -30,6 +30,10 @@ export default class UserController {
     this.SubscriptionService = new SubscriptionService(APP_SOURCE)
   }
 
+  private saveUserInCache = async (user: UserEntity) => {
+    await this.redisCache.save(`user-id-${user.id}`, user)
+  }
+
   /**
    * @param user user: Partial<userEntity>
    * @returns return user just created
@@ -70,7 +74,7 @@ export default class UserController {
 
       const userToSend = userResponse(newUser)
 
-      await this.redisCache.save(`user-id-${userToSend.id}`, userToSend)
+      await this.saveUserInCache(newUser)
 
       return res.status(200).json(userToSend)
     })
@@ -158,6 +162,7 @@ export default class UserController {
       const id = parseInt(req.params.id)
       const { theme } = req.body
       const user = await this.UserService.updateTheme(id, theme)
+      await this.saveUserInCache(user)
       return res.status(200).json(userResponse(user))
     })
   }
@@ -191,6 +196,7 @@ export default class UserController {
           }
 
           await this.repository.save(userUpdated)
+          await this.saveUserInCache(userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
           return res.status(401).json({ error: 'unauthorized' })
@@ -217,7 +223,9 @@ export default class UserController {
             lastName: user.lastName,
             subscription,
           })
+
           await this.repository.save(user)
+          await this.saveUserInCache(user)
           return res.status(200).json(userResponse(user))
         }
       }
@@ -231,6 +239,9 @@ export default class UserController {
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
         const userDeleted = await this.repository.softDelete(id)
+
+        this.redisCache.invalidate(`user-id-${id}`)
+
         return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
         return res.status(401).json({ error: 'unauthorized' })
@@ -253,7 +264,7 @@ export default class UserController {
         if (user.password === passwordHashed) {
           const userToSend = userResponse(user)
 
-          await this.redisCache.save(`user-id-${userToSend.id}`, userToSend)
+          await this.saveUserInCache(userToSend)
 
           return res.status(200).json(userToSend)
         } else {
@@ -286,6 +297,7 @@ export default class UserController {
         const partners = events.map(event => event.partner) as UserEntity[]
         const uniqPartnersIds = uniq(partners.map(user => user.id))
         const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+
         return res.status(200).json(uniqPartners)
       }
       return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
