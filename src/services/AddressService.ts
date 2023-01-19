@@ -1,5 +1,6 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
-import type { AddressCreationServicePayload } from '../types'
+import axios from 'axios'
+import type { AddressCreationServicePayload, GeoCodingResponse } from '../types'
 import EventEntity from '../entity/EventEntity'
 import { AddressEntity } from '../entity/AddressEntity'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
@@ -74,7 +75,7 @@ export class AddressService {
     return addressToSend
   }
 
-  async updateOne(id: number, address: Partial<AddressEntity>) {
+  public updateOne = async (id: number, address: Partial<AddressEntity>) => {
     const addressToUpdate = await this.getOne(id)
     if (!addressToUpdate) {
       return null
@@ -87,11 +88,11 @@ export class AddressService {
     return this.getOne(id)
   }
 
-  async deleteOne(id: number) {
+  public deleteOne = (id: number) => {
     return this.repository.delete(id)
   }
 
-  async softDelete(id: number) {
+  public softDelete = (id: number) => {
     return this.repository.softDelete(id)
   }
 
