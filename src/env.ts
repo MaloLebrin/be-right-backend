@@ -14,5 +14,6 @@ export function useEnv() {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     FRONT_URL: process.env.FRONT_URL,
     JWT_SECRET: process.env.JWT_SECRET,
+    GEO_CODING_API_URL: process.env.GEO_CODING_API_URL,
   }
 }
