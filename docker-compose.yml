@@ -12,8 +12,18 @@ services:
     volumes:
       - mysql-storage:/.data
 
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+    expose:
+      - 6379
+
   app:
+    links:
+    - redis
     depends_on:
+      - redis
       - postgres
     build:
       context: .
@@ -28,8 +38,6 @@ services:
     build:
       context: .
       dockerfile: ./cron.Dockerfile
-    # ports:
-    #   - '8000:5555'
     env_file:
       - .env
 

@@ -1,4 +1,5 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
+import { In } from 'typeorm'
 import axios from 'axios'
 import type { AddressCreationServicePayload, GeoCodingResponse } from '../types'
 import EventEntity from '../entity/EventEntity'
@@ -21,6 +22,14 @@ export class AddressService {
   public getOne = async (id: number) => {
     return this.repository.findOne({
       where: { id },
+    })
+  }
+
+  public getMany = async (ids: number[]) => {
+    return this.repository.find({
+      where: {
+        id: In(ids),
+      },
     })
   }
 
@@ -84,7 +93,7 @@ export class AddressService {
     const { postalCode, city, addressLine } = address
 
     if (GEO_CODING_API_URL) {
-      const street = addressLine.replace(' ', '+')
+      const street = addressLine?.replace(' ', '+')
 
       const res = await axios<GeoCodingResponse>(`${GEO_CODING_API_URL}?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
 

@@ -6,25 +6,36 @@ import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
 import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import { Role } from '../types'
-import { isUserAdmin } from '../utils/'
+import { EntitiesEnum, Role } from '../types'
+import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
-import { APP_SOURCE } from '..'
+import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { UserEntity } from '../entity/UserEntity'
+import type RedisCache from '../RedisCache'
 
 export default class EventController {
   AddressService: AddressService
   AnswerService: AnswerService
   EventService: EventService
   repository: Repository<EventEntity>
+  redisCache: RedisCache
 
   constructor() {
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(EventEntity)
+    this.redisCache = REDIS_CACHE
+  }
+
+  private saveEventRedisCache = async (event: EventEntity) => {
+    await this.redisCache.save(generateRedisKey({
+      typeofEntity: EntitiesEnum.EVENT,
+      field: 'id',
+      id: event.id,
+    }), event)
   }
 
   /**
@@ -43,12 +54,15 @@ export default class EventController {
       }
       if (event && userId) {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
+
         if (newEvent && address) {
           await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
           })
         }
+
+        await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
       return res.status(422).json({ error: 'Formulaire imcomplet' })
@@ -65,7 +79,15 @@ export default class EventController {
       if (id) {
         const ctx = Context.get(req)
         const userId = ctx.user.id
-        const event = await this.EventService.getOneEvent(id)
+
+        const event = await this.redisCache.get<EventEntity>(
+          generateRedisKey({
+            field: 'id',
+            typeofEntity: EntitiesEnum.EVENT,
+            id,
+          }),
+          () => this.EventService.getOneEvent(id))
+
         if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
           return res.status(200).json(event)
         } else {
@@ -80,8 +102,20 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
-      const events = await this.EventService.getManyEvents(eventsIds)
-      return res.status(200).json(events)
+
+      if (eventsIds && eventsIds.length > 0) {
+        const events = await this.redisCache.getMany<EventEntity>({
+          keys: generateRedisKeysArray({
+            field: 'id',
+            typeofEntity: EntitiesEnum.EVENT,
+            ids: eventsIds,
+          }),
+          typeofEntity: EntitiesEnum.EVENT,
+          fetcher: () => this.EventService.getManyEvents(eventsIds),
+        })
+
+        return res.status(200).json(events)
+      }
     })
   }
 
@@ -97,6 +131,7 @@ export default class EventController {
 
       const eventsReturned = await Promise.all(events.map(async event => {
         const answers = await this.AnswerService.getAllAnswersForEvent(event.id)
+
         let employees = []
         if (answers.length > 0) {
           employees = answers.map(answer => {
@@ -105,11 +140,13 @@ export default class EventController {
               answer,
               event: event.id,
             }
+
             delete employee.answer.employee
             return employee
           }).filter(employee => employee)
         }
         const partner = event.partner as UserEntity
+
         return {
           ...event,
           employees: employees as EventEntity[],
@@ -171,8 +208,12 @@ export default class EventController {
         const eventFinded = await this.EventService.getOneEvent(id)
 
         const user = eventFinded.createdByUser as UserEntity
+
         if (checkUserRole(Role.ADMIN) || user.id === userId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
+
+          await this.saveEventRedisCache(eventUpdated)
+
           return res.status(200).json(eventUpdated)
         } else {
           return res.status(400).json('event not updated')
@@ -192,6 +233,13 @@ export default class EventController {
 
         if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
           await this.repository.softDelete(id)
+
+          await this.redisCache.invalidate(generateRedisKey({
+            typeofEntity: EntitiesEnum.EVENT,
+            field: 'id',
+            id,
+          }))
+
           return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
         } else {
           return res.status(401).json('Not allowed')

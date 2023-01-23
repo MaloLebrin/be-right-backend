@@ -58,7 +58,7 @@ export const generateWhereFieldsByEntity = (searchableFields: string[], req: Req
  * @param entity UserEntity
  * @returns entity filtered without any confidential fields
  */
-export const userResponse = (entity: UserEntity) => {
+export const userResponse = (entity: UserEntity): UserEntity => {
   const entityReturned = {} as Record<string, any>
   for (const [key, value] of Object.entries(entity)) {
     if (key !== 'password' && key !== 'salt') {
@@ -69,7 +69,7 @@ export const userResponse = (entity: UserEntity) => {
       entityReturned[key] = picture.secure_url
     }
   }
-  return entityReturned
+  return entityReturned as UserEntity
 }
 
 /**
@@ -145,3 +145,6 @@ export function createAppSource() {
     ...connectionsOptions,
   })
 }
+
+// eslint-disable-next-line promise/param-names
+export const delay = (ms: number) => new Promise(res => setTimeout(res, ms))

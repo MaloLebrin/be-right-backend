@@ -77,7 +77,7 @@ export default class NewsletterController {
       const id = parseInt(req.params.id)
       const recipient = await this.repository.findOne({ where: { id } })
       if (recipient) {
-        await this.repository.delete(id)
+        await this.repository.softDelete(id)
         return res.status(204).json({ data: recipient, message: 'event deleted' })
       }
       return res.status(401).json('Not allowed')

@@ -22,6 +22,7 @@ import EventController from './controllers/EventController'
 import FileController from './controllers/FileController'
 import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
+import RedisCache from './RedisCache'
 
 const {
   CLOUDINARY_API_KEY,
@@ -32,22 +33,23 @@ const {
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
+export const REDIS_CACHE = new RedisCache()
 
 async function StartApp() {
   const { loggerMiddleware, logger } = useLogger()
 
   APP_SOURCE.initialize()
     .then(async () => {
-      console.info('Data Source has been initialized!')
+      logger.info('Data Source has been initialized!')
 
-      if (NODE_ENV !== 'test') {
+      if (NODE_ENV === 'test') {
         logger.info('seeders started')
         await seedersFunction(APP_SOURCE)
         logger.info('seeders ended')
       }
     })
     .catch(err => {
-      console.error('Error during Data Source initialization:', err)
+      logger.error('Error during Data Source initialization:', err)
     })
 
   const app = express()
@@ -102,12 +104,14 @@ async function StartApp() {
   app.post('/newsletter/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
 
   // Address
+  app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)
   app.get('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().getOne)
   app.post('/address/', [validate(createAddressSchema), isAuthenticated], new AddresController().createOne)
   app.patch('/address/:id', [isAuthenticated], new AddresController().updateOne)
   app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
 
   // Answer
+  app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
   app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
   app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
@@ -128,6 +132,7 @@ async function StartApp() {
   app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
   // Employee
+  app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
   app.get('/employee/', [isAuthenticated], new EmployeeController().getAll)
   app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
   app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
@@ -178,7 +183,7 @@ async function StartApp() {
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
-    console.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
+    logger.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
   })
 }
 

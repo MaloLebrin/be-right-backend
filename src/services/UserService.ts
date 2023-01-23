@@ -51,7 +51,7 @@ export default class UserService {
     return user
   }
 
-  async getMany(ids: number[]) {
+  async getMany(ids: number[]): Promise<UserEntity[]> {
     const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
     return users.length > 0 ? users.filter(user => user).map(user => userResponse(user)) : []
   }

@@ -9,21 +9,29 @@ import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
 import { createJwtToken, uniq } from '../utils/'
-import type { PhotographerCreatePayload } from '../types'
-import { APP_SOURCE } from '..'
+import type { PhotographerCreatePayload, RedisKeys } from '../types'
+import { EntitiesEnum } from '../types'
+import { APP_SOURCE, REDIS_CACHE } from '..'
+import type RedisCache from '../RedisCache'
 import { SubscriptionService } from '../services/SubscriptionService'
 
 export default class UserController {
   getManager: EntityManager
   UserService: UserService
   repository: Repository<UserEntity>
+  redisCache: RedisCache
   SubscriptionService: SubscriptionService
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.UserService = new UserService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.redisCache = REDIS_CACHE
     this.SubscriptionService = new SubscriptionService(APP_SOURCE)
+  }
+
+  private saveUserInCache = async (user: UserEntity) => {
+    await this.redisCache.save(`user-id-${user.id}`, user)
   }
 
   /**
@@ -64,7 +72,11 @@ export default class UserController {
         subscription: SubscriptionEnum.BASIC,
       })
 
-      return res.status(200).json(userResponse(newUser))
+      const userToSend = userResponse(newUser)
+
+      await this.saveUserInCache(newUser)
+
+      return res.status(200).json(userToSend)
     })
   }
 
@@ -107,7 +119,7 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await this.UserService.getOneWithRelations(id)
+        const user = await this.redisCache.get<UserEntity>(`user-id-${id}`, () => this.UserService.getOneWithRelations(id))
         return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
       }
       return res.status(422).json({ error: 'id required' })
@@ -119,8 +131,14 @@ export default class UserController {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+
         if (userIds) {
-          const users = await this.UserService.getMany(userIds)
+          const users = await this.redisCache.getMany<UserEntity>({
+            keys: userIds.map(id => `user-id-${id}`) as RedisKeys[],
+            typeofEntity: EntitiesEnum.USER,
+            fetcher: () => this.UserService.getMany(userIds),
+          })
+
           return res.status(200).json(users)
         }
       }
@@ -130,8 +148,9 @@ export default class UserController {
   public getOneByToken = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const token = req.body.token
+
       if (token) {
-        const user = await this.UserService.getByToken(token)
+        const user = await this.redisCache.get<UserEntity>(`user-token-${token}`, () => this.UserService.getByToken(token))
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
@@ -143,6 +162,7 @@ export default class UserController {
       const id = parseInt(req.params.id)
       const { theme } = req.body
       const user = await this.UserService.updateTheme(id, theme)
+      await this.saveUserInCache(user)
       return res.status(200).json(userResponse(user))
     })
   }
@@ -176,6 +196,7 @@ export default class UserController {
           }
 
           await this.repository.save(userUpdated)
+          await this.saveUserInCache(userUpdated)
           return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
         } else {
           return res.status(401).json({ error: 'unauthorized' })
@@ -202,7 +223,10 @@ export default class UserController {
             lastName: user.lastName,
             subscription,
           })
+          user.subscriptionLabel = subscription
+
           await this.repository.save(user)
+          await this.saveUserInCache(user)
           return res.status(200).json(userResponse(user))
         }
       }
@@ -216,6 +240,9 @@ export default class UserController {
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
         const userDeleted = await this.repository.softDelete(id)
+
+        this.redisCache.invalidate(`user-id-${id}`)
+
         return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
       } else {
         return res.status(401).json({ error: 'unauthorized' })
@@ -236,7 +263,11 @@ export default class UserController {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
-          return res.status(200).json(userResponse(user))
+          const userToSend = userResponse(user)
+
+          await this.saveUserInCache(userToSend)
+
+          return res.status(200).json(userToSend)
         } else {
           return res.status(401).json('wrong password')
         }
@@ -258,7 +289,7 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const user = await await this.repository.findOne({
+        const user = await this.repository.findOne({
           where: { id },
           relations: ['events', 'events.partner'],
         })
@@ -267,6 +298,7 @@ export default class UserController {
         const partners = events.map(event => event.partner) as UserEntity[]
         const uniqPartnersIds = uniq(partners.map(user => user.id))
         const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+
         return res.status(200).json(uniqPartners)
       }
       return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
