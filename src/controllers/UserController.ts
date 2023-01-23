@@ -223,6 +223,7 @@ export default class UserController {
             lastName: user.lastName,
             subscription,
           })
+          user.subscriptionLabel = subscription
 
           await this.repository.save(user)
           await this.saveUserInCache(user)
