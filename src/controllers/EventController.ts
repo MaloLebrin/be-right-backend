@@ -80,7 +80,6 @@ export default class EventController {
         const ctx = Context.get(req)
         const userId = ctx.user.id
 
-        // FIXME never retrieved from redis cache
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
             field: 'id',
