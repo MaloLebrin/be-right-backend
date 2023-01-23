@@ -235,19 +235,9 @@ export default class EmployeeController {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
-        const user = await this.EventService.getOneEvent(eventId)
-        const answers = await this.AnswerService.getAllAnswersForEvent(eventId)
-        const employeesWithAnswers = answers.map(answer => {
-          const employee = {
-            ...answer.employee as unknown as EmployeeEntity,
-            answer,
-            event: eventId,
-            createdByUser: user.id,
-          }
-          delete employee.answer.employee
-          return employee
-        })
-        return res.status(200).json({ data: employeesWithAnswers })
+        const answers = await this.AnswerService.getAllAnswersForEvent(eventId, true)
+        const employees = answers.map(answer => answer.employee)
+        return res.status(200).json(employees)
       }
       return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
     })
