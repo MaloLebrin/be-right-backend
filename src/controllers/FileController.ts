@@ -57,7 +57,7 @@ export default class FileController {
         name,
         description,
         createdByUser: userId,
-        event,
+        eventId: event,
         employee,
         type,
         url: result.url,
@@ -179,7 +179,7 @@ export default class FileController {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
       if (userId && eventId) {
-        const files = await this.repository.find({ where: { createdByUser: userId, event: eventId } })
+        const files = await this.repository.find({ where: { createdByUserId: userId, eventId } })
         if (files.length > 0) {
           return res.status(200).json(files)
         }

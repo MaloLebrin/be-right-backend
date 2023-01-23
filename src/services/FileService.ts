@@ -52,7 +52,7 @@ export default class FileService {
   async getFilesByUser(id: number) {
     const docs = await this.repository.find({
       where: {
-        createdByUser: id,
+        createdByUserId: id,
       },
     })
     return docs
@@ -61,7 +61,7 @@ export default class FileService {
   async getFilesByEvent(id: number) {
     const docs = await this.repository.find({
       where: {
-        event: id,
+        eventId: id,
       },
     })
     return docs
@@ -101,7 +101,7 @@ export default class FileService {
 
     const existProfilePicture = await this.repository.findOne({
       where: {
-        createdByUser: user.id,
+        createdByUserId: user.id,
         type: FileTypeEnum.PROFILE_PICTURE,
       },
     })
@@ -124,7 +124,7 @@ export default class FileService {
       fileName: file.filename,
       name: `Photo de profile de ${getfullUsername(user)}`,
       description: `Photo de profile de ${getfullUsername(user)}`,
-      createdByUser: user.id,
+      createdByUser: user,
       type: FileTypeEnum.PROFILE_PICTURE,
       url: result.url,
       public_id: result.public_id,
@@ -152,7 +152,7 @@ export default class FileService {
 
     const existLogos = await this.repository.find({
       where: {
-        createdByUser: user.id,
+        createdByUserId: user.id,
         type: FileTypeEnum.LOGO,
       },
     })
@@ -172,7 +172,7 @@ export default class FileService {
       fileName: file.filename,
       name: `Logo de ${getfullUsername(user)}`,
       description: `Logo de ${getfullUsername(user)}`,
-      createdByUser: user.id,
+      createdByUser: user,
       type: FileTypeEnum.LOGO,
       url: result.url,
       public_id: result.public_id,

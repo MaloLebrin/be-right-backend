@@ -13,14 +13,11 @@ export default class EmployeeService {
   }
 
   async createOne(employee: Partial<EmployeeEntity>, userId: number) {
-    employee.createdByUser = userId
+    employee.createdByUserId = userId
     const newEmployee = this.repository.create(employee)
     employee.slug = `${employee.id}-${employee.firstName}-${employee.lastName}`
     await this.repository.save(newEmployee)
-    return {
-      ...newEmployee,
-      createdByUser: userId,
-    }
+    return newEmployee
   }
 
   async getOne(id: number) {
@@ -42,7 +39,7 @@ export default class EmployeeService {
   async getAllForUser(userId: number) {
     return this.repository.find({
       where: {
-        createdByUser: userId,
+        createdByUserId: userId,
       },
     })
   }

@@ -78,27 +78,12 @@ export default class EventService {
   }
 
   async getManyEvents(eventIds: number[]) {
-    const finded = await this.repository.find({
+    return await this.repository.find({
       where: {
         id: In(eventIds),
       },
       relations: ['createdByUser', 'partner'],
     })
-
-    return Promise.all(finded.map(async event => {
-      if (isUserEntity(event.createdByUser) && isUserEntity(event.partner)) {
-        const user = event.createdByUser as UserEntity
-        const partner = event.partner as UserEntity
-        const answers = await this.answerService.getAllAnswersForEvent(event.id)
-
-        return {
-          ...event,
-          totalSignatureNeeded: answers.length,
-          createdByUser: user?.id,
-          partner: partner?.id,
-        }
-      }
-    }))
   }
 
   async updateOneEvent(eventId: number, event: EventEntity) {

@@ -50,7 +50,7 @@ export class FileEntity extends BaseEntity {
   original_filename: string
 
   @ManyToOne(() => EventEntity, event => event.files)
-  event: number
+  event: EventEntity
 
   @RelationId((file: FileEntity) => file.event)
   eventId: number
