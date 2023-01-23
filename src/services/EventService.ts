@@ -1,10 +1,9 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import type { UserEntity } from '../entity/UserEntity'
 import AnswerEntity from '../entity/AnswerEntity'
 import EventEntity from '../entity/EventEntity'
 import { EventStatusEnum } from '../types/Event'
-import { isAnswerSigned, isUserEntity, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { isAnswerSigned, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
 import AnswerService from './AnswerService'
 
 export default class EventService {
@@ -46,43 +45,32 @@ export default class EventService {
   use this get every where
   */
   async getOneEvent(eventId: number): Promise<EventEntity> {
-    const finded = await this.repository.findOne({
+    return this.repository.findOne({
       where: {
         id: eventId,
       },
       relations: ['createdByUser', 'partner', 'address'],
     })
-
-    const answers = await this.answerService.getAllAnswersForEvent(finded.id)
-
-    if (isUserEntity(finded.createdByUser) && isUserEntity(finded.partner)) {
-      const user = finded.createdByUser as UserEntity
-      const partner = finded.partnerId
-
-      return {
-        ...finded,
-        totalSignatureNeeded: answers.length,
-        createdByUser: user.id,
-        partnerId: partner,
-      }
-    } else {
-      return {
-        ...finded,
-        totalSignatureNeeded: answers.length,
-      }
-    }
   }
 
   async getOneWithoutRelations(eventId: number) {
     return this.repository.findOne({ where: { id: eventId } })
   }
 
-  async getManyEvents(eventIds: number[]) {
-    return await this.repository.find({
+  async getManyEvents(eventIds: number[], withRelations?: boolean) {
+    if (withRelations) {
+      return await this.repository.find({
+        where: {
+          id: In(eventIds),
+        },
+        relations: ['createdByUser', 'partner', 'address', 'files'],
+      })
+    }
+
+    return this.repository.find({
       where: {
         id: In(eventIds),
       },
-      relations: ['createdByUser', 'partner'],
     })
   }
 
@@ -105,7 +93,7 @@ export default class EventService {
     if (photographerId) {
       event.partnerId = photographerId
     }
-    event.createdByUser = userId
+    event.createdByUserId = userId
     const newEvent = this.repository.create(event)
     await this.repository.save(newEvent)
     return newEvent

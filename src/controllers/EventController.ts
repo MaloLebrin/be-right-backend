@@ -11,7 +11,6 @@ import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/
 import { AddressService } from '../services'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 
@@ -88,7 +87,7 @@ export default class EventController {
           }),
           () => this.EventService.getOneEvent(id))
 
-        if (checkUserRole(Role.ADMIN) || event.createdByUser === userId) {
+        if (checkUserRole(Role.ADMIN) || event.createdByUserId === userId) {
           return res.status(200).json(event)
         } else {
           return res.status(401).json('unauthorized')
@@ -126,36 +125,22 @@ export default class EventController {
   public getAllForUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
-      const userId = ctx.user.id
-      const events = await this.repository.find({ where: { createdByUser: userId }, relations: ['partner'] })
 
-      const eventsReturned = await Promise.all(events.map(async event => {
-        const answers = await this.AnswerService.getAllAnswersForEvent(event.id)
+      const eventsIds = ctx.user.eventIds
 
-        let employees = []
-        if (answers.length > 0) {
-          employees = answers.map(answer => {
-            const employee = {
-              ...answer.employee as unknown as EmployeeEntity,
-              answer,
-              event: event.id,
-            }
+      if (eventsIds && eventsIds.length > 0) {
+        const events = await this.redisCache.getMany<EventEntity>({
+          keys: generateRedisKeysArray({
+            field: 'id',
+            typeofEntity: EntitiesEnum.EVENT,
+            ids: eventsIds,
+          }),
+          typeofEntity: EntitiesEnum.EVENT,
+          fetcher: () => this.EventService.getManyEvents(eventsIds, true),
+        })
 
-            delete employee.answer.employee
-            return employee
-          }).filter(employee => employee)
-        }
-        const partner = event.partner as UserEntity
-
-        return {
-          ...event,
-          employees: employees as EventEntity[],
-          createdByUser: userId,
-          partner: partner?.id,
-        }
-      }))
-
-      return res.status(200).json(eventsReturned)
+        return res.status(200).json(events)
+      }
     })
   }
 
@@ -231,7 +216,7 @@ export default class EventController {
         const userId = ctx.user.id
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
-        if (eventToDelete.createdByUser === userId || checkUserRole(Role.ADMIN)) {
+        if (eventToDelete.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
           await this.repository.softDelete(id)
 
           await this.redisCache.invalidate(generateRedisKey({

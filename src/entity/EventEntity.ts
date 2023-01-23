@@ -36,7 +36,7 @@ export default class EventEntity extends BaseEntity {
 
   @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
   @JoinColumn()
-  createdByUser: UserEntity | number
+  createdByUser: UserEntity
 
   @RelationId((event: EventEntity) => event.createdByUser)
   createdByUserId: number
@@ -49,7 +49,7 @@ export default class EventEntity extends BaseEntity {
 
   @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
-  address: AddressEntity | number
+  address: AddressEntity
 
   @RelationId((event: EventEntity) => event.address)
   addressId: number
