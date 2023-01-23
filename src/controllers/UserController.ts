@@ -256,7 +256,7 @@ export default class UserController {
 
       const user = await this.repository.findOne({
         where: { email },
-        relations: ['events', 'files', 'employee', 'profilePicture'],
+        relations: ['events', 'files', 'employee', 'profilePicture', 'subscription'],
       })
 
       if (user) {

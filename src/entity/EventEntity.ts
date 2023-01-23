@@ -29,7 +29,7 @@ export default class EventEntity extends BaseEntity {
   totalSignatureNeeded: number
 
   @ManyToOne(() => UserEntity, user => user, { nullable: true })
-  partner: UserEntity | number
+  partner: UserEntity
 
   @RelationId((event: EventEntity) => event.partner)
   partnerId: number

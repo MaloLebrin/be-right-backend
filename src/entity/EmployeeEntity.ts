@@ -24,13 +24,13 @@ export class EmployeeEntity extends BaseEntity {
 
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
-  address: AddressEntity | number
+  address: AddressEntity
 
   @RelationId((employee: EmployeeEntity) => employee.address)
   addressId: number
 
   @ManyToOne(() => UserEntity, user => user.employee)
-  createdByUser: number | UserEntity
+  createdByUser: UserEntity
 
   @RelationId((employee: EmployeeEntity) => employee.createdByUser)
   createdByUserId: number
