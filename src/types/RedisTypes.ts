@@ -3,7 +3,8 @@ export type RedisKeys =
   `user-token-${string}` |
   `event-id-${number}` |
   `employee-id-${number}` |
-  `answer-id-${number}`
+  `answer-id-${number}` |
+  `address-id-${number}`
 
 export type MultiSavePaylod<T> = Record<RedisKeys, T>[]
 
@@ -18,6 +19,7 @@ export enum EntitiesEnum {
   EVENT = 'event',
   EMPLOYEE = 'employee',
   ANSWER = 'answer',
+  ADDRESS = 'address',
 }
 
 export type RedisEntitiesField = 'id' | 'token'
