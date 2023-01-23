@@ -93,6 +93,30 @@ export default class AnswerController {
     })
   }
 
+  public getManyForManyEvents = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ids = req.query.ids as string
+      if (ids) {
+        const eventIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+
+        if (eventIds?.length > 0) {
+          const answers = await this.redisCache.getMany<AnswerEntity>({
+            keys: generateRedisKeysArray({
+              field: 'id',
+              typeofEntity: EntitiesEnum.ANSWER,
+              ids: eventIds,
+            }),
+            typeofEntity: EntitiesEnum.ANSWER,
+            fetcher: () => this.AnswerService.getAnswersForManyEvents(eventIds),
+          })
+
+          return res.status(200).json(answers)
+        }
+      }
+      return res.status(400).json({ message: 'no id' })
+    })
+  }
+
   public updateOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const answer: AnswerEntity = req.body.answer

@@ -60,6 +60,23 @@ export default class AnswerService {
     }
   }
 
+  public getAnswersForManyEvents = async (eventIds: number[], withRelation?: boolean) => {
+    if (withRelation) {
+      return this.repository.find({
+        where: {
+          event: In(eventIds),
+        },
+        relations: ['employee'],
+      })
+    } else {
+      return this.repository.find({
+        where: {
+          event: In(eventIds),
+        },
+      })
+    }
+  }
+
   public getAllAnswersForEmployee = async (employeeId: number) => {
     return await this.repository.find({
       where: {
