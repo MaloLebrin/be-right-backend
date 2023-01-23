@@ -104,6 +104,7 @@ async function StartApp() {
   app.post('/newsletter/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
 
   // Address
+  app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)
   app.get('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().getOne)
   app.post('/address/', [validate(createAddressSchema), isAuthenticated], new AddresController().createOne)
   app.patch('/address/:id', [isAuthenticated], new AddresController().updateOne)
