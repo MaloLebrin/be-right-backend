@@ -58,7 +58,7 @@ export default class FileController {
         description,
         createdByUser: userId,
         eventId: event,
-        employee,
+        employeeId: employee,
         type,
         url: result.url,
         public_id: result.public_id,
@@ -167,7 +167,7 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const employeeId = parseInt(req.params.id)
       if (employeeId) {
-        const files = await this.repository.find({ where: { employee: employeeId } })
+        const files = await this.repository.find({ where: { employeeId } })
         return res.status(200).json(files)
       }
       return res.status(422).json({ message: 'Identifiant de l\'employé manquant' })

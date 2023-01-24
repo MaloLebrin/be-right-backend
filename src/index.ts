@@ -156,13 +156,13 @@ async function StartApp() {
 
   // File
   const upload = multer({ dest: 'uploads/' })
+  app.get('/file/many', [isAuthenticated], new FileController().getFiles)
   app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
   app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
   app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
   app.patch('/file/:id', [isAuthenticated], new FileController().updateOne)
   app.get('/file/', [isAuthenticated], new FileController().getAllPaginate)
   app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
-  app.get('/file/many', [isAuthenticated], new FileController().getFiles)
   app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
   app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)

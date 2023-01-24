@@ -56,7 +56,7 @@ export class FileEntity extends BaseEntity {
   eventId: number
 
   @ManyToOne(() => EmployeeEntity, employee => employee.files)
-  employee: number
+  employee: EmployeeEntity
 
   @RelationId((file: FileEntity) => file.employee)
   employeeId: number
