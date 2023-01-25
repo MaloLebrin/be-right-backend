@@ -23,6 +23,7 @@ import FileController from './controllers/FileController'
 import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
+import EventSpecificController from './controllers/EventSpecificController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -148,6 +149,7 @@ async function StartApp() {
   // Event
   app.get('/event/many', [isAuthenticated], new EventController().getMany)
   app.get('/event/', [isAuthenticated], new EventController().getAll)
+  app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
   app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
   app.post('/event/:id', [validate(createOneEventSchema), isAuthenticated], new EventController().createOne)
   app.get('/event/user/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getAllForUser)
