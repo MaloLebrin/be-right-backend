@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { isUserEntity } from '../utils/index'
 import Context from '../context'
 import { UserEntity } from '../entity/UserEntity'
-import { APP_SOURCE } from '..'
+import { APP_SOURCE, REDIS_CACHE } from '..'
 import { useLogger } from './loggerService'
 
 export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
@@ -11,7 +11,10 @@ export default async function isAuthenticated(req: Request, res: Response, next:
 
   if (req.headers.authorization) {
     const token = req.headers.authorization.replace('Bearer ', '')
-    const user = await APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } })
+
+    const user = await REDIS_CACHE.get<UserEntity>(
+      `user-token-${token}`,
+      () => APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } }))
 
     if (user && isUserEntity(user)) {
       const ctx = Context.get(req)
