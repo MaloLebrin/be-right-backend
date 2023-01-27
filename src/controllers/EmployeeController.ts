@@ -250,16 +250,20 @@ export default class EmployeeController {
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, employeeSearchablefields)
-      const employeeFilters = {
+
+      const [employees, count] = await this.employeeRepository.findAndCount({
         ...queriesFilters,
         where: {
           ...queriesFilters.where as FindOptionsWhere<EmployeeEntity>,
         },
-      }
-      const employees = await this.employeeRepository.find(employeeFilters)
+      })
 
-      const total = await this.employeeRepository.countBy(queriesFilters as FindOptionsWhere<EmployeeEntity>)
-      return res.status(200).json({ data: employees, currentPage: queriesFilters.page, limit: queriesFilters.take, total })
+      return res.status(200).json({
+        data: employees,
+        currentPage: queriesFilters.page,
+        limit: queriesFilters.take,
+        total: count,
+      })
     })
   }
 

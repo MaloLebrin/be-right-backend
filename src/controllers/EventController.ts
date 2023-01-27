@@ -157,25 +157,14 @@ export default class EventController {
         where: {
           ...queriesFilters.where as FindOptionsWhere<EventEntity>,
         },
-        relations: ['createdByUser', 'partner', 'address'],
       })
 
-      const eventsReturned = events.length > 0
-        ? events.map(event => {
-          const user = event.createdByUser as UserEntity
-          const partner = event.partner as UserEntity
-          if (user && user.id) {
-            return {
-              ...event,
-              createdByUser: user?.id,
-              partner: partner?.id,
-            }
-          }
-          return event
-        })
-        : []
-
-      return res.status(200).json({ data: eventsReturned, currentPage: queriesFilters.page, limit: queriesFilters.take, total: count })
+      return res.status(200).json({
+        data: events,
+        currentPage: queriesFilters.page,
+        limit: queriesFilters.take,
+        total: count,
+      })
     })
   }
 
