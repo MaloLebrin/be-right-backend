@@ -1,10 +1,11 @@
 import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
 import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import { In } from 'typeorm'
 import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
 import { paginator, wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
-import type { FileTypeEnum } from '../types/File'
+import { FileTypeEnum } from '../types/File'
 import Context from '../context'
 import { Role } from '../types/Role'
 import { useEnv } from '../env'
@@ -28,7 +29,7 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
-      { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
+        { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
       const ctx = Context.get(req)
 
@@ -192,13 +193,40 @@ export default class FileController {
   public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const queriesFilters = paginator(req, filesSearchableFields)
+
       const [files, count] = await this.repository.findAndCount({
         ...queriesFilters,
         where: {
           ...queriesFilters.where as FindOptionsWhere<FileEntity>,
         },
       })
-      return res.status(200).json({ data: files, total: count, currentPage: queriesFilters.page, limit: queriesFilters.take })
+
+      return res.status(200).json({
+        data: files,
+        total: count,
+        currentPage: queriesFilters.page,
+        limit: queriesFilters.take,
+      })
+    })
+  }
+
+  public getProfilePictures = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const urls = req.body.urls
+
+      if (urls && urls.length > 0) {
+        const files = await this.repository.find({
+          where: {
+            secure_url: In(urls),
+            type: FileTypeEnum.PROFILE_PICTURE,
+          },
+        })
+
+        return res.status(200).json(files)
+      }
+      return res.status(422).json({
+        message: 'missing body',
+      })
     })
   }
 

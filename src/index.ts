@@ -162,6 +162,7 @@ async function StartApp() {
   app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
   app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
   app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
+  app.post('/file/getProfiles', [isAuthenticated], new FileController().getProfilePictures)
   app.patch('/file/:id', [isAuthenticated], new FileController().updateOne)
   app.get('/file/', [isAuthenticated], new FileController().getAllPaginate)
   app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
