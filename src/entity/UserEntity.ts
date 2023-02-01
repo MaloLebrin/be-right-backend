@@ -6,6 +6,7 @@ import { BaseEntity } from './BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
+import { SessionEntity } from './SessionEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
 @Entity()
@@ -54,35 +55,42 @@ export class UserEntity extends BaseEntity {
 
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
-  address: AddressEntity | number
+  address: AddressEntity
 
   @RelationId((user: UserEntity) => user.address)
   addressId: number
 
+  @OneToOne(() => SessionEntity, { cascade: true })
+  @JoinColumn()
+  session: SessionEntity
+
+  @RelationId((user: UserEntity) => user.session)
+  sessionId: number
+
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
-  events: EventEntity[] | number[]
+  events: EventEntity[]
 
   @RelationId((user: UserEntity) => user.events)
   eventIds: number[]
 
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
-  shootingEvent: EventEntity[] | number[]
+  shootingEvent: EventEntity[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
-  employee: EmployeeEntity[] | number[]
+  employee: EmployeeEntity[]
 
   @RelationId((user: UserEntity) => user.employee)
   employeeIds: number[]
 
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
-  files: FileEntity[] | number[]
+  files: FileEntity[]
 
   @RelationId((user: UserEntity) => user.files)
   filesIds: number[]
 
   @OneToOne(() => FileEntity, file => file.createdByUser)
   @JoinColumn()
-  profilePicture: FileEntity | number
+  profilePicture: FileEntity
 
   @OneToOne(() => SubscriptionEntity, { cascade: true })
   @JoinColumn()
