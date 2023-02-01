@@ -14,10 +14,10 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   email: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   password: string
 
-  @Column({ unique: true, update: false })
+  @Column({ unique: true, update: false, select: false })
   salt: string
 
   @Column({ unique: true, update: false })
@@ -26,7 +26,7 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true, nullable: true })
   twoFactorRecoveryCode: string | null
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: true, select: false })
   twoFactorSecret: string | null
 
   @Column({ length: 100, nullable: true })
@@ -47,10 +47,10 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
-  @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
+  @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC, select: false })
   subscriptionLabel: SubscriptionEnum
 
-  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
+  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT, select: false })
   theme: ThemeEnum
 
   @OneToOne(() => AddressEntity, { cascade: true })
@@ -98,6 +98,15 @@ export class UserEntity extends BaseEntity {
 
   @RelationId((user: UserEntity) => user.subscription)
   subscriptionId: number
+
+  @Column({ nullable: true, default: null })
+  loggedAt: Date
+
+  @Column({ nullable: true, default: null })
+  passwordUpdatedAt: Date
+
+  @Column({ nullable: true, default: null })
+  saltUpdatedAt: Date
 }
 
 export const userSearchableFields = [
@@ -108,3 +117,5 @@ export const userSearchableFields = [
   'siret',
   'subscription',
 ]
+
+// TODO use select in column option to remove field in find methods
