@@ -67,6 +67,7 @@ export default class EmployeeController {
       }
 
       const newEmployee = await this.EmployeeService.createOne(employee, userId)
+
       if (newEmployee) {
         if (address) {
           await this.AddressService.createOne({
