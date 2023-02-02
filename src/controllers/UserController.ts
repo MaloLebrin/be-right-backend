@@ -150,13 +150,19 @@ export default class UserController {
       const token = req.body.token
 
       if (token) {
-        const user = await this.redisCache.get<UserEntity>(`user-token-${token}`, () => this.UserService.getByToken(token))
+        const user = await this.redisCache.get<UserEntity>(
+          `user-token-${token}`,
+          () => this.UserService.getByToken(token))
 
-        await this.repository.update(user.id, {
-          loggedAt: new Date(),
-        })
+        if (user) {
+          await this.repository.update(user.id, {
+            loggedAt: new Date(),
+          })
 
-        return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
+          return res.status(200).json(userResponse(user))
+        }
+
+        return res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
     })
