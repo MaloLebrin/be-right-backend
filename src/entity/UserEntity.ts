@@ -14,10 +14,10 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   email: string
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true })
   password: string
 
-  @Column({ unique: true, update: false, select: false })
+  @Column({ unique: true, update: false })
   salt: string
 
   @Column({ unique: true, update: false })
@@ -26,7 +26,7 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true, nullable: true })
   twoFactorRecoveryCode: string | null
 
-  @Column({ unique: true, nullable: true, select: false })
+  @Column({ unique: true, nullable: true })
   twoFactorSecret: string | null
 
   @Column({ length: 100, nullable: true })
@@ -47,10 +47,10 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
-  @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC, select: false })
+  @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   subscriptionLabel: SubscriptionEnum
 
-  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT, select: false })
+  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
   theme: ThemeEnum
 
   @OneToOne(() => AddressEntity, { cascade: true })

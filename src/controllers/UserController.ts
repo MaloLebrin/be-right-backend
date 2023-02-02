@@ -270,7 +270,7 @@ export default class UserController {
         relations: ['events', 'files', 'employee', 'profilePicture', 'subscription'],
       })
 
-      if (user) {
+      if (user && user.password && user.salt) {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
