@@ -18,6 +18,7 @@ import {
   eventFixtureCompanyPremium,
   userCompanyFixtureMedium,
   userCompanyFixturePremium,
+  userNotUsed,
 } from './fixtures'
 
 export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
@@ -116,4 +117,11 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
     answer.signedAt = new Date()
     await getManager.save(AnswerEntity, answer)
   }
+}
+
+export async function seedUnUsedUser(APP_SOURCE_SEEDER: DataSource) {
+  await new UserService(APP_SOURCE_SEEDER).createOneUser({
+    ...userNotUsed,
+    subscription: SubscriptionEnum.MEDIUM,
+  })
 }

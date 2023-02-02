@@ -5,7 +5,7 @@ import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
 import { createAdminUser } from './admin'
 import { createPhotographers } from './shared/photographerFixtures'
-import { seedMediumUserData, seedUserCompany } from './UserCompany'
+import { seedMediumUserData, seedUnUsedUser, seedUserCompany } from './UserCompany'
 
 export const APP_SOURCE_SEEDER = createAppSource()
 
@@ -15,6 +15,7 @@ export async function seedersFunction(DATA_SOURCE: DataSource) {
   await createAdminUser(DATA_SOURCE)
   await seedUserCompany(DATA_SOURCE)
   await seedMediumUserData(DATA_SOURCE)
+  await seedUnUsedUser(DATA_SOURCE)
 }
 
 async function createDevSeeders() {

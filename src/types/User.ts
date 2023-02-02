@@ -25,4 +25,5 @@ export interface CreateUserPayload {
   role: Role
   subscription: SubscriptionEnum
   subscriptionId?: number
+  loggedAt?: null | Date
 }
