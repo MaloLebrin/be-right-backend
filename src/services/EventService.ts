@@ -33,10 +33,12 @@ export default class EventService {
         event: id,
       },
     })
+
     await this.repository.update(id, {
       updatedAt: new Date(),
       totalSignatureNeeded: answers.length,
     })
+
     return this.getOneWithoutRelations(id)
   }
 
@@ -99,13 +101,15 @@ export default class EventService {
     return newEvent
   }
 
-  async updateStatusForEvent(eventId: number) {
-    const event = await this.getOneWithoutRelations(eventId)
+  async updateStatusForEvent(id: number) {
+    const event = await this.getOneWithoutRelations(id)
     if (!event) {
       return null
     }
-    const eventToUpdate = updateStatusEventBasedOnStartEndTodayDate(event)
-    await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToUpdate))
+
+    await this.repository.update(id, {
+      status: updateStatusEventBasedOnStartEndTodayDate(event),
+    })
   }
 
   async updateStatusForEventArray(events: EventEntity[]) {
@@ -133,7 +137,7 @@ export default class EventService {
       await this.updateStatusForEvent(eventId)
       const event = await this.getOneWithoutRelations(eventId)
       if (event) {
-        await this.updateStatusEventWhenCompleted(removeUnecessaryFieldsEvent(event))
+        await this.updateStatusEventWhenCompleted(event)
       }
     }
   }

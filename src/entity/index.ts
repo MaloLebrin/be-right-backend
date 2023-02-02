@@ -10,6 +10,7 @@ import { NewsletterRecipient } from './NewsletterRecipientEntity'
 import { PaymentEntity } from './PaymentEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
+import { SessionEntity } from './SessionEntity'
 
 export default {
   AnswerEntity,
@@ -23,6 +24,7 @@ export default {
   NewsletterRecipient,
   PaymentEntity,
   SubscriptionEntity,
+  SessionEntity,
   UserEntity,
 }
 
@@ -38,5 +40,6 @@ export const entities = [
   NewsletterRecipient,
   PaymentEntity,
   SubscriptionEntity,
+  SessionEntity,
   UserEntity,
 ]

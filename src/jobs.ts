@@ -6,6 +6,7 @@ import udpateEventStatusJob from './jobs/updateEventsStatusJob'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
+import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
 
 (async () => {
   const {
@@ -21,11 +22,9 @@ import { createAppSource } from './utils'
   JOB_APP_SOURCE.initialize()
     .then(() => {
       logger.info('Cron Job Data Source has been initialized!')
-      console.info('Cron JobData Source has been initialized!')
     })
     .catch(err => {
-      logger.error('Error during Cron Job Data Source initialization')
-      console.error('Error during Cron Job Data Source initialization:', err)
+      logger.error(err, 'Error during Cron Job Data Source initialization')
     })
 
   cloudinary.v2.config({
@@ -37,9 +36,8 @@ import { createAppSource } from './utils'
   cron.schedule(
     CronJobInterval.EVERY_DAY_4_AM,
     async () => {
-      logger.info('start udpateEventStatus jobs')
       await udpateEventStatusJob(JOB_APP_SOURCE)
-      logger.info('end udpateEventStatus jobs')
+      await deleteUnusedUsersJob(JOB_APP_SOURCE)
     },
   )
 })()

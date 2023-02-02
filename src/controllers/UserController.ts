@@ -151,6 +151,11 @@ export default class UserController {
 
       if (token) {
         const user = await this.redisCache.get<UserEntity>(`user-token-${token}`, () => this.UserService.getByToken(token))
+
+        await this.repository.update(user.id, {
+          loggedAt: new Date(),
+        })
+
         return user ? res.status(200).json(userResponse(user)) : res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
       }
       return res.status(400).json({ error: 'token is required' })
@@ -263,6 +268,10 @@ export default class UserController {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
+          await this.repository.update(user.id, {
+            loggedAt: new Date(),
+          })
+
           const userToSend = userResponse(user)
 
           await this.saveUserInCache(userToSend)

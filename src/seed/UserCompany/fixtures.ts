@@ -191,3 +191,14 @@ export const eventFixtureCompanyMedium = {
     end: dayjs().add(7, 'week'),
   },
 }
+
+export const userNotUsed = {
+  companyName: 'Poudlard founders',
+  email: 'salazar.serpentard@poudlard.com',
+  firstName: 'salazar',
+  lastName: 'serpentard',
+  password: 'password',
+  role: Role.COMPANY,
+  subscription: SubscriptionEnum.MEDIUM,
+  loggedAt: dayjs().subtract(2, 'year').toDate(),
+}

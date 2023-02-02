@@ -107,6 +107,7 @@ export default class UserService {
       password,
       role,
       subscription,
+      loggedAt,
     } = payload
 
     const subscriptionEntity = await this.subscriptionService.createOne(subscription)
@@ -130,6 +131,7 @@ export default class UserService {
       }),
       password: generateHash(salt, password),
       events: [],
+      loggedAt: loggedAt || null,
     }
     const newUser = this.repository.create(user)
     await this.repository.save(newUser)
@@ -148,5 +150,9 @@ export default class UserService {
       return newPhotographer
     }
     return await this.createOnePhotoGrapher(photographer) as UserEntity
+  }
+
+  async deleteMany(ids: number[]) {
+    await this.repository.softDelete(ids)
   }
 }

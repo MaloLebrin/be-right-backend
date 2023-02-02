@@ -27,19 +27,18 @@ export function hasNotEventStartedYet(event: EventEntity): boolean {
  * @description update event based on his dates (start, end) and date of excution of this function
  * @return event as EventEntity
  */
-export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity): EventEntity {
+export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity): EventStatusEnum {
   if (isEventOver(event)) {
-    event.status = EventStatusEnum.CLOSED
+    return EventStatusEnum.CLOSED
   }
 
   if (isEventInProgress(event)) {
-    event.status = EventStatusEnum.PENDING
+    return EventStatusEnum.PENDING
   }
 
   if (hasNotEventStartedYet(event)) {
-    event.status = EventStatusEnum.CREATE
+    return EventStatusEnum.CREATE
   }
-  return event
 }
 
 export function removeUnecessaryFieldsEvent(event: EventEntity) {
