@@ -55,14 +55,18 @@ async function StartApp() {
     })
 
   const app = express()
+
+  // Middlewares
   dotenv.config()
   app.use(cors())
   app.use(helmet())
   app.use(express.json())
-  app.use(express.urlencoded({
-    extended: true,
-  }))
+  app.use(express.urlencoded({ extended: true }))
   app.use(loggerMiddleware)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    Context.bind(req)
+    next()
+  })
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
@@ -70,13 +74,8 @@ async function StartApp() {
     api_secret: CLOUDINARY_API_SECRET,
   })
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    Context.bind(req)
-    next()
-  })
-
   app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World')
+    return res.send('Hello World')
   })
 
   const {
