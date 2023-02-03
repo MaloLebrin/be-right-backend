@@ -21,7 +21,6 @@ COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 COPY entrypoint.sh /app/
 COPY scriptSeed.sh /app/
-COPY Heroku.yml /app/
 COPY ./src /app/src
 
 RUN nr tsc

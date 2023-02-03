@@ -14,6 +14,7 @@ import type { EmployeeCreateOneRequest } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -63,7 +64,7 @@ export default class EmployeeController {
       const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
 
       if (isEmployeeAlreadyExist) {
-        return res.status(422).json({ error: 'cet email existe déjà' })
+        throw new ApiError(423, 'cet email existe déjà').Handler(res)
       }
 
       const newEmployee = await this.EmployeeService.createOne(employee, userId)
@@ -115,7 +116,7 @@ export default class EmployeeController {
         }))
         return res.status(200).json(newEmployees)
       }
-      return res.status(400).json({ error: 'employees is empty' })
+      throw new ApiError(422, 'Destinataires manquant').Handler(res)
     })
   }
 
@@ -153,13 +154,7 @@ export default class EmployeeController {
         await this.AnswerService.createMany(eventId, newEmployeesIds)
         await this.EventService.getNumberSignatureNeededForEvent(eventId)
 
-        const returnedEmployees = newEmployees.map(employee => ({
-          ...employee,
-          eventId,
-          createdByUser: userId,
-        }))
-
-        return res.status(200).json(returnedEmployees)
+        return res.status(200).json(newEmployees)
       }
     })
   }
@@ -183,7 +178,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employee)
       }
-      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
+      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
     })
   }
 
@@ -208,7 +203,7 @@ export default class EmployeeController {
           return res.status(200).json(employees)
         }
       }
-      return res.status(422).json({ error: 'Missing ids' })
+      throw new ApiError(422, 'identifiants des destinataires manquants').Handler(res)
     })
   }
 
@@ -224,7 +219,8 @@ export default class EmployeeController {
 
         return res.status(200).json(employees)
       }
-      return res.status(422).json({ error: 'identifiant de l\'utilisateur manquant' })
+
+      throw new ApiError(422, 'identifiant de l\'utilisateur manquant').Handler(res)
     })
   }
 
@@ -240,7 +236,7 @@ export default class EmployeeController {
         const employees = answers.map(answer => answer.employee)
         return res.status(200).json(employees)
       }
-      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
+      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
     })
   }
 
@@ -283,7 +279,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employeeUpdated)
       }
-      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
+      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
     })
   }
 
@@ -295,7 +291,7 @@ export default class EmployeeController {
 
         return res.status(200).json(event)
       }
-      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
+      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
     })
   }
 
@@ -320,9 +316,9 @@ export default class EmployeeController {
 
           return res.status(204).json(getEmployee)
         }
-        return res.status(401).json('Unauthorized')
+        throw new ApiError(401, 'Action non autorisée').Handler(res)
       }
-      return res.status(422).json({ error: 'identifiant du destinataire manquant' })
+      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
     })
   }
 }

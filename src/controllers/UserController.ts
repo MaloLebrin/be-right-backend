@@ -14,6 +14,7 @@ import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { SubscriptionService } from '../services/SubscriptionService'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class UserController {
   getManager: EntityManager
@@ -59,7 +60,7 @@ export default class UserController {
 
       const userAlReadyExist = await this.UserService.findOneByEmail(email)
       if (userAlReadyExist) {
-        return res.status(400).json({ error: 'cet email existe déjà' })
+        throw new ApiError(423, 'cet email existe déjà').Handler(res)
       }
 
       const newUser = await this.UserService.createOneUser({
@@ -118,11 +119,17 @@ export default class UserController {
   public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
+
       if (id) {
-        const user = await this.redisCache.get<UserEntity>(`user-id-${id}`, () => this.UserService.getOneWithRelations(id))
-        return user ? res.status(200).json(userResponse(user)) : res.status(500).json('user not found')
+        const user = await this.redisCache.get<UserEntity>(
+          `user-id-${id}`,
+          () => this.UserService.getOneWithRelations(id))
+
+        if (user) {
+          return res.status(200).json(userResponse(user))
+        }
+        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
       }
-      return res.status(422).json({ error: 'id required' })
     })
   }
 
@@ -162,9 +169,8 @@ export default class UserController {
           return res.status(200).json(userResponse(user))
         }
 
-        return res.status(400).json({ message: 'l\'utilisateur n\'existe pas' })
+        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
       }
-      return res.status(400).json({ error: 'token is required' })
     })
   }
 
@@ -208,12 +214,17 @@ export default class UserController {
 
           await this.repository.save(userUpdated)
           await this.saveUserInCache(userUpdated)
-          return userUpdated ? res.status(200).json(userResponse(userUpdated)) : res.status(400).json('user not updated')
+
+          if (userUpdated) {
+            return res.status(200).json(userResponse(userUpdated))
+          }
+
+          throw new ApiError(422, 'L\'utilisateur n\'a pas été mis à jour').Handler(res)
         } else {
-          return res.status(401).json({ error: 'unauthorized' })
+          throw new ApiError(401, 'Action non autorisée').Handler(res)
         }
       }
-      return res.status(422).json({ error: 'id required' })
+      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis').Handler(res)
     })
   }
 
@@ -241,7 +252,7 @@ export default class UserController {
           return res.status(200).json(userResponse(user))
         }
       }
-      return res.status(422).json({ error: 'id required' })
+      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis').Handler(res)
     })
   }
 
@@ -254,9 +265,13 @@ export default class UserController {
 
         this.redisCache.invalidate(`user-id-${id}`)
 
-        return userDeleted ? res.status(204).json(userDeleted) : res.status(400).json('Not deleted')
+        if (userDeleted) {
+          return res.status(204).json(userDeleted)
+        }
+
+        throw new ApiError(422, 'Utilisateur non supprimé').Handler(res)
       } else {
-        return res.status(401).json({ error: 'unauthorized' })
+        throw new ApiError(401, 'Action non autorisée').Handler(res)
       }
     })
   }
@@ -284,10 +299,10 @@ export default class UserController {
 
           return res.status(200).json(userToSend)
         } else {
-          return res.status(401).json('wrong password')
+          throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect').Handler(res)
         }
       } else {
-        return res.status(400).json('user not found')
+        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
       }
     })
   }
@@ -316,7 +331,7 @@ export default class UserController {
 
         return res.status(200).json(uniqPartners)
       }
-      return res.status(422).json({ error: 'Veuillez renseigner l\'identifiant utilisateur' })
+      throw new ApiError(422, 'Veuillez renseigner l\'identifiant utilisateur').Handler(res)
     })
   }
 
@@ -337,7 +352,8 @@ export default class UserController {
           message: 'Cet email n\'est pas déjà utilisée',
         })
       }
-      return res.status(422).json({ error: 'Veuillez renseigner l\'email' })
+
+      throw new ApiError(422, 'Veuillez renseigner l\'email').Handler(res)
     })
   }
 }

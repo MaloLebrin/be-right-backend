@@ -6,6 +6,7 @@ import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
+import { ApiError } from '../middlewares/ApiError'
 
 export class AddresController {
   AddressService: AddressService
@@ -35,7 +36,8 @@ export class AddresController {
 
         return res.status(200).json(address)
       }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
     })
   }
 
@@ -57,6 +59,8 @@ export class AddresController {
 
         return res.status(200).json(addresses)
       }
+
+      throw new ApiError(422, 'Identifiants des addresses sont requis').Handler(res)
     })
   }
 
@@ -86,7 +90,7 @@ export class AddresController {
         await this.saveAddressInCache(newAddress)
         return res.status(200).json(newAddress)
       }
-      return res.status(500).json('Address not created')
+      throw new ApiError(422, 'Addresse non crée').Handler(res)
     })
   }
 
@@ -104,9 +108,10 @@ export class AddresController {
 
           return res.status(200).json(addressUpdated)
         }
-        return res.status(500).json({ error: 'L\'address est requise' })
+
+        throw new ApiError(422, 'Addresse manquante').Handler(res)
       }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
     })
   }
 
@@ -124,7 +129,8 @@ export class AddresController {
         await this.AddressService.deleteOne(id)
         return res.status(203).json({ success: true, error: 'Adresse supprimée' })
       }
-      return res.status(500).json({ error: 'L\'identifiant de l\'addresse est requis' })
+
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
     })
   }
 }

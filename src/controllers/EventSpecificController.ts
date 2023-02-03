@@ -14,6 +14,7 @@ import { checkUserRole } from '../middlewares'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import EmployeeService from '../services/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class EventSpecificController {
   EmployeeService: EmployeeService
@@ -76,6 +77,7 @@ export default class EventSpecificController {
               })
             }
           }
+
           return res.status(200).json({
             event,
             address,
@@ -84,7 +86,7 @@ export default class EventSpecificController {
           })
         }
 
-        return res.status(401).json({ error: 'unauthorized' })
+        throw new ApiError(401, 'Action non autorisée').Handler(res)
       }
     })
   }

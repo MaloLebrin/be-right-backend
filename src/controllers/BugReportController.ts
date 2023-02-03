@@ -6,6 +6,7 @@ import Context from '../context'
 import { paginator, wrapperRequest } from '../utils'
 import { bugReportSearchableFields } from '../types/BugReport'
 import { APP_SOURCE } from '..'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class BugReportController {
   getManager: EntityManager
@@ -42,7 +43,7 @@ export default class BugReportController {
         const updatedBugReport = await this.BugReportService.updateStatus(id, status)
         return res.status(200).json(updatedBugReport)
       }
-      return res.status(400).json({ error: 'status is required' })
+      throw new ApiError(422, 'Le status est requis').Handler(res)
     })
   }
 
@@ -54,7 +55,7 @@ export default class BugReportController {
         const updatedBugReport = await this.BugReportService.updateOne(id, bugReport)
         return res.status(200).json(updatedBugReport)
       }
-      return res.status(400).json({ error: 'bugReport is required' })
+      throw new ApiError(422, 'Le bug est requis').Handler(res)
     })
   }
 
@@ -69,7 +70,7 @@ export default class BugReportController {
         const bugReport = await this.BugReportService.getOne(id)
         return bugReport ? res.status(200).json(bugReport) : res.status(400).json('user not found')
       }
-      return res.status(422).json({ error: 'id is required' })
+      throw new ApiError(422, 'L\identifiant est requis').Handler(res)
     })
   }
 
@@ -93,7 +94,7 @@ export default class BugReportController {
         const deletedBugReport = await this.BugReportService.deleteOne(id)
         return res.status(200).json(deletedBugReport)
       }
-      return res.status(422).json({ error: 'id is required' })
+      throw new ApiError(422, 'L\identifiant est requis').Handler(res)
     })
   }
 }

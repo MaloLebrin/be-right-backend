@@ -4,6 +4,7 @@ import { paginator, wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
+import { ApiError } from '../middlewares/ApiError'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
 export default class NewsletterController {
@@ -29,7 +30,7 @@ export default class NewsletterController {
       const recipientAlreadyExist = await this.repository.findOneBy({ email })
 
       if (recipientAlreadyExist) {
-        return res.status(422).json({ error: 'cet email existe déjà' })
+        throw new ApiError(423, 'cet email existe déjà').Handler(res)
       }
 
       const employee = await this.getManager.findOneBy(EmployeeEntity, { email })
@@ -78,9 +79,9 @@ export default class NewsletterController {
       const recipient = await this.repository.findOne({ where: { id } })
       if (recipient) {
         await this.repository.softDelete(id)
-        return res.status(204).json({ data: recipient, message: 'event deleted' })
+        return res.status(204).json({ data: recipient, message: 'événement supprimé' })
       }
-      return res.status(401).json('Not allowed')
+      throw new ApiError(401, 'Action non autorisée').Handler(res)
     })
   }
 }

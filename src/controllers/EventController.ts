@@ -13,6 +13,7 @@ import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class EventController {
   AddressService: AddressService
@@ -64,7 +65,8 @@ export default class EventController {
         await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
-      return res.status(422).json({ error: 'Formulaire imcomplet' })
+
+      throw new ApiError(422, 'Formulaire incomplet').Handler(res)
     })
   }
 
@@ -90,10 +92,10 @@ export default class EventController {
         if (checkUserRole(Role.ADMIN) || event.createdByUserId === userId) {
           return res.status(200).json(event)
         } else {
-          return res.status(401).json('unauthorized')
+          throw new ApiError(401, 'Action non autorisée').Handler(res)
         }
       }
-      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
+      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
     })
   }
 
@@ -115,6 +117,7 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
+      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
     })
   }
 
@@ -141,6 +144,7 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
+      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
     })
   }
 
@@ -190,10 +194,10 @@ export default class EventController {
 
           return res.status(200).json(eventUpdated)
         } else {
-          return res.status(400).json('event not updated')
+          throw new ApiError(422, 'Événement non mis à jour').Handler(res)
         }
       }
-      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
+      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
     })
   }
 
@@ -214,12 +218,12 @@ export default class EventController {
             id,
           }))
 
-          return res.status(204).json({ data: eventToDelete, message: 'event deleted' })
+          return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {
-          return res.status(401).json('Not allowed')
+          throw new ApiError(401, 'Action non autorisée').Handler(res)
         }
       }
-      return res.status(422).json({ error: 'identifiant de l\'événement manquant' })
+      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
     })
   }
 }

@@ -11,6 +11,7 @@ import { Role } from '../types/Role'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class FileController {
   getManager: EntityManager
@@ -82,12 +83,14 @@ export default class FileController {
   public createProfilePicture = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
+
       if (fileRecieved) {
         const ctx = Context.get(req)
         const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
         return res.status(200).json(profilePicture)
       }
-      return res.status(422).json({ error: 'fichier non envoyé' })
+
+      throw new ApiError(422, 'fichier manquant').Handler(res)
     })
   }
 
@@ -99,7 +102,7 @@ export default class FileController {
         const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
         return res.status(200).json(logo)
       }
-      return res.status(422).json({ error: 'fichier non envoyé' })
+      throw new ApiError(422, 'fichier manquant').Handler(res)
     })
   }
 
@@ -111,11 +114,13 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
+
       if (id) {
         const fileUpdated = await this.FileService.updateFile(id, file as FileEntity)
         return res.status(200).json(fileUpdated)
       }
-      return res.status(422).json({ message: 'identitfiant du fichier manquant' })
+
+      throw new ApiError(422, 'identitfiant du fichier manquant').Handler(res)
     })
   }
 
@@ -127,10 +132,10 @@ export default class FileController {
         if (file) {
           return res.status(200).json(file)
         } else {
-          return res.status(400).json({ message: 'fichier non trouvé' })
+          throw new ApiError(422, 'fichier non trouvé').Handler(res)
         }
       }
-      return res.status(422).json({ message: 'identitfiant du fichier manquant' })
+      throw new ApiError(422, 'identitfiant du fichier manquant').Handler(res)
     })
   }
 
@@ -149,7 +154,8 @@ export default class FileController {
         const files = await this.FileService.getFilesByUser(userId)
         return res.status(200).json(files)
       }
-      return res.status(422).json({ message: 'Identifiant de l\'utilisateur manquant' })
+
+      throw new ApiError(422, 'identitfiant du fichier manquant').Handler(res)
     })
   }
 
@@ -160,7 +166,8 @@ export default class FileController {
         const files = await this.FileService.getFilesByEvent(eventId)
         return res.status(200).json(files)
       }
-      return res.status(422).json({ message: 'Identifiant de l\'événement manquant' })
+
+      throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
     })
   }
 
@@ -171,7 +178,8 @@ export default class FileController {
         const files = await this.repository.find({ where: { employeeId } })
         return res.status(200).json(files)
       }
-      return res.status(422).json({ message: 'Identifiant de l\'employé manquant' })
+
+      throw new ApiError(422, 'Identifiant de l\'employé manquant').Handler(res)
     })
   }
 
@@ -179,14 +187,14 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
+
       if (userId && eventId) {
         const files = await this.repository.find({ where: { createdByUserId: userId, eventId } })
-        if (files.length > 0) {
-          return res.status(200).json(files)
-        }
-        return res.status(200).json({ message: 'Files not found' })
+
+        return res.status(200).json(files)
       }
-      return res.status(422).json({ message: 'Identifiant de l\'utilisateur ou de l\'événement manquant' })
+
+      throw new ApiError(422, 'Identifiant de l\'utilisateur ou de l\'événement manquant').Handler(res)
     })
   }
 
@@ -224,9 +232,8 @@ export default class FileController {
 
         return res.status(200).json(files)
       }
-      return res.status(422).json({
-        message: 'missing body',
-      })
+
+      throw new ApiError(422, 'Urls des photos manquantes').Handler(res)
     })
   }
 
@@ -238,10 +245,15 @@ export default class FileController {
         if (file) {
           await cloudinary.v2.uploader.destroy(file.public_id)
           const deleted = await this.FileService.deleteFile(id)
-          return deleted ? res.status(204).json({ message: 'File deleted successfully' }) : res.status(400).json({ message: 'fichier non trouvé' })
+
+          if (deleted) {
+            return res.status(204).json({ message: 'Fichier Supprimé' })
+          }
+          throw new ApiError(422, 'fichier non supprimé').Handler(res)
         }
+        throw new ApiError(422, 'fichier n\'éxiste pas').Handler(res)
       }
-      return res.status(422).json({ message: 'Identifiant du fichier manquant' })
+      throw new ApiError(422, 'identitfiant du fichier manquant').Handler(res)
     })
   }
   // TODO add update file

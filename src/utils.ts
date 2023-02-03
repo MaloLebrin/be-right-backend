@@ -90,22 +90,23 @@ export const paginator = (req: Request, searchableField: string[]) => {
   }
 }
 
-export function toCent(value: number) {
-  return value * 100
-}
-
 export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {
   const { logger } = useLogger()
+
   try {
     logger.info(`${req.url} route accessed`)
     await request()
   } catch (error) {
-    console.error(error)
     logger.debug(error.message)
-    if (error.status) {
-      return res.status(error.status || 500).json({ error: error.message })
-    }
-    return res.status(400).json({ error: error.message })
+
+    logger.error(error)
+
+    return res.status(error.status || 500).send({
+      success: false,
+      message: error.message,
+      stack: error.stack,
+      description: error.cause,
+    })
   } finally {
     logger.info(`${req.url} route ended`)
   }
