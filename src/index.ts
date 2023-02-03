@@ -24,6 +24,7 @@ import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
+import { NotFoundError } from './middlewares/ApiError'
 
 const {
   CLOUDINARY_API_KEY,
@@ -184,6 +185,10 @@ async function StartApp() {
   app.patch('/user/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
   app.delete('/user/:id', [isAuthenticated], new UserController().deleteOne)
   app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
+
+  app.all('*', req => {
+    throw new NotFoundError(req.path)
+  })
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
