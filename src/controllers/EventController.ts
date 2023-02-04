@@ -154,20 +154,19 @@ export default class EventController {
    */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const queriesFilters = paginator(req, eventSearchableFields)
+      const { where, page, take, skip } = paginator(req, eventSearchableFields)
 
-      const [events, count] = await this.repository.findAndCount({
-        ...queriesFilters,
-        where: {
-          ...queriesFilters.where as FindOptionsWhere<EventEntity>,
-        },
+      const [events, total] = await this.repository.findAndCount({
+        take,
+        skip,
+        where,
       })
 
       return res.status(200).json({
         data: events,
-        currentPage: queriesFilters.page,
-        limit: queriesFilters.take,
-        total: count,
+        currentPage: page,
+        limit: take,
+        total,
       })
     })
   }

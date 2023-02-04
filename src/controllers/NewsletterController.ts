@@ -55,19 +55,18 @@ export default class NewsletterController {
 
   public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const queriesFilters = paginator(req, newsletterRecipientSearchableFields)
+      const { where, page, take, skip } = paginator(req, newsletterRecipientSearchableFields)
 
       const [newsletterRecipients, total] = await this.repository.findAndCount({
-        ...queriesFilters,
-        where: {
-          ...queriesFilters.where as FindOptionsWhere<NewsletterRecipient>,
-        },
+        take,
+        skip,
+        where,
       })
 
       return res.status(200).json({
         data: newsletterRecipients,
-        currentPage: queriesFilters.page,
-        limit: queriesFilters.take,
+        currentPage: page,
+        limit: take,
         total,
       })
     })

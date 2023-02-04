@@ -30,7 +30,7 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
-      { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
+        { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
       const ctx = Context.get(req)
 
@@ -200,20 +200,19 @@ export default class FileController {
 
   public getAllPaginate = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const queriesFilters = paginator(req, filesSearchableFields)
+      const { where, page, take, skip } = paginator(req, filesSearchableFields)
 
-      const [files, count] = await this.repository.findAndCount({
-        ...queriesFilters,
-        where: {
-          ...queriesFilters.where as FindOptionsWhere<FileEntity>,
-        },
+      const [data, total] = await this.repository.findAndCount({
+        take,
+        skip,
+        where,
       })
 
       return res.status(200).json({
-        data: files,
-        total: count,
-        currentPage: queriesFilters.page,
-        limit: queriesFilters.take,
+        data,
+        currentPage: page,
+        limit: take,
+        total,
       })
     })
   }

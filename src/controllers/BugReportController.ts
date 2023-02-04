@@ -76,14 +76,20 @@ export default class BugReportController {
 
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const queriesFilters = paginator(req, bugReportSearchableFields)
-      const bugReports = await this.bugRepository.find({
-        ...queriesFilters,
-        where: {
-          ...queriesFilters.where as FindOptionsWhere<BugReportEntity>,
-        },
+      const { where, page, take, skip } = paginator(req, bugReportSearchableFields)
+
+      const [data, total] = await this.bugRepository.findAndCount({
+        take,
+        skip,
+        where,
       })
-      return res.status(200).json({ data: bugReports, currentPage: queriesFilters.page, limit: queriesFilters.take })
+
+      return res.status(200).json({
+        data,
+        currentPage: page,
+        limit: take,
+        total,
+      })
     })
   }
 
