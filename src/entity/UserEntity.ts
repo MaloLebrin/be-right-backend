@@ -115,7 +115,6 @@ export const userSearchableFields = [
   'lastName',
   'companyName',
   'siret',
-  'subscription',
 ]
 
 // TODO use select in column option to remove field in find methods

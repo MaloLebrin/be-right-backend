@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
+import { FindOptionsWhere, ILike, Like } from 'typeorm'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -87,26 +88,18 @@ export default class UserController {
   */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const queriesFilters = paginator(req, userSearchableFields)
-      const usersFilters = {
-        ...queriesFilters,
-        relations: ['events', 'files', 'employee', 'profilePicture'],
-        // TODO find a way to not filter with search filed on subscription
-      }
+      const { where, page, take, skip } = paginator(req, userSearchableFields)
 
-      const [search, total] = await this.repository.findAndCount({
-        ...usersFilters,
-        where: {
-          ...usersFilters.where as FindOptionsWhere<UserEntity>,
-        },
+      const [data, total] = await this.repository.findAndCount({
+        take,
+        skip,
+        where,
       })
 
-      const usersToSend = search.map(user => userResponse(user))
-
       return res.status(200).json({
-        data: usersToSend,
-        currentPage: queriesFilters.page,
-        limit: queriesFilters.take,
+        data: data.map(user => userResponse(user)),
+        currentPage: page,
+        limit: take,
         total,
       })
     })
