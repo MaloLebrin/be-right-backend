@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { FindOptionsWhere, Repository } from 'typeorm'
+import type { Repository } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'

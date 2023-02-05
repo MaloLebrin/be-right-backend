@@ -1,6 +1,6 @@
 import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
-import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
 import { paginator, wrapperRequest } from '../utils'
@@ -30,7 +30,7 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
-        { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
+      { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
       const ctx = Context.get(req)
 

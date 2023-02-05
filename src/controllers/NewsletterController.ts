@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import { paginator, wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
 import { EmployeeEntity } from '../entity/EmployeeEntity'

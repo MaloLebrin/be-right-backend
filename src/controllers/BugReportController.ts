@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import { BugReportEntity } from '../entity/BugReportEntity'
 import BugReportService from '../services/BugReportService'
 import Context from '../context'
