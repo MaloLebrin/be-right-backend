@@ -9,6 +9,7 @@ import type EventEntity from '../../entity/EventEntity'
 import { SubscriptionEnum } from '../../types'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
+import { UserEntity } from '../../entity/UserEntity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -48,11 +49,18 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 
   const employeeIds = employees.map(employee => employee.id)
 
+  const partner = await getManager.findOne(UserEntity, {
+    where: {
+      email: 'lee.jordan@poudlard.com',
+    },
+  })
+
   const event = await new EventService(APP_SOURCE_SEEDER).createOneEvent(
     {
       ...eventFixtureCompanyPremium.event,
       employeeIds,
       createdByUser: user.id,
+      partner,
     } as unknown as Partial<EventEntity>,
     user.id,
     1,
@@ -102,11 +110,18 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
 
   const employeeIds = employees.map(employee => employee.id)
 
+  const partner = await getManager.findOne(UserEntity, {
+    where: {
+      email: 'rita.skitter@gazette.com',
+    },
+  })
+
   const event = await new EventService(APP_SOURCE_SEEDER).createOneEvent(
     {
       ...eventFixtureCompanyMedium.event,
       employeeIds,
       createdByUser: user.id,
+      partner: partner.id,
     } as unknown as Partial<EventEntity>,
     user.id,
     1,
