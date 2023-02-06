@@ -8,6 +8,7 @@ import { useLogger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class AuthController {
   logger: Logger<{
@@ -34,8 +35,9 @@ export default class AuthController {
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
       const user = await this.getManager.findOneBy(UserEntity, { email })
+
       if (!user) {
-        return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
+        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email').Handler(res)
       }
 
       const twoFactorSecret = uid2(128)
@@ -57,6 +59,7 @@ export default class AuthController {
           this.logger.debug(err)
           return console.error(err)
         }
+
         this.logger.info('Message sent successfully.')
       })
 
@@ -70,15 +73,19 @@ export default class AuthController {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       const user = await this.getManager.findOneBy(UserEntity, { email })
+
       if (!user) {
-        return res.status(422).json({ error: 'Email inconnu', isSuccess: false })
+        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email').Handler(res)
       }
+
       if (user.twoFactorRecoveryCode !== twoFactorRecoveryCode || email !== user.email) {
-        return res.status(422).json({ error: 'Vous n\'êtes pas autorizé à effectuer cette action', isSuccess: false })
+        throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action').Handler(res)
       }
+
       user.password = generateHash(user.salt, password)
       user.twoFactorRecoveryCode = null
       user.twoFactorSecret = null
+
       await this.getManager.save(user)
       return res.status(200).json({ message: 'Mot de passe mis à jour', isSuccess: true })
     })

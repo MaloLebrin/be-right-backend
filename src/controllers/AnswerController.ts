@@ -7,6 +7,7 @@ import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -41,7 +42,11 @@ export default class AnswerController {
 
       await this.EventService.multipleUpdateForEvent(eventId)
 
-      return answer ? res.status(200).json(answer) : res.status(400).json({ message: 'no created' })
+      if (answer) {
+        return res.status(200).json(answer)
+      }
+
+      throw new ApiError(422, 'Destinataire non lié avec l\'événement').Handler(res)
     })
   }
 
@@ -54,7 +59,11 @@ export default class AnswerController {
       await this.saveManyAnswerInCache(answers)
 
       await this.EventService.multipleUpdateForEvent(eventId)
-      return answers ? res.status(200).json(answers) : res.status(400).json({ message: 'no created' })
+
+      if (answers && answers.length > 0) {
+        return res.status(200).json(answers)
+      }
+      throw new ApiError(422, 'Destinataires non liés avec l\'événement').Handler(res)
     })
   }
 
@@ -65,7 +74,8 @@ export default class AnswerController {
         const answers = await this.AnswerService.getAllAnswersForEvent(id, false)
         return res.status(200).json(answers)
       }
-      return res.status(400).json({ message: 'no id' })
+
+      throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
     })
   }
 
@@ -89,7 +99,7 @@ export default class AnswerController {
           return res.status(200).json(answers)
         }
       }
-      return res.status(400).json({ message: 'no id' })
+      throw new ApiError(422, 'Identifiants manquants').Handler(res)
     })
   }
 
@@ -113,7 +123,7 @@ export default class AnswerController {
           return res.status(200).json(answers)
         }
       }
-      return res.status(400).json({ message: 'no id' })
+      throw new ApiError(422, 'Identifiants des événements manquant').Handler(res)
     })
   }
 
@@ -149,7 +159,7 @@ export default class AnswerController {
           return res.status(200).json(answer)
         }
       }
-      return res.status(400).json({ error: 'Missing parametters' })
+      throw new ApiError(422, 'Paramètres manquants').Handler(res)
     })
   }
 
@@ -169,7 +179,7 @@ export default class AnswerController {
         await this.EventService.multipleUpdateForEvent(answerToDelete.event)
         return res.status(200).json(answer)
       }
-      return res.status(422).json({ message: 'no id' })
+      throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
     })
   }
 }

@@ -20,7 +20,7 @@ export function useValidation() {
       return next()
     } catch (err) {
       logger.debug({ type: err.name, message: err.message, request: req.url })
-      return res.status(500).json({ type: err.name, message: err.message, request: req.url })
+      return res.status(422).json({ type: err.name, message: err.message, request: req.url })
     }
   }
 

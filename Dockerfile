@@ -1,4 +1,4 @@
-FROM node:18.13
+FROM node:18.14
 
 RUN mkdir /app
 WORKDIR /app
@@ -21,7 +21,6 @@ COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 COPY entrypoint.sh /app/
 COPY scriptSeed.sh /app/
-COPY Heroku.yml /app/
 COPY ./src /app/src
 
 RUN nr tsc

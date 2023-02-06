@@ -24,6 +24,7 @@ import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
+import { NotFoundError } from './middlewares/ApiError'
 
 const {
   CLOUDINARY_API_KEY,
@@ -31,6 +32,7 @@ const {
   CLOUDINARY_CLOUD_NAME,
   NODE_ENV,
   PORT,
+  FRONT_URL,
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
@@ -54,14 +56,21 @@ async function StartApp() {
     })
 
   const app = express()
+
+  // Middlewares
   dotenv.config()
-  app.use(cors())
+  app.use(cors({
+    origin: NODE_ENV === 'production' ? FRONT_URL : 'http://localhost:3000',
+    optionsSuccessStatus: 200,
+  }))
   app.use(helmet())
   app.use(express.json())
-  app.use(express.urlencoded({
-    extended: true,
-  }))
+  app.use(express.urlencoded({ extended: true }))
   app.use(loggerMiddleware)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    Context.bind(req)
+    next()
+  })
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
@@ -69,13 +78,8 @@ async function StartApp() {
     api_secret: CLOUDINARY_API_SECRET,
   })
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    Context.bind(req)
-    next()
-  })
-
   app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World')
+    return res.send('Hello World')
   })
 
   const {
@@ -184,6 +188,10 @@ async function StartApp() {
   app.patch('/user/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
   app.delete('/user/:id', [isAuthenticated], new UserController().deleteOne)
   app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
+
+  app.all('*', req => {
+    throw new NotFoundError(req.path)
+  })
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
