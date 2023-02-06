@@ -70,6 +70,13 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
     answer.signedAt = new Date()
     await getManager.save(AnswerEntity, answer)
   }
+
+  const answer2 = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[1])
+  if (answer2) {
+    answer2.hasSigned = false
+    answer2.signedAt = new Date()
+    await getManager.save(AnswerEntity, answer2)
+  }
 }
 
 // MEDIUM
@@ -116,6 +123,12 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
     answer.hasSigned = true
     answer.signedAt = new Date()
     await getManager.save(AnswerEntity, answer)
+  }
+  const answer2 = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[1])
+  if (answer2) {
+    answer2.hasSigned = false
+    answer2.signedAt = new Date()
+    await getManager.save(AnswerEntity, answer2)
   }
 }
 
