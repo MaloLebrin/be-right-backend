@@ -32,6 +32,7 @@ const {
   CLOUDINARY_CLOUD_NAME,
   NODE_ENV,
   PORT,
+  FRONT_URL,
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
@@ -58,7 +59,10 @@ async function StartApp() {
 
   // Middlewares
   dotenv.config()
-  app.use(cors())
+  app.use(cors({
+    origin: NODE_ENV === 'production' ? FRONT_URL : 'http://localhost:3000',
+    optionsSuccessStatus: 200,
+  }))
   app.use(helmet())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
