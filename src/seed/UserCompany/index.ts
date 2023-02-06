@@ -7,7 +7,6 @@ import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
 import { SubscriptionEnum } from '../../types'
-import AnswerEntity from '../../entity/AnswerEntity'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import {
@@ -72,18 +71,31 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   })
 
   await answerService.createMany(event.id, employeeIds)
-  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
+
+  const answer = await answerService.getOneAnswerForEventEmployee({
+    eventId: event.id,
+    employeeId: employeeIds[3],
+  })
+
   if (answer) {
-    answer.hasSigned = true
-    answer.signedAt = new Date()
-    await getManager.save(AnswerEntity, answer)
+    await answerService.updateOneAnswer(answer.id, {
+      ...answer,
+      hasSigned: true,
+      signedAt: new Date(),
+    })
   }
 
-  const answer2 = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[1])
+  const answer2 = await answerService.getOneAnswerForEventEmployee({
+    eventId: event.id,
+    employeeId: employeeIds[2],
+  })
+
   if (answer2) {
-    answer2.hasSigned = false
-    answer2.signedAt = new Date()
-    await getManager.save(AnswerEntity, answer2)
+    await answerService.updateOneAnswer(answer2.id, {
+      ...answer2,
+      hasSigned: false,
+      signedAt: new Date(),
+    })
   }
 }
 
@@ -133,18 +145,32 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   })
 
   await answerService.createMany(event.id, employeeIds)
-  const answer = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[0])
-  if (answer) {
-    answer.hasSigned = true
-    answer.signedAt = new Date()
-    await getManager.save(AnswerEntity, answer)
-  }
-  const answer2 = await answerService.getOneAnswerForEventEmployee(event.id, employeeIds[1])
-  if (answer2) {
-    answer2.hasSigned = false
-    answer2.signedAt = new Date()
-    await getManager.save(AnswerEntity, answer2)
-  }
+
+  console.log(employeeIds, '<==== employeeIds')
+
+  const answer = await answerService.getOneAnswerForEventEmployee({
+    eventId: event.id,
+    employeeId: employeeIds[0],
+  })
+
+  console.log(answer, '<==== answer')
+
+  await answerService.updateOneAnswer(answer.id, {
+    ...answer,
+    hasSigned: true,
+    signedAt: new Date(),
+  })
+
+  const answer2 = await answerService.getOneAnswerForEventEmployee({
+    eventId: event.id,
+    employeeId: employeeIds[1],
+  })
+
+  await answerService.updateOneAnswer(answer2.id, {
+    ...answer2,
+    hasSigned: false,
+    signedAt: new Date(),
+  })
 }
 
 export async function seedUnUsedUser(APP_SOURCE_SEEDER: DataSource) {

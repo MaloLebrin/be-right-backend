@@ -302,7 +302,9 @@ export default class UserController {
   public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { photographer }: { photographer: PhotographerCreatePayload } = req.body
+
       const newPhotographer = await this.UserService.createPhotographer(photographer)
+
       return res.status(200).json(newPhotographer)
     })
   }
@@ -316,12 +318,18 @@ export default class UserController {
           relations: ['events', 'events.partner'],
         })
 
-        const events = user.events
-        const partners = events.map(event => event.partner) as UserEntity[]
-        const uniqPartnersIds = uniq(partners.map(user => user.id))
-        const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+        if (user) {
+          const events = user.events
+          const partners = events.map(event => event.partner).filter(u => u)
+          const uniqPartnersIds = uniq(partners.map(user => user.id))
+          const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
 
-        return res.status(200).json(uniqPartners)
+          if (uniqPartners?.length > 0) {
+            return res.status(200).json(uniqPartners)
+          }
+        }
+
+        return res.status(200).json([])
       }
       throw new ApiError(422, 'Veuillez renseigner l\'identifiant utilisateur').Handler(res)
     })
@@ -339,6 +347,7 @@ export default class UserController {
             message: 'Cet email est déjà utilisée',
           })
         }
+
         return res.status(200).json({
           success: true,
           message: 'Cet email n\'est pas déjà utilisée',

@@ -5,9 +5,11 @@ import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
-import { EntitiesEnum } from '../types'
+import { EntitiesEnum, Role } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
+import Context from '../context'
+import { checkUserRole } from '../middlewares'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -142,14 +144,15 @@ export default class AnswerController {
 
   public updateAnswerStatus = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const eventId = parseInt(req.body.eventId)
-      const employeeId = parseInt(req.body.employeeId)
-      const isSigned = req.query.isSigned
+      const id = parseInt(req.params.id)
+      const ctx = Context.get(req)
 
-      if (eventId && employeeId && isSigned !== undefined) {
-        const answer = await this.AnswerService.getOneAnswerForEventEmployee(eventId, employeeId)
-        if (answer) {
-          answer.hasSigned = !!isSigned
+      if (id) {
+        const answer = await this.AnswerService.getOne(id)
+        const event = await this.EventService.getOneEvent(answer.eventId)
+
+        if (answer && (event.createdByUserId === ctx.user.id || checkUserRole(Role.ADMIN))) {
+          answer.hasSigned = !answer.hasSigned
           answer.signedAt = new Date()
           await APP_SOURCE.manager.save(answer)
 

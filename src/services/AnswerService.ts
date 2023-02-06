@@ -25,7 +25,8 @@ export default class AnswerService {
     return Promise.all(employeeIds.map(employeeId => this.createOne(eventId, employeeId)))
   }
 
-  public getOneAnswerForEventEmployee = async (eventId: number, employeeId: number, withRelation?: boolean) => {
+  public getOneAnswerForEventEmployee = async (
+    { eventId, employeeId, withRelation }: { eventId: number; employeeId: number; withRelation?: boolean }) => {
     if (withRelation) {
       return await this.repository.findOne({
         where: {
@@ -35,6 +36,7 @@ export default class AnswerService {
         relations: ['employee'],
       })
     }
+
     return this.repository.findOne({
       where: {
         event: eventId,
