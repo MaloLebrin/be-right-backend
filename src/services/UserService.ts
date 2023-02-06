@@ -19,7 +19,7 @@ export default class UserService {
   async getByToken(token: string): Promise<UserEntity> {
     return await this.repository.findOne({
       where: { token },
-      relations: ['events', 'files', 'employee', 'employee.address', 'profilePicture', 'address'],
+      relations: ['events', 'files', 'employees', 'employees.address', 'profilePicture', 'address'],
     })
   }
 

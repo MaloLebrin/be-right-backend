@@ -29,7 +29,7 @@ export class EmployeeEntity extends BaseEntity {
   @RelationId((employee: EmployeeEntity) => employee.address)
   addressId: number
 
-  @ManyToOne(() => UserEntity, user => user.employee)
+  @ManyToOne(() => UserEntity, user => user.employees)
   createdByUser: UserEntity
 
   @RelationId((employee: EmployeeEntity) => employee.createdByUser)

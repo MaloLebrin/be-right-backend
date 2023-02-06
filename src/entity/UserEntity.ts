@@ -73,13 +73,11 @@ export class UserEntity extends BaseEntity {
   @RelationId((user: UserEntity) => user.events)
   eventIds: number[]
 
-  @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
-  shootingEvent: EventEntity[]
-
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
-  employee: EmployeeEntity[]
+  @JoinColumn()
+  employees: EmployeeEntity[]
 
-  @RelationId((user: UserEntity) => user.employee)
+  @RelationId((user: UserEntity) => user.employees)
   employeeIds: number[]
 
   @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
@@ -107,6 +105,9 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: true, default: null })
   saltUpdatedAt: Date
+
+  @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
+  shootingEvent: EventEntity[]
 }
 
 export const userSearchableFields = [
