@@ -1,23 +1,30 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { UserEntity } from '../entity/UserEntity'
 import AnswerService from './AnswerService'
 
 export default class EmployeeService {
   repository: Repository<EmployeeEntity>
   answerService: AnswerService
+  userRepository: Repository<UserEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EmployeeEntity)
+    this.userRepository = APP_SOURCE.getRepository(UserEntity)
     this.answerService = new AnswerService(APP_SOURCE)
   }
 
   async createOne(employee: Partial<EmployeeEntity>, userId: number) {
-    employee.createdByUserId = userId
+    const user = await this.userRepository.findOne({ where: { id: userId } })
+    employee.createdByUser = user
     const newEmployee = this.repository.create(employee)
-    employee.slug = `${employee.id}-${employee.firstName}-${employee.lastName}`
+
     await this.repository.save(newEmployee)
-    return newEmployee
+    await this.repository.update(newEmployee.id, {
+      slug: `${newEmployee.id}-${employee.firstName}-${employee.lastName}`,
+    })
+    return this.getOne(newEmployee.id)
   }
 
   async getOne(id: number) {
