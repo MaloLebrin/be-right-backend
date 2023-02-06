@@ -18,6 +18,7 @@ specifiers:
   dayjs: ^1.11.5
   dotenv: ^16.0.0
   eslint: ^8.24.0
+  eslint-plugin-security: ^1.7.1
   express: ^4.18.1
   express-pino-logger: 7.0.0
   helmet: ^6.0.0
@@ -78,6 +79,7 @@ devDependencies:
   '@types/nodemailer': 6.4.6
   '@types/uid2': 0.0.0
   eslint: 8.24.0
+  eslint-plugin-security: 1.7.1
   typescript: 4.8.3
 
 packages:
@@ -1185,12 +1187,14 @@ packages:
     dev: false
     optional: true
 
-  /denque/2.1.0:
-    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
-    engines: {node: '>=0.10'}
   /delayed-stream/1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
+    dev: false
+
+  /denque/2.1.0:
+    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
+    engines: {node: '>=0.10'}
     dev: false
 
   /depd/2.0.0:
@@ -1598,6 +1602,12 @@ packages:
       eslint: ^7.0.0 || ^8.0.0
     dependencies:
       eslint: 8.24.0
+    dev: true
+
+  /eslint-plugin-security/1.7.1:
+    resolution: {integrity: sha512-sMStceig8AFglhhT2LqlU5r+/fn9OwsA72O5bBuQVTssPCdQAOQzL+oMn/ZcpeUY6KcNfLJArgcrsSULNjYYdQ==}
+    dependencies:
+      safe-regex: 2.1.1
     dev: true
 
   /eslint-plugin-unicorn/45.0.2_eslint@8.24.0:
