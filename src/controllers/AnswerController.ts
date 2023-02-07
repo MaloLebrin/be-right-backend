@@ -73,7 +73,7 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const answers = await this.AnswerService.getAllAnswersForEvent(id, false)
+        const answers = await this.AnswerService.getAllAnswersForEvent(id)
         return res.status(200).json(answers)
       }
 
@@ -137,7 +137,7 @@ export default class AnswerController {
 
       await this.saveAnswerInCache(answerUpdated)
 
-      await this.EventService.multipleUpdateForEvent(answerUpdated.event)
+      await this.EventService.multipleUpdateForEvent(answerUpdated.eventId)
       return res.status(200).json(answerUpdated)
     })
   }
@@ -158,7 +158,7 @@ export default class AnswerController {
 
           await this.saveAnswerInCache(answer)
 
-          await this.EventService.multipleUpdateForEvent(answer.event)
+          await this.EventService.multipleUpdateForEvent(answer.eventId)
           return res.status(200).json(answer)
         }
       }
@@ -179,7 +179,7 @@ export default class AnswerController {
           id,
         }))
 
-        await this.EventService.multipleUpdateForEvent(answerToDelete.event)
+        await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
         return res.status(200).json(answer)
       }
       throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
