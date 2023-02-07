@@ -14,16 +14,16 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
-  @ManyToOne(() => EmployeeEntity, employee => employee.id)
+  @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })
   employee: number | EmployeeEntity
 
   @RelationId((answer: AnswerEntity) => answer.employee)
   employeeId: number
 
-  @ManyToOne(() => EventEntity, event => event.id, { cascade: true })
+  @ManyToOne(() => EventEntity, event => event.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'eventId' })
-  event: number
+  event: EventEntity
 
   @RelationId((answer: AnswerEntity) => answer.event)
   eventId: number
