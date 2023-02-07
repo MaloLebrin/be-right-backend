@@ -1,9 +1,13 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
+import { REDIS_CACHE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
 import EventEntity from '../entity/EventEntity'
+import type RedisCache from '../RedisCache'
+import { EntitiesEnum } from '../types'
 import { EventStatusEnum } from '../types/Event'
-import { isAnswerSigned, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { generateRedisKey, isAnswerSigned, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { AddressService } from './AddressService'
 import AnswerService from './AnswerService'
 
 export default class EventService {
@@ -13,10 +17,49 @@ export default class EventService {
 
   answerService: AnswerService
 
+  addressService: AddressService
+
+  redisCache: RedisCache
+
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EventEntity)
     this.getManager = APP_SOURCE.manager
     this.answerService = new AnswerService(APP_SOURCE)
+    this.addressService = new AddressService(APP_SOURCE)
+    this.redisCache = REDIS_CACHE
+  }
+
+  async deleteOneAndRelations(event: EventEntity) {
+    if (event.addressId) {
+      await this.addressService.softDelete(event.addressId)
+
+      await this.redisCache.invalidate(generateRedisKey({
+        typeofEntity: EntitiesEnum.ADDRESS,
+        field: 'id',
+        id: event.addressId,
+      }))
+    }
+
+    const answersIds = await this.answerService.getAnswerIdsForEvent(event.id)
+
+    if (answersIds?.length > 0) {
+      await this.answerService.deleteMany(answersIds)
+
+      answersIds.forEach(async id => {
+        await this.redisCache.invalidate(generateRedisKey({
+          typeofEntity: EntitiesEnum.ANSWER,
+          field: 'id',
+          id,
+        }))
+      })
+    }
+
+    await this.repository.softDelete(event.id)
+    await this.redisCache.invalidate(generateRedisKey({
+      typeofEntity: EntitiesEnum.EVENT,
+      field: 'id',
+      id: event.id,
+    }))
   }
 
   async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {

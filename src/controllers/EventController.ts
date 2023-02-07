@@ -208,14 +208,12 @@ export default class EventController {
         const userId = ctx.user.id
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
-        if (eventToDelete.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
-          await this.repository.softDelete(id)
+        if (!eventToDelete) {
+          throw new ApiError(422, 'L\'événement n\'héxiste pas').Handler(res)
+        }
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.EVENT,
-            field: 'id',
-            id,
-          }))
+        if (eventToDelete?.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
+          await this.EventService.deleteOneAndRelations(eventToDelete)
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {
