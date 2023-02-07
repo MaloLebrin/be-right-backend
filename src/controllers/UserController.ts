@@ -321,8 +321,7 @@ export default class UserController {
         if (user) {
           const events = user.events
           const partners = events.map(event => event.partner).filter(u => u)
-          const uniqPartnersIds = uniq(partners.map(user => user.id))
-          const uniqPartners = partners.filter(user => uniqPartnersIds.includes(user.id))
+          const uniqPartners = uniq(partners)
 
           if (uniqPartners?.length > 0) {
             return res.status(200).json(uniqPartners)
