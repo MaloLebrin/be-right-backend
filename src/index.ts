@@ -60,7 +60,7 @@ async function StartApp() {
   // Middlewares
   dotenv.config()
   app.use(cors({
-    origin: NODE_ENV === 'production' ? FRONT_URL : 'http://localhost:3000',
+    origin: NODE_ENV === 'production' ? FRONT_URL : '*',
     optionsSuccessStatus: 200,
   }))
   app.use(helmet())
