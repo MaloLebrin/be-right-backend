@@ -209,7 +209,7 @@ export default class EventController {
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
         if (!eventToDelete) {
-          throw new ApiError(422, 'L\'événement n\'héxiste pas').Handler(res)
+          throw new ApiError(422, 'L\'événement n\'éxiste pas').Handler(res)
         }
 
         if (eventToDelete?.createdByUserId === userId || checkUserRole(Role.ADMIN)) {

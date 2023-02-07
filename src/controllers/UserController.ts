@@ -8,13 +8,17 @@ import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, uniq } from '../utils/'
+import { createJwtToken, generateRedisKey, uniq } from '../utils/'
 import type { PhotographerCreatePayload, RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { SubscriptionService } from '../services/SubscriptionService'
 import { ApiError } from '../middlewares/ApiError'
+import { AddressService } from '../services'
+import EmployeeService from '../services/EmployeeService'
+import EventService from '../services/EventService'
+import FileService from '../services/FileService'
 
 export default class UserController {
   getManager: EntityManager
@@ -22,6 +26,10 @@ export default class UserController {
   repository: Repository<UserEntity>
   redisCache: RedisCache
   SubscriptionService: SubscriptionService
+  AddressService: AddressService
+  EmployeeService: EmployeeService
+  EventService: EventService
+  FileService: FileService
 
   constructor() {
     this.getManager = APP_SOURCE.manager
@@ -29,6 +37,10 @@ export default class UserController {
     this.repository = APP_SOURCE.getRepository(UserEntity)
     this.redisCache = REDIS_CACHE
     this.SubscriptionService = new SubscriptionService(APP_SOURCE)
+    this.AddressService = new AddressService(APP_SOURCE)
+    this.EmployeeService = new EmployeeService(APP_SOURCE)
+    this.EventService = new EventService(APP_SOURCE)
+    this.FileService = new FileService(APP_SOURCE)
   }
 
   private saveUserInCache = async (user: UserEntity) => {
@@ -253,9 +265,47 @@ export default class UserController {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
       if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
+        const userToDelete = await this.UserService.getOne(id, true)
+
+        if (!userToDelete) {
+          throw new ApiError(422, 'L\'utilisateur n\'éxiste pas').Handler(res)
+        }
+
+        if (userToDelete.addressId) {
+          await this.AddressService.softDelete(userToDelete.addressId)
+
+          await this.redisCache.invalidate(generateRedisKey({
+            typeofEntity: EntitiesEnum.ADDRESS,
+            field: 'id',
+            id: userToDelete.addressId,
+          }))
+        }
+
+        if (userToDelete.employeeIds?.length > 0) {
+          await this.EmployeeService.deleteMany(userToDelete.employeeIds)
+
+          await Promise.all(userToDelete.employeeIds.map(async id => {
+            await this.redisCache.invalidate(generateRedisKey({
+              typeofEntity: EntitiesEnum.EMPLOYEE,
+              field: 'id',
+              id,
+            }))
+          }))
+        }
+
+        if (userToDelete.events?.length > 0) {
+          await Promise.all(userToDelete.events.map(async event => {
+            await this.EventService.deleteOneAndRelations(event)
+          }))
+        }
+
+        if (userToDelete.filesIds?.length > 0) {
+          await this.FileService.deleteManyfiles(userToDelete.filesIds)
+        }
+
         const userDeleted = await this.repository.softDelete(id)
 
-        this.redisCache.invalidate(`user-id-${id}`)
+        await this.redisCache.invalidate(`user-id-${id}`)
 
         if (userDeleted) {
           return res.status(204).json(userDeleted)

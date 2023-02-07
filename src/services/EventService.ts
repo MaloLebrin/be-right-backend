@@ -45,13 +45,13 @@ export default class EventService {
     if (answersIds?.length > 0) {
       await this.answerService.deleteMany(answersIds)
 
-      answersIds.forEach(async id => {
+      await Promise.all(answersIds.map(async id => {
         await this.redisCache.invalidate(generateRedisKey({
           typeofEntity: EntitiesEnum.ANSWER,
           field: 'id',
           id,
         }))
-      })
+      }))
     }
 
     await this.repository.softDelete(event.id)
