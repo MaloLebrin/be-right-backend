@@ -13,20 +13,24 @@ export default async function isAuthenticated(req: Request, res: Response, next:
   if (req.headers.authorization) {
     const token = req.headers.authorization.replace('Bearer ', '')
 
-    const user = await REDIS_CACHE.get<UserEntity>(
-      `user-token-${token}`,
-      () => APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } }))
+    if (token) {
+      const user = await REDIS_CACHE.get<UserEntity>(
+        `user-token-${token}`,
+        () => APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } }))
 
-    if (user && isUserEntity(user)) {
-      const ctx = Context.get(req)
-      ctx.user = user
+      if (user && isUserEntity(user)) {
+        const ctx = Context.get(req)
+        ctx.user = user
 
-      logger.info(`${req.url} User is allowed`)
-      return next()
-    } else {
-      logger.debug('user no allowed')
-      throw new ApiError(401, 'Action non autorisée').Handler(res)
+        logger.info(`${req.url} User is allowed`)
+        return next()
+      } else {
+        logger.debug('user no allowed')
+        throw new ApiError(401, 'Action non autorisée').Handler(res)
+      }
     }
+    logger.debug('user no allowed')
+    throw new ApiError(401, 'Vous devez vous authentifier').Handler(res)
   } else {
     logger.debug('user no allowed')
     throw new ApiError(401, 'Action non autorisée').Handler(res)
