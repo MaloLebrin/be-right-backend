@@ -15,6 +15,7 @@ import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
+import RedisService from '../services/RedisService'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -24,6 +25,7 @@ export default class EmployeeController {
   EventService: EventService
   employeeRepository: Repository<EmployeeEntity>
   redisCache: RedisCache
+  RediceService: RedisService
 
   constructor() {
     this.getManager = APP_SOURCE.manager
@@ -33,6 +35,7 @@ export default class EmployeeController {
     this.AddressService = new AddressService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.redisCache = REDIS_CACHE
+    this.RediceService = new RedisService(APP_SOURCE)
   }
 
   private saveEmployeeRedisCache = async (employee: EmployeeEntity) => {
@@ -77,6 +80,8 @@ export default class EmployeeController {
           })
         }
 
+        await this.RediceService.updateCurrentUserInCache({ userId })
+
         const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
 
         await this.saveEmployeeRedisCache(employeeToSend)
@@ -109,6 +114,7 @@ export default class EmployeeController {
             if (emp) {
               await this.AddressService.createOne({ address, employeeId: emp.id })
             }
+            await this.RediceService.updateCurrentUserInCache({ userId })
 
             await this.saveEmployeeRedisCache(emp)
             return this.EmployeeService.getOne(emp.id)
@@ -145,6 +151,7 @@ export default class EmployeeController {
               await this.AddressService.createOne({ address, employeeId: emp.id })
             }
 
+            await this.RediceService.updateCurrentUserInCache({ userId })
             await this.saveEmployeeRedisCache(emp)
             return this.EmployeeService.getOne(emp.id)
           }
@@ -313,6 +320,7 @@ export default class EmployeeController {
             id,
           }))
 
+          await this.RediceService.updateCurrentUserInCache({ userId })
           return res.status(204).json(getEmployee)
         }
         throw new ApiError(401, 'Action non autorisée').Handler(res)

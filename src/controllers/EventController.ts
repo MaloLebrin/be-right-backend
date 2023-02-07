@@ -14,6 +14,7 @@ import type { AddressEntity } from '../entity/AddressEntity'
 import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
+import RedisService from '../services/RedisService'
 
 export default class EventController {
   AddressService: AddressService
@@ -21,6 +22,7 @@ export default class EventController {
   EventService: EventService
   repository: Repository<EventEntity>
   redisCache: RedisCache
+  RediceService: RedisService
 
   constructor() {
     this.EventService = new EventService(APP_SOURCE)
@@ -28,6 +30,7 @@ export default class EventController {
     this.AddressService = new AddressService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(EventEntity)
     this.redisCache = REDIS_CACHE
+    this.RediceService = new RedisService(APP_SOURCE)
   }
 
   private saveEventRedisCache = async (event: EventEntity) => {
@@ -61,6 +64,7 @@ export default class EventController {
             eventId: newEvent.id,
           })
         }
+        await this.RediceService.updateCurrentUserInCache({ userId })
 
         await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
@@ -214,6 +218,7 @@ export default class EventController {
 
         if (eventToDelete?.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
           await this.EventService.deleteOneAndRelations(eventToDelete)
+          await this.RediceService.updateCurrentUserInCache({ userId })
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {
