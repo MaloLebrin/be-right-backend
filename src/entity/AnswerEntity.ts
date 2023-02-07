@@ -14,14 +14,14 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
-  @ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => EmployeeEntity, employee => employee.id)
   @JoinColumn({ name: 'employeeId' })
   employee: number | EmployeeEntity
 
   @RelationId((answer: AnswerEntity) => answer.employee)
   employeeId: number
 
-  @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => EventEntity, event => event.id, { cascade: true })
   @JoinColumn({ name: 'eventId' })
   event: number
 
