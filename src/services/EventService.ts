@@ -30,7 +30,7 @@ export default class EventService {
   async getNumberSignatureNeededForEvent(id: number) {
     const answers = await this.getManager.find(AnswerEntity, {
       where: {
-        event: id,
+        event: { id },
       },
     })
 
