@@ -1,20 +1,29 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import AnswerEntity from '../entity/AnswerEntity'
+import EventEntity from '../entity/EventEntity'
 
 export default class AnswerService {
   getManager: EntityManager
 
   repository: Repository<AnswerEntity>
+  eventRepository: Repository<EventEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(AnswerEntity)
+    this.eventRepository = APP_SOURCE.getRepository(EventEntity)
     this.getManager = APP_SOURCE.manager
   }
 
   public createOne = async (eventId: number, employeeId: number) => {
+    const event = await this.eventRepository.findOne({
+      where: {
+        id: eventId,
+      },
+    })
+
     const newAnswer = this.repository.create({
-      event: eventId,
+      event,
       employee: employeeId,
     })
     await this.repository.save(newAnswer)
@@ -30,7 +39,9 @@ export default class AnswerService {
     if (withRelation) {
       return await this.repository.findOne({
         where: {
-          event: eventId,
+          event: {
+            id: eventId,
+          },
           employee: employeeId,
         },
         relations: ['employee'],
@@ -39,7 +50,9 @@ export default class AnswerService {
 
     return this.repository.findOne({
       where: {
-        event: eventId,
+        event: {
+          id: eventId,
+        },
         employee: employeeId,
       },
     })
@@ -49,17 +62,35 @@ export default class AnswerService {
     if (withRelation) {
       return this.repository.find({
         where: {
-          event: eventId,
+          event: {
+            id: eventId,
+          },
         },
         relations: ['employee'],
       })
     } else {
       return this.repository.find({
         where: {
-          event: eventId,
+          event: {
+            id: eventId,
+          },
         },
       })
     }
+  }
+
+  public getAnswerIdsForEvent = async (eventId: number): Promise<number[]> => {
+    const answers = await this.repository.find({
+      select: {
+        id: true,
+      },
+      where: {
+        event: {
+          id: eventId,
+        },
+      },
+    })
+    return answers.map(a => a.id)
   }
 
   public getAnswersForManyEvents = async (eventIds: number[], withRelation?: boolean) => {
@@ -117,6 +148,11 @@ export default class AnswerService {
 
   public deleteOne = async (id: number) => {
     const deleted = await this.repository.softDelete(id)
+    return deleted
+  }
+
+  public deleteMany = async (ids: number[]) => {
+    const deleted = await this.repository.softDelete(ids)
     return deleted
   }
 }

@@ -146,14 +146,10 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
 
   await answerService.createMany(event.id, employeeIds)
 
-  console.log(employeeIds, '<==== employeeIds')
-
   const answer = await answerService.getOneAnswerForEventEmployee({
     eventId: event.id,
     employeeId: employeeIds[0],
   })
-
-  console.log(answer, '<==== answer')
 
   await answerService.updateOneAnswer(answer.id, {
     ...answer,

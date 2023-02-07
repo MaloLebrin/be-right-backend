@@ -34,20 +34,20 @@ export default class EventEntity extends BaseEntity {
   @RelationId((event: EventEntity) => event.partner)
   partnerId: number
 
-  @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, user => user.events)
   @JoinColumn()
   createdByUser: UserEntity
 
   @RelationId((event: EventEntity) => event.createdByUser)
   createdByUserId: number
 
-  @OneToMany(() => FileEntity, file => file.event, { cascade: true })
+  @OneToMany(() => FileEntity, file => file.event, { orphanedRowAction: 'soft-delete' })
   files: FileEntity[]
 
   @RelationId((event: EventEntity) => event.files)
   filesIds: number[]
 
-  @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => AddressEntity, { orphanedRowAction: 'delete', onDelete: 'SET NULL' })
   @JoinColumn()
   address: AddressEntity
 
