@@ -2,7 +2,6 @@ import cron from 'node-cron'
 import * as dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import { CronJobInterval } from './utils/cronHelper'
-import udpateEventStatusJob from './jobs/updateEventsStatusJob'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
@@ -36,7 +35,7 @@ import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
   cron.schedule(
     CronJobInterval.EVERY_DAY_4_AM,
     async () => {
-      await udpateEventStatusJob(JOB_APP_SOURCE)
+      // await udpateEventStatusJob(JOB_APP_SOURCE)
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
     },
   )
