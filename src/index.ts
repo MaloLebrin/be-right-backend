@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
+// import { engine } from 'express-handlebars'
 import Context from './context'
 import { useLogger } from './middlewares/loggerService'
 import { useEnv } from './env'
@@ -25,6 +26,8 @@ import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
+import DownloadController from './controllers/DownloadController'
+import { hbs } from './utils/handlebarsHelper'
 
 const {
   CLOUDINARY_API_KEY,
@@ -72,6 +75,10 @@ async function StartApp() {
     next()
   })
 
+  app.engine('handlebars', hbs.engine)
+  app.set('view engine', 'handlebars')
+  app.set('views', '/app/src/views')
+
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
     api_key: CLOUDINARY_API_KEY,
@@ -115,6 +122,8 @@ async function StartApp() {
   app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
 
   // Answer
+  // TODO add auth
+  app.get('/answer/download/:id', new DownloadController().downLoadAnswer)
   app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
