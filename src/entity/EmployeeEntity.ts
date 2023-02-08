@@ -22,6 +22,9 @@ export class EmployeeEntity extends BaseEntity {
   @Column()
   lastName: string
 
+  @Column()
+  bornAt: Date
+
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity
