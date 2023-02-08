@@ -25,10 +25,6 @@ export default class AuthController {
     // this.redisCache = REDIS_CACHE
   }
 
-  private async toJson(obj: any) {
-    return await JSON.stringify(obj)
-  }
-
   public downLoadAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
