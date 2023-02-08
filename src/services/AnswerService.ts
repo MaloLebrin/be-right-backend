@@ -118,7 +118,16 @@ export default class AnswerService {
     })
   }
 
-  public getOne = async (answerId: number): Promise<AnswerEntity> => {
+  public getOne = async (answerId: number, withRelations?: boolean): Promise<AnswerEntity> => {
+    if (withRelations) {
+      return await this.repository.findOne({
+        where: {
+          id: answerId,
+        },
+        relations: ['event', 'employee'],
+      })
+    }
+
     return await this.repository.findOne({
       where: {
         id: answerId,
