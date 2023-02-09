@@ -123,6 +123,7 @@ async function StartApp() {
 
   // Answer
   // TODO add auth
+  app.get('/answer/view/:id', new DownloadController().ViewAnswer)
   app.get('/answer/download/:id', new DownloadController().downLoadAnswer)
   app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
