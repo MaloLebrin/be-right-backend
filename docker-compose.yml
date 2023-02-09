@@ -20,6 +20,7 @@ services:
       - 6379
 
   app:
+    restart: always
     links:
     - redis
     depends_on:
