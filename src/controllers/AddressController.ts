@@ -5,7 +5,7 @@ import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
-import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
+import { generateRedisKey } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 
 export class AddresController {
@@ -47,15 +47,7 @@ export class AddresController {
       const addressIds = ids.split(',').map(id => parseInt(id))
 
       if (addressIds && addressIds.length > 0) {
-        const addresses = await this.redisCache.getMany<AddressEntity>({
-          keys: generateRedisKeysArray({
-            field: 'id',
-            typeofEntity: EntitiesEnum.ADDRESS,
-            ids: addressIds,
-          }),
-          typeofEntity: EntitiesEnum.ADDRESS,
-          fetcher: () => this.AddressService.getMany(addressIds),
-        })
+        const addresses = await this.AddressService.getMany(addressIds)
 
         return res.status(200).json(addresses)
       }
