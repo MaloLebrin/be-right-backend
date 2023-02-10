@@ -24,14 +24,16 @@ async function createDevSeeders() {
   } = useEnv()
 
   if (NODE_ENV === 'test') {
+    const { logger } = useLogger()
     APP_SOURCE_SEEDER.initialize().then(async () => {
-      const { logger } = useLogger()
       dotenv.config()
 
       logger.info('Clear DB start')
       await seedersFunction(APP_SOURCE_SEEDER)
       logger.info('Clear DB end')
       logger.info('seeder done')
+    }).catch(err => {
+      logger.error('Error during Data Source initialization seeder:', err)
     })
   }
 }

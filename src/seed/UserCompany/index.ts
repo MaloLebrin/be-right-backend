@@ -43,7 +43,14 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   })
 
   const employees = await Promise.all(employeesFixtureCompanyPremium.map(
-    async item => await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id),
+    async item => {
+      const emp = await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id)
+      await addressService.createOne({
+        address: item.address,
+        employeeId: emp.id,
+      })
+      return emp
+    },
   ))
 
   const employeeIds = employees.map(employee => employee.id)
@@ -117,7 +124,14 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
   })
 
   const employees = await Promise.all(employeesFixtureCompanyMedium.map(
-    async item => await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id),
+    async item => {
+      const emp = await new EmployeeService(APP_SOURCE_SEEDER).createOne(item.employee, user.id)
+      await addressService.createOne({
+        address: item.address,
+        employeeId: emp.id,
+      })
+      return emp
+    },
   ))
 
   const employeeIds = employees.map(employee => employee.id)
