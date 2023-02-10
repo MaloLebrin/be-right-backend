@@ -41,19 +41,19 @@ export const REDIS_CACHE = new RedisCache()
 async function StartApp() {
   const { loggerMiddleware, logger } = useLogger()
 
-  APP_SOURCE.initialize()
+  await APP_SOURCE.initialize()
     .then(async () => {
       logger.info('Data Source has been initialized!')
-
-      if (NODE_ENV === 'test') {
-        logger.info('seeders started')
-        await seedersFunction(APP_SOURCE)
-        logger.info('seeders ended')
-      }
     })
     .catch(err => {
       logger.error('Error during Data Source initialization:', err)
     })
+
+  if (NODE_ENV === 'test') {
+    logger.info('seeders started')
+    await seedersFunction(APP_SOURCE)
+    logger.info('seeders ended')
+  }
 
   const app = express()
 
