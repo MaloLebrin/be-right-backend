@@ -1,6 +1,12 @@
-FROM node:18.14
+FROM zenika/alpine-chrome:with-puppeteer
 
-RUN mkdir /app
+USER root
+
+RUN git config --system --add safe.directory '*'
+
+RUN apk add --no-cache ttf-liberation
+
+# RUN mkdir /app
 WORKDIR /app
 
 COPY package.json /app/
@@ -8,10 +14,12 @@ COPY pnpm-lock.yaml /app/
 
 # RUN npm install
 RUN npm i -g pnpm
-RUN npm i -g @antfu/ni
 
-RUN nci
+RUN pnpm install --frozen-lockfile --unsafe-perm \
+    && chown -R 0:0 /app/node_modules
 
+# RUN mkdir node_modules/.cache
+RUN chmod -R 777 node_modules/.cache
 # Be careful with this env variable
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV}
@@ -23,8 +31,17 @@ COPY entrypoint.sh /app/
 COPY scriptSeed.sh /app/
 COPY ./src /app/src
 
-RUN nr tsc
+RUN pnpm run tsc
 
 RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/scriptSeed.sh
-ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
+
+# RUN mkdir /app/uploads
+RUN chmod -R 777 /app/uploads
+RUN chmod 777 /app/build/src/middlewares/
+
+USER chrome
+RUN chmod +x /app/uploads
+
+ENTRYPOINT ["node", "/app/build/src/index.js"]
+# ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]

@@ -21,6 +21,7 @@ services:
 
   app:
     restart: always
+    image: zenika/alpine-chrome:with-puppeteer
     links:
     - redis
     depends_on:
@@ -33,14 +34,14 @@ services:
     env_file:
       - .env
 
-  cron:
-    depends_on:
-      - postgres
-    build:
-      context: .
-      dockerfile: ./cron.Dockerfile
-    env_file:
-      - .env
+  # cron:
+  #   depends_on:
+  #     - postgres
+  #   build:
+  #     context: .
+  #     dockerfile: ./cron.Dockerfile
+  #   env_file:
+  #     - .env
 
 
 volumes:
