@@ -74,7 +74,7 @@ export default class MailService {
     const email = {
       body: {
         name: `${getfullUsername(recipient)}`,
-        intro: 'Vous recevez ce mail car vous avez une demande d\'utilisation de votre image à remplur.',
+        intro: 'Vous recevez ce mail car vous avez une demande d\'utilisation de votre image à remplir.',
         action: {
           instructions: 'Clickez sur le bouton ci-dessous pour voir le document.',
           button: {
