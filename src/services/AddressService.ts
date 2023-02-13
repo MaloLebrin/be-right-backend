@@ -92,7 +92,7 @@ export class AddressService {
     const { GEO_CODING_API_URL } = useEnv()
     const { postalCode, city, addressLine } = address
 
-    if (GEO_CODING_API_URL) {
+    if (GEO_CODING_API_URL && postalCode && city && addressLine) {
       const street = addressLine?.replace(' ', '+')
 
       const res = await axios<GeoCodingResponse>(`${GEO_CODING_API_URL}?q=${street}&postcode=${postalCode}&city=${city}&type=housenumber&autocomplete=1`)
