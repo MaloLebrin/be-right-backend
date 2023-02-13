@@ -25,6 +25,7 @@ import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
+import { MailController } from './controllers/MailController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -172,6 +173,9 @@ async function StartApp() {
   app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
   app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
+
+  // Mail
+  app.get('/mail/test', new MailController().sendMailToEmployee)
 
   // User
   app.get('/user/many', [isAuthenticated], new UserController().getMany)
