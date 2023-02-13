@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { BaseEntity } from './BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
+import { MailEntity } from './MailEntity'
 
 @Entity()
 export default class AnswerEntity extends BaseEntity {
@@ -13,6 +14,9 @@ export default class AnswerEntity extends BaseEntity {
 
   @Column({ nullable: true })
   reason: string | null
+
+  @Column({ nullable: true, default: null })
+  mailSendAt: Date
 
   @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })
@@ -27,6 +31,12 @@ export default class AnswerEntity extends BaseEntity {
 
   @RelationId((answer: AnswerEntity) => answer.event)
   eventId: number
+
+  @OneToMany(() => MailEntity, mail => mail.answer, { cascade: true })
+  mails: MailEntity[]
+
+  @RelationId((answer: AnswerEntity) => answer.mails)
+  mailsIds: number[]
 }
 
 export const answerSearchFields = [
