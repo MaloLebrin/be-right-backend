@@ -23,4 +23,5 @@ export interface FromMailObj {
 export interface SendMailPayload {
   employee: EmployeeEntity
   answer: AnswerEntity
+  template?: string
 }

@@ -48,7 +48,7 @@ export class MailjetService {
   }
 
   private buildMailsCreationAnswer = (payload: SendMailPayload[]) => {
-    return payload.map(({ employee }) => ({
+    return payload.map(({ employee, template }) => ({
       From: this.FromObj,
       To: [
         {
@@ -58,7 +58,7 @@ export class MailjetService {
       ],
       Subject: 'Vous avez un document à signer',
       TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
-      HTMLPart: '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
+      HTMLPart: template || '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
     }))
   }
 
