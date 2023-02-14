@@ -9,6 +9,8 @@ import type EventEntity from '../../entity/EventEntity'
 import { SubscriptionEnum } from '../../types'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
+import { MailjetService } from '../../services'
+import type { EmployeeEntity } from '../../entity/EmployeeEntity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -25,6 +27,7 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
   const addressService = new AddressService(APP_SOURCE_SEEDER)
   const answerService = new AnswerService(APP_SOURCE_SEEDER)
+  const mailService = new MailjetService(APP_SOURCE_SEEDER)
 
   const subscription = getManager.create(SubscriptionEntity, {
     type: SubscriptionEnum.PREMIUM,
@@ -77,7 +80,13 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
     eventId: event.id,
   })
 
-  await answerService.createMany(event.id, employeeIds)
+  const answers = await answerService.createMany(event.id, employeeIds)
+  await Promise.all(answers.map(async ans => {
+    const answerToSend = await answerService.getOne(ans.id, true)
+    const employee = answerToSend.employee as EmployeeEntity
+
+    return mailService.sendEmployeeMail({ answer: answerToSend, employee })
+  }))
 
   const answer = await answerService.getOneAnswerForEventEmployee({
     eventId: event.id,
