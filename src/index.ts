@@ -175,7 +175,7 @@ async function StartApp() {
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
 
   // Mail
-  app.get('/mail/test', new MailController().sendMailToEmployee)
+  app.get('/mail/answer/:id', [isAuthenticated], new MailController().sendMailToEmployee)
 
   // User
   app.get('/user/many', [isAuthenticated], new UserController().getMany)
