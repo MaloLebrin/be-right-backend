@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import type { Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import type AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
@@ -10,15 +11,21 @@ import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
 import { checkUserRole } from '../middlewares'
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { MailjetService } from '../services'
 
 export default class AnswerController {
   AnswerService: AnswerService
   EventService: EventService
+  mailJetService: MailjetService
   redisCache: RedisCache
+  employeeRepository: Repository<EmployeeEntity>
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
+    this.mailJetService = new MailjetService(APP_SOURCE)
+    this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.redisCache = REDIS_CACHE
   }
 
@@ -44,6 +51,16 @@ export default class AnswerController {
 
       await this.EventService.multipleUpdateForEvent(eventId)
 
+      const employee = await this.employeeRepository.findOne({
+        where: {
+          id: employeeId,
+        },
+      })
+
+      if (employee) {
+        await this.mailJetService.sendEmployeeMail({ answer, employee })
+      }
+
       if (answer) {
         return res.status(200).json(answer)
       }
@@ -59,6 +76,15 @@ export default class AnswerController {
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
+
+      const answersToSendMail = await this.AnswerService.getMany(answers.map(ans => ans.id), true)
+
+      if (answersToSendMail.length > 0) {
+        await Promise.all(answersToSendMail.map(async answ => {
+          const employee = answ.employee as EmployeeEntity
+          return this.mailJetService.sendEmployeeMail({ answer: answ, employee })
+        }))
+      }
 
       await this.EventService.multipleUpdateForEvent(eventId)
 

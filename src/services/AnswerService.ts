@@ -164,7 +164,15 @@ export default class AnswerService {
     })
   }
 
-  public getMany = async (ids: number[]) => {
+  public getMany = async (ids: number[], withRelations?: boolean) => {
+    if (withRelations) {
+      return this.repository.find({
+        where: {
+          id: In(ids),
+        },
+        relations: ['employee', 'event'],
+      })
+    }
     return this.repository.find({
       where: {
         id: In(ids),
