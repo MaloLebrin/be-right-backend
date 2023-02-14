@@ -15,6 +15,9 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
+  @Column({ unique: true })
+  token: string
+
   @Column({ nullable: true, default: null })
   mailSendAt: Date
 
