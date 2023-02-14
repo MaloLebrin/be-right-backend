@@ -4,8 +4,11 @@ import { BaseEntity } from './BaseEntity'
 
 @Entity()
 export class MailEntity extends BaseEntity {
-  @Column()
+  @Column({ unique: true })
   messageId: string
+
+  @Column({ unique: true })
+  messageUuid: string
 
   @Column()
   messageHref: string
