@@ -1,7 +1,7 @@
 import type { Client } from 'node-mailjet'
 import Mailjet from 'node-mailjet'
 import type { DataSource, Repository } from 'typeorm'
-import type AnswerEntity from '../entity/AnswerEntity'
+import AnswerEntity from '../entity/AnswerEntity'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import { MailEntity } from '../entity/MailEntity'
 import { useEnv } from '../env'
@@ -23,6 +23,7 @@ export class MailjetService {
   mailJetClient: Client
   FromObj: FromMailObj
   repository: Repository<MailEntity>
+  answerRepository: Repository<AnswerEntity>
 
   constructor(APP_SOURCE: DataSource) {
     const {
@@ -42,6 +43,7 @@ export class MailjetService {
     }
 
     this.repository = APP_SOURCE.getRepository(MailEntity)
+    this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
   }
 
   private connection = () => {
@@ -70,12 +72,26 @@ export class MailjetService {
     }))
   }
 
-  public createMailEntity = async ({ answer, messageHref, messageId, messageUuid }: { answer: AnswerEntity; messageHref: string; messageId: string; messageUuid: string }) => {
+  public createMailEntity = async ({
+    answer,
+    messageHref,
+    messageId,
+    messageUuid,
+  }: {
+    answer: AnswerEntity
+    messageHref: string
+    messageId: string
+    messageUuid: string
+  }) => {
     const mailEntity = this.repository.create({
       answer,
       messageHref,
       messageId,
       messageUuid,
+    })
+
+    await this.answerRepository.update({ id: answer.id }, {
+      mailSendAt: new Date(),
     })
     await this.repository.save(mailEntity)
     return mailEntity
