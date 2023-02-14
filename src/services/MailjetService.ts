@@ -2,20 +2,10 @@ import type { Client } from 'node-mailjet'
 import Mailjet from 'node-mailjet'
 import type { DataSource, Repository } from 'typeorm'
 import AnswerEntity from '../entity/AnswerEntity'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import { MailEntity } from '../entity/MailEntity'
 import { useEnv } from '../env'
 import { ApiError } from '../middlewares/ApiError'
-
-interface FromMailObj {
-  Email: string
-  Name: string
-}
-
-interface SendMailPayload {
-  employee: EmployeeEntity
-  answer: AnswerEntity
-}
+import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 
 export class MailjetService {
   SecretKey: string
@@ -110,13 +100,13 @@ export class MailjetService {
         })
 
       if (response.status === 200) {
-        const t = body as any
+        const t = body as unknown as MailjetResponse
         const pathToMessage = t.Messages[0].To[0]
         await this.createMailEntity({
           answer: payload.answer,
           messageHref: pathToMessage.MessageHref,
-          messageId: pathToMessage.MessageUUID,
-          messageUuid: pathToMessage.MessageID,
+          messageUuid: pathToMessage.MessageUUID,
+          messageId: pathToMessage.MessageID,
         })
       }
 
