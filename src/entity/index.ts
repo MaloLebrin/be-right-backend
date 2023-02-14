@@ -12,6 +12,8 @@ import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
 import { SessionEntity } from './SessionEntity'
 import { MailEntity } from './MailEntity'
+import { NotificationSubcriptionEntity } from './NotificationSubcriptionEntity'
+import { NotificationEntity } from './NotificationEntity'
 
 export default {
   AnswerEntity,
@@ -24,6 +26,8 @@ export default {
   ImageRightConditionEntity,
   MailEntity,
   NewsletterRecipient,
+  NotificationSubcriptionEntity,
+  NotificationEntity,
   PaymentEntity,
   SubscriptionEntity,
   SessionEntity,
@@ -41,6 +45,8 @@ export const entities = [
   ImageRightConditionEntity,
   MailEntity,
   NewsletterRecipient,
+  NotificationSubcriptionEntity,
+  NotificationEntity,
   PaymentEntity,
   SubscriptionEntity,
   SessionEntity,
