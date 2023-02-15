@@ -11,6 +11,7 @@ export class NotificationSubcriptionEntity extends BaseEntity {
     default: [
       NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
       NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+      // FIXME not a good idea
     ],
   })
   types: NotificationTypeEnum[]
