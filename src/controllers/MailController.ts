@@ -7,6 +7,8 @@ import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
+import { firtSendAnswerTemplate } from '../utils/mailJetHelpers'
+import Context from '../context'
 
 export class MailController {
   logger: Logger<{
@@ -30,6 +32,7 @@ export class MailController {
   public sendMailToEmployee = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const answerId = parseInt(req.params.id)
+      const ctx = Context.get(req)
       if (answerId) {
         const answer = await this.AnswerService.getOne(answerId, true)
 
@@ -40,7 +43,7 @@ export class MailController {
         const employee = answer.employee as EmployeeEntity
 
         if (employee) {
-          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee })
+          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, template: firtSendAnswerTemplate({ employee, creator: ctx.user }) })
           return res.status(200).json({ status, message, body })
         }
       }
