@@ -43,7 +43,7 @@
     "typeorm": "0.3.12",
     "uid2": "1.0.0",
     "uuid": "^9.0.0",
-    "yup": "^0.32.11"
+    "yup": "^1.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.35.0",
