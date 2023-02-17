@@ -25,6 +25,7 @@ import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
+import { setupBullMqProcessor } from './jobs/queue/queue'
 
 const {
   CLOUDINARY_API_KEY,
@@ -54,6 +55,9 @@ async function StartApp() {
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
   }
+
+  // Config workers and Queue
+  await setupBullMqProcessor()
 
   const app = express()
 
