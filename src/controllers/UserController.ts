@@ -9,7 +9,7 @@ import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
 import { createJwtToken, generateRedisKey, uniq } from '../utils/'
-import type { PhotographerCreatePayload, RedisKeys } from '../types'
+import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
@@ -351,9 +351,9 @@ export default class UserController {
 
   public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { photographer }: { photographer: PhotographerCreatePayload } = req.body
+      const { email, companyName, firstName, lastName }: { email: string; companyName: string; firstName: string; lastName: string } = req.body
 
-      const newPhotographer = await this.UserService.createPhotographer(photographer)
+      const newPhotographer = await this.UserService.createPhotographer({ email, companyName, firstName, lastName })
 
       return res.status(200).json(newPhotographer)
     })
