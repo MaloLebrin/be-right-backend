@@ -145,6 +145,7 @@ export default class EventController {
           typeofEntity: EntitiesEnum.EVENT,
           fetcher: () => this.EventService.getManyEvents(eventsIds, true),
         })
+        // TODO resolve fetching all data not only in redis
 
         return res.status(200).json(events)
       }
