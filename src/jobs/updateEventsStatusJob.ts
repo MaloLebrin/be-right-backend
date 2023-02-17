@@ -17,8 +17,6 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
     logger.info(events.length, 'events')
 
     if (events.length > 0) {
-      await Promise.all(events.map(event => eventService.getNumberSignatureNeededForEvent(event.id)))
-      await Promise.all(events.map(event => eventService.updateStatusEventWhenCompleted(event)))
       await eventService.updateStatusForEventArray(events)
     }
   } catch (error) {
