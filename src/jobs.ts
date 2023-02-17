@@ -42,7 +42,6 @@ import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
   cron.schedule(
     CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,
     async () => {
-      // await udpateEventStatusJob(JOB_APP_SOURCE)
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
     },
   )
