@@ -30,7 +30,7 @@ specifiers:
   nodemailer: ^6.7.8
   pg: ^8.8.0
   pino: 8.10.0
-  pino-pretty: 9.1.1
+  pino-pretty: 9.3.0
   redis: ^4.5.1
   reflect-metadata: ^0.1.13
   ts-node: 10.9.1
@@ -58,7 +58,7 @@ dependencies:
   nodemailer: 6.7.8
   pg: 8.8.0
   pino: 8.10.0
-  pino-pretty: 9.1.1
+  pino-pretty: 9.3.0
   redis: 4.5.1
   reflect-metadata: 0.1.13
   ts-node: 10.9.1_4zwnqpttgf4jk6glmakanhruye
@@ -3351,8 +3351,8 @@ packages:
       pino-std-serializers: 5.6.0
     dev: false
 
-  /pino-pretty/9.1.1:
-    resolution: {integrity: sha512-iJrnjgR4FWQIXZkUF48oNgoRI9BpyMhaEmihonHeCnZ6F50ZHAS4YGfGBT/ZVNsPmd+hzkIPGzjKdY08+/yAXw==}
+  /pino-pretty/9.3.0:
+    resolution: {integrity: sha512-T3FIzVc2sQfDY6FSjhvAEOeA1sby0YKI4he4VsI+d8q3MyYnfsPT+7OI3W/99v0v3TfJN/nMJradEvJWjbjRaQ==}
     hasBin: true
     dependencies:
       colorette: 2.0.19
