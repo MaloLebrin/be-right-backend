@@ -32,8 +32,15 @@ import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
     api_secret: CLOUDINARY_API_SECRET,
   })
 
+  // cron.schedule(
+  //   CronJobInterval.EVERY_DAY_4_AM,
+  //   async () => {
+  //     // await udpateEventStatusJob(JOB_APP_SOURCE)
+  //   },
+  // )
+
   cron.schedule(
-    CronJobInterval.EVERY_DAY_4_AM,
+    CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,
     async () => {
       // await udpateEventStatusJob(JOB_APP_SOURCE)
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
