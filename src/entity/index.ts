@@ -11,12 +11,10 @@ import { PaymentEntity } from './PaymentEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
 import { SessionEntity } from './SessionEntity'
-import { NotificationSubcriptionEntity } from './NotificationSubcriptionEntity'
-import { NotificationEntity } from './NotificationEntity'
 
 export default {
-  AnswerEntity,
   AddressEntity,
+  AnswerEntity,
   BaseEntity,
   BugReportEntity,
   EmployeeEntity,
@@ -24,28 +22,23 @@ export default {
   FileEntity,
   ImageRightConditionEntity,
   NewsletterRecipient,
-  NotificationSubcriptionEntity,
-  NotificationEntity,
   PaymentEntity,
-  SubscriptionEntity,
   SessionEntity,
+  SubscriptionEntity,
   UserEntity,
 }
 
 export const entities = [
-  AnswerEntity,
   AddressEntity,
-  BaseEntity,
+  AnswerEntity,
   BugReportEntity,
   EmployeeEntity,
   EventEntity,
   FileEntity,
   ImageRightConditionEntity,
   NewsletterRecipient,
-  NotificationSubcriptionEntity,
-  NotificationEntity,
   PaymentEntity,
-  SubscriptionEntity,
   SessionEntity,
+  SubscriptionEntity,
   UserEntity,
 ]
