@@ -34,6 +34,7 @@ services:
 
   cron:
     depends_on:
+      - redis
       - postgres
     build:
       context: .
