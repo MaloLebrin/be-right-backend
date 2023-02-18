@@ -1,12 +1,10 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import EventEntity from '../entity/EventEntity'
-import { useLogger } from '../middlewares/loggerService'
-import EventService from '../services/EventService'
+import EventEntity from '../../entity/EventEntity'
+import { logger } from '../../middlewares/loggerService'
+import EventService from '../../services/EventService'
 
 export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
-  const { logger } = useLogger()
-
   try {
     const dateStart = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
     logger.warn(`Sarting update event status at ${dateStart}`)
@@ -17,8 +15,6 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
     logger.info(events.length, 'events')
 
     if (events.length > 0) {
-      await Promise.all(events.map(event => eventService.getNumberSignatureNeededForEvent(event.id)))
-      await Promise.all(events.map(event => eventService.updateStatusEventWhenCompleted(event)))
       await eventService.updateStatusForEventArray(events)
     }
   } catch (error) {

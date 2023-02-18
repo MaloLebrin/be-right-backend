@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
 import Context from './context'
-import { useLogger } from './middlewares/loggerService'
+import { logger, loggerMiddleware } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 import { checkUserRole, isAuthenticated, useValidation } from './middlewares'
@@ -26,6 +26,7 @@ import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
+import { setupBullMqProcessor } from './jobs/queue/queue'
 
 const {
   CLOUDINARY_API_KEY,
@@ -40,8 +41,6 @@ export const APP_SOURCE = createAppSource()
 export const REDIS_CACHE = new RedisCache()
 
 async function StartApp() {
-  const { loggerMiddleware, logger } = useLogger()
-
   await APP_SOURCE.initialize()
     .then(async () => {
       logger.info('Data Source has been initialized!')
@@ -55,6 +54,9 @@ async function StartApp() {
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
   }
+
+  // Config workers and Queue
+  await setupBullMqProcessor()
 
   const app = express()
 

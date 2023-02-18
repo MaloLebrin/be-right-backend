@@ -3,11 +3,9 @@ import { isUserEntity } from '../utils/index'
 import Context from '../context'
 import { UserEntity } from '../entity/UserEntity'
 import { APP_SOURCE, REDIS_CACHE } from '..'
-import { useLogger } from './loggerService'
+import { logger } from './loggerService'
 
 export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const { logger } = useLogger()
-
   try {
     logger.info(`${req.url} check auth started`)
 
