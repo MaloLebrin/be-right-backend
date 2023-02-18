@@ -3184,6 +3184,7 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+
   /node-gyp-build-optional-packages/5.0.7:
     resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
     hasBin: true
