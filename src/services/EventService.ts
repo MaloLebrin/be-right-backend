@@ -29,6 +29,14 @@ export default class EventService {
     this.redisCache = REDIS_CACHE
   }
 
+  public saveEventRedisCache = async (event: EventEntity) => {
+    await this.redisCache.save(generateRedisKey({
+      typeofEntity: EntitiesEnum.EVENT,
+      field: 'id',
+      id: event.id,
+    }), event)
+  }
+
   async deleteOneAndRelations(event: EventEntity) {
     if (event.addressId) {
       await this.addressService.softDelete(event.addressId)
@@ -67,7 +75,9 @@ export default class EventService {
       updatedAt: new Date(),
       totalSignatureNeeded: signatureNeeded,
     })
-    return this.getOneWithoutRelations(eventId)
+    const event = await this.getOneWithoutRelations(eventId)
+    await this.saveEventRedisCache(event)
+    return event
   }
 
   async getNumberSignatureNeededForEvent(id: number) {
@@ -82,7 +92,9 @@ export default class EventService {
       totalSignatureNeeded: answers.length,
     })
 
-    return this.getOneWithoutRelations(id)
+    const event = await this.getOneWithoutRelations(id)
+    await this.saveEventRedisCache(event)
+    return event
   }
 
   /* TODO
@@ -131,7 +143,9 @@ export default class EventService {
     }
     await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToSave))
     await this.multipleUpdateForEvent(eventId)
-    return this.getOneEvent(eventId)
+    const eventSaved = await this.getOneEvent(eventId)
+    await this.saveEventRedisCache(eventSaved)
+    return eventSaved
   }
 
   async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
@@ -141,6 +155,7 @@ export default class EventService {
     event.createdByUserId = userId
     const newEvent = this.repository.create(event)
     await this.repository.save(newEvent)
+    await this.saveEventRedisCache(newEvent)
     return newEvent
   }
 
@@ -153,6 +168,9 @@ export default class EventService {
     await this.repository.update(id, {
       status: updateStatusEventBasedOnStartEndTodayDate(event),
     })
+
+    const eventSaved = await this.getOneEvent(id)
+    await this.saveEventRedisCache(eventSaved)
   }
 
   async updateStatusForEventArray(events: EventEntity[]) {
@@ -171,7 +189,10 @@ export default class EventService {
         }
       }
     }
-    return event
+    const eventSaved = await this.getOneEvent(event.id)
+    await this.saveEventRedisCache(eventSaved)
+
+    return eventSaved
   }
 
   async multipleUpdateForEvent(eventId: number) {

@@ -5,7 +5,7 @@ import type { FindOperator } from 'typeorm'
 import { DataSource, ILike } from 'typeorm'
 import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { dataBaseConfig } from '../ormconfig'
-import { useLogger } from './middlewares/loggerService'
+import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import type { FileEntity } from './entity/FileEntity'
 import type { UserEntity } from './entity/UserEntity'
@@ -86,8 +86,6 @@ export const userResponse = (entity: UserEntity): UserEntity => {
 }
 
 export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {
-  const { logger } = useLogger()
-
   try {
     logger.info(`${req.url} route accessed`)
     await request()

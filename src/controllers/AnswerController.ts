@@ -10,6 +10,8 @@ import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
 import { checkUserRole } from '../middlewares'
+import { defaultQueue } from '../jobs/queue/queue'
+import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -42,7 +44,10 @@ export default class AnswerController {
       const answer = await this.AnswerService.createOne(eventId, employeeId)
       await this.saveAnswerInCache(answer)
 
-      await this.EventService.multipleUpdateForEvent(eventId)
+      const name = Date.now().toString()
+      await defaultQueue.add(name, new UpdateEventStatusJob({
+        eventId,
+      }))
 
       if (answer) {
         return res.status(200).json(answer)
@@ -60,7 +65,10 @@ export default class AnswerController {
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
 
-      await this.EventService.multipleUpdateForEvent(eventId)
+      const name = Date.now().toString()
+      await defaultQueue.add(name, new UpdateEventStatusJob({
+        eventId,
+      }))
 
       if (answers && answers.length > 0) {
         return res.status(200).json(answers)

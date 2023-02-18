@@ -4,7 +4,7 @@ import type { Logger } from 'pino'
 import type { EntityManager } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
 import MailService from '../services/MailService'
-import { useLogger } from '../middlewares/loggerService'
+import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
@@ -26,7 +26,7 @@ export default class AuthController {
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.MailService = new MailService()
-    this.logger = useLogger().logger
+    this.logger = logger
   }
 
   public forgotPassword = async (req: Request, res: Response) => {
