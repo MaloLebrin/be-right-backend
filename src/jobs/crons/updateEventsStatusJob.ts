@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import EventEntity from '../entity/EventEntity'
-import { useLogger } from '../middlewares/loggerService'
-import EventService from '../services/EventService'
+import EventEntity from '../../entity/EventEntity'
+import { useLogger } from '../../middlewares/loggerService'
+import EventService from '../../services/EventService'
 
 export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
   const { logger } = useLogger()
