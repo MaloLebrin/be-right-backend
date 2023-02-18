@@ -1,6 +1,6 @@
 import type { Job } from 'bullmq'
 import { APP_SOURCE } from '../../..'
-import { useLogger } from '../../../middlewares/loggerService'
+import { logger } from '../../../middlewares/loggerService'
 import EventService from '../../../services/EventService'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
@@ -16,7 +16,7 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
     const event = await eventService.getOneEvent(eventId as number)
 
     if (event) {
-      useLogger().logger.info(event, 'event')
+      logger.info(event, 'event')
       await eventService.getNumberSignatureNeededForEvent(event.id)
       await eventService.updateStatusEventWhenCompleted(event)
       await eventService.updateStatusForEventArray([event])
@@ -24,6 +24,6 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
   }
 
   failed = (job: Job) => {
-    useLogger().logger.error(`Job(${this.name}) with ID: ${job.id} has failed`)
+    logger.error(`Job(${this.name}) with ID: ${job.id} has failed`)
   }
 }

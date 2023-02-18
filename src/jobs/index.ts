@@ -2,7 +2,7 @@ import cron from 'node-cron'
 import * as dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import { CronJobInterval } from '../utils/cronHelper'
-import { useLogger } from '../middlewares/loggerService'
+import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { createAppSource } from '../utils'
 import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
@@ -14,7 +14,6 @@ import udpateEventStatusJob from './crons/updateEventsStatusJob'
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
   } = useEnv()
-  const { logger } = useLogger()
   dotenv.config()
 
   const JOB_APP_SOURCE = createAppSource()

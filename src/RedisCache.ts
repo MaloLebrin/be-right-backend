@@ -2,7 +2,7 @@ import type { Redis as RedisClient } from 'ioredis'
 import Redis from 'ioredis'
 import type { Logger } from 'pino'
 import type { BaseEntity } from './entity/BaseEntity'
-import { useLogger } from './middlewares/loggerService'
+import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
 
 export default class RedisCache {
@@ -11,7 +11,6 @@ export default class RedisCache {
   private logger: Logger
 
   constructor() {
-    const { logger } = useLogger()
     this.logger = logger
 
     if (!this.connected) {

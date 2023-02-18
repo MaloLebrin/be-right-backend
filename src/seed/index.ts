@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv'
 import type { DataSource } from 'typeorm'
-import { useLogger } from '../middlewares/loggerService'
+import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
 import { createAdminUser } from './admin'
@@ -24,7 +24,6 @@ async function createDevSeeders() {
   } = useEnv()
 
   if (NODE_ENV === 'test') {
-    const { logger } = useLogger()
     APP_SOURCE_SEEDER.initialize().then(async () => {
       dotenv.config()
 

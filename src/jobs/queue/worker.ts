@@ -1,6 +1,6 @@
 import type { Job } from 'bullmq'
 import { Worker } from 'bullmq'
-import { useLogger } from '../../middlewares/loggerService'
+import { logger } from '../../middlewares/loggerService'
 import { concurrency, connection } from './config'
 import type { JobImp } from './jobs/job.definition'
 import { getJobInstance } from './jobs/provider'
@@ -11,8 +11,6 @@ export interface WorkerReply {
 }
 
 export const defaultWorker = async (queueName: string) => {
-  const { logger } = useLogger()
-
   const worker = new Worker<JobImp, WorkerReply>(
     queueName,
     async (job: Job) => {

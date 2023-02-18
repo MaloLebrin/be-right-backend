@@ -3,11 +3,10 @@ import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
 import { Role, ThemeEnumArray } from '../../types'
-import { useLogger } from '../loggerService'
+import { logger } from '../loggerService'
 
 export function useValidation() {
   const validate = <T extends ObjectShape>(schema: ObjectSchema<T>) => async (req: Request, res: Response, next: NextFunction) => {
-    const { logger } = useLogger()
     logger.info(`${req.url} validation started`)
 
     try {
