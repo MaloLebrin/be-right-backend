@@ -6,6 +6,9 @@ export const defaultQueueName = 'default-queue'
 
 export const defaultQueue = new Queue(defaultQueueName, {
   connection,
+  defaultJobOptions: {
+    delay: 5000,
+  },
 })
 
 export async function setupBullMqProcessor(queueName: string = defaultQueueName) {
