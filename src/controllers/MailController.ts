@@ -9,6 +9,7 @@ import AnswerService from '../services/AnswerService'
 import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import { firtSendAnswerTemplate } from '../utils/mailJetHelpers'
 import Context from '../context'
+import { isUserAdmin } from '../utils/userHelper'
 
 export class MailController {
   logger: Logger<{
@@ -36,8 +37,15 @@ export class MailController {
       if (answerId) {
         const answer = await this.AnswerService.getOne(answerId, true)
 
+        const event = answer.event
+        const currentUser = ctx.user
+
+        if (event && (event.createdByUserId !== currentUser.id && !isUserAdmin(currentUser))) {
+          throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
+        }
+
         if (!answer) {
-          throw new ApiError(422, 'Réponse à l\'événement manquante').Handler(res)
+          throw new ApiError(422, 'Réponse à l\'événement manquante')
         }
 
         const employee = answer.employee as EmployeeEntity
@@ -47,7 +55,7 @@ export class MailController {
           return res.status(200).json({ status, message, body })
         }
       }
-      throw new ApiError(422, 'Identifiant manquant').Handler(res)
+      throw new ApiError(422, 'Identifiant manquant')
     })
   }
 }
