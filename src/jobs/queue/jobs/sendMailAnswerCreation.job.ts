@@ -15,14 +15,14 @@ interface JobPayload {
 }
 
 export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
-  constructor(public payoad: JobPayload) {
+  constructor(public payoad: Record<string, unknown>) {
     super()
   }
 
   handle = async () => {
     const mailjetService = new MailjetService(APP_SOURCE)
 
-    const { answers, user } = this.payoad
+    const { answers, user } = this.payoad as unknown as JobPayload
 
     if (answers?.length > 0 && user) {
       await Promise.all(answers.map(async answer => {

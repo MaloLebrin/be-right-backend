@@ -59,7 +59,7 @@ export class MailjetService {
       ],
       Subject: 'Vous avez un document à signer',
       TemplateID: 4583388,
-      TemplateLanguage: true,
+      // TemplateLanguage: true,
       // TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
       // HTMLPart: template || '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
       data: { prénom: employee.firstName },
