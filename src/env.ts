@@ -2,6 +2,7 @@ export function useEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
     PORT: parseInt(process.env.PORT!),
+
     DATABASE_URL: process.env.DATABASE_URL,
     DB_USERNAME_PROD: process.env.DB_USERNAME_PROD,
     DB_PASSWORD_PROD: process.env.DB_PASSWORD_PROD,
@@ -12,8 +13,13 @@ export function useEnv() {
 
     MAIL_ADRESS: process.env.MAIL_ADRESS,
     MAIL_MDP: process.env.MAIL_MDP,
+    MJ_APIKEY_PUBLIC: process.env.MJ_APIKEY_PUBLIC,
+    MJ_APIKEY_PRIVATE: process.env.MJ_APIKEY_PRIVATE,
+
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+    ADMIN_FIRTNAME: process.env.ADMIN_FIRTNAME,
+    ADMIN_LASTNAME: process.env.ADMIN_LASTNAME,
 
     FRONT_URL: process.env.FRONT_URL,
     JWT_SECRET: process.env.JWT_SECRET,

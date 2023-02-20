@@ -6,7 +6,6 @@ import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { createAppSource } from '../utils'
 import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
-import udpateEventStatusJob from './crons/updateEventsStatusJob'
 
 (async () => {
   const {
@@ -32,12 +31,12 @@ import udpateEventStatusJob from './crons/updateEventsStatusJob'
     api_secret: CLOUDINARY_API_SECRET,
   })
 
-  cron.schedule(
-    CronJobInterval.EVERY_DAY_4_AM,
-    async () => {
-      await udpateEventStatusJob(JOB_APP_SOURCE)
-    },
-  )
+  // cron.schedule(
+  //   CronJobInterval.EVERY_DAY_4_AM,
+  //   async () => {
+  //     await udpateEventStatusJob(JOB_APP_SOURCE)
+  //   },
+  // )
 
   cron.schedule(
     CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,

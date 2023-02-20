@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import type { Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import type AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
@@ -10,17 +11,24 @@ import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
 import { checkUserRole } from '../middlewares'
+import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
   EventService: EventService
+  mailJetService: MailjetService
   redisCache: RedisCache
+  employeeRepository: Repository<EmployeeEntity>
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
+    this.mailJetService = new MailjetService(APP_SOURCE)
+    this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.redisCache = REDIS_CACHE
   }
 
@@ -44,10 +52,29 @@ export default class AnswerController {
       const answer = await this.AnswerService.createOne(eventId, employeeId)
       await this.saveAnswerInCache(answer)
 
+      const event = await this.EventService.getOneEvent(eventId)
+
       const name = Date.now().toString()
       await defaultQueue.add(name, new UpdateEventStatusJob({
         eventId,
       }))
+
+      const employee = await this.employeeRepository.findOne({
+        where: {
+          id: employeeId,
+        },
+      })
+
+      if (employee && event) {
+        const name = Date.now().toString()
+        await defaultQueue.add(name, new SendMailAnswerCreationjob({
+          answers: [{
+            ...answer,
+            employee,
+          }],
+          user: event.createdByUser,
+        }))
+      }
 
       if (answer) {
         return res.status(200).json(answer)
@@ -64,6 +91,17 @@ export default class AnswerController {
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
+
+      const answersToSendMail = await this.AnswerService.getMany(answers.map(ans => ans.id), true)
+      const event = await this.EventService.getOneEvent(eventId)
+
+      if (answersToSendMail.length > 0 && event) {
+        const name = Date.now().toString()
+        await defaultQueue.add(name, new SendMailAnswerCreationjob({
+          answers: answersToSendMail,
+          user: event.createdByUser,
+        }))
+      }
 
       const name = Date.now().toString()
       await defaultQueue.add(name, new UpdateEventStatusJob({

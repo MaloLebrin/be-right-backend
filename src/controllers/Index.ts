@@ -19,3 +19,5 @@ export default {
   NewsletterController,
   UserController,
 }
+
+export { MailController } from './MailController'
