@@ -6,7 +6,7 @@ import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
 export class UpdateEventStatusJob extends BaseJob implements JobImp {
-  constructor(public payoad: Record<string, number>) {
+  constructor(public payoad: { eventId: number }) {
     super()
   }
 
