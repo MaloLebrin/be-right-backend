@@ -15,6 +15,7 @@ import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -51,6 +52,8 @@ export default class AnswerController {
       const answer = await this.AnswerService.createOne(eventId, employeeId)
       await this.saveAnswerInCache(answer)
 
+      const event = await this.EventService.getOneEvent(eventId)
+
       const name = Date.now().toString()
       await defaultQueue.add(name, new UpdateEventStatusJob({
         eventId,
@@ -62,8 +65,15 @@ export default class AnswerController {
         },
       })
 
-      if (employee) {
-        await this.mailJetService.sendEmployeeMail({ answer, employee })
+      if (employee && event) {
+        const name = Date.now().toString()
+        await defaultQueue.add(name, new SendMailAnswerCreationjob({
+          answers: [{
+            ...answer,
+            employee,
+          }],
+          user: event.createdByUser,
+        }))
       }
 
       if (answer) {
@@ -83,11 +93,13 @@ export default class AnswerController {
       await this.saveManyAnswerInCache(answers)
 
       const answersToSendMail = await this.AnswerService.getMany(answers.map(ans => ans.id), true)
+      const event = await this.EventService.getOneEvent(eventId)
 
-      if (answersToSendMail.length > 0) {
-        await Promise.all(answersToSendMail.map(async answ => {
-          const employee = answ.employee as EmployeeEntity
-          return this.mailJetService.sendEmployeeMail({ answer: answ, employee })
+      if (answersToSendMail.length > 0 && event) {
+        const name = Date.now().toString()
+        await defaultQueue.add(name, new SendMailAnswerCreationjob({
+          answers: answersToSendMail,
+          user: event.createdByUser,
         }))
       }
 
