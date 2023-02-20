@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import type { Logger } from 'pino'
-import { useLogger } from '../middlewares/loggerService'
+import { logger } from '../middlewares/loggerService'
 import { MailjetService } from '../services'
 import { wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
@@ -26,7 +26,7 @@ export class MailController {
   constructor() {
     this.MailjetService = new MailjetService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
-    this.logger = useLogger().logger
+    this.logger = logger
   }
 
   public sendMailToEmployee = async (req: Request, res: Response) => {
