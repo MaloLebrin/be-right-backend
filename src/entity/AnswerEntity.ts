@@ -15,7 +15,10 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
-  @Column({ unique: true })
+  @Column({
+    unique: true,
+    nullable: true,
+  })
   token: string
 
   @Column({ nullable: true, default: null })
