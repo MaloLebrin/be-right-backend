@@ -37,7 +37,7 @@ export default class AuthController {
       const user = await this.getManager.findOneBy(UserEntity, { email })
 
       if (!user) {
-        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email').Handler(res)
+        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
       }
 
       const twoFactorSecret = uid2(128)
@@ -75,11 +75,11 @@ export default class AuthController {
       const user = await this.getManager.findOneBy(UserEntity, { email })
 
       if (!user) {
-        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email').Handler(res)
+        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
       }
 
       if (user.twoFactorRecoveryCode !== twoFactorRecoveryCode || email !== user.email) {
-        throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action').Handler(res)
+        throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
       }
 
       user.password = generateHash(user.salt, password)

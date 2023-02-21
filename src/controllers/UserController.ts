@@ -72,7 +72,7 @@ export default class UserController {
 
       const userAlReadyExist = await this.UserService.findOneByEmail(email)
       if (userAlReadyExist) {
-        throw new ApiError(423, 'cet email existe déjà').Handler(res)
+        throw new ApiError(423, 'cet email existe déjà')
       }
 
       const newUser = await this.UserService.createOneUser({
@@ -132,7 +132,7 @@ export default class UserController {
         if (user) {
           return res.status(200).json(userResponse(user))
         }
-        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
+        throw new ApiError(404, 'Utilisateur non trouvé')
       }
     })
   }
@@ -173,7 +173,7 @@ export default class UserController {
           return res.status(200).json(userResponse(user))
         }
 
-        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
+        throw new ApiError(404, 'Utilisateur non trouvé')
       }
     })
   }
@@ -223,12 +223,12 @@ export default class UserController {
             return res.status(200).json(userResponse(userUpdated))
           }
 
-          throw new ApiError(422, 'L\'utilisateur n\'a pas été mis à jour').Handler(res)
+          throw new ApiError(422, 'L\'utilisateur n\'a pas été mis à jour')
         } else {
-          throw new ApiError(401, 'Action non autorisée').Handler(res)
+          throw new ApiError(401, 'Action non autorisée')
         }
       }
-      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
     })
   }
 
@@ -256,7 +256,7 @@ export default class UserController {
           return res.status(200).json(userResponse(user))
         }
       }
-      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
     })
   }
 
@@ -268,7 +268,7 @@ export default class UserController {
         const userToDelete = await this.UserService.getOne(id, true)
 
         if (!userToDelete) {
-          throw new ApiError(422, 'L\'utilisateur n\'éxiste pas').Handler(res)
+          throw new ApiError(422, 'L\'utilisateur n\'éxiste pas')
         }
 
         if (userToDelete.addressId) {
@@ -311,9 +311,9 @@ export default class UserController {
           return res.status(204).json(userDeleted)
         }
 
-        throw new ApiError(422, 'Utilisateur non supprimé').Handler(res)
+        throw new ApiError(422, 'Utilisateur non supprimé')
       } else {
-        throw new ApiError(401, 'Action non autorisée').Handler(res)
+        throw new ApiError(401, 'Action non autorisée')
       }
     })
   }
@@ -341,10 +341,10 @@ export default class UserController {
 
           return res.status(200).json(userToSend)
         } else {
-          throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect').Handler(res)
+          throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
         }
       } else {
-        throw new ApiError(404, 'Utilisateur non trouvé').Handler(res)
+        throw new ApiError(404, 'Utilisateur non trouvé')
       }
     })
   }
@@ -380,7 +380,7 @@ export default class UserController {
 
         return res.status(200).json([])
       }
-      throw new ApiError(422, 'Veuillez renseigner l\'identifiant utilisateur').Handler(res)
+      throw new ApiError(422, 'Veuillez renseigner l\'identifiant utilisateur')
     })
   }
 
@@ -403,7 +403,7 @@ export default class UserController {
         })
       }
 
-      throw new ApiError(422, 'Veuillez renseigner l\'email').Handler(res)
+      throw new ApiError(422, 'Veuillez renseigner l\'email')
     })
   }
 }

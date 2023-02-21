@@ -86,7 +86,7 @@ export default class EventSpecificController {
           })
         }
 
-        throw new ApiError(401, 'Action non autorisée').Handler(res)
+        throw new ApiError(401, 'Action non autorisée')
       }
     })
   }

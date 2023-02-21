@@ -70,7 +70,7 @@ export default class EventController {
         return res.status(200).json(newEvent)
       }
 
-      throw new ApiError(422, 'Formulaire incomplet').Handler(res)
+      throw new ApiError(422, 'Formulaire incomplet')
     })
   }
 
@@ -96,10 +96,10 @@ export default class EventController {
         if (checkUserRole(Role.ADMIN) || event.createdByUserId === userId) {
           return res.status(200).json(event)
         } else {
-          throw new ApiError(401, 'Action non autorisée').Handler(res)
+          throw new ApiError(401, 'Action non autorisée')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -121,7 +121,7 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
-      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
+      throw new ApiError(422, 'identifiants des événements manquant')
     })
   }
 
@@ -149,7 +149,7 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
-      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
+      throw new ApiError(422, 'identifiants des événements manquant')
     })
   }
 
@@ -198,10 +198,10 @@ export default class EventController {
 
           return res.status(200).json(eventUpdated)
         } else {
-          throw new ApiError(422, 'Événement non mis à jour').Handler(res)
+          throw new ApiError(422, 'Événement non mis à jour')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -214,7 +214,7 @@ export default class EventController {
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
         if (!eventToDelete) {
-          throw new ApiError(422, 'L\'événement n\'éxiste pas').Handler(res)
+          throw new ApiError(422, 'L\'événement n\'éxiste pas')
         }
 
         if (eventToDelete?.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
@@ -223,10 +223,10 @@ export default class EventController {
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {
-          throw new ApiError(401, 'Action non autorisée').Handler(res)
+          throw new ApiError(401, 'Action non autorisée')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 }

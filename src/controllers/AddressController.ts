@@ -37,7 +37,7 @@ export class AddresController {
         return res.status(200).json(address)
       }
 
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 
@@ -52,7 +52,7 @@ export class AddresController {
         return res.status(200).json(addresses)
       }
 
-      throw new ApiError(422, 'Identifiants des addresses sont requis').Handler(res)
+      throw new ApiError(422, 'Identifiants des addresses sont requis')
     })
   }
 
@@ -82,7 +82,7 @@ export class AddresController {
         await this.saveAddressInCache(newAddress)
         return res.status(200).json(newAddress)
       }
-      throw new ApiError(422, 'Addresse non crée').Handler(res)
+      throw new ApiError(422, 'Addresse non crée')
     })
   }
 
@@ -101,9 +101,9 @@ export class AddresController {
           return res.status(200).json(addressUpdated)
         }
 
-        throw new ApiError(422, 'Addresse manquante').Handler(res)
+        throw new ApiError(422, 'Addresse manquante')
       }
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 
@@ -122,7 +122,7 @@ export class AddresController {
         return res.status(203).json({ success: true, error: 'Adresse supprimée' })
       }
 
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 }

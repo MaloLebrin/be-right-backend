@@ -67,7 +67,7 @@ export default class EmployeeController {
       const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
 
       if (isEmployeeAlreadyExist) {
-        throw new ApiError(423, 'cet email existe déjà').Handler(res)
+        throw new ApiError(423, 'cet email existe déjà')
       }
 
       const newEmployee = await this.EmployeeService.createOne(employee, userId)
@@ -122,7 +122,7 @@ export default class EmployeeController {
         }))
         return res.status(200).json(newEmployees)
       }
-      throw new ApiError(422, 'Destinataires manquant').Handler(res)
+      throw new ApiError(422, 'Destinataires manquant')
     })
   }
 
@@ -185,7 +185,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employee)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -210,7 +210,7 @@ export default class EmployeeController {
           return res.status(200).json(employees)
         }
       }
-      throw new ApiError(422, 'identifiants des destinataires manquants').Handler(res)
+      throw new ApiError(422, 'identifiants des destinataires manquants')
     })
   }
 
@@ -227,7 +227,7 @@ export default class EmployeeController {
         return res.status(200).json(employees)
       }
 
-      throw new ApiError(422, 'identifiant de l\'utilisateur manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'utilisateur manquant')
     })
   }
 
@@ -243,7 +243,7 @@ export default class EmployeeController {
         const employees = answers.map(answer => answer.employee)
         return res.status(200).json(employees)
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -285,7 +285,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employeeUpdated)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -297,7 +297,7 @@ export default class EmployeeController {
 
         return res.status(200).json(event)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -323,9 +323,9 @@ export default class EmployeeController {
           await this.RediceService.updateCurrentUserInCache({ userId })
           return res.status(204).json(getEmployee)
         }
-        throw new ApiError(401, 'Action non autorisée').Handler(res)
+        throw new ApiError(401, 'Action non autorisée')
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 }

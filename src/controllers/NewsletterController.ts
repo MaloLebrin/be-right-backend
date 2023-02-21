@@ -30,7 +30,7 @@ export default class NewsletterController {
       const recipientAlreadyExist = await this.repository.findOneBy({ email })
 
       if (recipientAlreadyExist) {
-        throw new ApiError(423, 'cet email existe déjà').Handler(res)
+        throw new ApiError(423, 'cet email existe déjà')
       }
 
       const employee = await this.getManager.findOneBy(EmployeeEntity, { email })
@@ -80,7 +80,7 @@ export default class NewsletterController {
         await this.repository.softDelete(id)
         return res.status(204).json({ data: recipient, message: 'événement supprimé' })
       }
-      throw new ApiError(401, 'Action non autorisée').Handler(res)
+      throw new ApiError(401, 'Action non autorisée')
     })
   }
 }

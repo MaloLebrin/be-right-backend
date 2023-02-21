@@ -13,7 +13,7 @@ export default function checkUserRole(role: Role) {
       return next()
     } else {
       logger.debug('user no allowed')
-      throw new ApiError(401, 'Action non autorisée').Handler(res)
+      throw new ApiError(401, 'Action non autorisée')
     }
   }
 }

@@ -80,7 +80,7 @@ export default class AnswerController {
         return res.status(200).json(answer)
       }
 
-      throw new ApiError(422, 'Destinataire non lié avec l\'événement').Handler(res)
+      throw new ApiError(422, 'Destinataire non lié avec l\'événement')
     })
   }
 
@@ -111,7 +111,7 @@ export default class AnswerController {
       if (answers && answers.length > 0) {
         return res.status(200).json(answers)
       }
-      throw new ApiError(422, 'Destinataires non liés avec l\'événement').Handler(res)
+      throw new ApiError(422, 'Destinataires non liés avec l\'événement')
     })
   }
 
@@ -123,7 +123,7 @@ export default class AnswerController {
         return res.status(200).json(answers)
       }
 
-      throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'Identifiant de l\'événement manquant')
     })
   }
 
@@ -147,7 +147,7 @@ export default class AnswerController {
           return res.status(200).json(answers)
         }
       }
-      throw new ApiError(422, 'Identifiants manquants').Handler(res)
+      throw new ApiError(422, 'Identifiants manquants')
     })
   }
 
@@ -171,7 +171,7 @@ export default class AnswerController {
           return res.status(200).json(answers)
         }
       }
-      throw new ApiError(422, 'Identifiants des événements manquant').Handler(res)
+      throw new ApiError(422, 'Identifiants des événements manquant')
     })
   }
 
@@ -208,7 +208,7 @@ export default class AnswerController {
           return res.status(200).json(answer)
         }
       }
-      throw new ApiError(422, 'Paramètres manquants').Handler(res)
+      throw new ApiError(422, 'Paramètres manquants')
     })
   }
 
@@ -228,7 +228,7 @@ export default class AnswerController {
         await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
         return res.status(200).json(answer)
       }
-      throw new ApiError(422, 'Identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'Identifiant de l\'événement manquant')
     })
   }
 }
