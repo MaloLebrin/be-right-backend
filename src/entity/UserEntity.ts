@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typ
 import { Role, ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'

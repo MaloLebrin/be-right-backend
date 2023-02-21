@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { EventStatusEnum } from '../types/Event'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 

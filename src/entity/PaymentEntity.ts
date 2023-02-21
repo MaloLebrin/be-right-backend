@@ -1,5 +1,5 @@
 import { Column, Entity, OneToOne, RelationId } from 'typeorm'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
 @Entity()

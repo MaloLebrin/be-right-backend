@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { UserEntity } from './UserEntity'
 import AnswerEntity from './AnswerEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { AddressEntity } from './AddressEntity'
 import { FileEntity } from './FileEntity'
 

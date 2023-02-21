@@ -1,6 +1,6 @@
 import AnswerEntity from './AnswerEntity'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { BugReportEntity } from './BugReportEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'

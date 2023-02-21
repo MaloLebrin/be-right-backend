@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { SubscriptionEnum } from '../types/Subscription'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { PaymentEntity } from './PaymentEntity'
 
 @Entity()
