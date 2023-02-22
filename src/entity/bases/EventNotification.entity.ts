@@ -21,12 +21,14 @@ export class EventNotificationEntity extends BaseEntity {
   notificationIds: number[]
 
   @OneToMany(() => EventEntity, event => event.createdByUser, { nullable: true })
+  @JoinColumn()
   events: EventEntity[]
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.events)
   eventIds: number[]
 
   @OneToMany(() => AnswerEntity, answer => answer.eventNotification, { nullable: true })
+  @JoinColumn()
   answers: AnswerEntity[]
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answers)
