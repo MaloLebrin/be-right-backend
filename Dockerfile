@@ -15,6 +15,7 @@ RUN nci
 # Be careful with this env variable
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV}
+# A éviter
 
 COPY .env /app/.env
 COPY ormconfig.ts /app/ormconfig.ts
@@ -25,6 +26,7 @@ COPY ./src /app/src
 
 RUN nr tsc
 
-RUN chmod +x /app/entrypoint.sh
-RUN chmod +x /app/scriptSeed.sh
-ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
+RUN chmod +x /app/entrypoint.sh /app/scriptSeed.sh
+
+ENTRYPOINT ["/bin/bash"]
+CMD ["/app/entrypoint.sh"]

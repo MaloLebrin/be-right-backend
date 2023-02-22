@@ -14,10 +14,10 @@ services:
 
   redis:
     image: 'redis:alpine'
-    ports:
+    ports: # ext
       - '6379:6379'
-    expose:
-      - 6379
+    # expose: # interne
+    #   - 6379
 
   app:
     links:
@@ -39,6 +39,7 @@ services:
     build:
       context: .
       dockerfile: ./cron.Dockerfile
+      # regarder pour lancer le conteneur avec comme Arg le bon arg
     env_file:
       - .env
 

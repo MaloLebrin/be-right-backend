@@ -60,6 +60,7 @@ export const dataBaseConfig = {
       subscribersDir: './src/subscriber',
     },
   },
+
   test: {
     name: 'test',
     type: 'postgres',
