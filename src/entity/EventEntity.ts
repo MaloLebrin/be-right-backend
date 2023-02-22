@@ -2,7 +2,6 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId 
 import { EventStatusEnum } from '../types/Event'
 import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './bases/BaseEntity'
-import { EventNotificationEntity } from './bases/EventNotification.entity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 
@@ -41,12 +40,6 @@ export default class EventEntity extends BaseEntity {
 
   @RelationId((event: EventEntity) => event.createdByUser)
   createdByUserId: number
-
-  @ManyToOne(() => EventNotificationEntity, eventNotif => eventNotif.events)
-  eventNotification: EventNotificationEntity
-
-  @RelationId((event: EventEntity) => event.eventNotification)
-  eventNotificationId: number
 
   @OneToMany(() => FileEntity, file => file.event, { orphanedRowAction: 'soft-delete' })
   files: FileEntity[]

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { NotificationTypeEnum } from '../../types'
 import AnswerEntity from '../AnswerEntity'
 import EventEntity from '../EventEntity'
@@ -14,23 +14,22 @@ export class EventNotificationEntity extends BaseEntity {
   name: NotificationTypeEnum
 
   @OneToMany(() => NotificationEntity, notif => notif.eventNotification)
-  @JoinColumn()
   notifications: NotificationEntity[]
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.notifications)
   notificationIds: number[]
 
-  @OneToMany(() => EventEntity, event => event.createdByUser, { nullable: true })
+  @OneToOne(() => EventEntity, { nullable: true })
   @JoinColumn()
-  events: EventEntity[]
+  event: EventEntity
 
-  @RelationId((eventNotif: EventNotificationEntity) => eventNotif.events)
-  eventIds: number[]
+  @RelationId((eventNotif: EventNotificationEntity) => eventNotif.event)
+  eventId: number
 
-  @OneToMany(() => AnswerEntity, answer => answer.eventNotification, { nullable: true })
+  @OneToOne(() => AnswerEntity, { nullable: true })
   @JoinColumn()
-  answers: AnswerEntity[]
+  answer: AnswerEntity
 
-  @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answers)
-  answerIds: number[]
+  @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answer)
+  answerId: number
 }

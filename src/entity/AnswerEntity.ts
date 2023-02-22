@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { BaseEntity } from './bases/BaseEntity'
-import { EventNotificationEntity } from './bases/EventNotification.entity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
@@ -38,12 +37,6 @@ export default class AnswerEntity extends BaseEntity {
 
   @RelationId((answer: AnswerEntity) => answer.event)
   eventId: number
-
-  @ManyToOne(() => EventNotificationEntity, eventNotif => eventNotif.answers)
-  eventNotification: EventNotificationEntity
-
-  @RelationId((answer: AnswerEntity) => answer.eventNotification)
-  eventNotificationId: number
 
   @OneToMany(() => MailEntity, mail => mail.answer, { cascade: true })
   mails: MailEntity[]

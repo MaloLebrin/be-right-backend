@@ -6,7 +6,7 @@ import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
 import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import { EntitiesEnum, Role } from '../types'
+import { EntitiesEnum, NotificationTypeEnum, Role } from '../types'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -15,6 +15,8 @@ import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
 import RedisService from '../services/RedisService'
+import { defaultQueue } from '../jobs/queue/queue'
+import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 
 export default class EventController {
   AddressService: AddressService
@@ -59,6 +61,12 @@ export default class EventController {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
 
         if (newEvent && address) {
+          const name = `create-event-notif-${Date.now().toString()}`
+          await defaultQueue.add(name, new CreateEventNotificationsJob({
+            type: NotificationTypeEnum.EVENT_CREATED,
+            event: newEvent,
+          }))
+
           await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
