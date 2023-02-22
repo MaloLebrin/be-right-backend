@@ -6,6 +6,7 @@ import { BaseEntity } from './bases/BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
+import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
 import { SessionEntity } from './SessionEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
@@ -72,6 +73,12 @@ export class UserEntity extends BaseEntity {
 
   @RelationId((user: UserEntity) => user.events)
   eventIds: number[]
+
+  @OneToMany(() => NotificationSubcriptionEntity, notifSubscription => notifSubscription.createdByUser, { cascade: true })
+  notificationSubscriptions: NotificationSubcriptionEntity[]
+
+  @RelationId((user: UserEntity) => user.events)
+  notificationSubscriptionIds: number[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
   @JoinColumn()
