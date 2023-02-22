@@ -1,4 +1,5 @@
 import { plainToInstance } from 'class-transformer'
+import { NotificationTypeEnum } from '../../../types'
 import { CreateEventNotificationsJob } from './createNotifications.job'
 import type { JobImp } from './job.definition'
 import { SendMailAnswerCreationjob } from './sendMailAnswerCreation.job'
@@ -16,4 +17,31 @@ export const getJobInstance = (data: JobImp): JobImp => {
     return plainToInstance(jobClass, data)
   }
   return null
+}
+
+export function generateQueueName(type?: NotificationTypeEnum) {
+  const name = Date.now().toString()
+
+  switch (type) {
+    case NotificationTypeEnum.ANSWER_RESPONSE:
+      return `answer-response-notif-${name}`
+
+    case NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED:
+      return `answer-response-accepted-notif-${name}`
+
+    case NotificationTypeEnum.ANSWER_RESPONSE_REFUSED:
+      return `answer-response-refused-notif-${name}`
+
+    case NotificationTypeEnum.EVENT_CREATED:
+      return `create-event-notif-${name}`
+
+    case NotificationTypeEnum.EVENT_CLOSED:
+      return `close-event-notif-${name}`
+
+    case NotificationTypeEnum.EVENT_COMPLETED:
+      return `complete-event-notif-${name}`
+
+    default:
+      return name
+  }
 }

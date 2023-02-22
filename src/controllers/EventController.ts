@@ -17,6 +17,7 @@ import { ApiError } from '../middlewares/ApiError'
 import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
+import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export default class EventController {
   AddressService: AddressService
@@ -61,11 +62,12 @@ export default class EventController {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
 
         if (newEvent && address) {
-          const name = `create-event-notif-${Date.now().toString()}`
-          await defaultQueue.add(name, new CreateEventNotificationsJob({
-            type: NotificationTypeEnum.EVENT_CREATED,
-            event: newEvent,
-          }))
+          await defaultQueue.add(
+            generateQueueName(NotificationTypeEnum.EVENT_CREATED),
+            new CreateEventNotificationsJob({
+              type: NotificationTypeEnum.EVENT_CREATED,
+              event: newEvent,
+            }))
 
           await this.AddressService.createOne({
             address,
