@@ -1,14 +1,11 @@
 import type { Job } from 'bullmq'
 import { logger } from '../../../middlewares/loggerService'
+import type { NotificationTypeEnum } from '../../../types'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
-// interface JobPayload {
-//   eventNotification: EventNo
-// }
-
 export class CreateNotificationsJob extends BaseJob implements JobImp {
-  constructor(public payoad: Record<string, unknown>) {
+  constructor(public payoad: { type: NotificationTypeEnum; userId: number }) {
     super()
   }
 

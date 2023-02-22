@@ -1,3 +1,5 @@
+import type { UserEntity } from '../entity/UserEntity'
+
 export enum NotificationTypeEnum {
   ANSWER_RESPONSE_ACCEPTED = 'ANSWER_RESPONSE_ACCEPTED',
   ANSWER_RESPONSE_REFUSED = 'ANSWER_RESPONSE_REFUSED',
@@ -5,4 +7,9 @@ export enum NotificationTypeEnum {
   EVENT_CREATED = 'EVENT_CREATED',
   EVENT_COMPLETED = 'EVENT_COMPLETED',
   EVENT_CLOSED = 'EVENT_CLOSED',
+}
+
+export interface CreateNotificationSubscriptionPayload {
+  type: NotificationTypeEnum
+  user: UserEntity
 }
