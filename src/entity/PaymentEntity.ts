@@ -1,4 +1,4 @@
-import { Column, Entity, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { BaseEntity } from './bases/BaseEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
@@ -17,6 +17,7 @@ export class PaymentEntity extends BaseEntity {
   executedAt: Date
 
   @OneToOne(() => SubscriptionEntity, subscription => subscription.payment, { nullable: true })
+  @JoinColumn()
   subscription: SubscriptionEntity
 
   @RelationId((payment: PaymentEntity) => payment.subscription)
