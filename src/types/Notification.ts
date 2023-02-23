@@ -9,6 +9,8 @@ export enum NotificationTypeEnum {
   EVENT_CLOSED = 'EVENT_CLOSED',
 }
 
+export const NotificationTypeEnumArray = Object.values(NotificationTypeEnum)
+
 export interface CreateNotificationSubscriptionPayload {
   type: NotificationTypeEnum
   user: UserEntity

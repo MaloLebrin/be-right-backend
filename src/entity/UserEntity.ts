@@ -74,12 +74,6 @@ export class UserEntity extends BaseEntity {
   @RelationId((user: UserEntity) => user.events)
   eventIds: number[]
 
-  @OneToMany(() => NotificationSubcriptionEntity, notifSubscription => notifSubscription.createdByUser, { cascade: true })
-  notificationSubscriptions: NotificationSubcriptionEntity[]
-
-  @RelationId((user: UserEntity) => user.events)
-  notificationSubscriptionIds: number[]
-
   @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
   @JoinColumn()
   employees: EmployeeEntity[]
@@ -115,6 +109,12 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[]
+
+  @OneToMany(() => NotificationSubcriptionEntity, notificationSubcription => notificationSubcription.createdByUser, { cascade: true })
+  notificationSubscriptions: NotificationSubcriptionEntity[]
+
+  @RelationId((user: UserEntity) => user.notificationSubscriptions)
+  notificationSubscriptionIds: number[]
 }
 
 export const userSearchableFields = [

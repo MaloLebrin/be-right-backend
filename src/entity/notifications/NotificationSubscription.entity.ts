@@ -13,8 +13,7 @@ export class NotificationSubcriptionEntity extends BaseEntity {
   })
   type: NotificationTypeEnum
 
-  @OneToMany(() => NotificationEntity, notif => notif.subscriberId, { cascade: true })
-  @JoinColumn()
+  @OneToMany(() => NotificationEntity, notif => notif.subscriber, { cascade: true })
   notifications: NotificationEntity[]
 
   @RelationId((notifSuscribtion: NotificationSubcriptionEntity) => notifSuscribtion.notifications)
