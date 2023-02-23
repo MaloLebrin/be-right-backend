@@ -66,6 +66,7 @@ export default class EventController {
             new CreateEventNotificationsJob({
               type: NotificationTypeEnum.EVENT_CREATED,
               event: newEvent,
+              userId,
             }))
 
           await this.AddressService.createOne({
