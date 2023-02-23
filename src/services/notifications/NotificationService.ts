@@ -32,6 +32,22 @@ export class NotificationService {
     })
   }
 
+  public getManyForUser = async (ids: number[], userId: number, withRelations?: boolean) => {
+    return this.repository.find({
+      where: {
+        id: In(ids),
+        subscriber: {
+          createdByUser: {
+            id: userId,
+          },
+        },
+      },
+      relations: {
+        eventNotification: withRelations,
+      },
+    })
+  }
+
   public getBySubscriberId = async (subscriberId: number) => {
     return this.repository.find({
       where: {
