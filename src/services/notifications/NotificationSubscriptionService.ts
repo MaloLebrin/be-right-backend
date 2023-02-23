@@ -1,6 +1,7 @@
 import type { DataSource, Repository } from 'typeorm'
+import { In } from 'typeorm'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
-import type { CreateNotificationSubscriptionPayload } from '../../types'
+import type { CreateNotificationSubscriptionPayload, NotificationTypeEnum } from '../../types'
 
 export class NotificationSubscriptionService {
   repository: Repository<NotificationSubcriptionEntity>
@@ -9,16 +10,45 @@ export class NotificationSubscriptionService {
     this.repository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
   }
 
-  public getOne = async (id: number) => {
+  public getOne = async (id: number, withRelations?: boolean) => {
     return this.repository.findOne({
       where: { id },
+      relations: {
+        notifications: withRelations,
+        createdByUser: withRelations,
+      },
     })
   }
 
-  public getOneByUserId = async (userId: number) => {
+  public getMany = async (ids: number[], withRelations?: boolean) => {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations: {
+        notifications: withRelations,
+        createdByUser: withRelations,
+      },
+    })
+  }
+
+  public getOneByUserAndType = async ({
+    userId,
+    type,
+    withRelations,
+  }: {
+    userId: number
+    type: NotificationTypeEnum
+    withRelations?: boolean
+  }) => {
     return this.repository.findOne({
       where: {
-        createdByUserId: userId,
+        createdByUser: {
+          id: userId,
+        },
+        type,
+      },
+      relations: {
+        notifications: withRelations,
+        createdByUser: withRelations,
       },
     })
   }
