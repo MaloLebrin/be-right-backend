@@ -13,35 +13,24 @@ export class EventNotificationService {
   }
 
   public getOne = async (id: number, withRelations?: boolean) => {
-    if (withRelations) {
-      return this.repository.findOne({
-        where: { id },
-        relations: [
-          'notifications',
-          'events',
-          'answers',
-        ],
-      })
-    }
     return this.repository.findOne({
       where: { id },
+      relations: {
+        notifications: withRelations,
+        event: withRelations,
+        answer: withRelations,
+      },
     })
   }
 
   public getMany = async (ids: number[], withRelations?: boolean) => {
-    if (withRelations) {
-      return this.repository.find({
-        where: { id: In(ids) },
-        relations: [
-          'notifications',
-          'events',
-          'answers',
-        ],
-      })
-    }
-
     return this.repository.find({
       where: { id: In(ids) },
+      relations: {
+        notifications: withRelations,
+        event: withRelations,
+        answer: withRelations,
+      },
     })
   }
 
