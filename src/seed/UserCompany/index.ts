@@ -6,11 +6,14 @@ import EmployeeService from '../../services/EmployeeService'
 import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import type EventEntity from '../../entity/EventEntity'
-import { SubscriptionEnum } from '../../types'
+import { NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } from '../../types'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import { MailjetService } from '../../services'
 import type { EmployeeEntity } from '../../entity/EmployeeEntity'
+import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
+import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
+import { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -40,6 +43,14 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
     subscription: SubscriptionEnum.PREMIUM,
   })
 
+  await Promise.all(NotificationTypeEnumArray.map(async value => {
+    const sub = getManager.create(NotificationSubcriptionEntity, {
+      createdByUser: user,
+      type: value,
+    })
+    return await getManager.save(sub)
+  }))
+
   await addressService.createOne({
     address: addressFixtureCompanyPremium,
     userId: user.id,
@@ -68,12 +79,34 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
     {
       ...eventFixtureCompanyPremium.event,
       employeeIds,
+      totalSignatureNeeded: employeeIds.length,
       createdByUser: user.id,
       partner,
     } as unknown as Partial<EventEntity>,
     user.id,
     1,
   )
+
+  const eventNotif = getManager.create(EventNotificationEntity, {
+    name: NotificationTypeEnum.EVENT_CREATED,
+    event,
+  })
+  await getManager.save(eventNotif)
+  const subscriber = await getManager.findOne(NotificationSubcriptionEntity, {
+    where: {
+      type: NotificationTypeEnum.EVENT_CREATED,
+      createdByUser: {
+        id: user.id,
+      },
+    },
+  })
+  const notif = getManager.create(NotificationEntity, {
+    eventNotification: eventNotif,
+    type: NotificationTypeEnum.EVENT_CREATED,
+    subscriber,
+  })
+
+  await getManager.save(notif)
 
   await addressService.createOne({
     address: eventFixtureCompanyPremium.address,
@@ -127,6 +160,19 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
     subscription: SubscriptionEnum.MEDIUM,
   })
 
+  await Promise.all([
+    NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
+    NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+    NotificationTypeEnum.EVENT_CLOSED,
+    NotificationTypeEnum.EVENT_COMPLETED,
+  ].map(async value => {
+    const sub = getManager.create(NotificationSubcriptionEntity, {
+      createdByUser: user,
+      type: value,
+    })
+    return await getManager.save(sub)
+  }))
+
   await addressService.createOne({
     address: addressFixtureCompanyMedium,
     userId: user.id,
@@ -155,6 +201,7 @@ export async function seedMediumUserData(APP_SOURCE_SEEDER: DataSource) {
     {
       ...eventFixtureCompanyMedium.event,
       employeeIds,
+      totalSignatureNeeded: employeeIds.length,
       createdByUser: user.id,
       partner: partner.id,
     } as unknown as Partial<EventEntity>,
