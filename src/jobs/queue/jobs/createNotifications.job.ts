@@ -4,6 +4,8 @@ import type AnswerEntity from '../../../entity/AnswerEntity'
 import type EventEntity from '../../../entity/EventEntity'
 import { logger } from '../../../middlewares/loggerService'
 import { EventNotificationService } from '../../../services/notifications/EventNotificationService'
+import { NotificationService } from '../../../services/notifications/NotificationService'
+import { NotificationSubscriptionService } from '../../../services/notifications/NotificationSubscriptionService'
 import type { NotificationTypeEnum } from '../../../types'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
@@ -11,7 +13,7 @@ import { BaseJob } from './job.definition'
 export class CreateEventNotificationsJob extends BaseJob implements JobImp {
   constructor(public payoad: {
     type: NotificationTypeEnum
-    // userId: number
+    userId: number
     answer?: AnswerEntity
     event?: EventEntity
   }) {
@@ -19,20 +21,37 @@ export class CreateEventNotificationsJob extends BaseJob implements JobImp {
   }
 
   handle = async () => {
-    const { type, answer, event } = this.payoad
+    const {
+      type,
+      userId,
+      answer,
+      event,
+    } = this.payoad
 
     if (type && (answer || event)) {
       const eventNotificationService = new EventNotificationService(APP_SOURCE)
-      await eventNotificationService.createOne({
+
+      const eventNotif = await eventNotificationService.createOne({
         name: type,
         answer: answer || null,
         event: event || null,
       })
 
-      // const n
-      // if (eventNotif) {
+      const notificationSubscriptionService = new NotificationSubscriptionService(APP_SOURCE)
 
-      // }
+      const notifSubscription = await notificationSubscriptionService.getOneByUserAndType({
+        type,
+        userId,
+      })
+
+      if (eventNotif && notifSubscription) {
+        const notificationService = new NotificationService(APP_SOURCE)
+        await notificationService.createOne({
+          type,
+          subscriber: notifSubscription,
+          eventNotification: eventNotif,
+        })
+      }
     }
   }
 
