@@ -13,13 +13,11 @@ export default class NotificationController {
   NotificationRepository: Repository<NotificationEntity>
   NotificationSubscriptionRepository: Repository<NotificationSubcriptionEntity>
   NotificationService: NotificationService
-  // EventNotificationRepository: Repository<EventNotificationEntity>
 
   constructor() {
     this.NotificationRepository = APP_SOURCE.getRepository(NotificationEntity)
     this.NotificationSubscriptionRepository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
     this.NotificationService = new NotificationService(APP_SOURCE)
-    // this.EventNotificationRepository = APP_SOURCE.getRepository(EventNotificationEntity)
   }
 
   public GetForUser = async (req: Request, res: Response) => {
