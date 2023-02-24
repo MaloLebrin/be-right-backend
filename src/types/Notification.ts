@@ -15,10 +15,3 @@ export interface CreateNotificationSubscriptionPayload {
   type: NotificationTypeEnum
   user: UserEntity
 }
-
-// export interface CreateNotificationPayload {
-//   type: NotificationTypeEnum
-//   subscriber: NotificationSubcriptionEntity
-//   events?: EventEntity
-//   answers?: AnswerEntity
-// }
