@@ -6,6 +6,7 @@ import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { createAppSource } from '../utils'
 import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
+import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
 
 (async () => {
   const {
@@ -42,6 +43,7 @@ import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
     CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,
     async () => {
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
+      await deleteReadOldNotifications(JOB_APP_SOURCE)
     },
   )
 })()

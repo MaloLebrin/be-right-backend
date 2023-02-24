@@ -3,10 +3,9 @@ import type { Repository } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
-import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import { EntitiesEnum, Role } from '../types'
+import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -15,6 +14,9 @@ import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
 import RedisService from '../services/RedisService'
+import { defaultQueue } from '../jobs/queue/queue'
+import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
+import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export default class EventController {
   AddressService: AddressService
@@ -59,6 +61,14 @@ export default class EventController {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
 
         if (newEvent && address) {
+          await defaultQueue.add(
+            generateQueueName(NotificationTypeEnum.EVENT_CREATED),
+            new CreateEventNotificationsJob({
+              type: NotificationTypeEnum.EVENT_CREATED,
+              event: newEvent,
+              userId,
+            }))
+
           await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
@@ -93,7 +103,7 @@ export default class EventController {
           }),
           () => this.EventService.getOneEvent(id))
 
-        if (checkUserRole(Role.ADMIN) || event.createdByUserId === userId) {
+        if (isUserAdmin(ctx.user) || event.createdByUserId === userId) {
           return res.status(200).json(event)
         } else {
           throw new ApiError(401, 'Action non autorisée')
@@ -191,7 +201,7 @@ export default class EventController {
 
         const user = eventFinded.createdByUser as UserEntity
 
-        if (checkUserRole(Role.ADMIN) || user.id === userId) {
+        if (isUserAdmin(ctx.user) || user.id === userId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
 
           await this.saveEventRedisCache(eventUpdated)
@@ -217,7 +227,7 @@ export default class EventController {
           throw new ApiError(422, 'L\'événement n\'éxiste pas')
         }
 
-        if (eventToDelete?.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
+        if (eventToDelete?.createdByUserId === userId || isUserAdmin(ctx.user)) {
           await this.EventService.deleteOneAndRelations(eventToDelete)
           await this.RediceService.updateCurrentUserInCache({ userId })
 

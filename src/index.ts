@@ -27,6 +27,7 @@ import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
+import NotificationController from './controllers/Notifications.controller'
 
 const {
   CLOUDINARY_API_KEY,
@@ -178,6 +179,10 @@ async function StartApp() {
 
   // Mail
   app.get('/mail/answer/:id', [isAuthenticated], new MailController().sendMailToEmployee)
+
+  // Notification
+  app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
+  app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
 
   // User
   app.get('/user/many', [isAuthenticated], new UserController().getMany)

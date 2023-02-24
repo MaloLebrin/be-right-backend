@@ -2,10 +2,11 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typ
 import { Role, ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
+import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
 import { SessionEntity } from './SessionEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
@@ -108,6 +109,12 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[]
+
+  @OneToMany(() => NotificationSubcriptionEntity, notificationSubcription => notificationSubcription.createdByUser, { cascade: true })
+  notificationSubscriptions: NotificationSubcriptionEntity[]
+
+  @RelationId((user: UserEntity) => user.notificationSubscriptions)
+  notificationSubscriptionIds: number[]
 }
 
 export const userSearchableFields = [

@@ -1,6 +1,6 @@
 import AnswerEntity from './AnswerEntity'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { BugReportEntity } from './BugReportEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
@@ -12,6 +12,9 @@ import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
 import { SessionEntity } from './SessionEntity'
 import { MailEntity } from './MailEntity'
+import { EventNotificationEntity } from './bases/EventNotification.entity'
+import { NotificationEntity } from './notifications/Notification.entity'
+import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
 
 export default {
   AddressEntity,
@@ -20,9 +23,12 @@ export default {
   BugReportEntity,
   EmployeeEntity,
   EventEntity,
+  EventNotificationEntity,
   FileEntity,
   ImageRightConditionEntity,
   MailEntity,
+  NotificationEntity,
+  NotificationSubcriptionEntity,
   NewsletterRecipient,
   PaymentEntity,
   SessionEntity,
@@ -36,6 +42,9 @@ export const entities = [
   BugReportEntity,
   EmployeeEntity,
   EventEntity,
+  EventNotificationEntity,
+  NotificationEntity,
+  NotificationSubcriptionEntity,
   FileEntity,
   ImageRightConditionEntity,
   MailEntity,

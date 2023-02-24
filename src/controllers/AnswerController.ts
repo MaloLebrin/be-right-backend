@@ -6,16 +6,16 @@ import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
-import { EntitiesEnum, Role } from '../types'
+import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
-import { checkUserRole } from '../middlewares'
 import { EmployeeEntity } from '../entity/EmployeeEntity'
 import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
+import { isUserAdmin } from '../utils/userHelper'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -197,7 +197,8 @@ export default class AnswerController {
         const answer = await this.AnswerService.getOne(id)
         const event = await this.EventService.getOneEvent(answer.eventId)
 
-        if (answer && (event.createdByUserId === ctx.user.id || checkUserRole(Role.ADMIN))) {
+        if (answer && (event.createdByUserId === ctx.user.id || isUserAdmin(ctx.user))) {
+          // TODO add job to update event and another to send notification
           answer.hasSigned = !answer.hasSigned
           answer.signedAt = new Date()
           await APP_SOURCE.manager.save(answer)

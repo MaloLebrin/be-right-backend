@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import AnswerEntity from './AnswerEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 
 @Entity()
 export class MailEntity extends BaseEntity {
