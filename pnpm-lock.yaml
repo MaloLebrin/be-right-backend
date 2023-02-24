@@ -32,7 +32,7 @@ specifiers:
   node-mailjet: ^6.0.2
   nodemailer: ^6.7.8
   pg: ^8.8.0
-  pino: 8.10.0
+  pino: 8.11.0
   pino-pretty: 9.1.1
   redis: ^4.5.1
   reflect-metadata: ^0.1.13
@@ -63,7 +63,7 @@ dependencies:
   node-mailjet: 6.0.2
   nodemailer: 6.7.8
   pg: 8.8.0
-  pino: 8.10.0
+  pino: 8.11.0
   pino-pretty: 9.1.1
   redis: 4.5.1
   reflect-metadata: 0.1.13
@@ -3174,6 +3174,12 @@ packages:
       whatwg-url: 5.0.0
     dev: false
 
+  /node-gyp-build-optional-packages/5.0.7:
+    resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
+    hasBin: true
+    dev: false
+    optional: true
+
   /node-mailjet/6.0.2:
     resolution: {integrity: sha512-aLSWqzVVB7fSfEE9yFsWQ3mPOcGtKJYmQTcL6an+Y8ITLjF8RdvopXvENgSjLLfFNAaIJ0PhLgECxutbmR84wA==}
     engines: {node: '>= 12.0.0', npm: '>= 6.9.0'}
@@ -3184,12 +3190,6 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
-
-  /node-gyp-build-optional-packages/5.0.7:
-    resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
-    hasBin: true
-    dev: false
-    optional: true
 
   /nodemailer/6.7.8:
     resolution: {integrity: sha512-2zaTFGqZixVmTxpJRCFC+Vk5eGRd/fYtvIR+dl5u9QXLTQWGIf48x/JXvo58g9sa0bU6To04XUv554Paykum3g==}
@@ -3560,8 +3560,8 @@ packages:
       thread-stream: 0.15.2
     dev: false
 
-  /pino/8.10.0:
-    resolution: {integrity: sha512-ODfIe+giJtQGsvNAEj5/sHHpL3TFBg161JBH4W62Hc0l0PJjsDFD1R7meLI4PZ2aoHDJznxFNShkJcaG/qJToQ==}
+  /pino/8.11.0:
+    resolution: {integrity: sha512-Z2eKSvlrl2rH8p5eveNUnTdd4AjJk8tAsLkHYZQKGHP4WTh2Gi1cOSOs3eWPqaj+niS3gj4UkoreoaWgF3ZWYg==}
     hasBin: true
     dependencies:
       atomic-sleep: 1.0.0
