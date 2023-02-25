@@ -5,6 +5,7 @@ import AnswerEntity from '../entity/AnswerEntity'
 import { MailEntity } from '../entity/MailEntity'
 import { useEnv } from '../env'
 import { ApiError } from '../middlewares/ApiError'
+import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 
 export class MailjetService {
@@ -37,7 +38,7 @@ export class MailjetService {
       this.repository = APP_SOURCE.getRepository(MailEntity)
       this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
     } else {
-      throw new ApiError(422, 'L\'envoie d\'email n\'est pas disponible')
+      logger.warn('Send email feature in not enabled')
     }
   }
 
