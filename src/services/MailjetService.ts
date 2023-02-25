@@ -22,18 +22,23 @@ export class MailjetService {
       ADMIN_EMAIL,
       ADMIN_FIRTNAME,
       ADMIN_LASTNAME,
+      IS_FEATURE_MAIL_ENABLED,
     } = useEnv()
 
-    this.PublicKey = MJ_APIKEY_PUBLIC
-    this.SecretKey = MJ_APIKEY_PRIVATE
-    this.mailJetClient = this.connection()
-    this.FromObj = {
-      Email: ADMIN_EMAIL,
-      Name: `${ADMIN_FIRTNAME} ${ADMIN_LASTNAME}`,
-    }
+    if (IS_FEATURE_MAIL_ENABLED) {
+      this.PublicKey = MJ_APIKEY_PUBLIC
+      this.SecretKey = MJ_APIKEY_PRIVATE
+      this.mailJetClient = this.connection()
+      this.FromObj = {
+        Email: ADMIN_EMAIL,
+        Name: `${ADMIN_FIRTNAME} ${ADMIN_LASTNAME}`,
+      }
 
-    this.repository = APP_SOURCE.getRepository(MailEntity)
-    this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
+      this.repository = APP_SOURCE.getRepository(MailEntity)
+      this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
+    } else {
+      throw new ApiError(422, 'L\'envoie d\'email n\'est pas disponible')
+    }
   }
 
   private connection = () => {
