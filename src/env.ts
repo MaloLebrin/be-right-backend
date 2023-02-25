@@ -1,3 +1,5 @@
+import { parseBoolean } from './utils/basicHelper'
+
 export function useEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
@@ -15,6 +17,7 @@ export function useEnv() {
     MAIL_MDP: process.env.MAIL_MDP,
     MJ_APIKEY_PUBLIC: process.env.MJ_APIKEY_PUBLIC,
     MJ_APIKEY_PRIVATE: process.env.MJ_APIKEY_PRIVATE,
+    IS_FEATURE_MAIL_ENABLED: parseBoolean(process.env.IS_FEATURE_MAIL_ENABLED),
 
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,

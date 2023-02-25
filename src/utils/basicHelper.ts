@@ -17,3 +17,15 @@ export function getType<T>(value: T): string {
 export function isNumber(value: any): value is number {
   return getType(value) === 'Number'
 }
+
+export function parseBoolean(v: string) {
+  switch (v) {
+    case 'false':
+      return false
+    case 'true':
+      return true
+
+    default:
+      return undefined
+  }
+}
