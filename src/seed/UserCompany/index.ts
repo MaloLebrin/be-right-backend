@@ -123,7 +123,7 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
 
   const answer = await answerService.getOneAnswerForEventEmployee({
     eventId: event.id,
-    employeeId: employeeIds[3],
+    employeeId: 2,
   })
 
   if (answer) {
@@ -132,11 +132,31 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
       hasSigned: true,
       signedAt: new Date(),
     })
+
+    const answerEventNotif = getManager.create(EventNotificationEntity, {
+      name: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
+      answer,
+    })
+    await getManager.save(answerEventNotif)
+    const subscriber = await getManager.findOne(NotificationSubcriptionEntity, {
+      where: {
+        type: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
+        createdByUser: {
+          id: user.id,
+        },
+      },
+    })
+    const answerNotif = getManager.create(NotificationEntity, {
+      eventNotification: answerEventNotif,
+      type: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
+      subscriber,
+    })
+    await getManager.save(answerNotif)
   }
 
   const answer2 = await answerService.getOneAnswerForEventEmployee({
     eventId: event.id,
-    employeeId: employeeIds[2],
+    employeeId: 1,
   })
 
   if (answer2) {
@@ -145,6 +165,26 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
       hasSigned: false,
       signedAt: new Date(),
     })
+
+    const answerEventNotif2 = getManager.create(EventNotificationEntity, {
+      name: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+      answer: answer2,
+    })
+    await getManager.save(answerEventNotif2)
+    const subscriber = await getManager.findOne(NotificationSubcriptionEntity, {
+      where: {
+        type: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+        createdByUser: {
+          id: user.id,
+        },
+      },
+    })
+    const answerNotif2 = getManager.create(NotificationEntity, {
+      eventNotification: answerEventNotif2,
+      type: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+      subscriber,
+    })
+    await getManager.save(answerNotif2)
   }
 }
 
