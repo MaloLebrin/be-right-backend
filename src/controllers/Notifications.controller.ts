@@ -76,37 +76,39 @@ export default class NotificationController {
   }
 
   public streamNotifications = async (req: Request, res: Response) => {
-    const SSEManager: SSEManager = req.app.get('sseManager')
-    const ctx = Context.get(req)
-    const user = ctx?.user
+    await wrapperRequest(req, res, async () => {
+      const SSEManager: SSEManager = req.app.get('sseManager')
+      const ctx = Context.get(req)
+      const user = ctx?.user
 
-    if (!SSEManager) {
-      throw new ApiError(422, 'SSE manager not found')
-    }
+      if (!SSEManager) {
+        throw new ApiError(422, 'SSE manager not found')
+      }
 
-    if (!user) {
-      throw new ApiError(401, 'vous n\'êtes pas identifié')
-    }
+      if (!user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
-    const notifications = await this.getNotificationByUserForClient(user)
+      const notifications = await this.getNotificationByUserForClient(user)
 
-    SSEManager.open(user.id, res)
+      SSEManager.open(user.id, res)
 
-    SSEManager.broadcast({
-      id: `${user.id}-${Date.now()}`,
-      type: 'notifications',
-      data: JSON.stringify(notifications),
-    })
+      SSEManager.broadcast({
+        id: `${user.id}-${Date.now()}`,
+        type: 'notifications',
+        data: JSON.stringify(notifications),
+      })
 
-    req.on('close', () => {
-      /* En cas de deconnexion on supprime le client de notre manager */
-      SSEManager.delete(user.id)
+      return req.on('close', () => {
+        /* En cas de deconnexion on supprime le client de notre manager */
+        SSEManager.delete(user.id)
 
-      // SSEManager.broadcast({
-      //   id: Date.now(),
-      //   type: 'notifications',
-      //   data: SSEManager.count(),
-      // })
+        // SSEManager.broadcast({
+        //   id: Date.now(),
+        //   type: 'notifications',
+        //   data: SSEManager.count(),
+        // })
+      })
     })
   }
 }
