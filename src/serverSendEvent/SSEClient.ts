@@ -8,7 +8,7 @@ export class SSEClient {
     this.context = context
   }
 
-  initialize() {
+  public initialize() {
     const headers = {
       /* Permet d'indiquer au client qu'il s'agit d'une connexion SSE */
       'Content-Type': 'text/event-stream',
@@ -21,7 +21,7 @@ export class SSEClient {
     this.context.writeHead(200, headers)
   }
 
-  send(message: SSEMessage) {
+  public send(message: SSEMessage) {
     const { id, type = 'message', retry, data } = message
 
     if (id) {

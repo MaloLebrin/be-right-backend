@@ -10,40 +10,40 @@ export class SSEManager {
     this.clients = new Map()
   }
 
-  open(clientId: ID, context: Response) {
+  public open(clientId: ID, context: Response) {
     const client = new SSEClient(context)
     client.initialize()
     this.clients.set(clientId, client)
   }
 
-  delete(clientId: ID) {
+  public delete(clientId: ID) {
     this.clients.delete(clientId)
   }
 
-  deleteAll() {
+  public deleteAll() {
     this.clients.clear()
   }
 
-  unicast(clientId: ID, message: SSEMessage) {
+  public unicast(clientId: ID, message: SSEMessage) {
     const client = this.clients.get(clientId)
     if (client) {
       client.send(message)
     }
   }
 
-  broadcast(message: SSEMessage) {
+  public broadcast(message: SSEMessage) {
     for (const [id] of this.clients) {
       this.unicast(id, message)
     }
   }
 
-  multicast(clientIds: ID[], message: SSEMessage) {
+  public multicast(clientIds: ID[], message: SSEMessage) {
     for (const id of clientIds) {
       this.unicast(id, message)
     }
   }
 
-  count(): number {
+  public count(): number {
     return this.clients.size
   }
 }
