@@ -11,7 +11,7 @@ import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 export class MailjetService {
   SecretKey: string
   PublicKey: string
-  mailJetClient: Client
+  mailJetClient: Client | undefined
   FromObj: FromMailObj
   repository: Repository<MailEntity>
   answerRepository: Repository<AnswerEntity>
@@ -103,28 +103,31 @@ export class MailjetService {
 
   public sendEmployeeMail = async (payload: SendMailPayload) => {
     try {
-      const { response, body } = await this.mailJetClient
-        .post('send', { version: 'v3.1' })
-        .request({
-          Messages: this.buildMailsCreationAnswer([payload]),
-        })
+      if (this.mailJetClient) {
+        const { response, body } = await this.mailJetClient
+          .post('send', { version: 'v3.1' })
+          .request({
+            Messages: this.buildMailsCreationAnswer([payload]),
+          })
 
-      if (response.status === 200) {
-        const t = body as unknown as MailjetResponse
-        const pathToMessage = t.Messages[0].To[0]
-        await this.createMailEntity({
-          answer: payload.answer,
-          messageHref: pathToMessage.MessageHref,
-          messageUuid: pathToMessage.MessageUUID,
-          messageId: pathToMessage.MessageID,
-        })
-      }
+        if (response.status === 200) {
+          const t = body as unknown as MailjetResponse
+          const pathToMessage = t.Messages[0].To[0]
+          await this.createMailEntity({
+            answer: payload.answer,
+            messageHref: pathToMessage.MessageHref,
+            messageUuid: pathToMessage.MessageUUID,
+            messageId: pathToMessage.MessageID,
+          })
+        }
 
-      return {
-        status: response.status,
-        message: response.statusText,
-        body,
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
       }
+      logger.warn('Send email feature in not enabled')
     } catch (error) {
       console.error(error, '<==== error')
     }
