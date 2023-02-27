@@ -65,47 +65,32 @@ export default class AnswerService {
 
   public getOneAnswerForEventEmployee = async (
     { eventId, employeeId, withRelation }: { eventId: number; employeeId: number; withRelation?: boolean }) => {
-    if (withRelation) {
-      return await this.repository.findOne({
-        where: {
-          event: {
-            id: eventId,
-          },
-          employee: employeeId,
-        },
-        relations: ['employee'],
-      })
-    }
-
-    return this.repository.findOne({
+    return await this.repository.findOne({
       where: {
         event: {
           id: eventId,
         },
-        employee: employeeId,
+        employee: {
+          id: employeeId,
+        },
+      },
+      relations: {
+        employee: withRelation,
       },
     })
   }
 
   public getAllAnswersForEvent = async (eventId: number, withRelation?: boolean) => {
-    if (withRelation) {
-      return this.repository.find({
-        where: {
-          event: {
-            id: eventId,
-          },
+    return this.repository.find({
+      where: {
+        event: {
+          id: eventId,
         },
-        relations: ['employee'],
-      })
-    } else {
-      return this.repository.find({
-        where: {
-          event: {
-            id: eventId,
-          },
-        },
-      })
-    }
+      },
+      relations: {
+        employee: withRelation,
+      },
+    })
   }
 
   public getAnswerIdsForEvent = async (eventId: number): Promise<number[]> => {
@@ -123,59 +108,44 @@ export default class AnswerService {
   }
 
   public getAnswersForManyEvents = async (eventIds: number[], withRelation?: boolean) => {
-    if (withRelation) {
-      return this.repository.find({
-        where: {
-          event: In(eventIds),
-        },
-        relations: ['employee'],
-      })
-    } else {
-      return this.repository.find({
-        where: {
-          event: In(eventIds),
-        },
-      })
-    }
+    return this.repository.find({
+      where: {
+        event: In(eventIds),
+      },
+      relations: {
+        employee: withRelation,
+      },
+    })
   }
 
   public getAllAnswersForEmployee = async (employeeId: number) => {
     return await this.repository.find({
       where: {
-        employee: employeeId,
+        employee: { id: employeeId },
       },
     })
   }
 
   public getOne = async (answerId: number, withRelations?: boolean): Promise<AnswerEntity> => {
-    if (withRelations) {
-      return await this.repository.findOne({
-        where: {
-          id: answerId,
-        },
-        relations: ['employee', 'event'],
-      })
-    }
-
     return await this.repository.findOne({
       where: {
         id: answerId,
+      },
+      relations: {
+        employee: withRelations,
+        event: withRelations,
       },
     })
   }
 
   public getMany = async (ids: number[], withRelations?: boolean) => {
-    if (withRelations) {
-      return this.repository.find({
-        where: {
-          id: In(ids),
-        },
-        relations: ['employee', 'event'],
-      })
-    }
     return this.repository.find({
       where: {
         id: In(ids),
+      },
+      relations: {
+        employee: withRelations,
+        event: withRelations,
       },
     })
   }

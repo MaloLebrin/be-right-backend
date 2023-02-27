@@ -59,7 +59,8 @@ export class NotificationService {
   }
 
   public readNotification = async (id: number) => {
-    return this.repository.update(id, { readAt: new Date() })
+    await this.repository.update(id, { readAt: new Date() })
+    return this.repository.findOne({ where: { id } })
   }
 
   public createOne = async ({
