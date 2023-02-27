@@ -156,7 +156,7 @@ async function StartApp() {
   app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne)
 
   // Event
-  app.get('/event/many', [isAuthenticated], new EventController().getMany)
+  app.get('/event/manyByIds', [isAuthenticated], new EventController().getMany)
   app.get('/event/', [isAuthenticated], new EventController().getAll)
   app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
   app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
