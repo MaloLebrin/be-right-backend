@@ -1,6 +1,6 @@
 import type { Response } from 'express'
 import type { SSEMessage } from '../types/SSE'
-import { SSEClient } from './SSEclient'
+import { SSEClient } from './SSEClient'
 
 type ID = string | number
 
