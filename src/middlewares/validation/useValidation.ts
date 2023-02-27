@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
-import { Role, ThemeEnumArray } from '../../types'
+import { NotificationTypeEnumArray, Role, ThemeEnumArray } from '../../types'
 import { logger } from '../loggerService'
 
 export function useValidation() {
@@ -211,6 +211,12 @@ export function useValidation() {
     }),
   })
 
+  const subscribeNotification = object({
+    body: object({
+      type: string().oneOf(NotificationTypeEnumArray).required('Le type d\'abonnement est requis'),
+    }),
+  })
+
   return {
     createAddressSchema,
     createbugSchema,
@@ -226,6 +232,7 @@ export function useValidation() {
     loginSchema,
     registerSchema,
     resetPasswordSchema,
+    subscribeNotification,
     themeSchema,
     tokenSchema,
     updateAnswerStatusSchema,
