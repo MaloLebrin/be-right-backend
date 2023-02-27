@@ -28,6 +28,7 @@ import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
+import { SSEManager } from './serverSendEvent/SSEManager'
 
 const {
   CLOUDINARY_API_KEY,
@@ -75,6 +76,7 @@ async function StartApp() {
     Context.bind(req)
     next()
   })
+  app.set('sseManager', new SSEManager())
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
@@ -182,6 +184,7 @@ async function StartApp() {
 
   // Notification
   app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
+  app.get('/notifications/stream', [isAuthenticated], new NotificationController().streamNotifications)
   app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
 
   // User
