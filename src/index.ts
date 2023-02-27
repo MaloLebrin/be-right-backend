@@ -28,6 +28,7 @@ import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
+import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
 
 const {
@@ -103,6 +104,7 @@ async function StartApp() {
     createPhotographerSchema,
     loginSchema,
     registerSchema,
+    subscribeNotification,
     themeSchema,
     tokenSchema,
     validate,
@@ -180,12 +182,17 @@ async function StartApp() {
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
 
   // Mail
-  app.get('/mail/answer/:id', [isAuthenticated], new MailController().sendMailToEmployee)
+  app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
 
   // Notification
   app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
   app.get('/notifications/stream', [isAuthenticated], new NotificationController().streamNotifications)
   app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
+
+  // Notification Subscriptions
+  app.get('/notificationSubscription', [isAuthenticated], new NotificationSubscriptionController().GetForUser)
+  app.patch('/notificationSubscription/unsuscbribe/:id', [validate(idParamsSchema), isAuthenticated], new NotificationSubscriptionController().unsuscbribe)
+  app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
 
   // User
   app.get('/user/many', [isAuthenticated], new UserController().getMany)
@@ -197,9 +204,9 @@ async function StartApp() {
   app.post('/user/login', [validate(loginSchema)], new UserController().login)
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
-  app.patch('/user/:id', [isAuthenticated], new UserController().updateOne)
+  app.patch('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().updateOne)
   app.patch('/user/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
-  app.delete('/user/:id', [isAuthenticated], new UserController().deleteOne)
+  app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
   app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
 
   app.all('*', req => {
