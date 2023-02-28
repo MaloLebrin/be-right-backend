@@ -115,18 +115,15 @@ export default class EventService {
   }
 
   async getManyEvents(eventIds: number[], withRelations?: boolean) {
-    if (withRelations) {
-      return await this.repository.find({
-        where: {
-          id: In(eventIds),
-        },
-        relations: ['createdByUser', 'partner', 'address', 'files'],
-      })
-    }
-
-    return this.repository.find({
+    return await this.repository.find({
       where: {
         id: In(eventIds),
+      },
+      relations: {
+        createdByUser: withRelations,
+        partner: withRelations,
+        address: withRelations,
+        files: withRelations,
       },
     })
   }

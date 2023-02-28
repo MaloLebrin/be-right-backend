@@ -46,7 +46,9 @@ export default class EmployeeService {
   async getAllForUser(userId: number) {
     return this.repository.find({
       where: {
-        createdByUserId: userId,
+        createdByUser: {
+          id: userId,
+        },
       },
     })
   }

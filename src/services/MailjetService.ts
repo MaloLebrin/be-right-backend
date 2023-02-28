@@ -58,6 +58,7 @@ export class MailjetService {
       From: this.FromObj,
       To: [
         {
+          // FIXME
           Email: 'malolebrin@icloud.com',
           // Email: employee.email,
           Name: this.getFullName(employee),
