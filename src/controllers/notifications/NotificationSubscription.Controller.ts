@@ -43,7 +43,7 @@ export class NotificationSubscriptionController {
             id: user?.id,
           },
         })
-        return res.status(204).json({
+        return res.status(200).json({
           success: true,
           message: 'Abonnement de notification annulé',
         })
