@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { UserEntity } from './UserEntity'
-import AnswerEntity from './AnswerEntity'
-import { BaseEntity } from './bases/BaseEntity'
-import { AddressEntity } from './AddressEntity'
-import { FileEntity } from './FileEntity'
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { UserEntity } from '../UserEntity'
+import AnswerEntity from '../AnswerEntity'
+import { BaseEntity } from '../bases/BaseEntity'
+import { AddressEntity } from '../AddressEntity'
+import { FileEntity } from '../FileEntity'
+import { GroupEntity } from './Group.entity'
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {
@@ -46,6 +47,12 @@ export class EmployeeEntity extends BaseEntity {
 
   @RelationId((employee: EmployeeEntity) => employee.files)
   filesIds: number[]
+
+  @ManyToMany(() => GroupEntity, group => group.employees)
+  groups: GroupEntity[]
+
+  @RelationId((emp: EmployeeEntity) => emp.groups)
+  groupIds: number[]
 }
 
 export const employeeSearchablefields = [
