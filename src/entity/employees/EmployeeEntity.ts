@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { UserEntity } from './UserEntity'
-import AnswerEntity from './AnswerEntity'
-import { BaseEntity } from './bases/BaseEntity'
-import { AddressEntity } from './AddressEntity'
-import { FileEntity } from './FileEntity'
+import { UserEntity } from '../UserEntity'
+import AnswerEntity from '../AnswerEntity'
+import { BaseEntity } from '../bases/BaseEntity'
+import { AddressEntity } from '../AddressEntity'
+import { FileEntity } from '../FileEntity'
 
 @Entity()
 export class EmployeeEntity extends BaseEntity {
