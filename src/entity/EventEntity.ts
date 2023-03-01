@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { EventStatusEnum } from '../types/Event'
 import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './bases/BaseEntity'
@@ -6,6 +6,7 @@ import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 
 @Entity()
+@Index(['id', 'createdByUser'], { unique: true })
 export default class EventEntity extends BaseEntity {
   @Column()
   name: string

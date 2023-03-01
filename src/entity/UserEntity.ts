@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { Role, ThemeEnum } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { AddressEntity } from './AddressEntity'
@@ -11,6 +11,7 @@ import { SessionEntity } from './SessionEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
 @Entity()
+@Index(['firstName', 'lastName', 'email'], { unique: true })
 export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   email: string
@@ -42,7 +43,7 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   siret: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   apiKey: string
 
   @Column({ type: 'enum', enum: Role, default: Role.USER })

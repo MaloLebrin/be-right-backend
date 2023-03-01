@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { BaseEntity } from './bases/BaseEntity'
 import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
 
 @Entity()
+@Index(['event', 'employee'], { unique: true })
 export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
@@ -15,10 +16,7 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
-  @Column({
-    unique: true,
-    nullable: true,
-  })
+  @Column({ unique: true })
   token: string
 
   @Column({ nullable: true, default: null })
