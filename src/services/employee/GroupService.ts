@@ -3,7 +3,7 @@ import { In } from 'typeorm'
 import { GroupEntity } from '../../entity/employees/Group.entity'
 import EmployeeService from './EmployeeService'
 
-type GroupCreationPayload = Pick<GroupEntity, 'name' | 'description' | 'employeeIds'>
+export type GroupCreationPayload = Pick<GroupEntity, 'name' | 'description' | 'employeeIds'>
 
 export class GroupService {
   repository: Repository<GroupEntity>
@@ -30,10 +30,13 @@ export class GroupService {
     return await this.repository.save(groupCreated)
   }
 
-  async getOne(id: number, withRelation?: boolean) {
+  async getOne(id: number, userId: number, withRelation?: boolean) {
     return this.repository.findOne({
       where: {
         id,
+        createdByUser: {
+          id: userId,
+        },
       },
       relations: {
         createdByUser: withRelation,
@@ -42,10 +45,13 @@ export class GroupService {
     })
   }
 
-  async getMany(ids: number[], withRelation?: boolean) {
+  async getMany(ids: number[], userId: number, withRelation?: boolean) {
     return this.repository.find({
       where: {
         id: In(ids),
+        createdByUser: {
+          id: userId,
+        },
       },
       relations: {
         createdByUser: withRelation,
@@ -68,9 +74,9 @@ export class GroupService {
     })
   }
 
-  async updateOne(id: number, group: Partial<GroupEntity>) {
+  async updateOne(id: number, userId: number, group: Partial<GroupEntity>) {
     await this.repository.update(id, group)
-    return this.getOne(id)
+    return this.getOne(id, userId)
   }
 
   async deleteOne(id: number) {

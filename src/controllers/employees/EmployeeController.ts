@@ -8,7 +8,7 @@ import { Role } from '../../types/Role'
 import EmployeeService from '../../services/employee/EmployeeService'
 import AnswerService from '../../services/AnswerService'
 import EventService from '../../services/EventService'
-import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity } from '../../utils/index'
+import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity, parseQueryIds } from '../../utils/index'
 import { AddressService } from '../../services'
 import type { EmployeeCreateOneRequest } from '../../types'
 import { EntitiesEnum } from '../../types'
@@ -194,7 +194,7 @@ export default class EmployeeController {
       const ids = req.query.ids as string
 
       if (ids) {
-        const employeeIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+        const employeeIds = parseQueryIds(ids)
 
         if (employeeIds?.length > 0) {
           const employees = await this.redisCache.getMany<EmployeeEntity>({

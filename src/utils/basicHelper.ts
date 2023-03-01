@@ -29,3 +29,8 @@ export function parseBoolean(v: string) {
       return undefined
   }
 }
+
+export function parseQueryIds(ids: string) {
+  return ids
+    .split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+}
