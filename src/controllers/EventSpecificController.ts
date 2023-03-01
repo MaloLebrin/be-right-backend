@@ -12,7 +12,7 @@ import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import Context from '../context'
 import { checkUserRole } from '../middlewares'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
-import EmployeeService from '../services/EmployeeService'
+import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
 import { ApiError } from '../middlewares/ApiError'
 

@@ -16,7 +16,7 @@ import type RedisCache from '../RedisCache'
 import { SubscriptionService } from '../services/SubscriptionService'
 import { ApiError } from '../middlewares/ApiError'
 import { AddressService } from '../services'
-import EmployeeService from '../services/EmployeeService'
+import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
 

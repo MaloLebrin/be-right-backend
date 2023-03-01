@@ -5,7 +5,7 @@ import { EmployeeEntity, employeeSearchablefields } from '../entity/employees/Em
 import { paginator, wrapperRequest } from '../utils'
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
-import EmployeeService from '../services/EmployeeService'
+import EmployeeService from '../services/employee/EmployeeService'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity } from '../utils/index'
