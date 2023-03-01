@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import Context from '../context'
-import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
+import { EmployeeEntity, employeeSearchablefields } from '../entity/employees/EmployeeEntity'
 import { paginator, wrapperRequest } from '../utils'
 import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'

@@ -3,7 +3,7 @@ import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import uid2 from 'uid2'
 import AnswerEntity from '../entity/AnswerEntity'
-import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EventEntity from '../entity/EventEntity'
 import { useEnv } from '../env'
 

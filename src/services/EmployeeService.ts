@@ -1,6 +1,6 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import AnswerService from './AnswerService'
 
