@@ -9,7 +9,7 @@ export class GroupEntity extends BaseEntity {
   name: string
 
   @Column({ nullable: true })
-  description: string
+  description: string | null
 
   @ManyToOne(() => UserEntity, user => user.employees)
   createdByUser: UserEntity
