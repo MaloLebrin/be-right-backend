@@ -1,4 +1,4 @@
-import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
 import type { UserEntity } from '../entity/UserEntity'
 
 export function firtSendAnswerTemplate({ employee, creator }: { employee: EmployeeEntity; creator: UserEntity }) {

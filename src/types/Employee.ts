@@ -1,5 +1,5 @@
 import type { AddressEntity } from '../entity/AddressEntity'
-import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
 
 export type EmployeeCreationRequest = Omit<EmployeeEntity, 'address'>
 

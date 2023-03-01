@@ -1,5 +1,5 @@
 import type AnswerEntity from '../entity/AnswerEntity'
-import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import type { EmployeeEntity } from '../entity/EmployeeEntity'
 
 export interface MailjetResponse {
   Messages: [

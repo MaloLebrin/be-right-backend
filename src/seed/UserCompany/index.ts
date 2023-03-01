@@ -10,7 +10,7 @@ import { NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } fro
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import { MailjetService } from '../../services'
-import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
+import type { EmployeeEntity } from '../../entity/EmployeeEntity'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import { NotificationEntity } from '../../entity/notifications/Notification.entity'

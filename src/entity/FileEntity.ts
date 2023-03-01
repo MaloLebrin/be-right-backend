@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm'
 import { FileTypeEnum } from '../types/File'
 import { BaseEntity } from './bases/BaseEntity'
-import { EmployeeEntity } from './employees/EmployeeEntity'
+import { EmployeeEntity } from './EmployeeEntity'
 import EventEntity from './EventEntity'
 import { UserEntity } from './UserEntity'
 

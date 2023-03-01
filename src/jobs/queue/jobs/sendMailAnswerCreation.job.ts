@@ -1,7 +1,7 @@
 import type { Job } from 'bullmq'
 import { APP_SOURCE } from '../../..'
 import type AnswerEntity from '../../../entity/AnswerEntity'
-import type { EmployeeEntity } from '../../../entity/employees/EmployeeEntity'
+import type { EmployeeEntity } from '../../../entity/EmployeeEntity'
 import type { UserEntity } from '../../../entity/UserEntity'
 import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
