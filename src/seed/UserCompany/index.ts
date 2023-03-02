@@ -25,6 +25,7 @@ import {
   userCompanyFixturePremium,
   userNotUsed,
 } from './fixtures'
+import { uploadCSVEmployeeSeed } from './uploadEmployeeCSV'
 
 export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
   const getManager = APP_SOURCE_SEEDER.manager
@@ -66,6 +67,8 @@ export async function seedUserCompany(APP_SOURCE_SEEDER: DataSource) {
       return emp
     },
   ))
+
+  await uploadCSVEmployeeSeed(user.id, APP_SOURCE_SEEDER)
 
   const employeeIds = employees.map(employee => employee.id)
 
