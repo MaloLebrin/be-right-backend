@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { BaseEntity } from './bases/BaseEntity'
-import { EmployeeEntity } from './EmployeeEntity'
+import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
 

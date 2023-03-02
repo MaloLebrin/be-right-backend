@@ -1,21 +1,21 @@
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
-import Context from '../context'
-import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
-import { paginator, wrapperRequest } from '../utils'
-import checkUserRole from '../middlewares/checkUserRole'
-import { Role } from '../types/Role'
-import EmployeeService from '../services/EmployeeService'
-import AnswerService from '../services/AnswerService'
-import EventService from '../services/EventService'
-import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity } from '../utils/index'
-import { AddressService } from '../services'
-import type { EmployeeCreateOneRequest } from '../types'
-import { EntitiesEnum } from '../types'
-import { APP_SOURCE, REDIS_CACHE } from '..'
-import type RedisCache from '../RedisCache'
-import { ApiError } from '../middlewares/ApiError'
-import RedisService from '../services/RedisService'
+import Context from '../../context'
+import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
+import { paginator, wrapperRequest } from '../../utils'
+import checkUserRole from '../../middlewares/checkUserRole'
+import { Role } from '../../types/Role'
+import EmployeeService from '../../services/employee/EmployeeService'
+import AnswerService from '../../services/AnswerService'
+import EventService from '../../services/EventService'
+import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity, parseQueryIds } from '../../utils/index'
+import { AddressService } from '../../services'
+import type { EmployeeCreateOneRequest } from '../../types'
+import { EntitiesEnum } from '../../types'
+import { APP_SOURCE, REDIS_CACHE } from '../..'
+import type RedisCache from '../../RedisCache'
+import { ApiError } from '../../middlewares/ApiError'
+import RedisService from '../../services/RedisService'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -194,7 +194,7 @@ export default class EmployeeController {
       const ids = req.query.ids as string
 
       if (ids) {
-        const employeeIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+        const employeeIds = parseQueryIds(ids)
 
         if (employeeIds?.length > 0) {
           const employees = await this.redisCache.getMany<EmployeeEntity>({

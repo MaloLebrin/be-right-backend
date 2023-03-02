@@ -217,10 +217,21 @@ export function useValidation() {
     }),
   })
 
+  const createGroupSchema = object({
+    body: object({
+      group: object({
+        name: string().required('Le nom du groupe est requis'),
+        description: string().nullable(),
+        employeeIds: array().of(number()).required(),
+      }),
+    }),
+  })
+
   return {
     createAddressSchema,
     createbugSchema,
     createEmployeeSchema,
+    createGroupSchema,
     createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,

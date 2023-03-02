@@ -17,7 +17,7 @@ import { AddresController } from './controllers/AddressController'
 import AnswerController from './controllers/AnswerController'
 import AuthController from './controllers/AuthController'
 import BugReportController from './controllers/BugReportController'
-import EmployeeController from './controllers/EmployeeController'
+import EmployeeController from './controllers/employees/EmployeeController'
 import EventController from './controllers/EventController'
 import FileController from './controllers/FileController'
 import UserController from './controllers/UserController'
@@ -30,6 +30,7 @@ import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
+import { GroupController } from './controllers/employees/GroupController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -90,20 +91,21 @@ async function StartApp() {
   })
 
   const {
-    idParamsSchema,
-    emailAlreadyExistSchema,
     createAddressSchema,
-    createManyAnswersSchema,
-    createOneAnswerSchema,
-    resetPasswordSchema,
     createbugSchema,
     createEmployeeSchema,
-    createManyEmployeesSchema,
+    createGroupSchema,
+    createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
+    createManyEmployeesSchema,
+    createOneAnswerSchema,
     createOneEventSchema,
     createPhotographerSchema,
+    emailAlreadyExistSchema,
+    idParamsSchema,
     loginSchema,
     registerSchema,
+    resetPasswordSchema,
     subscribeNotification,
     themeSchema,
     tokenSchema,
@@ -180,6 +182,14 @@ async function StartApp() {
   app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
   app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
+
+  // Group
+  app.get('/group/manyByIds', [isAuthenticated], new GroupController().getMany)
+  app.get('/group/user', [isAuthenticated], new GroupController().getManyByUserId)
+  app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
+  app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
+  app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
+  app.delete('/groupe/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
 
   // Mail
   app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
