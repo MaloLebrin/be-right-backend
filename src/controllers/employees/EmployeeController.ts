@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
+import csv from 'csvtojson'
 import Context from '../../context'
 import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
 import { paginator, wrapperRequest } from '../../utils'
@@ -10,7 +11,7 @@ import AnswerService from '../../services/AnswerService'
 import EventService from '../../services/EventService'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity, parseQueryIds } from '../../utils/index'
 import { AddressService } from '../../services'
-import type { EmployeeCreateOneRequest } from '../../types'
+import type { EmployeeCreateOneRequest, UploadCSVEmployee } from '../../types'
 import { EntitiesEnum } from '../../types'
 import { APP_SOURCE, REDIS_CACHE } from '../..'
 import type RedisCache from '../../RedisCache'
@@ -326,6 +327,58 @@ export default class EmployeeController {
         throw new ApiError(401, 'Action non autorisée')
       }
       throw new ApiError(422, 'identifiant du destinataire manquant')
+    })
+  }
+
+  public uploadFormCSV = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const fileRecieved = req.file
+      const ctx = Context.get(req)
+      const userId = ctx.user?.id
+
+      if (fileRecieved && userId) {
+        const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(fileRecieved.path)
+
+        const newEmployees = await Promise.all(newEmployeesData.map(async ({
+          firstName,
+          lastName,
+          addressLine,
+          postalCode,
+          city,
+          country,
+          email,
+          phone,
+        }) => {
+          const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(email)
+
+          if (!isEmployeeAlreadyExist) {
+            const emp = await this.EmployeeService.createOne({
+              firstName,
+              lastName,
+              email,
+              phone,
+            }, userId)
+
+            if (emp) {
+              await this.AddressService.createOne({
+                address: {
+                  addressLine,
+                  postalCode,
+                  city,
+                  country,
+                },
+                employeeId: emp.id,
+              })
+            }
+            await this.RediceService.updateCurrentUserInCache({ userId })
+
+            await this.saveEmployeeRedisCache(emp)
+            return this.EmployeeService.getOne(emp.id)
+          }
+        }))
+        return res.status(200).json(newEmployees)
+      }
+      throw new ApiError(422, 'Destinataires manquant')
     })
   }
 }

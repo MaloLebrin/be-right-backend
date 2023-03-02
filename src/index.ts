@@ -85,6 +85,7 @@ async function StartApp() {
     api_key: CLOUDINARY_API_KEY,
     api_secret: CLOUDINARY_API_SECRET,
   })
+  const upload = multer({ dest: 'uploads/' })
 
   app.get('/', (req: Request, res: Response) => {
     return res.send('Hello World')
@@ -155,6 +156,7 @@ async function StartApp() {
   app.post('/employee/:id', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
   app.post('/employee/many/:id', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
   app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId)
+  app.post('/employee-upload/csv', [isAuthenticated], upload.single('file'), new EmployeeController().uploadFormCSV)
   app.put('/employee/updateTotalSignatureNeeded/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().patchOne)
   app.patch('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().updateOne)
   app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne)
@@ -170,7 +172,6 @@ async function StartApp() {
   app.delete('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
 
   // File
-  const upload = multer({ dest: 'uploads/' })
   app.get('/file/many', [isAuthenticated], new FileController().getFiles)
   app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
   app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
