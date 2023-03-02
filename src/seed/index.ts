@@ -3,19 +3,17 @@ import type { DataSource } from 'typeorm'
 import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
-import { createAdminUser } from './admin'
-import { createPhotographers } from './shared/photographerFixtures'
-import { seedMediumUserData, seedUnUsedUser, seedUserCompany } from './UserCompany'
+import { UserAdminSeed } from './admin'
+import { UserSeedClass } from './UserCompany/UserSeedClass'
 
 export const APP_SOURCE_SEEDER = createAppSource()
 
 export async function seedersFunction(DATA_SOURCE: DataSource) {
+  const UserSeedService = new UserSeedClass(DATA_SOURCE)
+  const UserAdminSeedClass = new UserAdminSeed(DATA_SOURCE)
   await clearDB(DATA_SOURCE)
-  await createPhotographers(DATA_SOURCE)
-  await createAdminUser(DATA_SOURCE)
-  await seedUserCompany(DATA_SOURCE)
-  await seedMediumUserData(DATA_SOURCE)
-  await seedUnUsedUser(DATA_SOURCE)
+  await UserAdminSeedClass.CreateAdminUser()
+  await UserSeedService.SeedDataBase()
 }
 
 async function createDevSeeders() {
