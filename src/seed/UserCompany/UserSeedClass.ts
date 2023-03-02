@@ -11,6 +11,7 @@ import type { UploadCSVEmployee } from '../../types'
 import { NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } from '../../types'
 import { photographerFixture1, photographerFixture2, photographerFixture3, photographerFixture4 } from '../shared/photographerFixtures'
 import { BaseSeedClass } from '../Base/BaseSeedClass'
+import { GroupService } from '../../services/employee/GroupService'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -24,8 +25,11 @@ import {
 } from './fixtures'
 
 export class UserSeedClass extends BaseSeedClass {
+  GroupService: GroupService
+
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
+    this.GroupService = new GroupService(SEED_SOURCE)
   }
 
   private async photographersSeeder() {
@@ -53,7 +57,7 @@ export class UserSeedClass extends BaseSeedClass {
 
     const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(pathF)
 
-    await Promise.all(newEmployeesData.map(async ({
+    const employees = await Promise.all(newEmployeesData.map(async ({
       firstName,
       lastName,
       addressLine,
@@ -83,9 +87,24 @@ export class UserSeedClass extends BaseSeedClass {
             },
             employeeId: emp.id,
           })
+          return emp
         }
       }
     }))
+
+    await this.GroupService.createOne({
+      name: 'Armée de Dumbledore',
+      description: 'Dans l\'histoire, l\'organisation est fondée à l\'école de sorcellerie Poudlard par Harry Potter, sur le conseil d\'Hermione Granger, dans le but de contrer le système mis en place par l\'un des professeurs de cinquième année et déléguée du Ministère de la Magie, Dolores Ombrage. L\'Armée de Dumbledore (formée à l\'insu du directeur Albus Dumbledore, dont elle porte le nom) est une organisation comptant uniquement des élèves souhaitant s\'entrainer à manipuler les sortilèges de défense contre les forces du mal, ce qui leur est devenu interdit. L\'organisation fait écho à l\'Ordre du Phénix, composée d\'adultes cette fois, reformée la même année à l\'extérieur de l’école et visant à contrer le mage noir Voldemort et ses partisans. Vingt- neuf élèves, de différentes maisons de Poudlard, se sont au total inscrits à l\'AD. Il y a dix-sept membres de Gryffondor, sept de Serdaigle et cinq de Poufsouffle. Aucun élève de Serpentard n\'y est inscrit. ',
+      employeeIds: employees.map(emp => emp.id),
+    }, userId)
+
+    await this.GroupService.createOne({
+      name: 'Gryffondor',
+      description: 'À l\'école de sorcellerie Poudlard, décrite principalement dans l\'univers de la série littéraire Harry Potter, il existe quatre maisons distinctes : « Gryffondor », « Poufsouffle », « Serdaigle » et « Serpentard »1. Les élèves y sont répartis par le Choixpeau magique dès leur première année à l\'école, en fonction de leur personnalité. Ils y restent jusqu\'à leur septième et dernière année d\'études. ',
+      employeeIds: employees
+        .filter(emp => !['Patil', 'Lovegood'].includes(emp.lastName))
+        .map(emp => emp.id),
+    }, userId)
   }
 
   private async seedUserPremium() {
