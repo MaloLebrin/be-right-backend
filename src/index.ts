@@ -185,8 +185,8 @@ async function StartApp() {
 
   // Group
   app.get('/group/manyByIds', [isAuthenticated], new GroupController().getMany)
-  app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
   app.get('/group/user', [isAuthenticated], new GroupController().getManyByUserId)
+  app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
   app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
   app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
   app.delete('/groupe/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)

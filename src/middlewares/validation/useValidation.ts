@@ -219,9 +219,11 @@ export function useValidation() {
 
   const createGroupSchema = object({
     body: object({
-      name: string().required('Le nom du groupe est requis'),
-      description: string().nullable(),
-      employeeIds: array().of(number()).required(),
+      group: object({
+        name: string().required('Le nom du groupe est requis'),
+        description: string().nullable(),
+        employeeIds: array().of(number()).required(),
+      }),
     }),
   })
 
