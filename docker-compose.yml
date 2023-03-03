@@ -27,6 +27,8 @@ services:
       - postgres
     build:
       context: .
+      args:
+      - SCRIPT: '/app/entrypoint.sh'
     ports:
       - '8080:8080'
     env_file:
@@ -38,7 +40,10 @@ services:
       - postgres
     build:
       context: .
-      dockerfile: ./cron.Dockerfile
+      args:
+      - SCRIPT: '/app/cronScript.sh'
+
+      # dockerfile: ./cron.Dockerfile
       # regarder pour lancer le conteneur avec comme Arg le bon arg
     env_file:
       - .env
