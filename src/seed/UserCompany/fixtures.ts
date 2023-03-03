@@ -118,6 +118,36 @@ export const event2FixtureCompanyPremium = {
     end: dayjs().add(7, 'week'),
   },
 }
+export const event3FixtureCompanyPremium = {
+  address: {
+    addressLine: 'Rue du chaudron baveur',
+    addressLine2: '',
+    postalCode: '44000',
+    city: 'Godric\'s Hollow',
+    country: 'Angleterre',
+  },
+  event: {
+    name: 'Création de Poudlard',
+    description: 'Il y a plus de mille ans, les sorciers souffraient d\'incompréhension et de peur de la part de personnes dépourvues de pouvoirs magiques, nommées Moldus. Quatre sorciers exceptionnellement doués — Godric Gryffondor, Helga Poufsouffle, Rowena Serdaigle et Salazar Serpentard — décidèrent de fonder une école de magie permettant d\'offrir un refuge aux sorciers persécutés et de léguer leur savoir19. Rowena Serdaigle rêva d\'un cochon verruqueux la conduisant sur une falaise des Highlands20,Note 2. Les quatre amis se rendirent sur place et trouvèrent l\'emplacement approprié pour y construire le château destiné à abriter l\'école. Ils le nommèrent Poudlard (« Pou-du-lard ») en référence au curieux animal rêvé par Serdaigle20, puis partirent en quête de personnes possédant les aptitudes nécessaires pour enseigner la magie. ',
+    start: dayjs().subtract(1000, 'year'),
+    end: dayjs().subtract(500, 'year'),
+  },
+}
+export const event4FixtureCompanyPremium = {
+  address: {
+    addressLine: 'Rue du chaudron baveur',
+    addressLine2: '',
+    postalCode: '44000',
+    city: 'Godric\'s Hollow',
+    country: 'Angleterre',
+  },
+  event: {
+    name: 'Révolte des gobelins du XVIIIe siècle',
+    description: 'La révolte des gobelins du xviiie siècle[1] (  Angl.  18th century goblin rebellion ), également appelé Révolte des gobelins de 1752[2] (  Angl.  Goblin Rebellion of 1752 ), est une série de rébellions de la part des gobelins',
+    start: dayjs().add(3, 'week'),
+    end: dayjs().add(20, 'week'),
+  },
+}
 
 // MEDIUM
 

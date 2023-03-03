@@ -19,6 +19,8 @@ import {
   employeesFixtureCompanyMedium,
   employeesFixtureCompanyPremium,
   event2FixtureCompanyPremium,
+  event3FixtureCompanyPremium,
+  event4FixtureCompanyPremium,
   eventFixtureCompanyMedium,
   eventFixtureCompanyPremium,
   userCompanyFixtureMedium,
@@ -94,13 +96,13 @@ export class UserSeedClass extends BaseSeedClass {
       }
     }))
 
-    await this.GroupService.createOne({
+    const group = await this.GroupService.createOne({
       name: 'Armée de Dumbledore',
       description: 'Dans l\'histoire, l\'organisation est fondée à l\'école de sorcellerie Poudlard par Harry Potter, sur le conseil d\'Hermione Granger, dans le but de contrer le système mis en place par l\'un des professeurs de cinquième année et déléguée du Ministère de la Magie, Dolores Ombrage. L\'Armée de Dumbledore (formée à l\'insu du directeur Albus Dumbledore, dont elle porte le nom) est une organisation comptant uniquement des élèves souhaitant s\'entrainer à manipuler les sortilèges de défense contre les forces du mal, ce qui leur est devenu interdit. L\'organisation fait écho à l\'Ordre du Phénix, composée d\'adultes cette fois, reformée la même année à l\'extérieur de l’école et visant à contrer le mage noir Voldemort et ses partisans. Vingt- neuf élèves, de différentes maisons de Poudlard, se sont au total inscrits à l\'AD. Il y a dix-sept membres de Gryffondor, sept de Serdaigle et cinq de Poufsouffle. Aucun élève de Serpentard n\'y est inscrit. ',
       employeeIds: employees.map(emp => emp.id),
     }, userId)
 
-    await this.GroupService.createOne({
+    const group2 = await this.GroupService.createOne({
       name: 'Gryffondor',
       description: 'À l\'école de sorcellerie Poudlard, décrite principalement dans l\'univers de la série littéraire Harry Potter, il existe quatre maisons distinctes : « Gryffondor », « Poufsouffle », « Serdaigle » et « Serpentard »1. Les élèves y sont répartis par le Choixpeau magique dès leur première année à l\'école, en fonction de leur personnalité. Ils y restent jusqu\'à leur septième et dernière année d\'études. ',
       employeeIds: employees
@@ -124,6 +126,29 @@ export class UserSeedClass extends BaseSeedClass {
         createdByUser: user,
         employeeIds: recipients.map(emp => emp.id),
         totalSignatureNeeded: recipients.length,
+        partner,
+      } as unknown as Partial<EventEntity>,
+      userId,
+      partner.id,
+    )
+    await this.EventService.createOneEvent(
+      {
+        ...event3FixtureCompanyPremium.event,
+        createdByUser: user,
+        employeeIds: group.employeeIds,
+        totalSignatureNeeded: group.employeeIds.length,
+        partner,
+      } as unknown as Partial<EventEntity>,
+      userId,
+      partner.id,
+    )
+
+    await this.EventService.createOneEvent(
+      {
+        ...event4FixtureCompanyPremium.event,
+        createdByUser: user,
+        employeeIds: group2.employeeIds,
+        totalSignatureNeeded: group2.employeeIds.length,
         partner,
       } as unknown as Partial<EventEntity>,
       userId,
