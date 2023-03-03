@@ -125,6 +125,9 @@ export default class EventService {
         address: withRelations,
         files: withRelations,
       },
+      order: {
+        start: 'DESC',
+      },
     })
   }
 

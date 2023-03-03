@@ -98,7 +98,23 @@ export const eventFixtureCompanyPremium = {
   event: {
     name: 'Coupe du monde de Quiddich',
     description: 'La Coupe du Monde de Quidditch est régulée par la Commission de Quidditch de la Confédération internationale des sorciers. D\'après les rumeurs, le règlement concernant l\'usage de la magie sur et en dehors du terrain remplirait dix-neuf volumes. Parmi ces règles, on peut noter l\'interdiction de l\'introduction d\'un dragon sur le terrain ou la prohibition de l\'altération de n\'importe quelle partie du corps de l\'arbitre, que celui-ci le veuille ou non. Les matchs sont organisés dans des lieux à l\'abri des Moldus fouineurs comme les landes isolées, les déserts ou les îles inhabitées, pour éviter les infractions au Code International du Secret Magique.',
-    start: dayjs(),
+    start: dayjs().subtract(2, 'month'),
+    end: dayjs().add(7, 'month'),
+  },
+}
+
+export const event2FixtureCompanyPremium = {
+  address: {
+    addressLine: 'Rue du chaudron baveur',
+    addressLine2: '',
+    postalCode: '44000',
+    city: 'Godric\'s Hollow',
+    country: 'Angleterre',
+  },
+  event: {
+    name: 'Procès de Rogue',
+    description: 'Severus Rogue (Severus Snape en anglais) est un personnage fictif créé par la romancière britannique J. K. Rowling pour la série Harry Potter. Professeur à l\'école de magie de Poudlard et directeur de la maison des Serpentard, il y est depuis des années un maître de la préparation des potions redouté et particulièrement partial, avant d\'être nommé par Albus Dumbledore au poste de professeur de défense contre les forces du Mal, qu\'il désire depuis longtemps. Après la mort de Dumbledore, il devient directeur de l\'école durant une année sous le règne de Voldemort. Personnage sombre, aigri et amer, il a une personnalité complexe, ambiguë et assez indéchiffrable ; il a un physique peu engageant et un ton sarcastique. Il est également décrit comme un élève et un homme très brillant, mais montre une antipathie et une animosité particulières envers le héros dès l\'arrivée de ce dernier à Poudlard, s\'ingéniant à le ridiculiser tout en le sauvant plusieurs fois de situations dangereuses. Au fil des années, leurs deux personnalités se heurtent de plus en plus et la relation entre le professeur et l\'élève se détériore au point que Harry Potter en arrive à douter de la loyauté de Rogue et à le considérer comme un ennemi majeur. Incarnant selon certains universitaires « la figure la plus trouble et ambivalente de la résistance », son rôle dans l\'intrigue est difficile à interpréter pour le lecteur, qui est fréquemment entraîné sur de fausses pistes. La nature de sa loyauté et de ses motivations est donc une question cruciale de la série, dont la réponse est donnée seulement à la fin du septième et dernier roman. ',
+    start: dayjs().subtract(2, 'month'),
     end: dayjs().add(7, 'week'),
   },
 }
@@ -187,8 +203,8 @@ export const eventFixtureCompanyMedium = {
   event: {
     name: 'Tournoi des Trois Sorciers',
     description: 'Le Tournoi des Trois Sorciers est un concours de magie où s\'affrontent les trois principales écoles de sorcellerie européennes : Poudlard, Durmstrang et Beauxbâtons. Le vainqueur se voit décerner la Coupe du Tournoi des Trois Sorciers et mille Gallions. ',
-    start: dayjs(),
-    end: dayjs().add(7, 'week'),
+    start: dayjs().subtract(1, 'month'),
+    end: dayjs().add(7, 'month'),
   },
 }
 

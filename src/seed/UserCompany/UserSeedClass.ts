@@ -17,6 +17,7 @@ import {
   addressFixtureCompanyPremium,
   employeesFixtureCompanyMedium,
   employeesFixtureCompanyPremium,
+  event2FixtureCompanyPremium,
   eventFixtureCompanyMedium,
   eventFixtureCompanyPremium,
   userCompanyFixtureMedium,
@@ -105,6 +106,28 @@ export class UserSeedClass extends BaseSeedClass {
         .filter(emp => !['Patil', 'Lovegood'].includes(emp.lastName))
         .map(emp => emp.id),
     }, userId)
+
+    const partner = await this.getManager.findOne(UserEntity, {
+      where: {
+        email: 'lee.jordan@poudlard.com',
+      },
+    })
+
+    const user = await this.UserService.getOne(userId)
+
+    const recipients = employees
+
+    await this.EventService.createOneEvent(
+      {
+        ...event2FixtureCompanyPremium.event,
+        createdByUser: user,
+        employeeIds: recipients.map(emp => emp.id),
+        totalSignatureNeeded: recipients.length,
+        partner,
+      } as unknown as Partial<EventEntity>,
+      userId,
+      partner.id,
+    )
   }
 
   private async seedUserPremium() {
