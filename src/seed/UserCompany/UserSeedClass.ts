@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
 import csv from 'csvtojson'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
-import type EventEntity from '../../entity/EventEntity'
+import EventEntity from '../../entity/EventEntity'
 import { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
@@ -12,6 +12,7 @@ import { NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } fro
 import { photographerFixture1, photographerFixture2, photographerFixture3, photographerFixture4 } from '../shared/photographerFixtures'
 import { BaseSeedClass } from '../Base/BaseSeedClass'
 import { GroupService } from '../../services/employee/GroupService'
+import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -373,5 +374,19 @@ export class UserSeedClass extends BaseSeedClass {
     await this.seedUserPremium()
     await this.seedUserMedium()
     await this.seedUnUsedUser()
+    await this.UpdateStatusEventSeeded()
+  }
+
+  private async UpdateStatusEventSeeded() {
+    const events = await this.getManager.find(EventEntity, {
+      take: 9999,
+    })
+    await Promise.all(events.map(event => {
+      return this.getManager.update(EventEntity, {
+        id: event.id,
+      }, {
+        status: updateStatusEventBasedOnStartEndTodayDate(event),
+      })
+    }))
   }
 }
