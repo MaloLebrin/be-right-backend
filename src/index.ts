@@ -96,6 +96,7 @@ async function StartApp() {
     createbugSchema,
     createEmployeeSchema,
     createGroupSchema,
+    createGroupCSVSchema,
     createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
@@ -189,6 +190,7 @@ async function StartApp() {
   app.get('/group/user', [isAuthenticated], new GroupController().getManyByUserId)
   app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
   app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
+  app.post('/group/csv', [validate(createGroupCSVSchema), isAuthenticated], new GroupController().createOneWithCSV)
   app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
   app.delete('/groupe/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
 
