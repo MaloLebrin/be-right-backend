@@ -75,6 +75,23 @@ export class GroupService {
     })
   }
 
+  async getAllForEmployee(employeeId: number, userId: number, withRelation?: boolean) {
+    return this.repository.find({
+      where: {
+        employees: {
+          id: employeeId,
+        },
+        createdByUser: {
+          id: userId,
+        },
+      },
+      relations: {
+        createdByUser: withRelation,
+        employees: withRelation,
+      },
+    })
+  }
+
   async updateOne(id: number, userId: number, group: Partial<GroupEntity>) {
     const existingGroup = await this.getOne(id, userId, true)
 

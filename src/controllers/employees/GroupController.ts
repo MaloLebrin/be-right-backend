@@ -168,6 +168,20 @@ export class GroupController {
     })
   }
 
+  public getManyByEmployeeId = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+      const currentUser = ctx.user
+      const id = parseInt(req.params.id)
+
+      if (id && currentUser.id) {
+        const employees = await this.groupService.getAllForEmployee(id, currentUser.id)
+        return res.status(200).json(employees)
+      }
+      throw new ApiError(422, 'identifiant de l\'utilisateur manquant')
+    })
+  }
+
   /**
    * @param group group: Partial<GroupEntity>
    * @return return group just updated

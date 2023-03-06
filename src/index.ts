@@ -188,6 +188,7 @@ async function StartApp() {
   // Group
   app.get('/group/manyByIds', [isAuthenticated], new GroupController().getMany)
   app.get('/group/user', [isAuthenticated], new GroupController().getManyByUserId)
+  app.get('/group/employeeId/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getManyByEmployeeId)
   app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
   app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
   app.post('/group/csv', [validate(createGroupCSVSchema), isAuthenticated], new GroupController().createOneWithCSV)
