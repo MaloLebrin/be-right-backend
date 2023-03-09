@@ -53,12 +53,13 @@ export class GroupController {
   public createOneWithCSV = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { name, description }: { name: string; description: string } = req.body
+
       const fileRecieved = req.file
 
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
-      if (!name || !description || !fileRecieved || !currentUser) {
+      if (!name || !fileRecieved || !currentUser) {
         throw new ApiError(422, 'Parmètres manquants')
       }
 
@@ -80,8 +81,11 @@ export class GroupController {
       })
 
       const newEmployeesToCreate = newEmployeesData.filter(newEmp => !existingEmployees.map(emp => emp.email).includes(newEmp.email))
+
+      const arrayOfEmployeeIdsInGroup = [...existingEmployees.map(emp => emp.id)]
+
       if (newEmployeesToCreate.length > 0) {
-        const newEmployees = await Promise.all(
+        await Promise.all(
           newEmployeesToCreate.map(async emp => {
             const newOne = await this.EmployeeService.createOne({ ...emp }, currentUser.id)
             await this.AddressService.createOne({
@@ -93,14 +97,16 @@ export class GroupController {
               },
               employeeId: newOne.id,
             })
-            return newOne
+            return arrayOfEmployeeIdsInGroup.push(newOne.id)
           }),
         )
+      }
 
+      if (arrayOfEmployeeIdsInGroup.length > 0) {
         const newGroup = await this.groupService.createOne({
           name,
           description,
-          employeeIds: uniq([...existingEmployees.map(emp => emp.id), ...newEmployees.map(emp => emp.id)]),
+          employeeIds: uniq(arrayOfEmployeeIdsInGroup),
         }, currentUser.id)
 
         if (newGroup) {

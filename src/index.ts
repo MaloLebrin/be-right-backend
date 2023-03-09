@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
 import Context from './context'
-import { logger, loggerMiddleware } from './middlewares/loggerService'
+import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 import { checkUserRole, isAuthenticated, useValidation } from './middlewares'
@@ -73,7 +73,7 @@ async function StartApp() {
   app.use(helmet())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
-  app.use(loggerMiddleware)
+  // app.use(loggerMiddleware)
   app.use((req: Request, res: Response, next: NextFunction) => {
     Context.bind(req)
     next()
@@ -96,7 +96,6 @@ async function StartApp() {
     createbugSchema,
     createEmployeeSchema,
     createGroupSchema,
-    createGroupCSVSchema,
     createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
@@ -191,7 +190,7 @@ async function StartApp() {
   app.get('/group/employeeId/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getManyByEmployeeId)
   app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
   app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
-  app.post('/group/csv', [validate(createGroupCSVSchema), isAuthenticated], new GroupController().createOneWithCSV)
+  app.post('/group/csv', [isAuthenticated], upload.single('file'), new GroupController().createOneWithCSV)
   app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
   app.delete('/groupe/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
 
