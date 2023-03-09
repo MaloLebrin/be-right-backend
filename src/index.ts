@@ -192,7 +192,7 @@ async function StartApp() {
   app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
   app.post('/group/csv', [isAuthenticated], upload.single('file'), new GroupController().createOneWithCSV)
   app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
-  app.delete('/groupe/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
+  app.delete('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
 
   // Mail
   app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
