@@ -218,7 +218,6 @@ async function StartApp() {
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
   app.patch('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().updateOne)
-  app.patch('/user/theme/:id', [validate(themeSchema), isAuthenticated], new UserController().updateTheme)
   app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
   app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
 

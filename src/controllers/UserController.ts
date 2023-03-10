@@ -178,16 +178,6 @@ export default class UserController {
     })
   }
 
-  public updateTheme = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      const { theme } = req.body
-      const user = await this.UserService.updateTheme(id, theme)
-      await this.saveUserInCache(user)
-      return res.status(200).json(userResponse(user))
-    })
-  }
-
   /**
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
