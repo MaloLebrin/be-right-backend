@@ -1,28 +1,19 @@
 import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { UserEntity } from '../UserEntity'
 import AnswerEntity from '../AnswerEntity'
-import { BaseEntity } from '../bases/BaseEntity'
 import { AddressEntity } from '../AddressEntity'
 import { FileEntity } from '../FileEntity'
+import { BasePersonEntity } from '../bases/BasePerson'
 import { GroupEntity } from './Group.entity'
 
 @Entity()
 @Index(['id', 'createdByUser', 'firstName', 'lastName', 'email'], { unique: true })
-export class EmployeeEntity extends BaseEntity {
-  @Column()
-  email: string
-
+export class EmployeeEntity extends BasePersonEntity {
   @Column({ nullable: true })
   phone: string
 
   @Column({ unique: true, nullable: true })
   slug: string
-
-  @Column()
-  firstName: string
-
-  @Column()
-  lastName: string
 
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()

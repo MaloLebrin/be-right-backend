@@ -1,50 +1,21 @@
-import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { Role, ThemeEnum } from '../types/'
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Role } from '../types/'
 import { SubscriptionEnum } from '../types/Subscription'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './bases/BaseEntity'
+import { BaseAuthEntity } from './bases/AuthEntity'
 import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
 import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
-import { SessionEntity } from './SessionEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 
 @Entity()
-@Index(['firstName', 'lastName', 'email'], { unique: true })
-export class UserEntity extends BaseEntity {
-  @Column({ unique: true })
-  email: string
-
-  @Column({ nullable: true })
-  password: string
-
-  @Column({ unique: true, update: false })
-  salt: string
-
-  @Column({ unique: true, update: false })
-  token: string
-
-  @Column({ unique: true, nullable: true })
-  twoFactorRecoveryCode: string | null
-
-  @Column({ unique: true, nullable: true })
-  twoFactorSecret: string | null
-
-  @Column({ length: 100, nullable: true })
-  firstName: string
-
-  @Column({ length: 100, nullable: true })
-  lastName: string
-
+export class UserEntity extends BaseAuthEntity {
   @Column({ nullable: true })
   companyName: string
 
   @Column({ nullable: true })
   siret: string
-
-  @Column({ nullable: true, unique: true })
-  apiKey: string
 
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
@@ -52,22 +23,12 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   subscriptionLabel: SubscriptionEnum
 
-  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
-  theme: ThemeEnum
-
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity
 
   @RelationId((user: UserEntity) => user.address)
   addressId: number
-
-  @OneToOne(() => SessionEntity, { cascade: true })
-  @JoinColumn()
-  session: SessionEntity
-
-  @RelationId((user: UserEntity) => user.session)
-  sessionId: number
 
   @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
   events: EventEntity[]
@@ -98,15 +59,6 @@ export class UserEntity extends BaseEntity {
 
   @RelationId((user: UserEntity) => user.subscription)
   subscriptionId: number
-
-  @Column({ nullable: true, default: null })
-  loggedAt: Date
-
-  @Column({ nullable: true, default: null })
-  passwordUpdatedAt: Date
-
-  @Column({ nullable: true, default: null })
-  saltUpdatedAt: Date
 
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[]

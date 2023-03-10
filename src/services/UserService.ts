@@ -3,7 +3,7 @@ import type { DataSource, Repository } from 'typeorm'
 import { UserEntity } from '../entity/UserEntity'
 import { generateHash, userResponse } from '../utils'
 import { Role } from '../types'
-import type { CreateUserPayload, PhotographerCreatePayload, ThemeEnum } from '../types'
+import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
 import { createJwtToken } from '../utils/'
 import { SubscriptionService } from './SubscriptionService'
 
@@ -21,16 +21,6 @@ export default class UserService {
       where: { token },
       relations: ['events', 'files', 'employees', 'employees.address', 'profilePicture', 'address'],
     })
-  }
-
-  async updateTheme(id: number, theme: ThemeEnum) {
-    const user = await this.repository.findOne({
-      where: { id },
-    })
-
-    user.theme = theme
-    await this.repository.save(user)
-    return user
   }
 
   async getOne(id: number, withRelation?: boolean) {
