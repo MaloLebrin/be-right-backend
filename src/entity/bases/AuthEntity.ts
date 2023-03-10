@@ -1,19 +1,9 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { SessionEntity } from '../SessionEntity'
-import { BaseEntity } from './BaseEntity'
+import { BasePersonEntity } from './BasePerson'
 
 @Entity()
-@Index(['firstName', 'lastName', 'email'], { unique: true })
-export abstract class BaseAuthEntity extends BaseEntity {
-  @Column({ unique: true })
-  email: string
-
-  @Column({ length: 100, nullable: true })
-  firstName: string
-
-  @Column({ length: 100, nullable: true })
-  lastName: string
-
+export abstract class BaseAuthEntity extends BasePersonEntity {
   @Column({ nullable: true })
   password: string
 

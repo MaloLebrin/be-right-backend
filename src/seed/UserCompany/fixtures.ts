@@ -191,7 +191,7 @@ export const employeesFixtureCompanyMedium = [
   },
   {
     employee: {
-      email: 'severus@poudlard.com',
+      email: 'severus@mangemorts.com',
       firstName: 'Severus',
       lastName: 'Rogue',
       phone: '0987654321',
