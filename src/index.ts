@@ -74,6 +74,7 @@ async function StartApp() {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   // app.use(loggerMiddleware)
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     Context.bind(req)
     next()
@@ -108,7 +109,6 @@ async function StartApp() {
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
-    themeSchema,
     tokenSchema,
     validate,
   } = useValidation()
