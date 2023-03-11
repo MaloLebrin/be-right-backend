@@ -16,10 +16,19 @@ export default class UserService {
     this.subscriptionService = new SubscriptionService(APP_SOURCE)
   }
 
-  async getByToken(token: string): Promise<UserEntity> {
+  async getByToken(token: string, withRelation?: boolean): Promise<UserEntity> {
     return await this.repository.findOne({
       where: { token },
-      relations: ['events', 'files', 'employees', 'employees.address', 'profilePicture', 'address'],
+      relations: {
+        address: withRelation,
+        events: withRelation,
+        files: withRelation,
+        employees: withRelation,
+        profilePicture: withRelation,
+        notificationSubscriptions: withRelation,
+        subscription: withRelation,
+
+      },
     })
   }
 

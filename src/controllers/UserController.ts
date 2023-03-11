@@ -163,7 +163,7 @@ export default class UserController {
       if (token) {
         const user = await this.redisCache.get<UserEntity>(
           `user-token-${token}`,
-          () => this.UserService.getByToken(token))
+          () => this.UserService.getByToken(token, true))
 
         if (user) {
           await this.repository.update(user.id, {
