@@ -314,7 +314,15 @@ export default class UserController {
 
       const user = await this.repository.findOne({
         where: { email },
-        relations: ['events', 'files', 'employees', 'profilePicture', 'subscription'],
+        relations: {
+          address: true,
+          events: true,
+          files: true,
+          employees: true,
+          profilePicture: true,
+          notificationSubscriptions: true,
+          subscription: true,
+        },
       })
 
       if (user && user.password && user.salt) {

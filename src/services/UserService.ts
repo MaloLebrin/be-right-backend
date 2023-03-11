@@ -27,7 +27,6 @@ export default class UserService {
         profilePicture: withRelation,
         notificationSubscriptions: withRelation,
         subscription: withRelation,
-
       },
     })
   }
