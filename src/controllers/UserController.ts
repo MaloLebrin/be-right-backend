@@ -8,7 +8,7 @@ import checkUserRole from '../middlewares/checkUserRole'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, uniq } from '../utils/'
+import { createJwtToken, generateRedisKey, uniqByKey } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -367,13 +367,7 @@ export default class UserController {
         })
 
         if (user) {
-          const events = user.events
-          const partners = events.map(event => event.partner).filter(u => u)
-          const uniqPartners = uniq(partners)
-
-          if (uniqPartners?.length > 0) {
-            return res.status(200).json(uniqPartners)
-          }
+          return res.status(200).json(uniqByKey(user.events.map(event => event.partner), 'id'))
         }
 
         return res.status(200).json([])
