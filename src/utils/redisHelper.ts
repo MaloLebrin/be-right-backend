@@ -24,3 +24,10 @@ export function generateRedisKeysArray({
   return ids.map((id: string | number) =>
     `${typeofEntity}-${field}-${id}`) as RedisKeys[]
 }
+
+export function parseRedisKey(key: `${string}-${string}-${string}`) {
+  return {
+    field: key.split('-')[1],
+    value: key.split('-')[2],
+  }
+}
