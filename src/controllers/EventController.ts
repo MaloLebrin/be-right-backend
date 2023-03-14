@@ -155,7 +155,6 @@ export default class EventController {
           typeofEntity: EntitiesEnum.EVENT,
           fetcher: () => this.EventService.getManyEvents(eventsIds, true),
         })
-        // TODO resolve fetching all data not only in redis
 
         return res.status(200).json(events)
       }
@@ -169,12 +168,23 @@ export default class EventController {
    */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, eventSearchableFields)
+      const ctx = Context.get(req)
 
+      const { where, page, take, skip } = paginator<EventEntity>(req, eventSearchableFields)
+
+      const whereFields = {
+        ...where,
+      }
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields.createdByUser = {
+          id: ctx.user.id,
+        }
+      }
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: whereFields,
       })
 
       return res.status(200).json({
