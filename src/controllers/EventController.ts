@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
+import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
@@ -162,6 +163,26 @@ export default class EventController {
     })
   }
 
+  public getAllDeletedForUser = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
+      if (ctx.user?.id) {
+        const events = await this.repository.find({
+          where: {
+            createdByUser: {
+              id: ctx.user.id,
+            },
+            deletedAt: Not(IsNull()),
+          },
+          withDeleted: true,
+        })
+        return res.status(200).json(events)
+      }
+      throw new ApiError(422, 'Vous n\'etes pas connecté')
+    })
+  }
+
   /**
    * paginate function
    * @returns paginate response
@@ -181,6 +202,7 @@ export default class EventController {
           id: ctx.user.id,
         }
       }
+
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,

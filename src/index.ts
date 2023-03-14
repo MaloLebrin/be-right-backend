@@ -164,6 +164,7 @@ async function StartApp() {
   // Event
   app.get('/event/manyByIds', [isAuthenticated], new EventController().getMany)
   app.get('/event/', [isAuthenticated], new EventController().getAll)
+  app.get('/event/deleted', [isAuthenticated], new EventController().getAllDeletedForUser)
   app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
   app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
   app.post('/event/:id', [validate(createOneEventSchema), isAuthenticated], new EventController().createOne)
