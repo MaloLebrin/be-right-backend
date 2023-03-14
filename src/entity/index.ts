@@ -17,11 +17,13 @@ import { NotificationEntity } from './notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
 import { GroupEntity } from './employees/Group.entity'
 import { CompanyEntity } from './Company.entity'
+import { BadgeEntity } from './repositories/Badge.entity'
 
 export default {
   AddressEntity,
   AnswerEntity,
   BaseEntity,
+  BadgeEntity,
   BugReportEntity,
   CompanyEntity,
   EmployeeEntity,
@@ -44,6 +46,7 @@ export const entities = [
   AddressEntity,
   AnswerEntity,
   SubscriptionEntity,
+  BadgeEntity,
   BugReportEntity,
   CompanyEntity,
   EmployeeEntity,
