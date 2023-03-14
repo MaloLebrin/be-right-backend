@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import { IsNull, Not } from 'typeorm'
+import { LessThan } from 'typeorm'
 import { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import { logger } from '../../middlewares/loggerService'
 
@@ -15,14 +15,12 @@ export async function deleteReadOldNotifications(APP_SOURCE: DataSource) {
 
     const notifications = await NotificationRepository.find({
       where: {
-        readAt: Not(null),
-        deletedAt: IsNull(),
+        readAt: LessThan(yearAgoDate.toDate()),
+        createdAt: LessThan(yearAgoDate.toDate()),
       },
     })
 
     const notificationIdsToDelete = notifications
-      .filter(notif =>
-        dayjs(notif.readAt).isBefore(yearAgoDate) && dayjs(notif.createdAt).isBefore(yearAgoDate))
       .map(notif => notif.id)
 
     if (notificationIdsToDelete?.length > 0) {

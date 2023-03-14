@@ -61,6 +61,9 @@ export default class EventService {
         }))
       }))
     }
+    await this.repository.update(event.id, {
+      status: EventStatusEnum.CLOSED,
+    })
 
     await this.repository.softDelete(event.id)
     await this.redisCache.invalidate(generateRedisKey({

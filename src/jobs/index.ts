@@ -7,6 +7,7 @@ import { useEnv } from '../env'
 import { createAppSource } from '../utils'
 import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
 import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
+import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
 
 (async () => {
   const {
@@ -44,6 +45,7 @@ import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
     async () => {
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
       await deleteReadOldNotifications(JOB_APP_SOURCE)
+      await deleteOldEventsJob(JOB_APP_SOURCE)
     },
   )
 })()
