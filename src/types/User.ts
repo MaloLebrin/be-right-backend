@@ -26,4 +26,5 @@ export interface CreateUserPayload {
   subscription: SubscriptionEnum
   subscriptionId?: number
   loggedAt?: null | Date
+  badges?: number[]
 }

@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { Role } from '../types/'
 import { BaseAuthEntity } from './bases/AuthEntity'
 import { CompanyEntity } from './Company.entity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
 import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
+import { BadgeEntity } from './repositories/Badge.entity'
 
 @Entity()
 export class UserEntity extends BaseAuthEntity {
@@ -32,6 +33,13 @@ export class UserEntity extends BaseAuthEntity {
 
   @RelationId((user: UserEntity) => user.company)
   companyId: number
+
+  @ManyToMany(() => BadgeEntity, badge => badge.user)
+  @JoinColumn()
+  badges: BadgeEntity[]
+
+  @RelationId((user: UserEntity) => user.badges)
+  badgeIds: number[]
 }
 
 export const userSearchableFields = [
