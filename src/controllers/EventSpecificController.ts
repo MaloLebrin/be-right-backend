@@ -16,7 +16,6 @@ import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
 import { ApiError } from '../middlewares/ApiError'
-import { isUserAdmin } from '../utils/userHelper'
 import { defaultQueue } from '../jobs/queue/queue'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
@@ -114,12 +113,7 @@ export default class EventSpecificController {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
       const ctx = Context.get(req)
-      let userId = null
-      if (isUserAdmin(ctx.user)) {
-        userId = parseInt(req.params.id)
-      } else {
-        userId = ctx.user.id
-      }
+      const userId = ctx.user.id
 
       if (event && userId) {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)

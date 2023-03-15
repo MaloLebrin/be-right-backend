@@ -152,11 +152,15 @@ export default class EventService {
   }
 
   async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
-    if (photographerId) {
-      event.partnerId = photographerId
-    }
-    event.createdByUserId = userId
-    const newEvent = this.repository.create(event)
+    const newEvent = this.repository.create({
+      ...event,
+      partner: {
+        id: photographerId,
+      },
+      createdByUser: {
+        id: userId,
+      },
+    })
     await this.repository.save(newEvent)
     await this.saveEventRedisCache(newEvent)
     return newEvent
