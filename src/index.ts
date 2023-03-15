@@ -167,7 +167,7 @@ async function StartApp() {
   app.get('/event/deleted', [isAuthenticated], new EventController().getAllDeletedForUser)
   app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
   app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
-  app.post('/event/:id', [validate(createOneEventSchema), isAuthenticated], new EventController().createOne)
+  app.post('/event/:id', [validate(createOneEventSchema), isAuthenticated], new EventSpecificController().posteOneWithRelations)
   app.get('/event/user/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getAllForUser)
   app.patch('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().updateOne)
   app.delete('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
