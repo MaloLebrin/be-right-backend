@@ -199,15 +199,12 @@ export function useValidation() {
       event: object({
         name: string().required('le nom de l\'événement est obligatoire'),
         description: string().nullable(),
-        // period: object().shape({
-        // }).required('L\'événement doit avoir une date de début et une date de fin'),
         start: date().required('La date de début est obligatoire'),
         end: date().required('La date de fin est obligatoire'),
+        employeeIds: array().of(number()).min(1, 'Sélectionnez au moins un destinataire')
+          .required('Les destinataires sont obligatoire'),
       }),
       photographerId: number().required('L\'identifiant du photographe est requis'),
-    }),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
     }),
   })
 
