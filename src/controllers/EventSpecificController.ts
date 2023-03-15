@@ -127,14 +127,14 @@ export default class EventSpecificController {
               userId,
             }))
 
-          await this.AddressService.createOne({
+          const addressCreated = await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
           })
 
           const answers = await this.AnswerService.createMany(newEvent.id, event.employeeIds)
 
-          if (answers.length > 0 && event) {
+          if (answers.length > 0) {
             const name = Date.now().toString()
             await defaultQueue.add(name, new SendMailAnswerCreationjob({
               answers,
@@ -146,11 +146,18 @@ export default class EventSpecificController {
           await defaultQueue.add(name, new UpdateEventStatusJob({
             eventId: newEvent.id,
           }))
-        }
-        await this.RediceService.updateCurrentUserInCache({ userId })
 
-        await this.saveEventRedisCache(newEvent)
-        return res.status(200).json(newEvent)
+          await this.RediceService.updateCurrentUserInCache({ userId })
+
+          await this.saveEventRedisCache(newEvent)
+
+          return res.status(200).json({
+            event: newEvent,
+            answers,
+            address: addressCreated,
+          })
+        }
+        throw new ApiError(422, 'Événement non créé')
       }
 
       throw new ApiError(422, 'Formulaire incomplet')
