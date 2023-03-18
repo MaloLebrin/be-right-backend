@@ -4,11 +4,10 @@ import type { EntityManager, Repository } from 'typeorm'
 import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
-import checkUserRole from '../middlewares/checkUserRole'
-import { Role } from '../types/Role'
+import type { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, uniqByKey } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -188,7 +187,8 @@ export default class UserController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
+
+        if (id === ctx.user.id || isUserAdmin(ctx.user)) {
           const userFinded = await this.UserService.getOne(id)
 
           const userUpdated = {
@@ -196,6 +196,7 @@ export default class UserController {
             ...user,
             updatedAt: new Date(),
           }
+
           if (user.roles !== userFinded.roles) {
             userUpdated.token = createJwtToken({
               email: userUpdated.email,
@@ -254,7 +255,8 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
-      if (id === ctx.user.id || checkUserRole(Role.ADMIN)) {
+
+      if (id === ctx.user.id || isUserAdmin(ctx.user)) {
         const userToDelete = await this.UserService.getOne(id, true)
 
         if (!userToDelete) {

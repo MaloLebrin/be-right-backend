@@ -43,7 +43,7 @@ export function useValidation() {
       password: string().required('Le mot de passe est requis'),
       firstName: string().required('Le prénom est requis'),
       lastName: string().required('le nom est requis'),
-      roles: string().oneOf([Role.PHOTOGRAPHER, Role.COMPANY]),
+      roles: string().oneOf([Role.PHOTOGRAPHER, Role.USER]),
     }),
   })
 
