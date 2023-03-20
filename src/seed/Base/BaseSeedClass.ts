@@ -1,6 +1,7 @@
 import type { DataSource, EntityManager } from 'typeorm'
 import { AddressService } from '../../services'
 import AnswerService from '../../services/AnswerService'
+import { CompanyService } from '../../services/CompanyService'
 import EmployeeService from '../../services/employee/EmployeeService'
 import EventService from '../../services/EventService'
 import UserService from '../../services/UserService'
@@ -13,6 +14,7 @@ export class BaseSeedClass {
   UserService: UserService
   EmployeeService: EmployeeService
   EventService: EventService
+  CompanyService: CompanyService
 
   constructor(SEED_SOURCE: DataSource) {
     this.getManager = SEED_SOURCE.manager
@@ -21,5 +23,6 @@ export class BaseSeedClass {
     this.UserService = new UserService(SEED_SOURCE)
     this.EmployeeService = new EmployeeService(SEED_SOURCE)
     this.EventService = new EventService(SEED_SOURCE)
+    this.CompanyService = new CompanyService(SEED_SOURCE)
   }
 }
