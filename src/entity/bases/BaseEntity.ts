@@ -3,7 +3,7 @@ import { CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Upd
 @Entity()
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn()
-  id: number
+  readonly id: number
 
   @CreateDateColumn()
   public createdAt: Date
