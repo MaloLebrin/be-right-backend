@@ -202,7 +202,22 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
-          return res.status(200).json(userResponse(user))
+          const company = await this.companyRepository.findOne({
+            where: { id: user.companyId },
+            relations: {
+              address: true,
+              employees: true,
+              events: true,
+              files: true,
+              subscription: true,
+              users: true,
+            },
+          })
+
+          return res.status(200).json({
+            user: userResponse(user),
+            company,
+          })
         }
 
         throw new ApiError(404, 'Utilisateur non trouvé')
@@ -351,7 +366,6 @@ export default class UserController {
         relations: {
           profilePicture: true,
           notificationSubscriptions: true,
-          company: true,
         },
       })
 
@@ -363,11 +377,26 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
+          const company = await this.companyRepository.findOne({
+            where: { id: user.companyId },
+            relations: {
+              address: true,
+              employees: true,
+              events: true,
+              files: true,
+              subscription: true,
+              users: true,
+            },
+          })
+
           const userToSend = userResponse(user)
 
           await this.saveUserInCache(userToSend)
 
-          return res.status(200).json(userToSend)
+          return res.status(200).json({
+            user: userToSend,
+            company,
+          })
         } else {
           throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
         }
