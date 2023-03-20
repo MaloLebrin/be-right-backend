@@ -107,6 +107,7 @@ async function StartApp() {
     emailAlreadyExistSchema,
     idParamsSchema,
     loginSchema,
+    newUserSchema,
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
@@ -139,6 +140,7 @@ async function StartApp() {
   // Auth
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
   app.post('/auth/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
+  app.post('/auth/signup', [validate(registerSchema)], new AuthController().signUp)
 
   // Bug
   app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
@@ -158,8 +160,8 @@ async function StartApp() {
   app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
   app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
   app.get('/employee/event/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByEventId)
-  app.post('/employee/:id', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
-  app.post('/employee/many/:id', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
+  app.post('/employee', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
+  app.post('/employee/many', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
   app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId)
   app.post('/employee-upload/csv', [isAuthenticated], upload.single('file'), new EmployeeController().uploadFormCSV)
   app.put('/employee/updateTotalSignatureNeeded/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().patchOne)
@@ -173,7 +175,7 @@ async function StartApp() {
   app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
   app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
   app.post('/event', [validate(createOneEventSchema), isAuthenticated], new EventSpecificController().posteOneWithRelations)
-  app.get('/event/user/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getAllForUser)
+  app.get('/event/user', [isAuthenticated], new EventController().getAllForUser)
   app.patch('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().updateOne)
   app.delete('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
 
@@ -219,7 +221,7 @@ async function StartApp() {
   app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
   app.get('/user/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
   app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
-  app.post('/user/', [validate(registerSchema)], new UserController().newUser)
+  app.post('/user/', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
   app.post('/user/login', [validate(loginSchema)], new UserController().login)
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)

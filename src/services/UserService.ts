@@ -19,7 +19,6 @@ export default class UserService {
       relations: {
         profilePicture: withRelation,
         notificationSubscriptions: withRelation,
-        company: withRelation,
       },
     })
   }

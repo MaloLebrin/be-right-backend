@@ -43,7 +43,15 @@ export function useValidation() {
       password: string().required('Le mot de passe est requis'),
       firstName: string().required('Le prénom est requis'),
       lastName: string().required('le nom est requis'),
-      roles: string().oneOf([Role.PHOTOGRAPHER, Role.USER]),
+    }),
+  })
+
+  const newUserSchema = object({
+    body: object({
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      firstName: string().required('Le prénom est requis'),
+      lastName: string().required('le nom est requis'),
+      roles: string().oneOf([Role.OWNER, Role.USER], 'Vous devre renseigner un rôle').required('Le rôle est requis'),
     }),
   })
 
@@ -146,9 +154,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     }),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesSchema = object({
@@ -167,9 +172,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     })),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesOnEventSchema = object({
@@ -182,8 +184,7 @@ export function useValidation() {
       }),
     })),
     params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-      eventId: number().required('L\'identifiant de l\'utilisateur est requis'),
+      eventId: number().required('L\'identifiant de l\'événement est requis'),
     }),
   })
 
@@ -248,6 +249,7 @@ export function useValidation() {
     emailAlreadyExistSchema,
     idParamsSchema,
     loginSchema,
+    newUserSchema,
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
