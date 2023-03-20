@@ -112,10 +112,11 @@ export default class EventSpecificController {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
       const ctx = Context.get(req)
+      const companyId = ctx.user.companyId
       const userId = ctx.user.id
 
-      if (event && userId) {
-        const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
+      if (event && companyId) {
+        const newEvent = await this.EventService.createOneEvent(event, companyId, photographerId)
 
         if (newEvent && address) {
           await defaultQueue.add(

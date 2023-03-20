@@ -146,9 +146,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     }),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesSchema = object({
@@ -167,9 +164,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     })),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesOnEventSchema = object({
