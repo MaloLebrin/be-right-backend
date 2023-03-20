@@ -1,15 +1,17 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { CompanyEntity } from '../entity/Company.entity'
-import type { SubscriptionEntity } from '../entity/SubscriptionEntity'
+import { SubscriptionEntity } from '../entity/SubscriptionEntity'
 import type { UserEntity } from '../entity/UserEntity'
 import type { SubscriptionEnum } from '../types'
 
 export class CompanyService {
   repository: Repository<CompanyEntity>
+  SubscriptionRepository: Repository<SubscriptionEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(CompanyEntity)
+    this.SubscriptionRepository = APP_SOURCE.getRepository(SubscriptionEntity)
   }
 
   async createOne({
@@ -27,7 +29,7 @@ export class CompanyService {
       name,
       subscription,
       subscriptionLabel,
-      onwer,
+      owners: [onwer],
     })
     return await this.repository.save(company)
   }
@@ -38,7 +40,7 @@ export class CompanyService {
         id: companyId,
       },
       relations: {
-        onwer: withRelations,
+        owners: withRelations,
         employees: withRelations,
         events: withRelations,
         groups: withRelations,
@@ -56,7 +58,7 @@ export class CompanyService {
         id: In(companyIds),
       },
       relations: {
-        onwer: withRelations,
+        owners: withRelations,
         employees: withRelations,
         events: withRelations,
         groups: withRelations,

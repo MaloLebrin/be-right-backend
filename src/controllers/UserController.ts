@@ -114,7 +114,7 @@ export default class UserController {
       if (company.users && company.users.length > 0) {
         company.users = [...company.users, newUser]
       } else {
-        company.onwer = newUser
+        company.owners = [newUser]
         company.users = [newUser]
       }
 

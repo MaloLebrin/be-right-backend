@@ -20,12 +20,12 @@ export class CompanyEntity extends BaseEntity {
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC, nullable: true })
   subscriptionLabel: SubscriptionEnum
 
-  @OneToOne(() => UserEntity, { cascade: true })
+  @OneToMany(() => UserEntity, user => user.company, { cascade: true })
   @JoinColumn()
-  onwer: UserEntity
+  owners: UserEntity[]
 
-  @RelationId((company: CompanyEntity) => company.onwer)
-  readonly onwerId: number
+  @RelationId((company: CompanyEntity) => company.owners)
+  readonly onwerIds: number[]
 
   @OneToMany(() => UserEntity, user => user.company, { cascade: true })
   @JoinColumn()

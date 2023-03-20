@@ -56,7 +56,7 @@ export class UserAdminSeed extends BaseSeedClass {
 
       await this.UserRepository.save(newUser)
 
-      newCompany.onwer = newUser
+      newCompany.owners = [newUser]
       newCompany.users = [newUser]
 
       await this.CompanyRepository.save(newCompany)

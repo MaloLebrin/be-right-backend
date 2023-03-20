@@ -59,7 +59,7 @@ export class UserSeedClass extends BaseSeedClass {
     })
 
     const newCompany = this.CompanyRepository.create({
-      name: userCompanyFixturePremium.companyName,
+      name: 'Serpentard',
       subscription,
       subscriptionLabel: SubscriptionEnum.MEDIUM,
     })
@@ -71,7 +71,7 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.onwer = newUser
+    newCompany.owners = [newUser]
     newCompany.users = [newUser]
 
     await this.CompanyRepository.save(newCompany)
@@ -192,7 +192,7 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.onwer = user
+    newCompany.owners = [user]
     newCompany.users = [user]
 
     await this.CompanyRepository.save(newCompany)
@@ -340,13 +340,13 @@ export class UserSeedClass extends BaseSeedClass {
 
   private async seedUserMedium() {
     const subscription = this.getManager.create(SubscriptionEntity, {
-      type: SubscriptionEnum.PREMIUM,
+      type: SubscriptionEnum.MEDIUM,
       expireAt: dayjs().add(1, 'year'),
     })
     await this.getManager.save(subscription)
 
     const newCompany = this.CompanyRepository.create({
-      name: userCompanyFixturePremium.companyName,
+      name: userCompanyFixtureMedium.companyName,
       subscription,
       subscriptionLabel: subscription.type,
     })
@@ -359,7 +359,7 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.onwer = user
+    newCompany.owners = [user]
     newCompany.users = [user]
 
     await this.CompanyRepository.save(newCompany)
