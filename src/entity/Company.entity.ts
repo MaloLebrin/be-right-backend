@@ -32,45 +32,45 @@ export class CompanyEntity extends BaseEntity {
   users: UserEntity[]
 
   @RelationId((company: CompanyEntity) => company.users)
-  userIds: number[]
+  readonly userIds: number[]
 
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity
 
   @RelationId((company: CompanyEntity) => company.address)
-  addressId: number
+  readonly addressId: number
 
   @OneToMany(() => EventEntity, event => event.company, { cascade: true })
   events: EventEntity[]
 
   @RelationId((company: CompanyEntity) => company.events)
-  eventIds: number[]
+  readonly eventIds: number[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.company, { cascade: true })
   @JoinColumn()
   employees: EmployeeEntity[]
 
   @RelationId((company: CompanyEntity) => company.employees)
-  employeeIds: number[]
+  readonly employeeIds: number[]
 
   @OneToMany(() => GroupEntity, group => group.company, { cascade: true })
   @JoinColumn()
   groups: GroupEntity[]
 
   @RelationId((company: CompanyEntity) => company.groups)
-  groupIds: number[]
+  readonly groupIds: number[]
 
   @OneToMany(() => FileEntity, file => file.company, { cascade: true })
   files: FileEntity[]
 
   @RelationId((company: CompanyEntity) => company.files)
-  filesIds: number[]
+  readonly filesIds: number[]
 
   @OneToOne(() => SubscriptionEntity, { cascade: true })
   @JoinColumn()
   subscription: SubscriptionEntity
 
   @RelationId((company: CompanyEntity) => company.subscription)
-  subscriptionId: number
+  readonly subscriptionId: number
 }
