@@ -114,13 +114,13 @@ export default class AuthController {
         password,
         companyName,
       }:
-      {
-        email: string
-        firstName: string
-        lastName: string
-        password: string
-        companyName: string
-      } = req.body
+        {
+          email: string
+          firstName: string
+          lastName: string
+          password: string
+          companyName: string
+        } = req.body
 
       if (!email || !firstName || !lastName || !password || !companyName) {
         throw new ApiError(422, 'Imformations manquantes')
@@ -160,7 +160,7 @@ export default class AuthController {
 
       await this.companyRepository.save(newCompany)
 
-      return res.status(200).json(userResponse(newUser))
+      return res.status(200).json({ user: userResponse(newUser), company: newCompany })
     })
   }
 }
