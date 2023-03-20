@@ -114,13 +114,13 @@ export default class AuthController {
         password,
         companyName,
       }:
-        {
-          email: string
-          firstName: string
-          lastName: string
-          password: string
-          companyName: string
-        } = req.body
+      {
+        email: string
+        firstName: string
+        lastName: string
+        password: string
+        companyName: string
+      } = req.body
 
       if (!email || !firstName || !lastName || !password || !companyName) {
         throw new ApiError(422, 'Imformations manquantes')
