@@ -107,6 +107,7 @@ async function StartApp() {
     emailAlreadyExistSchema,
     idParamsSchema,
     loginSchema,
+    newUserSchema,
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
@@ -139,6 +140,7 @@ async function StartApp() {
   // Auth
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
   app.post('/auth/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
+  app.post('/auth/signup', [validate(registerSchema)], new AuthController().signUp)
 
   // Bug
   app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
@@ -219,7 +221,7 @@ async function StartApp() {
   app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
   app.get('/user/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
   app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
-  app.post('/user/', [validate(registerSchema)], new UserController().newUser)
+  app.post('/user/', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
   app.post('/user/login', [validate(loginSchema)], new UserController().login)
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)

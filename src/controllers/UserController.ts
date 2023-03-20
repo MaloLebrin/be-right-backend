@@ -55,60 +55,51 @@ export default class UserController {
    */
   public newUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
       const {
         email,
         firstName,
         lastName,
-        password,
-        role,
-        companyId,
+        roles,
       }:
         {
           email: string
           firstName: string
           lastName: string
           password: string
-          role: Role
-          companyId: number
+          roles: Role
         } = req.body
+
+      const companyId = ctx.user.companyId
+
+      if (!email || !firstName || !lastName || !roles || !companyId) {
+        throw new ApiError(422, 'Imformations manquantes')
+      }
 
       const userAlReadyExist = await this.UserService.findOneByEmail(email)
       if (userAlReadyExist) {
         throw new ApiError(423, 'cet email existe déjà')
       }
 
-      let idCompany = companyId
-      let company: null | CompanyEntity = null
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: companyId,
+        },
+      })
 
-      if (!idCompany) {
-        const subscription = await this.SubscriptionService.createBasicSubscription()
-
-        const newCompany = this.companyRepository.create({
-          name: 'Zenika',
-          subscription,
-          subscriptionLabel: subscription.type,
-        })
-        company = await this.companyRepository.save(newCompany)
-
-        idCompany = company.id
-      } else {
-        const ctx = Context.get(req)
-
-        company = await this.companyRepository.findOne({
-          where: {
-            id: ctx.user.companyId,
-          },
-        })
+      if (!company) {
+        throw new ApiError(422, 'L\'entreprise selectionnée n\'existe pas')
       }
 
       const newUser = await this.UserService.createOneUser({
         email,
         firstName,
         lastName,
-        password,
-        role,
+        password: null,
+        role: roles,
         subscription: SubscriptionEnum.BASIC,
-        companyId: idCompany,
+        companyId,
       })
 
       if (company.users && company.users.length > 0) {
@@ -409,6 +400,10 @@ export default class UserController {
   public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email, firstName, lastName }: { email: string; firstName: string; lastName: string } = req.body
+
+      if (!email || !firstName || !lastName) {
+        throw new ApiError(422, 'Imformations manquantes')
+      }
 
       const newPhotographer = await this.UserService.createPhotographer({ email, firstName, lastName })
 
