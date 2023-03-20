@@ -31,6 +31,7 @@ import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
 import { GroupController } from './controllers/employees/GroupController'
+import { CompanyController } from './controllers/CompanyController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -53,7 +54,7 @@ async function StartApp() {
       logger.error('Error during Data Source initialization:', err)
     })
 
-  if (NODE_ENV === 'test') {
+  if (NODE_ENV !== 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
@@ -146,6 +147,10 @@ async function StartApp() {
   app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
   app.patch('/bugreport/status/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateStatus)
   app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
+
+  // Company
+  app.get('/company/:id', [isAuthenticated], new CompanyController().getOne)
+  app.patch('/company/owners/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().addOrRemoveOwner)
 
   // Employee
   app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
