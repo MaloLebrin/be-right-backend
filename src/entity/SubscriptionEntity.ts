@@ -14,7 +14,7 @@ export class SubscriptionEntity extends BaseEntity {
   @OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
   @JoinColumn()
   payment: PaymentEntity
-  // FIXME can subscripiton have multiple payments ?
+  // FIXME can subscripiton have multiple payments ? YES!!!!!!!!!
 
   @RelationId((subscription: SubscriptionEntity) => subscription.payment)
   paymentId: number

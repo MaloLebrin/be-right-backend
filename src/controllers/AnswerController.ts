@@ -46,6 +46,8 @@ export default class AnswerController {
 
   public createOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
 
@@ -72,7 +74,7 @@ export default class AnswerController {
             ...answer,
             employee,
           }],
-          user: event.createdByUser,
+          user: ctx.user,
         }))
       }
 
@@ -88,6 +90,7 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
+      const ctx = Context.get(req)
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
@@ -99,7 +102,7 @@ export default class AnswerController {
         const name = Date.now().toString()
         await defaultQueue.add(name, new SendMailAnswerCreationjob({
           answers: answersToSendMail,
-          user: event.createdByUser,
+          user: ctx.user,
         }))
       }
 
@@ -197,7 +200,7 @@ export default class AnswerController {
         const answer = await this.AnswerService.getOne(id)
         const event = await this.EventService.getOneEvent(answer.eventId)
 
-        if (answer && (event.createdByUserId === ctx.user.id || isUserAdmin(ctx.user))) {
+        if (answer && (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user))) {
           // TODO add job to update event and another to send notification
           answer.hasSigned = !answer.hasSigned
           answer.signedAt = new Date()

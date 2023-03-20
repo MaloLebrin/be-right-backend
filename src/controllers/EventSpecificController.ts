@@ -55,9 +55,8 @@ export default class EventSpecificController {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       const ctx = Context.get(req)
-      const userId = ctx.user.id
 
-      if (eventId && userId) {
+      if (eventId && ctx.user.companyId) {
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
             field: 'id',
@@ -66,7 +65,7 @@ export default class EventSpecificController {
           }),
           () => this.EventService.getOneWithoutRelations(eventId))
 
-        if (event && (isUserAdmin(ctx.user) || event.createdByUserId === userId)) {
+        if (event && (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId)) {
           let employees = []
 
           const address = await this.redisCache.get<AddressEntity>(

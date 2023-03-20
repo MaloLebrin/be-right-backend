@@ -62,20 +62,20 @@ export class AddresController {
         address,
         eventId,
         employeeId,
-        userId,
+        companyId,
       }:
       {
         address: Partial<AddressEntity>
         eventId?: number
         employeeId?: number
-        userId?: number
+        companyId?: number
       } = req.body
 
       const newAddress = await this.AddressService.createOne({
         address,
         employeeId,
         eventId,
-        userId,
+        companyId,
       })
 
       if (newAddress) {

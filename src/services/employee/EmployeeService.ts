@@ -1,5 +1,6 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
+import { CompanyEntity } from '../../entity/Company.entity'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import AnswerService from '../AnswerService'
@@ -8,16 +9,18 @@ export default class EmployeeService {
   repository: Repository<EmployeeEntity>
   answerService: AnswerService
   userRepository: Repository<UserEntity>
+  companyRepository: Repository<CompanyEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EmployeeEntity)
     this.userRepository = APP_SOURCE.getRepository(UserEntity)
     this.answerService = new AnswerService(APP_SOURCE)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
   }
 
-  async createOne(employee: Partial<EmployeeEntity>, userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } })
-    employee.createdByUser = user
+  async createOne(employee: Partial<EmployeeEntity>, companyId: number) {
+    const company = await this.companyRepository.findOne({ where: { id: companyId } })
+    employee.company = company
     const newEmployee = this.repository.create(employee)
 
     await this.repository.save(newEmployee)
@@ -43,11 +46,11 @@ export default class EmployeeService {
     })
   }
 
-  async getAllForUser(userId: number) {
+  async getAllForUser(companyId: number) {
     return this.repository.find({
       where: {
-        createdByUser: {
-          id: userId,
+        company: {
+          id: companyId,
         },
       },
     })

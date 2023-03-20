@@ -5,28 +5,21 @@ import { generateHash, userResponse } from '../utils'
 import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
 import { createJwtToken } from '../utils/'
-import { SubscriptionService } from './SubscriptionService'
 
 export default class UserService {
   repository: Repository<UserEntity>
-  subscriptionService: SubscriptionService
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(UserEntity)
-    this.subscriptionService = new SubscriptionService(APP_SOURCE)
   }
 
   async getByToken(token: string, withRelation?: boolean): Promise<UserEntity> {
     return await this.repository.findOne({
       where: { token },
       relations: {
-        address: withRelation,
-        events: withRelation,
-        files: withRelation,
-        employees: withRelation,
         profilePicture: withRelation,
         notificationSubscriptions: withRelation,
-        subscription: withRelation,
+        company: withRelation,
       },
     })
   }
@@ -44,7 +37,7 @@ export default class UserService {
   async getOneWithRelations(id: number): Promise<UserEntity> {
     const user = await this.repository.findOne({
       where: { id },
-      relations: ['events', 'files', 'employees', 'profilePicture', 'address', 'subscription'],
+      relations: ['profilePicture', 'company'],
     })
     return user
   }
@@ -78,7 +71,6 @@ export default class UserService {
   }
 
   async createOnePhotoGrapher(user: PhotographerCreatePayload) {
-    const subscription = await this.subscriptionService.createBasicSubscription()
     const newUser = this.repository.create({
       ...user,
       salt: uid2(128),
@@ -89,8 +81,6 @@ export default class UserService {
         roles: Role.PHOTOGRAPHER,
       }),
       roles: Role.PHOTOGRAPHER,
-      subscription,
-      subscriptionLabel: subscription.type,
     })
     await this.repository.save(newUser)
     return userResponse(newUser)
@@ -98,7 +88,6 @@ export default class UserService {
 
   async createOneUser(payload: CreateUserPayload) {
     const {
-      companyName,
       email,
       firstName,
       lastName,
@@ -106,20 +95,16 @@ export default class UserService {
       role,
       subscription,
       loggedAt,
+      companyId,
     } = payload
 
-    const subscriptionEntity = await this.subscriptionService.createOne(subscription)
-
     const salt = uid2(128)
-    const user = {
-      companyName,
+    const newUser = this.repository.create({
       email,
       firstName,
       lastName,
       salt,
       roles: role,
-      subscription: subscriptionEntity,
-      subscriptionLabel: subscriptionEntity.type,
       token: createJwtToken({
         email,
         firstName,
@@ -128,10 +113,11 @@ export default class UserService {
         subscription,
       }),
       password: generateHash(salt, password),
-      events: [],
       loggedAt: loggedAt || null,
-    }
-    const newUser = this.repository.create(user)
+      company: {
+        id: companyId,
+      },
+    })
     await this.repository.save(newUser)
     return newUser
   }

@@ -10,10 +10,12 @@ import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../e
 export default class NewsletterController {
   getManager: EntityManager
   repository: Repository<NewsletterRecipient>
+  UserRepository: Repository<UserEntity>
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.repository = APP_SOURCE.getRepository(NewsletterRecipient)
+    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
   }
 
   public createOne = async (req: Request, res: Response) => {
@@ -40,11 +42,18 @@ export default class NewsletterController {
         newsletterRecipient.lastName = employee.lastName
       }
 
-      const user = await this.getManager.findOneBy(UserEntity, { email })
+      const user = await this.UserRepository.findOne({
+        where: {
+          email,
+        },
+        relations: {
+          company: true,
+        },
+      })
       if (user) {
         newsletterRecipient.firstName = user.firstName
         newsletterRecipient.lastName = user.lastName
-        newsletterRecipient.companyName = user.companyName
+        newsletterRecipient.companyName = user.company.name
       }
 
       const recipient = this.repository.create(newsletterRecipient)

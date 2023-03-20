@@ -11,7 +11,6 @@ import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/
 import { AddressService } from '../services'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
-import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
 import RedisService from '../services/RedisService'
@@ -94,7 +93,6 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
 
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
@@ -104,7 +102,7 @@ export default class EventController {
           }),
           () => this.EventService.getOneEvent(id))
 
-        if (isUserAdmin(ctx.user) || event.createdByUserId === userId) {
+        if (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId) {
           return res.status(200).json(event)
         } else {
           throw new ApiError(401, 'Action non autorisée')
@@ -144,7 +142,7 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
-      const eventsIds = ctx.user.eventIds
+      const eventsIds = ctx.user.company.eventIds
 
       if (eventsIds && eventsIds.length > 0) {
         const events = await this.redisCache.getMany<EventEntity>({
@@ -170,8 +168,8 @@ export default class EventController {
       if (ctx.user?.id) {
         const events = await this.repository.find({
           where: {
-            createdByUser: {
-              id: ctx.user.id,
+            company: {
+              id: ctx.user.companyId,
             },
             deletedAt: Not(IsNull()),
           },
@@ -198,8 +196,8 @@ export default class EventController {
       }
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields.createdByUser = {
-          id: ctx.user.id,
+        whereFields.company = {
+          id: ctx.user.companyId,
         }
       }
 
@@ -228,12 +226,10 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
+
         const eventFinded = await this.EventService.getOneEvent(id)
 
-        const user = eventFinded.createdByUser as UserEntity
-
-        if (isUserAdmin(ctx.user) || user.id === userId) {
+        if (isUserAdmin(ctx.user) || eventFinded.companyId === ctx.user.companyId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
 
           await this.saveEventRedisCache(eventUpdated)
@@ -252,16 +248,16 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
+        const user = ctx.user
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
         if (!eventToDelete) {
           throw new ApiError(422, 'L\'événement n\'éxiste pas')
         }
 
-        if (eventToDelete?.createdByUserId === userId || isUserAdmin(ctx.user)) {
+        if (eventToDelete?.companyId === user.companyId || isUserAdmin(ctx.user)) {
           await this.EventService.deleteOneAndRelations(eventToDelete)
-          await this.RediceService.updateCurrentUserInCache({ userId })
+          await this.RediceService.updateCurrentUserInCache({ userId: user.id })
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {

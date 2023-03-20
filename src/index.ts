@@ -53,7 +53,7 @@ async function StartApp() {
       logger.error('Error during Data Source initialization:', err)
     })
 
-  if (NODE_ENV !== 'test') {
+  if (NODE_ENV === 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
@@ -220,7 +220,6 @@ async function StartApp() {
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
   app.patch('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().updateOne)
   app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
-  app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
 
   app.all('*', req => {
     throw new NotFoundError(req.path)

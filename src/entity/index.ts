@@ -16,12 +16,14 @@ import { EventNotificationEntity } from './bases/EventNotification.entity'
 import { NotificationEntity } from './notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
 import { GroupEntity } from './employees/Group.entity'
+import { CompanyEntity } from './Company.entity'
 
 export default {
   AddressEntity,
   AnswerEntity,
   BaseEntity,
   BugReportEntity,
+  CompanyEntity,
   EmployeeEntity,
   EventEntity,
   EventNotificationEntity,
@@ -41,7 +43,9 @@ export default {
 export const entities = [
   AddressEntity,
   AnswerEntity,
+  SubscriptionEntity,
   BugReportEntity,
+  CompanyEntity,
   EmployeeEntity,
   EventEntity,
   EventNotificationEntity,
@@ -54,6 +58,5 @@ export const entities = [
   NotificationSubcriptionEntity,
   PaymentEntity,
   SessionEntity,
-  SubscriptionEntity,
   UserEntity,
 ]

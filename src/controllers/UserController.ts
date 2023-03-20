@@ -18,11 +18,13 @@ import { AddressService } from '../services'
 import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
+import { CompanyEntity } from '../entity/Company.entity'
 
 export default class UserController {
   getManager: EntityManager
   UserService: UserService
   repository: Repository<UserEntity>
+  companyRepository: Repository<CompanyEntity>
   redisCache: RedisCache
   SubscriptionService: SubscriptionService
   AddressService: AddressService
@@ -40,6 +42,7 @@ export default class UserController {
     this.EmployeeService = new EmployeeService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
     this.FileService = new FileService(APP_SOURCE)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
   }
 
   private saveUserInCache = async (user: UserEntity) => {
@@ -53,20 +56,20 @@ export default class UserController {
   public newUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const {
-        companyName,
         email,
         firstName,
         lastName,
         password,
         role,
+        companyId,
       }:
         {
-          companyName: string
           email: string
           firstName: string
           lastName: string
           password: string
           role: Role
+          companyId: number
         } = req.body
 
       const userAlReadyExist = await this.UserService.findOneByEmail(email)
@@ -74,21 +77,51 @@ export default class UserController {
         throw new ApiError(423, 'cet email existe déjà')
       }
 
+      let idCompany = companyId
+      let company: null | CompanyEntity = null
+
+      if (!idCompany) {
+        const subscription = await this.SubscriptionService.createBasicSubscription()
+
+        const newCompany = this.companyRepository.create({
+          name: 'Zenika',
+          subscription,
+          subscriptionLabel: subscription.type,
+        })
+        company = await this.companyRepository.save(newCompany)
+
+        idCompany = company.id
+      } else {
+        const ctx = Context.get(req)
+
+        company = await this.companyRepository.findOne({
+          where: {
+            id: ctx.user.companyId,
+          },
+        })
+      }
+
       const newUser = await this.UserService.createOneUser({
-        companyName,
         email,
         firstName,
         lastName,
         password,
         role,
         subscription: SubscriptionEnum.BASIC,
+        companyId: idCompany,
       })
 
-      const userToSend = userResponse(newUser)
+      if (company.users && company.users.length > 0) {
+        company.users = [...company.users, newUser]
+      } else {
+        company.onwer = newUser
+        company.users = [newUser]
+      }
 
+      await this.companyRepository.save(company)
       await this.saveUserInCache(newUser)
 
-      return res.status(200).json(userToSend)
+      return res.status(200).json(userResponse(newUser))
     })
   }
 
@@ -203,7 +236,6 @@ export default class UserController {
               roles: userUpdated.roles,
               firstName: userUpdated.firstName,
               lastName: userUpdated.lastName,
-              subscription: userUpdated.subscriptionLabel,
             })
           }
 
@@ -223,33 +255,33 @@ export default class UserController {
     })
   }
 
-  public updatesubscription = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const userId = parseInt(req.params.id)
-      const { subscription }: { subscription: SubscriptionEnum } = req.body
+  // public updatesubscription = async (req: Request, res: Response) => {
+  //   await wrapperRequest(req, res, async () => {
+  //     const userId = parseInt(req.params.id)
+  //     const { subscription }: { subscription: SubscriptionEnum } = req.body
 
-      if (userId) {
-        const user = await this.UserService.getOne(userId)
-        await this.SubscriptionService.updateSubscription(user.subscriptionId, subscription)
+  //     if (userId) {
+  //       const user = await this.UserService.getOne(userId)
+  //       await this.SubscriptionService.updateSubscription(user.subscriptionId, subscription)
 
-        if (user) {
-          user.token = createJwtToken({
-            email: user.email,
-            roles: user.roles,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            subscription,
-          })
-          user.subscriptionLabel = subscription
+  //       if (user) {
+  //         user.token = createJwtToken({
+  //           email: user.email,
+  //           roles: user.roles,
+  //           firstName: user.firstName,
+  //           lastName: user.lastName,
+  //           subscription,
+  //         })
+  //         user.subscriptionLabel = subscription
 
-          await this.repository.save(user)
-          await this.saveUserInCache(user)
-          return res.status(200).json(userResponse(user))
-        }
-      }
-      throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
-    })
-  }
+  //         await this.repository.save(user)
+  //         await this.saveUserInCache(user)
+  //         return res.status(200).json(userResponse(user))
+  //       }
+  //     }
+  //     throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
+  //   })
+  // }
 
   public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
@@ -263,20 +295,20 @@ export default class UserController {
           throw new ApiError(422, 'L\'utilisateur n\'éxiste pas')
         }
 
-        if (userToDelete.addressId) {
-          await this.AddressService.softDelete(userToDelete.addressId)
+        if (userToDelete.company.addressId) {
+          await this.AddressService.softDelete(userToDelete.company.addressId)
 
           await this.redisCache.invalidate(generateRedisKey({
             typeofEntity: EntitiesEnum.ADDRESS,
             field: 'id',
-            id: userToDelete.addressId,
+            id: userToDelete.company.addressId,
           }))
         }
 
-        if (userToDelete.employeeIds?.length > 0) {
-          await this.EmployeeService.deleteMany(userToDelete.employeeIds)
+        if (userToDelete.company.employeeIds?.length > 0) {
+          await this.EmployeeService.deleteMany(userToDelete.company.employeeIds)
 
-          await Promise.all(userToDelete.employeeIds.map(async id => {
+          await Promise.all(userToDelete.company.employeeIds.map(async id => {
             await this.redisCache.invalidate(generateRedisKey({
               typeofEntity: EntitiesEnum.EMPLOYEE,
               field: 'id',
@@ -285,14 +317,14 @@ export default class UserController {
           }))
         }
 
-        if (userToDelete.events?.length > 0) {
-          await Promise.all(userToDelete.events.map(async event => {
+        if (userToDelete.company.events?.length > 0) {
+          await Promise.all(userToDelete.company.events.map(async event => {
             await this.EventService.deleteOneAndRelations(event)
           }))
         }
 
-        if (userToDelete.filesIds?.length > 0) {
-          await this.FileService.deleteManyfiles(userToDelete.filesIds)
+        if (userToDelete.company.filesIds?.length > 0) {
+          await this.FileService.deleteManyfiles(userToDelete.company.filesIds)
         }
 
         const userDeleted = await this.repository.softDelete(id)
@@ -317,13 +349,9 @@ export default class UserController {
       const user = await this.repository.findOne({
         where: { email },
         relations: {
-          address: true,
-          events: true,
-          files: true,
-          employees: true,
           profilePicture: true,
           notificationSubscriptions: true,
-          subscription: true,
+          company: true,
         },
       })
 
@@ -351,9 +379,9 @@ export default class UserController {
 
   public createPhotographer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { email, companyName, firstName, lastName }: { email: string; companyName: string; firstName: string; lastName: string } = req.body
+      const { email, firstName, lastName }: { email: string; firstName: string; lastName: string } = req.body
 
-      const newPhotographer = await this.UserService.createPhotographer({ email, companyName, firstName, lastName })
+      const newPhotographer = await this.UserService.createPhotographer({ email, firstName, lastName })
 
       return res.status(200).json(newPhotographer)
     })
@@ -361,15 +389,16 @@ export default class UserController {
 
   public getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      if (id) {
-        const user = await this.repository.findOne({
-          where: { id },
+      const ctx = Context.get(req)
+
+      if (ctx.user.companyId) {
+        const company = await this.companyRepository.findOne({
+          where: { id: ctx.user.companyId },
           relations: ['events', 'events.partner'],
         })
 
-        if (user) {
-          return res.status(200).json(uniqByKey(user.events.map(event => event.partner), 'id'))
+        if (company) {
+          return res.status(200).json(uniqByKey(company.events.map(event => event.partner), 'id'))
         }
 
         return res.status(200).json([])

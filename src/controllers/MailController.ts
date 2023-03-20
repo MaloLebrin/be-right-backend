@@ -7,7 +7,6 @@ import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
-import { firtSendAnswerTemplate } from '../utils/mailJetHelpers'
 import Context from '../context'
 import { isUserAdmin } from '../utils/userHelper'
 
@@ -40,7 +39,7 @@ export class MailController {
         const event = answer.event
         const currentUser = ctx.user
 
-        if (event && (event.createdByUserId !== currentUser.id && !isUserAdmin(currentUser))) {
+        if (event && (event.companyId !== currentUser.companyId && !isUserAdmin(currentUser))) {
           throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
         }
 
@@ -51,7 +50,7 @@ export class MailController {
         const employee = answer.employee as EmployeeEntity
 
         if (employee) {
-          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, template: firtSendAnswerTemplate({ employee, creator: ctx.user }) })
+          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee })
           return res.status(200).json({ status, message, body })
         }
       }

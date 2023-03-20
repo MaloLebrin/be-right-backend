@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import type { DataSource } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import EventEntity from '../../entity/EventEntity'
@@ -13,6 +13,7 @@ import { photographerFixture1, photographerFixture2, photographerFixture3, photo
 import { BaseSeedClass } from '../Base/BaseSeedClass'
 import { GroupService } from '../../services/employee/GroupService'
 import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
+import { CompanyEntity } from '../../entity/Company.entity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -30,10 +31,12 @@ import {
 
 export class UserSeedClass extends BaseSeedClass {
   GroupService: GroupService
+  CompanyRepository: Repository<CompanyEntity>
 
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
     this.GroupService = new GroupService(SEED_SOURCE)
+    this.CompanyRepository = SEED_SOURCE.getRepository(CompanyEntity)
   }
 
   private async photographersSeeder() {
@@ -50,13 +53,31 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   private async seedUnUsedUser() {
-    await this.UserService.createOneUser({
-      ...userNotUsed,
-      subscription: SubscriptionEnum.MEDIUM,
+    const subscription = this.getManager.create(SubscriptionEntity, {
+      type: SubscriptionEnum.MEDIUM,
+      expireAt: dayjs().add(1, 'year'),
     })
+
+    const newCompany = this.CompanyRepository.create({
+      name: userCompanyFixturePremium.companyName,
+      subscription,
+      subscriptionLabel: SubscriptionEnum.MEDIUM,
+    })
+
+    await this.CompanyRepository.save(newCompany)
+
+    const newUser = await this.UserService.createOneUser({
+      ...userNotUsed,
+      companyId: newCompany.id,
+    })
+
+    newCompany.onwer = newUser
+    newCompany.users = [newUser]
+
+    await this.CompanyRepository.save(newCompany)
   }
 
-  private async seedCSVEmployee(userId: number) {
+  private async seedCSVEmployee(companyId: number) {
     const pathF = '/app/src/seed/UserCompany/testcsv.csv'
 
     const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(pathF)
@@ -79,7 +100,7 @@ export class UserSeedClass extends BaseSeedClass {
           lastName,
           email,
           phone,
-        }, userId)
+        }, companyId)
 
         if (emp) {
           await this.AddressService.createOne({
@@ -100,7 +121,7 @@ export class UserSeedClass extends BaseSeedClass {
       name: 'Armée de Dumbledore',
       description: 'Dans l\'histoire, l\'organisation est fondée à l\'école de sorcellerie Poudlard par Harry Potter, sur le conseil d\'Hermione Granger, dans le but de contrer le système mis en place par l\'un des professeurs de cinquième année et déléguée du Ministère de la Magie, Dolores Ombrage. L\'Armée de Dumbledore (formée à l\'insu du directeur Albus Dumbledore, dont elle porte le nom) est une organisation comptant uniquement des élèves souhaitant s\'entrainer à manipuler les sortilèges de défense contre les forces du mal, ce qui leur est devenu interdit. L\'organisation fait écho à l\'Ordre du Phénix, composée d\'adultes cette fois, reformée la même année à l\'extérieur de l’école et visant à contrer le mage noir Voldemort et ses partisans. Vingt- neuf élèves, de différentes maisons de Poudlard, se sont au total inscrits à l\'AD. Il y a dix-sept membres de Gryffondor, sept de Serdaigle et cinq de Poufsouffle. Aucun élève de Serpentard n\'y est inscrit. ',
       employeeIds: employees.map(emp => emp.id),
-    }, userId)
+    }, companyId)
 
     const group2 = await this.GroupService.createOne({
       name: 'Gryffondor',
@@ -108,7 +129,7 @@ export class UserSeedClass extends BaseSeedClass {
       employeeIds: employees
         .filter(emp => !['Patil', 'Lovegood'].includes(emp.lastName))
         .map(emp => emp.id),
-    }, userId)
+    }, companyId)
 
     const partner = await this.getManager.findOne(UserEntity, {
       where: {
@@ -116,42 +137,37 @@ export class UserSeedClass extends BaseSeedClass {
       },
     })
 
-    const user = await this.UserService.getOne(userId)
-
     const recipients = employees
 
     await this.EventService.createOneEvent(
       {
         ...event2FixtureCompanyPremium.event,
-        createdByUser: user,
         employeeIds: recipients.map(emp => emp.id),
         totalSignatureNeeded: recipients.length,
         partner,
       } as unknown as Partial<EventEntity>,
-      userId,
+      companyId,
       partner.id,
     )
     await this.EventService.createOneEvent(
       {
         ...event3FixtureCompanyPremium.event,
-        createdByUser: user,
         employeeIds: group.employeeIds,
         totalSignatureNeeded: group.employeeIds.length,
         partner,
       } as unknown as Partial<EventEntity>,
-      userId,
+      companyId,
       partner.id,
     )
 
     await this.EventService.createOneEvent(
       {
         ...event4FixtureCompanyPremium.event,
-        createdByUser: user,
         employeeIds: group2.employeeIds,
         totalSignatureNeeded: group2.employeeIds.length,
         partner,
       } as unknown as Partial<EventEntity>,
-      userId,
+      companyId,
       partner.id,
     )
   }
@@ -163,10 +179,23 @@ export class UserSeedClass extends BaseSeedClass {
     })
     await this.getManager.save(subscription)
 
+    const newCompany = this.CompanyRepository.create({
+      name: userCompanyFixturePremium.companyName,
+      subscription,
+      subscriptionLabel: subscription.type,
+    })
+
+    await this.CompanyRepository.save(newCompany)
+
     const user = await this.UserService.createOneUser({
       ...userCompanyFixturePremium,
-      subscription: SubscriptionEnum.PREMIUM,
+      companyId: newCompany.id,
     })
+
+    newCompany.onwer = user
+    newCompany.users = [user]
+
+    await this.CompanyRepository.save(newCompany)
 
     await Promise.all(NotificationTypeEnumArray.map(async value => {
       const sub = this.getManager.create(NotificationSubcriptionEntity, {
@@ -178,12 +207,12 @@ export class UserSeedClass extends BaseSeedClass {
 
     await this.AddressService.createOne({
       address: addressFixtureCompanyPremium,
-      userId: user.id,
+      companyId: newCompany.id,
     })
 
     const employees = await Promise.all(employeesFixtureCompanyPremium.map(
       async item => {
-        const emp = await this.EmployeeService.createOne(item.employee, user.id)
+        const emp = await this.EmployeeService.createOne(item.employee, newCompany.id)
         await this.AddressService.createOne({
           address: item.address,
           employeeId: emp.id,
@@ -192,7 +221,7 @@ export class UserSeedClass extends BaseSeedClass {
       },
     ))
 
-    await this.seedCSVEmployee(user.id)
+    await this.seedCSVEmployee(newCompany.id)
 
     const employeeIds = employees.map(employee => employee.id)
 
@@ -210,7 +239,7 @@ export class UserSeedClass extends BaseSeedClass {
         createdByUser: user.id,
         partner,
       } as unknown as Partial<EventEntity>,
-      user.id,
+      newCompany.id,
       1,
     )
 
@@ -310,10 +339,30 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   private async seedUserMedium() {
+    const subscription = this.getManager.create(SubscriptionEntity, {
+      type: SubscriptionEnum.PREMIUM,
+      expireAt: dayjs().add(1, 'year'),
+    })
+    await this.getManager.save(subscription)
+
+    const newCompany = this.CompanyRepository.create({
+      name: userCompanyFixturePremium.companyName,
+      subscription,
+      subscriptionLabel: subscription.type,
+    })
+
+    await this.CompanyRepository.save(newCompany)
+
     const user = await this.UserService.createOneUser({
       ...userCompanyFixtureMedium,
       subscription: SubscriptionEnum.MEDIUM,
+      companyId: newCompany.id,
     })
+
+    newCompany.onwer = user
+    newCompany.users = [user]
+
+    await this.CompanyRepository.save(newCompany)
 
     await Promise.all([
       NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
@@ -330,12 +379,12 @@ export class UserSeedClass extends BaseSeedClass {
 
     await this.AddressService.createOne({
       address: addressFixtureCompanyMedium,
-      userId: user.id,
+      companyId: newCompany.id,
     })
 
     const employees = await Promise.all(employeesFixtureCompanyMedium.map(
       async item => {
-        const emp = await this.EmployeeService.createOne(item.employee, user.id)
+        const emp = await this.EmployeeService.createOne(item.employee, newCompany.id)
         await this.AddressService.createOne({
           address: item.address,
           employeeId: emp.id,
@@ -357,10 +406,9 @@ export class UserSeedClass extends BaseSeedClass {
         ...eventFixtureCompanyMedium.event,
         employeeIds,
         totalSignatureNeeded: employeeIds.length,
-        createdByUser: user.id,
         partner: partner.id,
       } as unknown as Partial<EventEntity>,
-      user.id,
+      newCompany.id,
       1,
     )
 

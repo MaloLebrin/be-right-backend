@@ -2,11 +2,12 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, Rela
 import { EventStatusEnum } from '../types/Event'
 import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './bases/BaseEntity'
+import { CompanyEntity } from './Company.entity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 
 @Entity()
-@Index(['id', 'createdByUser'], { unique: true })
+@Index(['id', 'company'], { unique: true })
 export default class EventEntity extends BaseEntity {
   @Column()
   name: string
@@ -35,12 +36,12 @@ export default class EventEntity extends BaseEntity {
   @RelationId((event: EventEntity) => event.partner)
   partnerId: number
 
-  @ManyToOne(() => UserEntity, user => user.events)
+  @ManyToOne(() => CompanyEntity, company => company.events)
   @JoinColumn()
-  createdByUser: UserEntity
+  company: CompanyEntity
 
-  @RelationId((event: EventEntity) => event.createdByUser)
-  createdByUserId: number
+  @RelationId((event: EventEntity) => event.company)
+  companyId: number
 
   @OneToMany(() => FileEntity, file => file.event, { orphanedRowAction: 'soft-delete' })
   files: FileEntity[]

@@ -310,7 +310,7 @@ export default class EmployeeController {
 
         const getEmployee = await this.EmployeeService.getOne(id)
 
-        if (getEmployee.createdByUserId === userId || isUserAdmin(ctx.user)) {
+        if (getEmployee.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           await this.EmployeeService.deleteOne(id)
 
           await this.redisCache.invalidate(generateRedisKey({
