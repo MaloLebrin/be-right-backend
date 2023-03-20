@@ -123,7 +123,7 @@ export default class EventService {
         id: In(eventIds),
       },
       relations: {
-        createdByUser: withRelations,
+        company: withRelations,
         partner: withRelations,
         address: withRelations,
         files: withRelations,
@@ -151,14 +151,14 @@ export default class EventService {
     return eventSaved
   }
 
-  async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
+  async createOneEvent(event: Partial<EventEntity>, companyId: number, photographerId?: number) {
     const newEvent = this.repository.create({
       ...event,
       partner: {
         id: photographerId,
       },
-      createdByUser: {
-        id: userId,
+      company: {
+        id: companyId,
       },
     })
     await this.repository.save(newEvent)

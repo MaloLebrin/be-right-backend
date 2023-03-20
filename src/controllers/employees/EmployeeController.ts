@@ -4,8 +4,6 @@ import csv from 'csvtojson'
 import Context from '../../context'
 import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
 import { paginator, wrapperRequest } from '../../utils'
-import checkUserRole from '../../middlewares/checkUserRole'
-import { Role } from '../../types/Role'
 import EmployeeService from '../../services/employee/EmployeeService'
 import AnswerService from '../../services/AnswerService'
 import EventService from '../../services/EventService'
@@ -312,7 +310,7 @@ export default class EmployeeController {
 
         const getEmployee = await this.EmployeeService.getOne(id)
 
-        if (getEmployee.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
+        if (getEmployee.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           await this.EmployeeService.deleteOne(id)
 
           await this.redisCache.invalidate(generateRedisKey({

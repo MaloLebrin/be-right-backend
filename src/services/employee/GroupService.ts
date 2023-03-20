@@ -15,7 +15,7 @@ export class GroupService {
     this.employeeService = new EmployeeService(APP_SOURCE)
   }
 
-  async createOne(groupPayload: GroupCreationPayload, userId: number) {
+  async createOne(groupPayload: GroupCreationPayload, companyId: number) {
     const { name, description, employeeIds } = groupPayload
 
     const employees = await this.employeeService.getMany(employeeIds)
@@ -24,69 +24,69 @@ export class GroupService {
       name,
       description,
       employees,
-      createdByUser: {
-        id: userId,
+      company: {
+        id: companyId,
       },
     })
     return await this.repository.save(groupCreated)
   }
 
-  async getOne(id: number, userId: number, withRelation?: boolean) {
+  async getOne(id: number, companyId: number, withRelation?: boolean) {
     return this.repository.findOne({
       where: {
         id,
-        createdByUser: {
-          id: userId,
+        company: {
+          id: companyId,
         },
       },
       relations: {
-        createdByUser: withRelation,
+        company: withRelation,
         employees: withRelation,
       },
     })
   }
 
-  async getMany(ids: number[], userId: number, withRelation?: boolean) {
+  async getMany(ids: number[], companyId: number, withRelation?: boolean) {
     return this.repository.find({
       where: {
         id: In(ids),
-        createdByUser: {
-          id: userId,
+        company: {
+          id: companyId,
         },
       },
       relations: {
-        createdByUser: withRelation,
+        company: withRelation,
         employees: withRelation,
       },
     })
   }
 
-  async getAllForUser(userId: number, withRelation?: boolean) {
+  async getAllForUser(companyId: number, withRelation?: boolean) {
     return this.repository.find({
       where: {
-        createdByUser: {
-          id: userId,
+        company: {
+          id: companyId,
         },
       },
       relations: {
-        createdByUser: withRelation,
+        company: withRelation,
         employees: withRelation,
       },
     })
   }
 
-  async getAllForEmployee(employeeId: number, userId: number, withRelation?: boolean) {
+  async getAllForEmployee(employeeId: number, companyId: number, withRelation?: boolean) {
     return this.repository.find({
       where: {
         employees: {
           id: employeeId,
         },
-        createdByUser: {
-          id: userId,
+        company: {
+          id: companyId,
         },
       },
       relations: {
-        createdByUser: withRelation,
+        company: withRelation,
         employees: withRelation,
       },
     })

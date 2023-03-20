@@ -8,7 +8,7 @@ export enum EventStatusEnum {
   CLOSED = 'CLOSED',
 }
 
-export type PhotographerCreatePayload = Pick<UserEntity, 'companyName' | 'firstName' | 'lastName' | 'email'>
+export type PhotographerCreatePayload = Pick<UserEntity, 'firstName' | 'lastName' | 'email'>
 
 export interface EventCreationPayload extends Pick<EventEntity, 'name' | 'description' | 'end' | 'start'> {
   employeeIds: number[]

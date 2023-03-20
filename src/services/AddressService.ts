@@ -5,9 +5,9 @@ import type { AddressCreationServicePayload, GeoCodingResponse } from '../types'
 import EventEntity from '../entity/EventEntity'
 import { AddressEntity } from '../entity/AddressEntity'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
-import { UserEntity } from '../entity/UserEntity'
 import { isArray } from '../utils/'
 import { useEnv } from '../env'
+import { CompanyEntity } from '../entity/Company.entity'
 
 export class AddressService {
   getManager: EntityManager
@@ -34,7 +34,7 @@ export class AddressService {
   }
 
   public createOne = async (payload: AddressCreationServicePayload) => {
-    const { userId, eventId, employeeId, address } = payload
+    const { companyId, eventId, employeeId, address } = payload
 
     const coordinates = await this.geoLocalisation(address)
 
@@ -47,8 +47,8 @@ export class AddressService {
     await this.repository.save(addressCreated)
     const addressToSend = isArray(addressCreated) ? addressCreated[0] : addressCreated as unknown as AddressEntity
 
-    if (userId) {
-      await this.getManager.update(UserEntity, userId, {
+    if (companyId) {
+      await this.getManager.update(CompanyEntity, companyId, {
         address: addressToSend.id,
       })
     } else if (eventId) {

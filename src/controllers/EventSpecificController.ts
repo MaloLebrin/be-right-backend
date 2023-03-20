@@ -8,10 +8,9 @@ import { AddressService } from '../services'
 import AnswerService from '../services/AnswerService'
 import { wrapperRequest } from '../utils'
 import type { EventWithRelationsCreationPayload } from '../types'
-import { EntitiesEnum, NotificationTypeEnum, Role } from '../types'
+import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import Context from '../context'
-import { checkUserRole } from '../middlewares'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -22,6 +21,7 @@ import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotificati
 import RedisService from '../services/RedisService'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { isUserAdmin } from '../utils/userHelper'
 
 export default class EventSpecificController {
   EmployeeService: EmployeeService
@@ -55,9 +55,8 @@ export default class EventSpecificController {
     await wrapperRequest(req, res, async () => {
       const eventId = parseInt(req.params.id)
       const ctx = Context.get(req)
-      const userId = ctx.user.id
 
-      if (eventId && userId) {
+      if (eventId && ctx.user.companyId) {
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
             field: 'id',
@@ -66,7 +65,7 @@ export default class EventSpecificController {
           }),
           () => this.EventService.getOneWithoutRelations(eventId))
 
-        if (event && (checkUserRole(Role.ADMIN) || event.createdByUserId === userId)) {
+        if (event && (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId)) {
           let employees = []
 
           const address = await this.redisCache.get<AddressEntity>(

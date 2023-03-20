@@ -7,7 +7,7 @@ export const userCompanyFixturePremium = {
   firstName: 'Albus',
   lastName: 'Dumbledore',
   password: 'password',
-  role: Role.COMPANY,
+  role: Role.OWNER,
   subscription: SubscriptionEnum.PREMIUM,
 }
 
@@ -157,7 +157,7 @@ export const userCompanyFixtureMedium = {
   firstName: 'Tom',
   lastName: 'Jedusor',
   password: 'password',
-  role: Role.COMPANY,
+  role: Role.OWNER,
   subscription: SubscriptionEnum.MEDIUM,
 }
 
@@ -244,7 +244,7 @@ export const userNotUsed = {
   firstName: 'salazar',
   lastName: 'serpentard',
   password: 'password',
-  role: Role.COMPANY,
+  role: Role.OWNER,
   subscription: SubscriptionEnum.MEDIUM,
   loggedAt: dayjs().subtract(2, 'year').toDate(),
 }

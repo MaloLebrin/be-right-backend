@@ -39,6 +39,7 @@ export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
             template: firtSendAnswerTemplate({
               employee,
               creator: user,
+              companyName: user.company.name,
             }),
           })
         }

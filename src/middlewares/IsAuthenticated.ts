@@ -15,7 +15,12 @@ export default async function isAuthenticated(req: Request, res: Response, next:
       if (token) {
         const user = await REDIS_CACHE.get<UserEntity>(
           `user-token-${token}`,
-          () => APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } }))
+          () => APP_SOURCE.getRepository(UserEntity).findOne({
+            where: { token },
+            relations: {
+              company: true,
+            },
+          }))
 
         if (user && isUserEntity(user)) {
           const ctx = Context.get(req)

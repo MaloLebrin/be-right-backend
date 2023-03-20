@@ -41,7 +41,7 @@ export class GroupController {
         throw new ApiError(422, 'Parmètres manquants')
       }
 
-      const newGroup = await this.groupService.createOne(group, currentUser.id)
+      const newGroup = await this.groupService.createOne(group, currentUser.companyId)
 
       if (newGroup) {
         return res.status(200).json(newGroup)
@@ -74,8 +74,8 @@ export class GroupController {
       const existingEmployees = await this.EmployeeRepository.find({
         where: {
           email: In(employeeEmails),
-          createdByUser: {
-            id: currentUser.id,
+          company: {
+            id: ctx.user.companyId,
           },
         },
       })
@@ -87,7 +87,7 @@ export class GroupController {
       if (newEmployeesToCreate.length > 0) {
         await Promise.all(
           newEmployeesToCreate.map(async emp => {
-            const newOne = await this.EmployeeService.createOne({ ...emp }, currentUser.id)
+            const newOne = await this.EmployeeService.createOne({ ...emp }, currentUser.companyId)
             await this.AddressService.createOne({
               address: {
                 addressLine: emp.addressLine,
@@ -107,7 +107,7 @@ export class GroupController {
           name,
           description,
           employeeIds: uniq(arrayOfEmployeeIdsInGroup),
-        }, currentUser.id)
+        }, currentUser.companyId)
 
         if (newGroup) {
           return res.status(200).json(newGroup)
@@ -126,7 +126,7 @@ export class GroupController {
       const currentUser = ctx.user
 
       if (id && currentUser.id) {
-        const employee = await this.groupService.getOne(id, currentUser.id)
+        const employee = await this.groupService.getOne(id, currentUser.companyId)
 
         return res.status(200).json(employee)
       }
@@ -144,8 +144,8 @@ export class GroupController {
         const ctx = Context.get(req)
         const currentUser = ctx.user
 
-        if (groupIds?.length > 0 && currentUser.id) {
-          const groups = await this.groupService.getMany(groupIds, currentUser.id)
+        if (groupIds?.length > 0 && currentUser.companyId) {
+          const groups = await this.groupService.getMany(groupIds, currentUser.companyId)
 
           return res.status(200).json(groups)
         }
@@ -163,9 +163,8 @@ export class GroupController {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
-      const userId = currentUser.id
-      if (userId) {
-        const employees = await this.groupService.getAllForUser(userId)
+      if (currentUser.companyId) {
+        const employees = await this.groupService.getAllForUser(currentUser.companyId)
 
         return res.status(200).json(employees)
       }
@@ -180,8 +179,8 @@ export class GroupController {
       const currentUser = ctx.user
       const id = parseInt(req.params.id)
 
-      if (id && currentUser.id) {
-        const employees = await this.groupService.getAllForEmployee(id, currentUser.id)
+      if (id && currentUser.companyId) {
+        const employees = await this.groupService.getAllForEmployee(id, currentUser.companyId)
         return res.status(200).json(employees)
       }
       throw new ApiError(422, 'identifiant de l\'utilisateur manquant')
@@ -201,8 +200,8 @@ export class GroupController {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
-      if (id && currentUser.id) {
-        const groupUpdated = await this.groupService.updateOne(id, currentUser.id, group)
+      if (id && currentUser.companyId) {
+        const groupUpdated = await this.groupService.updateOne(id, currentUser.companyId, group)
 
         return res.status(200).json(groupUpdated)
       }
@@ -220,7 +219,7 @@ export class GroupController {
       if (id && user?.id) {
         const getGroupe = await this.groupService.getOne(id, user.id)
 
-        if (getGroupe.createdByUserId === user.id || isUserAdmin(user)) {
+        if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
           await this.groupService.deleteOne(id)
 
           return res.status(204).json(getGroupe)

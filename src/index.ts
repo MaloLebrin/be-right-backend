@@ -31,6 +31,7 @@ import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
 import { GroupController } from './controllers/employees/GroupController'
+import { CompanyController } from './controllers/CompanyController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -53,7 +54,7 @@ async function StartApp() {
       logger.error('Error during Data Source initialization:', err)
     })
 
-  if (NODE_ENV === 'test') {
+  if (NODE_ENV !== 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
@@ -147,6 +148,10 @@ async function StartApp() {
   app.patch('/bugreport/status/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateStatus)
   app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
+  // Company
+  app.get('/company/:id', [isAuthenticated], new CompanyController().getOne)
+  app.patch('/company/owners/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().addOrRemoveOwner)
+
   // Employee
   app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
   app.get('/employee/', [isAuthenticated], new EmployeeController().getAll)
@@ -220,7 +225,6 @@ async function StartApp() {
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
   app.patch('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().updateOne)
   app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
-  app.patch('/user/subscription/:id', [checkUserRole(Role.ADMIN)], new UserController().updatesubscription)
 
   app.all('*', req => {
     throw new NotFoundError(req.path)

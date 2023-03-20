@@ -1,6 +1,6 @@
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
 import { BaseEntity } from '../bases/BaseEntity'
-import { UserEntity } from '../UserEntity'
+import { CompanyEntity } from '../Company.entity'
 import { EmployeeEntity } from './EmployeeEntity'
 
 @Entity()
@@ -11,11 +11,11 @@ export class GroupEntity extends BaseEntity {
   @Column({ nullable: true })
   description: string | null
 
-  @ManyToOne(() => UserEntity, user => user.employees)
-  createdByUser: UserEntity
+  @ManyToOne(() => CompanyEntity, company => company.groups)
+  company: CompanyEntity
 
-  @RelationId((group: GroupEntity) => group.createdByUser)
-  createdByUserId: number
+  @RelationId((group: GroupEntity) => group.company)
+  companyId: number
 
   @ManyToMany(() => EmployeeEntity)
   @JoinTable()

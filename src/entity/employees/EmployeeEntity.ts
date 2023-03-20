@@ -1,13 +1,13 @@
 import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { UserEntity } from '../UserEntity'
 import AnswerEntity from '../AnswerEntity'
 import { AddressEntity } from '../AddressEntity'
 import { FileEntity } from '../FileEntity'
 import { BasePersonEntity } from '../bases/BasePerson'
+import { CompanyEntity } from '../Company.entity'
 import { GroupEntity } from './Group.entity'
 
 @Entity()
-@Index(['id', 'createdByUser', 'firstName', 'lastName', 'email'], { unique: true })
+@Index(['id', 'company', 'firstName', 'lastName', 'email'], { unique: true })
 export class EmployeeEntity extends BasePersonEntity {
   @Column({ nullable: true })
   phone: string
@@ -22,11 +22,12 @@ export class EmployeeEntity extends BasePersonEntity {
   @RelationId((employee: EmployeeEntity) => employee.address)
   addressId: number
 
-  @ManyToOne(() => UserEntity, user => user.employees)
-  createdByUser: UserEntity
+  @ManyToOne(() => CompanyEntity, company => company.employees)
+  @JoinColumn()
+  company: CompanyEntity
 
-  @RelationId((employee: EmployeeEntity) => employee.createdByUser)
-  createdByUserId: number
+  @RelationId((employee: EmployeeEntity) => employee.company)
+  companyId: number
 
   @OneToMany(() => AnswerEntity, answer => answer.employee, { cascade: true })
   answers: AnswerEntity[]

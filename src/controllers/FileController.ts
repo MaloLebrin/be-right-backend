@@ -185,11 +185,11 @@ export default class FileController {
 
   public getFilesByUserAndEvent = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const userId = parseInt(req.params.userId)
       const eventId = parseInt(req.params.eventId)
+      const ctx = Context.get(req)
 
-      if (userId && eventId) {
-        const files = await this.repository.find({ where: { createdByUserId: userId, eventId } })
+      if (ctx.user.companyId && eventId) {
+        const files = await this.repository.find({ where: { company: { id: ctx.user.companyId }, eventId } })
 
         return res.status(200).json(files)
       }

@@ -49,10 +49,10 @@ export default class FileService {
     return docs
   }
 
-  async getFilesByUser(id: number) {
+  async getFilesByUser(companyId: number) {
     const docs = await this.repository.find({
       where: {
-        createdByUserId: id,
+        company: { id: companyId },
       },
     })
     return docs
@@ -67,19 +67,14 @@ export default class FileService {
     return docs
   }
 
-  async getFilesByType(type: FileTypeEnum) {
-    const docs = await this.repository.find({
+  async getFilesByType(type: FileTypeEnum, companyId: number) {
+    return await this.repository.find({
       where: {
         type,
+        company: {
+          id: companyId,
+        },
       },
-      relations: ['createdByUser'],
-    })
-    return docs.map(doc => {
-      const user = doc.createdByUser as unknown as UserEntity
-      return {
-        ...doc,
-        createdByUser: user.id,
-      }
     })
   }
 
@@ -101,7 +96,6 @@ export default class FileService {
 
     const existProfilePicture = await this.repository.findOne({
       where: {
-        createdByUserId: user.id,
         type: FileTypeEnum.PROFILE_PICTURE,
       },
     })
@@ -152,7 +146,7 @@ export default class FileService {
 
     const existLogos = await this.repository.find({
       where: {
-        createdByUserId: user.id,
+        id: user.profilePictureId,
         type: FileTypeEnum.LOGO,
       },
     })

@@ -17,7 +17,7 @@ export interface JWTTokenPayload {
 }
 
 export interface CreateUserPayload {
-  companyName: string
+  companyId: number
   email: string
   firstName: string
   lastName: string
