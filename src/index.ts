@@ -108,6 +108,8 @@ async function StartApp() {
     idParamsSchema,
     loginSchema,
     newUserSchema,
+    patchAddressSchema,
+    patchUserSchema,
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
@@ -124,7 +126,7 @@ async function StartApp() {
   app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)
   app.get('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().getOne)
   app.post('/address/', [validate(createAddressSchema), isAuthenticated], new AddresController().createOne)
-  app.patch('/address/:id', [isAuthenticated], new AddresController().updateOne)
+  app.patch('/address/:id', [validate(patchAddressSchema), isAuthenticated], new AddresController().updateOne)
   app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
 
   // Answer
@@ -225,7 +227,7 @@ async function StartApp() {
   app.post('/user/login', [validate(loginSchema)], new UserController().login)
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
-  app.patch('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().updateOne)
+  app.patch('/user/:id', [validate(patchUserSchema), isAuthenticated], new UserController().updateOne)
   app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
 
   app.all('*', req => {

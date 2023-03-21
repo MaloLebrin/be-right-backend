@@ -105,9 +105,11 @@ export default class UserController {
         companyId,
       })
 
-      company.users = company.users.length > 0 ? [...company.users, newUser] : [newUser]
-
-      const companyToSend = await this.companyRepository.save(company)
+      const companyToSend = await this.companyRepository.findOne({
+        where: {
+          id: companyId,
+        },
+      })
       await this.saveUserInCache(newUser)
 
       return res.status(200).json({
@@ -231,26 +233,26 @@ export default class UserController {
         if (id === ctx.user.id || isUserAdmin(ctx.user)) {
           const userFinded = await this.UserService.getOne(id)
 
-          const userUpdated = {
-            ...userFinded,
-            ...user,
-            updatedAt: new Date(),
+          if (!userFinded) {
+            throw new ApiError(423, 'L\'utilisateur n\'existe pas')
           }
 
           if (user.roles !== userFinded.roles) {
-            userUpdated.token = createJwtToken({
-              email: userUpdated.email,
-              roles: userUpdated.roles,
-              firstName: userUpdated.firstName,
-              lastName: userUpdated.lastName,
+            user.token = createJwtToken({
+              email: user.email,
+              roles: user.roles,
+              firstName: user.firstName,
+              lastName: user.lastName,
             })
           }
 
-          await this.repository.save(userUpdated)
-          await this.saveUserInCache(userUpdated)
+          await this.repository.update(id, user)
 
-          if (userUpdated) {
-            return res.status(200).json(userResponse(userUpdated))
+          const userToSend = await this.UserService.getOne(id, true)
+          await this.saveUserInCache(userResponse(userToSend))
+
+          if (userToSend) {
+            return res.status(200).json(userResponse(userToSend))
           }
 
           throw new ApiError(422, 'L\'utilisateur n\'a pas été mis à jour')

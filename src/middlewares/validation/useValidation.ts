@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
-import { NotificationTypeEnumArray, Role, ThemeEnumArray } from '../../types'
+import { NotificationTypeEnumArray, Role } from '../../types'
 import { logger } from '../loggerService'
 
 export function useValidation() {
@@ -55,12 +55,32 @@ export function useValidation() {
     }),
   })
 
-  const themeSchema = object({
+  const patchUserSchema = object({
     body: object({
-      theme: string().oneOf(ThemeEnumArray),
+      user: object({
+        email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+        firstName: string().required('Le prénom est requis'),
+        lastName: string().required('le nom est requis'),
+        roles: string().oneOf([Role.OWNER, Role.USER], 'Vous devre renseigner un rôle').required('Le rôle est requis'),
+      }).required('L\'utilisateur est requis'),
     }),
     params: object({
       id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
+  const patchAddressSchema = object({
+    body: object({
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }).required('L\'adresse est requis'),
+    }),
+    params: object({
+      id: number().required('L\'identifiant de l\'adresse est requis'),
     }),
   })
 
@@ -250,10 +270,11 @@ export function useValidation() {
     idParamsSchema,
     loginSchema,
     newUserSchema,
+    patchAddressSchema,
+    patchUserSchema,
     registerSchema,
     resetPasswordSchema,
     subscribeNotification,
-    themeSchema,
     tokenSchema,
     updateAnswerStatusSchema,
     validate,
