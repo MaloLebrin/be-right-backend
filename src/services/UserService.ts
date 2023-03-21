@@ -36,7 +36,7 @@ export default class UserService {
   async getOneWithRelations(id: number): Promise<UserEntity> {
     const user = await this.repository.findOne({
       where: { id },
-      relations: ['profilePicture', 'company'],
+      relations: ['profilePicture', 'company', 'badges'],
     })
     return user
   }
