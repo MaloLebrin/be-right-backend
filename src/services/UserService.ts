@@ -2,8 +2,8 @@ import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
 import { UserEntity } from '../entity/UserEntity'
 import { generateHash, userResponse } from '../utils'
-import { Role } from '../types'
 import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
+import { Role } from '../types'
 import { createJwtToken } from '../utils/'
 
 export default class UserService {
@@ -19,6 +19,7 @@ export default class UserService {
       relations: {
         profilePicture: withRelation,
         notificationSubscriptions: withRelation,
+        badges: withRelation,
       },
     })
   }
