@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from 'typeorm'
+import { Column, Entity, ManyToMany, RelationId } from 'typeorm'
 import type { BadgeEnumIcon } from '../../types/Badge'
 import { BadgeEnumLabel, BadgeEnumName } from '../../types/Badge'
 import { BaseEntity } from '../bases/BaseEntity'
@@ -19,5 +19,9 @@ export class BadgeEntity extends BaseEntity {
   icon: BadgeEnumIcon
 
   @ManyToMany(() => UserEntity, user => user.badges)
-  user: UserEntity
+  // @JoinTable()
+  users: UserEntity[]
+
+  @RelationId((group: BadgeEntity) => group.users)
+  userIds: number[]
 }

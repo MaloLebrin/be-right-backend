@@ -56,10 +56,6 @@ export class UserAdminSeed extends BaseSeedClass {
 
       await this.UserRepository.save(newUser)
 
-      newCompany.users = [newUser]
-
-      await this.CompanyRepository.save(newCompany)
-
       await this.AddressService.createOne({
         address: {
           addressLine: '2 bis rue du gros chêne',

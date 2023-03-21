@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { Role } from '../types/'
 import { BaseAuthEntity } from './bases/AuthEntity'
 import { CompanyEntity } from './Company.entity'
@@ -34,8 +34,8 @@ export class UserEntity extends BaseAuthEntity {
   @RelationId((user: UserEntity) => user.company)
   companyId: number
 
-  @ManyToMany(() => BadgeEntity, badge => badge.user)
-  @JoinColumn()
+  @ManyToMany(() => BadgeEntity)
+  @JoinTable()
   badges: BadgeEntity[]
 
   @RelationId((user: UserEntity) => user.badges)

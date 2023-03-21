@@ -15,7 +15,7 @@ export async function seedersFunction(DATA_SOURCE: DataSource) {
   const repositorySeeder = new RepositorySeeder(DATA_SOURCE)
 
   await clearDB(DATA_SOURCE)
-  // await repositorySeeder.startRepositoriesSeeders()
+  await repositorySeeder.startRepositoriesSeeders()
   await UserAdminSeedClass.CreateAdminUser()
   await UserSeedService.SeedDataBase()
 }
