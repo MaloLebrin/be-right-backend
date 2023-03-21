@@ -155,7 +155,6 @@ export default class AuthController {
         companyId: newCompany.id,
       })
 
-      newCompany.owners = [newUser]
       newCompany.users = [newUser]
 
       await this.companyRepository.save(newCompany)
