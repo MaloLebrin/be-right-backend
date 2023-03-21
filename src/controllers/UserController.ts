@@ -7,7 +7,7 @@ import { UserEntity, userSearchableFields } from '../entity/UserEntity'
 import type { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, isUserOwner, uniqByKey } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -86,6 +86,10 @@ export default class UserController {
         where: {
           id: companyId,
         },
+        relations: {
+          owners: true,
+          users: true,
+        },
       })
 
       if (!company) {
@@ -102,17 +106,18 @@ export default class UserController {
         companyId,
       })
 
-      if (company.users && company.users.length > 0) {
-        company.users = [...company.users, newUser]
-      } else {
-        company.owners = [newUser]
-        company.users = [newUser]
+      if (isUserOwner(newUser)) {
+        company.owners = company.owners.length > 0 ? [...company.owners, newUser] : [newUser]
       }
+      company.users = company.users.length > 0 ? [...company.users, newUser] : [newUser]
 
-      await this.companyRepository.save(company)
+      const companyToSend = await this.companyRepository.save(company)
       await this.saveUserInCache(newUser)
 
-      return res.status(200).json(userResponse(newUser))
+      return res.status(200).json({
+        user: userResponse(newUser),
+        company: companyToSend,
+      })
     })
   }
 

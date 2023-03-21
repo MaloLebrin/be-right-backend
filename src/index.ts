@@ -221,7 +221,7 @@ async function StartApp() {
   app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
   app.get('/user/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
   app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
-  app.post('/user/', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
+  app.post('/user', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
   app.post('/user/login', [validate(loginSchema)], new UserController().login)
   app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
   app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
