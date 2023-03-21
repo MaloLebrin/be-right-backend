@@ -89,4 +89,32 @@ export class CompanyController {
       throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
     })
   }
+
+  public patchOne = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const id = parseInt(req.params.id)
+
+      const ctx = Context.get(req)
+
+      const companyId = ctx.user.companyId
+      if (id && companyId) {
+        if (id !== companyId) {
+          throw new ApiError(401, 'Action non autorisée')
+        }
+
+        const { company }: { company: Partial<CompanyEntity> } = req.body
+
+        if (!company) {
+          throw new ApiError(422, 'Les informations de l\'entreprise sont requis')
+        }
+
+        await this.repository.update(id, company)
+
+        const companyUpdated = await this.CompanyService.getOne(id)
+
+        return res.status(200).json(companyUpdated)
+      }
+      throw new ApiError(422, 'L\'identifiant de l\'entreprise est requis')
+    })
+  }
 }

@@ -155,6 +155,7 @@ async function StartApp() {
   // Company
   app.get('/company/:id', [isAuthenticated], new CompanyController().getOne)
   app.patch('/company/owners/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().addOrRemoveOwner)
+  app.patch('/company/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().patchOne)
 
   // Employee
   app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
