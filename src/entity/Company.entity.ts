@@ -22,13 +22,6 @@ export class CompanyEntity extends BaseEntity {
 
   @OneToMany(() => UserEntity, user => user.company, { cascade: true })
   @JoinColumn()
-  owners: UserEntity[]
-
-  @RelationId((company: CompanyEntity) => company.owners)
-  readonly onwerIds: number[]
-
-  @OneToMany(() => UserEntity, user => user.company, { cascade: true })
-  @JoinColumn()
   users: UserEntity[]
 
   @RelationId((company: CompanyEntity) => company.users)

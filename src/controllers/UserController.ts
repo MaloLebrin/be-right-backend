@@ -7,7 +7,7 @@ import { UserEntity, userSearchableFields } from '../entity/UserEntity'
 import type { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, isUserOwner, uniqByKey } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -87,7 +87,6 @@ export default class UserController {
           id: companyId,
         },
         relations: {
-          owners: true,
           users: true,
         },
       })
@@ -106,9 +105,6 @@ export default class UserController {
         companyId,
       })
 
-      if (isUserOwner(newUser)) {
-        company.owners = company.owners.length > 0 ? [...company.owners, newUser] : [newUser]
-      }
       company.users = company.users.length > 0 ? [...company.users, newUser] : [newUser]
 
       const companyToSend = await this.companyRepository.save(company)

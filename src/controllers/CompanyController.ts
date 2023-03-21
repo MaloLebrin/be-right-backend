@@ -7,6 +7,8 @@ import { CompanyService } from '../services/CompanyService'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
 import { APP_SOURCE } from '..'
+import { Role } from '../types'
+import { isUserOwner } from '../utils/userHelper'
 
 export class CompanyController {
   CompanyService: CompanyService
@@ -45,7 +47,6 @@ export class CompanyController {
         const company = await this.repository.findOne({
           where: { id: companyId },
           relations: {
-            owners: true,
             users: true,
           },
         })
@@ -71,15 +72,18 @@ export class CompanyController {
           throw new ApiError(422, 'L\'utilisateur ne vous appartient pas')
         }
 
-        if (company.onwerIds.includes(user.id)) {
-          company.owners = company.owners.filter(owner => owner.id !== user.id)
+        if (isUserOwner(user)) {
+          user.roles = Role.USER
         } else {
-          company.owners.push(user)
+          user.roles = Role.OWNER
         }
 
-        const newCompany = await this.repository.save(company)
+        const userToSend = await this.UserRepository.save(user)
 
-        return res.status(200).json(newCompany)
+        return res.status(200).json({
+          user: userToSend,
+          company,
+        })
       }
 
       throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')

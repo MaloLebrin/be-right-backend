@@ -18,7 +18,6 @@ export class CompanyService {
     name,
     subscription,
     subscriptionLabel,
-    onwer,
   }: {
     name: string
     subscription: SubscriptionEntity
@@ -29,7 +28,6 @@ export class CompanyService {
       name,
       subscription,
       subscriptionLabel,
-      owners: [onwer],
     })
     return await this.repository.save(company)
   }
@@ -40,7 +38,6 @@ export class CompanyService {
         id: companyId,
       },
       relations: {
-        owners: withRelations,
         employees: withRelations,
         events: withRelations,
         groups: withRelations,
@@ -58,7 +55,6 @@ export class CompanyService {
         id: In(companyIds),
       },
       relations: {
-        owners: withRelations,
         employees: withRelations,
         events: withRelations,
         groups: withRelations,

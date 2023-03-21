@@ -71,7 +71,6 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.owners = [newUser]
     newCompany.users = [newUser]
 
     await this.CompanyRepository.save(newCompany)
@@ -192,7 +191,6 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.owners = [user]
     newCompany.users = [user]
 
     await this.CompanyRepository.save(newCompany)
@@ -359,7 +357,6 @@ export class UserSeedClass extends BaseSeedClass {
       companyId: newCompany.id,
     })
 
-    newCompany.owners = [user]
     newCompany.users = [user]
 
     await this.CompanyRepository.save(newCompany)
