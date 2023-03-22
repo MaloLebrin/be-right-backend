@@ -32,6 +32,7 @@ import { NotificationSubscriptionController } from './controllers/notifications/
 import { SSEManager } from './serverSendEvent/SSEManager'
 import { GroupController } from './controllers/employees/GroupController'
 import { CompanyController } from './controllers/CompanyController'
+import { BadgeController } from './controllers/repositories/BadgeController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -143,6 +144,10 @@ async function StartApp() {
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
   app.post('/auth/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
   app.post('/auth/signup', [validate(registerSchema)], new AuthController().signUp)
+
+  // Badge
+  app.get('/badges', [isAuthenticated], new BadgeController().getAll)
+  app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
 
   // Bug
   app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
