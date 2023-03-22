@@ -5,13 +5,17 @@ import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
 import { UserAdminSeed } from './admin'
 import { UserSeedClass } from './UserCompany/UserSeedClass'
+import { RepositorySeeder } from './repositories/RepositorySeeder'
 
 export const APP_SOURCE_SEEDER = createAppSource()
 
 export async function seedersFunction(DATA_SOURCE: DataSource) {
   const UserSeedService = new UserSeedClass(DATA_SOURCE)
   const UserAdminSeedClass = new UserAdminSeed(DATA_SOURCE)
+  const repositorySeeder = new RepositorySeeder(DATA_SOURCE)
+
   await clearDB(DATA_SOURCE)
+  await repositorySeeder.startRepositoriesSeeders()
   await UserAdminSeedClass.CreateAdminUser()
   await UserSeedService.SeedDataBase()
 }

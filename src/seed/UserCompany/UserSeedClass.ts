@@ -8,12 +8,13 @@ import { NotificationSubcriptionEntity } from '../../entity/notifications/Notifi
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import type { UploadCSVEmployee } from '../../types'
-import { NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } from '../../types'
+import { BadgeEnumName, NotificationTypeEnum, NotificationTypeEnumArray, SubscriptionEnum } from '../../types'
 import { photographerFixture1, photographerFixture2, photographerFixture3, photographerFixture4 } from '../shared/photographerFixtures'
 import { BaseSeedClass } from '../Base/BaseSeedClass'
 import { GroupService } from '../../services/employee/GroupService'
 import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import { CompanyEntity } from '../../entity/Company.entity'
+import { BadgeEntity } from '../../entity/repositories/Badge.entity'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -190,6 +191,10 @@ export class UserSeedClass extends BaseSeedClass {
       ...userCompanyFixturePremium,
       companyId: newCompany.id,
     })
+
+    const badge = await this.getManager.findOne(BadgeEntity, { where: { name: BadgeEnumName.CREATE_10_RECIPIENTS } })
+    user.badges = [badge]
+    await this.getManager.save(UserEntity, user)
 
     newCompany.users = [user]
 
