@@ -54,7 +54,7 @@ async function StartApp() {
       logger.error('Error during Data Source initialization:', err)
     })
 
-  if (NODE_ENV !== 'test') {
+  if (NODE_ENV === 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
