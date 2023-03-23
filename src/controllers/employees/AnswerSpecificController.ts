@@ -4,22 +4,23 @@ import { verify } from 'jsonwebtoken'
 import { wrapperRequest } from '../../utils'
 import { APP_SOURCE } from '../..'
 import AnswerService from '../../services/AnswerService'
-import EventService from '../../services/EventService'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { useEnv } from '../../env'
 import { ApiError } from '../../middlewares/ApiError'
 import type { DecodedJWTToken } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
+import { answerResponse } from '../../utils/answerHelper'
+import EventEntity from '../../entity/EventEntity'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
-  EventService: EventService
+  EventRepository: Repository<EventEntity>
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
 
   constructor() {
     this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-    this.EventService = new EventService(APP_SOURCE)
+    this.EventRepository = APP_SOURCE.getRepository(EventEntity)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
   }
@@ -50,6 +51,7 @@ export class AnswerSpecificController {
       await this.isValidToken(token, email)
 
       const answer = await this.AnswerRepository.findOneBy({ token })
+
       if (!answer) {
         throw new ApiError(422, 'Élément introuvable')
       }
@@ -58,7 +60,12 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Vous avez déjà donné une réponse')
       }
 
-      const event = await this.EventService.getOneEvent(answer.eventId)
+      const event = await this.EventRepository.findOne({
+        where: {
+          id: answer.eventId,
+        },
+      })
+
       const employee = await this.EmployeeRepository.findOne({
         where: {
           email,
@@ -71,7 +78,7 @@ export class AnswerSpecificController {
       }
 
       return res.status(200).json({
-        answer,
+        answer: answerResponse(answer),
         event,
         employee,
       })
