@@ -21,11 +21,12 @@ export default class AnswerService {
     this.getManager = APP_SOURCE.manager
   }
 
-  private generateAnswerToken(employee: EmployeeEntity, answerId: number) {
+  private generateAnswerToken(employee: EmployeeEntity, answerId: number, eventId: number) {
     const { JWT_SECRET } = useEnv()
     return sign(
       {
         employeeId: employee.id,
+        eventId,
         email: employee.email,
         firstName: employee.firstName,
         lastName: employee.lastName,
@@ -56,8 +57,7 @@ export default class AnswerService {
       twoFactorCode: uid2(5).toUpperCase(),
       twoFactorSecret: uid2(128),
     })
-
-    newAnswer.token = this.generateAnswerToken(employee, newAnswer.id)
+    newAnswer.token = this.generateAnswerToken(employee, newAnswer.id, eventId)
     await this.repository.save(newAnswer)
     return newAnswer
   }
