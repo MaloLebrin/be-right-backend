@@ -33,6 +33,7 @@ import { SSEManager } from './serverSendEvent/SSEManager'
 import { GroupController } from './controllers/employees/GroupController'
 import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
+import { AnswerSpecificController } from './controllers/employees/AnswerSpecificController'
 
 const {
   CLOUDINARY_API_KEY,
@@ -139,6 +140,9 @@ async function StartApp() {
   app.patch('/answer/', [isAuthenticated], new AnswerController().updateOne)
   app.patch('/answer/status/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
   app.delete('/answer/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
+
+  // Answer For Employee
+  app.get('/answer/forSignature', new AnswerSpecificController().getOne)
 
   // Auth
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
