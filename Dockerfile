@@ -16,7 +16,7 @@ RUN nci
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV}
 
-COPY .env /app/.env
+# COPY .env /app/.env
 COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 COPY entrypoint.sh /app/
