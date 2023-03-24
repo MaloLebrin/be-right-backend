@@ -19,6 +19,12 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ unique: true })
   token: string
 
+  @Column({ unique: true, nullable: true })
+  twoFactorCode: string | null
+
+  @Column({ unique: true, nullable: true, update: false })
+  readonly twoFactorSecret: string | null
+
   @Column({ nullable: true, default: null })
   mailSendAt: Date
 

@@ -16,6 +16,7 @@ import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 import { isUserAdmin } from '../utils/userHelper'
+import { answerResponse } from '../utils/answerHelper'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -33,12 +34,16 @@ export default class AnswerController {
   }
 
   private saveAnswerInCache = async (answer: AnswerEntity) => {
-    await this.redisCache.save(`answer-id-${answer.id}`, answer)
+    await this.redisCache.save(`answer-id-${answer.id}`, answerResponse(answer))
+  }
+
+  private filterSecretAnswersKeys(answers: AnswerEntity[]) {
+    return answers.map(answer => answerResponse(answer))
   }
 
   private saveManyAnswerInCache = async (answers: AnswerEntity[]) => {
     await this.redisCache.multiSave({
-      payload: answers,
+      payload: this.filterSecretAnswersKeys(answers),
       typeofEntity: EntitiesEnum.ANSWER,
       objKey: 'id',
     })
@@ -79,7 +84,7 @@ export default class AnswerController {
       }
 
       if (answer) {
-        return res.status(200).json(answer)
+        return res.status(200).json(answerResponse(answer))
       }
 
       throw new ApiError(422, 'Destinataire non lié avec l\'événement')
@@ -112,7 +117,7 @@ export default class AnswerController {
       }))
 
       if (answers && answers.length > 0) {
-        return res.status(200).json(answers)
+        return res.status(200).json(this.filterSecretAnswersKeys(answers))
       }
       throw new ApiError(422, 'Destinataires non liés avec l\'événement')
     })
@@ -123,7 +128,7 @@ export default class AnswerController {
       const id = parseInt(req.params.id)
       if (id) {
         const answers = await this.AnswerService.getAllAnswersForEvent(id)
-        return res.status(200).json(answers)
+        return res.status(200).json(this.filterSecretAnswersKeys(answers))
       }
 
       throw new ApiError(422, 'Identifiant de l\'événement manquant')
@@ -147,7 +152,7 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getMany(answerIds),
           })
 
-          return res.status(200).json(answers)
+          return res.status(200).json(this.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants manquants')
@@ -171,7 +176,7 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getAnswersForManyEvents(eventIds),
           })
 
-          return res.status(200).json(answers)
+          return res.status(200).json(this.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants des événements manquant')
@@ -187,7 +192,7 @@ export default class AnswerController {
       await this.saveAnswerInCache(answerUpdated)
 
       await this.EventService.multipleUpdateForEvent(answerUpdated.eventId)
-      return res.status(200).json(answerUpdated)
+      return res.status(200).json(answerResponse(answerUpdated))
     })
   }
 
@@ -209,7 +214,7 @@ export default class AnswerController {
           await this.saveAnswerInCache(answer)
 
           await this.EventService.multipleUpdateForEvent(answer.eventId)
-          return res.status(200).json(answer)
+          return res.status(200).json(answerResponse(answer))
         }
       }
       throw new ApiError(422, 'Paramètres manquants')

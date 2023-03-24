@@ -100,16 +100,12 @@ export default class EventService {
     return event
   }
 
-  /* TODO
-  in this operation get total answers for event and set as totalSignatureNeeded use answer service
-  use this get every where
-  */
   async getOneEvent(eventId: number): Promise<EventEntity> {
     return this.repository.findOne({
       where: {
         id: eventId,
       },
-      relations: ['createdByUser', 'partner', 'address'],
+      relations: ['partner', 'address'],
     })
   }
 

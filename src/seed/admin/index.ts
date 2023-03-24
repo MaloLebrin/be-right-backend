@@ -29,7 +29,7 @@ export class UserAdminSeed extends BaseSeedClass {
       await this.getManager.save(subscription)
 
       const newCompany = this.CompanyRepository.create({
-        name: 'Zenika',
+        name: 'Be-Right',
         subscription,
         subscriptionLabel: subscription.type,
       })

@@ -53,7 +53,10 @@ export default class AnswerService {
     const newAnswer = this.repository.create({
       event,
       employee: employeeId,
+      twoFactorCode: uid2(5).toUpperCase(),
+      twoFactorSecret: uid2(128),
     })
+
     newAnswer.token = this.generateAnswerToken(employee, newAnswer.id)
     await this.repository.save(newAnswer)
     return newAnswer
