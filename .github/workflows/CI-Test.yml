@@ -1,7 +1,7 @@
 name: 🛠 Tests-CI
 
 on:
-  pull_request:
+  release:
 
 env:
   NODE_ENV: prod
