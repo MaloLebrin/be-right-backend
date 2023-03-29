@@ -5,7 +5,6 @@ import type { Logger } from 'pino'
 import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
-import { isProduction } from './utils/envHelper'
 import { parseRedisKey } from './utils/redisHelper'
 
 export default class RedisCache {
@@ -17,17 +16,13 @@ export default class RedisCache {
     this.logger = logger
 
     if (!this.connected) {
-      if (isProduction()) {
-        this.client = new Redis(process.env.REDIS_URL)
-      } else {
-        this.client = new Redis(
-          parseInt(process.env.REDIS_PORT),
-          process.env.REDIS_HOST,
-          {
-            showFriendlyErrorStack: true,
-          },
-        )
-      }
+      this.client = new Redis(
+        parseInt(process.env.REDIS_PORT),
+        process.env.REDIS_HOST,
+        {
+          showFriendlyErrorStack: true,
+        },
+      )
       this.connected = true
     }
 
