@@ -5,6 +5,7 @@ import type { Logger } from 'pino'
 import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
+import { isProduction } from './utils/envHelper'
 import { parseRedisKey } from './utils/redisHelper'
 
 export default class RedisCache {
