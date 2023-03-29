@@ -17,17 +17,13 @@ export default class RedisCache {
     this.logger = logger
 
     if (!this.connected) {
-      if (isProduction()) {
-        this.client = new Redis(process.env.REDIS_URL)
-      } else {
-        this.client = new Redis(
-          parseInt(process.env.REDIS_PORT),
-          process.env.REDIS_HOST,
-          {
-            showFriendlyErrorStack: true,
-          },
-        )
-      }
+      this.client = new Redis(
+        parseInt(process.env.REDIS_PORT),
+        process.env.REDIS_HOST,
+        {
+          showFriendlyErrorStack: true,
+        },
+      )
       this.connected = true
     }
 
