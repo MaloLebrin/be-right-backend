@@ -1,6 +1,6 @@
 {
   "name": "be-right-backend",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "packageManager": "pnpm@7.30.5",
   "description": "Awesome project developed with TypeORM.",
   "author": {

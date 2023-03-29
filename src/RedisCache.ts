@@ -20,6 +20,7 @@ export default class RedisCache {
         parseInt(process.env.REDIS_PORT),
         process.env.REDIS_HOST,
         {
+          password: process.env.REDIS_PASSWORD,
           showFriendlyErrorStack: true,
         },
       )
