@@ -34,6 +34,7 @@ import { GroupController } from './controllers/employees/GroupController'
 import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { AnswerSpecificController } from './controllers/employees/AnswerSpecificController'
+import { isProduction } from './utils/envHelper'
 
 const {
   CLOUDINARY_API_KEY,
@@ -246,6 +247,9 @@ async function StartApp() {
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
+    if (isProduction()) {
+      logger.warn('⚠️ CAUTION your are in prod Mode ⚠️')
+    }
     logger.info(`Application is running in ${NODE_ENV} mode on port : ${port}`)
   })
 }
