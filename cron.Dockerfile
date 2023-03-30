@@ -8,9 +8,7 @@ COPY pnpm-lock.yaml /app/
 
 # RUN npm install
 RUN npm i -g pnpm
-RUN npm i -g @antfu/ni
-
-RUN nci
+RUN pnpm install --no-frozen-lockfile
 
 # Be careful with this env variable
 ARG NODE_ENV
@@ -24,7 +22,7 @@ COPY cronScript.sh /app/
 
 COPY ./src /app/src
 
-RUN nr tsc
+RUN pnpm run tsc
 
 RUN chmod +x /app/cronScript.sh
 

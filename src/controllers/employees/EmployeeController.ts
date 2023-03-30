@@ -1,20 +1,20 @@
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
-import Context from '../context'
-import { EmployeeEntity, employeeSearchablefields } from '../entity/EmployeeEntity'
-import { paginator, wrapperRequest } from '../utils'
-import checkUserRole from '../middlewares/checkUserRole'
-import { Role } from '../types/Role'
-import EmployeeService from '../services/EmployeeService'
-import AnswerService from '../services/AnswerService'
-import EventService from '../services/EventService'
-import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity } from '../utils/index'
-import { AddressService } from '../services'
-import type { EmployeeCreateOneRequest } from '../types'
-import { EntitiesEnum } from '../types'
-import { APP_SOURCE, REDIS_CACHE } from '..'
-import type RedisCache from '../RedisCache'
-import { ApiError } from '../middlewares/ApiError'
+import csv from 'csvtojson'
+import Context from '../../context'
+import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
+import { paginator, wrapperRequest } from '../../utils'
+import EmployeeService from '../../services/employee/EmployeeService'
+import AnswerService from '../../services/AnswerService'
+import EventService from '../../services/EventService'
+import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity, parseQueryIds } from '../../utils/index'
+import { AddressService } from '../../services'
+import type { EmployeeCreateOneRequest, UploadCSVEmployee } from '../../types'
+import { EntitiesEnum } from '../../types'
+import { APP_SOURCE, REDIS_CACHE } from '../..'
+import type RedisCache from '../../RedisCache'
+import { ApiError } from '../../middlewares/ApiError'
+import RedisService from '../../services/RedisService'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -24,6 +24,7 @@ export default class EmployeeController {
   EventService: EventService
   employeeRepository: Repository<EmployeeEntity>
   redisCache: RedisCache
+  RediceService: RedisService
 
   constructor() {
     this.getManager = APP_SOURCE.manager
@@ -33,6 +34,7 @@ export default class EmployeeController {
     this.AddressService = new AddressService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.redisCache = REDIS_CACHE
+    this.RediceService = new RedisService(APP_SOURCE)
   }
 
   private saveEmployeeRedisCache = async (employee: EmployeeEntity) => {
@@ -64,7 +66,7 @@ export default class EmployeeController {
       const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
 
       if (isEmployeeAlreadyExist) {
-        throw new ApiError(423, 'cet email existe déjà').Handler(res)
+        throw new ApiError(423, 'cet email existe déjà')
       }
 
       const newEmployee = await this.EmployeeService.createOne(employee, userId)
@@ -76,6 +78,8 @@ export default class EmployeeController {
             employeeId: newEmployee.id,
           })
         }
+
+        await this.RediceService.updateCurrentUserInCache({ userId })
 
         const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
 
@@ -109,6 +113,7 @@ export default class EmployeeController {
             if (emp) {
               await this.AddressService.createOne({ address, employeeId: emp.id })
             }
+            await this.RediceService.updateCurrentUserInCache({ userId })
 
             await this.saveEmployeeRedisCache(emp)
             return this.EmployeeService.getOne(emp.id)
@@ -116,7 +121,7 @@ export default class EmployeeController {
         }))
         return res.status(200).json(newEmployees)
       }
-      throw new ApiError(422, 'Destinataires manquant').Handler(res)
+      throw new ApiError(422, 'Destinataires manquant')
     })
   }
 
@@ -145,6 +150,7 @@ export default class EmployeeController {
               await this.AddressService.createOne({ address, employeeId: emp.id })
             }
 
+            await this.RediceService.updateCurrentUserInCache({ userId })
             await this.saveEmployeeRedisCache(emp)
             return this.EmployeeService.getOne(emp.id)
           }
@@ -178,7 +184,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employee)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -187,7 +193,7 @@ export default class EmployeeController {
       const ids = req.query.ids as string
 
       if (ids) {
-        const employeeIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+        const employeeIds = parseQueryIds(ids)
 
         if (employeeIds?.length > 0) {
           const employees = await this.redisCache.getMany<EmployeeEntity>({
@@ -203,7 +209,7 @@ export default class EmployeeController {
           return res.status(200).json(employees)
         }
       }
-      throw new ApiError(422, 'identifiants des destinataires manquants').Handler(res)
+      throw new ApiError(422, 'identifiants des destinataires manquants')
     })
   }
 
@@ -220,7 +226,7 @@ export default class EmployeeController {
         return res.status(200).json(employees)
       }
 
-      throw new ApiError(422, 'identifiant de l\'utilisateur manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'utilisateur manquant')
     })
   }
 
@@ -236,7 +242,7 @@ export default class EmployeeController {
         const employees = answers.map(answer => answer.employee)
         return res.status(200).json(employees)
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -278,7 +284,7 @@ export default class EmployeeController {
 
         return res.status(200).json(employeeUpdated)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -290,7 +296,7 @@ export default class EmployeeController {
 
         return res.status(200).json(event)
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
     })
   }
 
@@ -304,7 +310,7 @@ export default class EmployeeController {
 
         const getEmployee = await this.EmployeeService.getOne(id)
 
-        if (getEmployee.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
+        if (getEmployee.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           await this.EmployeeService.deleteOne(id)
 
           await this.redisCache.invalidate(generateRedisKey({
@@ -313,11 +319,64 @@ export default class EmployeeController {
             id,
           }))
 
+          await this.RediceService.updateCurrentUserInCache({ userId })
           return res.status(204).json(getEmployee)
         }
-        throw new ApiError(401, 'Action non autorisée').Handler(res)
+        throw new ApiError(401, 'Action non autorisée')
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant').Handler(res)
+      throw new ApiError(422, 'identifiant du destinataire manquant')
+    })
+  }
+
+  public uploadFormCSV = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const fileRecieved = req.file
+      const ctx = Context.get(req)
+      const userId = ctx.user?.id
+
+      if (fileRecieved && userId) {
+        const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(fileRecieved.path)
+
+        const newEmployees = await Promise.all(newEmployeesData.map(async ({
+          firstName,
+          lastName,
+          addressLine,
+          postalCode,
+          city,
+          country,
+          email,
+          phone,
+        }) => {
+          const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(email)
+
+          if (!isEmployeeAlreadyExist) {
+            const emp = await this.EmployeeService.createOne({
+              firstName,
+              lastName,
+              email,
+              phone,
+            }, userId)
+
+            if (emp) {
+              await this.AddressService.createOne({
+                address: {
+                  addressLine,
+                  postalCode,
+                  city,
+                  country,
+                },
+                employeeId: emp.id,
+              })
+            }
+            await this.RediceService.updateCurrentUserInCache({ userId })
+
+            await this.saveEmployeeRedisCache(emp)
+            return this.EmployeeService.getOne(emp.id)
+          }
+        }))
+        return res.status(200).json(newEmployees)
+      }
+      throw new ApiError(422, 'Destinataires manquant')
     })
   }
 }

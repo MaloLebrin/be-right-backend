@@ -2,7 +2,7 @@ import { AddresController } from './AddressController'
 import AnswerController from './AnswerController'
 import AuthController from './AuthController'
 import BugReportController from './BugReportController'
-import EmployeeController from './EmployeeController'
+import EmployeeController from './employees/EmployeeController'
 import EventController from './EventController'
 import FileController from './FileController'
 import NewsletterController from './NewsletterController'
@@ -19,3 +19,5 @@ export default {
   NewsletterController,
   UserController,
 }
+
+export { MailController } from './MailController'

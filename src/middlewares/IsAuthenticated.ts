@@ -4,38 +4,52 @@ import { isUserEntity } from '../utils/index'
 import Context from '../context'
 import { UserEntity } from '../entity/UserEntity'
 import { APP_SOURCE, REDIS_CACHE } from '..'
-import { useEnv } from '../env'
-import { useLogger } from './loggerService'
-import { ApiError } from './ApiError'
-
-export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const { logger } = useLogger()
-  const { JWT_SECRET } = useEnv()
-  logger.info(`${req.url} check auth started`)
+import { logger } from './loggerService'
 
   if (req.headers.authorization) {
     const token = req.headers.authorization.replace('Bearer ', '')
+export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  try {
+    logger.info(`${req.url} check auth started`)
 
-    const verifyToken = verify(token, JWT_SECRET)
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.replace('Bearer ', '')
 
-    logger.debug(verifyToken)
+      if (token) {
+        const user = await REDIS_CACHE.get<UserEntity>(
+          `user-token-${token}`,
+          () => APP_SOURCE.getRepository(UserEntity).findOne({
+            where: { token },
+            relations: {
+              company: true,
+            },
+          }))
 
-    const user = await REDIS_CACHE.get<UserEntity>(
-      `user-token-${token}`,
-      () => APP_SOURCE.getRepository(UserEntity).findOne({ where: { token } }))
+        if (user && isUserEntity(user)) {
+          const ctx = Context.get(req)
+          ctx.user = user
 
-    if (user && isUserEntity(user)) {
-      const ctx = Context.get(req)
-      ctx.user = user
-
-      logger.info(`${req.url} User is allowed`)
-      return next()
-    } else {
-      logger.debug('user no allowed')
-      throw new ApiError(401, 'Action non autorisée').Handler(res)
+          logger.info(`${req.url} User is allowed`)
+          return next()
+        }
+      }
     }
-  } else {
-    logger.debug('user no allowed')
-    throw new ApiError(401, 'Action non autorisée').Handler(res)
+    return res.status(401).send({
+      success: false,
+      message: 'Action non autorisée',
+    })
+  } catch (error) {
+    logger.debug(error.message)
+
+    logger.error(error)
+
+    return res.status(401).send({
+      success: false,
+      message: 'Action non autorisée',
+      stack: error.stack,
+      description: error.cause,
+    })
+  } finally {
+    logger.info(`${req.url} check auth ended`)
   }
 }

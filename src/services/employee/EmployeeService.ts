@@ -1,23 +1,33 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { EmployeeEntity } from '../entity/EmployeeEntity'
-import AnswerService from './AnswerService'
+import { CompanyEntity } from '../../entity/Company.entity'
+import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
+import { UserEntity } from '../../entity/UserEntity'
+import AnswerService from '../AnswerService'
 
 export default class EmployeeService {
   repository: Repository<EmployeeEntity>
   answerService: AnswerService
+  userRepository: Repository<UserEntity>
+  companyRepository: Repository<CompanyEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EmployeeEntity)
+    this.userRepository = APP_SOURCE.getRepository(UserEntity)
     this.answerService = new AnswerService(APP_SOURCE)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
   }
 
-  async createOne(employee: Partial<EmployeeEntity>, userId: number) {
-    employee.createdByUserId = userId
+  async createOne(employee: Partial<EmployeeEntity>, companyId: number) {
+    const company = await this.companyRepository.findOne({ where: { id: companyId } })
+    employee.company = company
     const newEmployee = this.repository.create(employee)
-    employee.slug = `${employee.id}-${employee.firstName}-${employee.lastName}`
+
     await this.repository.save(newEmployee)
-    return newEmployee
+    await this.repository.update(newEmployee.id, {
+      slug: `${newEmployee.id}-${employee.firstName}-${employee.lastName}`,
+    })
+    return this.getOne(newEmployee.id)
   }
 
   async getOne(id: number) {
@@ -36,10 +46,12 @@ export default class EmployeeService {
     })
   }
 
-  async getAllForUser(userId: number) {
+  async getAllForUser(companyId: number) {
     return this.repository.find({
       where: {
-        createdByUserId: userId,
+        company: {
+          id: companyId,
+        },
       },
     })
   }

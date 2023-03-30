@@ -1,3 +1,4 @@
+[![🔖 Create Release](https://github.com/MaloLebrin/be-right-backend/actions/workflows/release.yml/badge.svg)](https://github.com/MaloLebrin/be-right-backend/actions/workflows/release.yml)
 # Awesome Project Build with TypeORM
 
 Steps to run this project:

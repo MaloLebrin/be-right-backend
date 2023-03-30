@@ -1,19 +1,22 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
+import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
 import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
-import checkUserRole from '../middlewares/checkUserRole'
 import { paginator, wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
-import { EntitiesEnum, Role } from '../types'
+import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
-import type { UserEntity } from '../entity/UserEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
+import RedisService from '../services/RedisService'
+import { defaultQueue } from '../jobs/queue/queue'
+import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
+import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export default class EventController {
   AddressService: AddressService
@@ -21,6 +24,7 @@ export default class EventController {
   EventService: EventService
   repository: Repository<EventEntity>
   redisCache: RedisCache
+  RediceService: RedisService
 
   constructor() {
     this.EventService = new EventService(APP_SOURCE)
@@ -28,6 +32,7 @@ export default class EventController {
     this.AddressService = new AddressService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(EventEntity)
     this.redisCache = REDIS_CACHE
+    this.RediceService = new RedisService(APP_SOURCE)
   }
 
   private saveEventRedisCache = async (event: EventEntity) => {
@@ -56,17 +61,26 @@ export default class EventController {
         const newEvent = await this.EventService.createOneEvent(event, userId, photographerId)
 
         if (newEvent && address) {
+          await defaultQueue.add(
+            generateQueueName(NotificationTypeEnum.EVENT_CREATED),
+            new CreateEventNotificationsJob({
+              type: NotificationTypeEnum.EVENT_CREATED,
+              event: newEvent,
+              userId,
+            }))
+
           await this.AddressService.createOne({
             address,
             eventId: newEvent.id,
           })
         }
+        await this.RediceService.updateCurrentUserInCache({ userId })
 
         await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
 
-      throw new ApiError(422, 'Formulaire incomplet').Handler(res)
+      throw new ApiError(422, 'Formulaire incomplet')
     })
   }
 
@@ -79,7 +93,6 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
 
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
@@ -89,13 +102,13 @@ export default class EventController {
           }),
           () => this.EventService.getOneEvent(id))
 
-        if (checkUserRole(Role.ADMIN) || event.createdByUserId === userId) {
+        if (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId) {
           return res.status(200).json(event)
         } else {
-          throw new ApiError(401, 'Action non autorisée').Handler(res)
+          throw new ApiError(401, 'Action non autorisée')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -117,7 +130,7 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
-      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
+      throw new ApiError(422, 'identifiants des événements manquant')
     })
   }
 
@@ -129,7 +142,7 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
-      const eventsIds = ctx.user.eventIds
+      const eventsIds = ctx.user.company.eventIds
 
       if (eventsIds && eventsIds.length > 0) {
         const events = await this.redisCache.getMany<EventEntity>({
@@ -144,7 +157,27 @@ export default class EventController {
 
         return res.status(200).json(events)
       }
-      throw new ApiError(422, 'identifiants des événements manquant').Handler(res)
+      throw new ApiError(422, 'identifiants des événements manquant')
+    })
+  }
+
+  public getAllDeletedForUser = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
+      if (ctx.user?.id) {
+        const events = await this.repository.find({
+          where: {
+            company: {
+              id: ctx.user.companyId,
+            },
+            deletedAt: Not(IsNull()),
+          },
+          withDeleted: true,
+        })
+        return res.status(200).json(events)
+      }
+      throw new ApiError(422, 'Vous n\'etes pas connecté')
     })
   }
 
@@ -154,12 +187,24 @@ export default class EventController {
    */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, eventSearchableFields)
+      const ctx = Context.get(req)
+
+      const { where, page, take, skip } = paginator<EventEntity>(req, eventSearchableFields)
+
+      const whereFields = {
+        ...where,
+      }
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields.company = {
+          id: ctx.user.companyId,
+        }
+      }
 
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: whereFields,
       })
 
       return res.status(200).json({
@@ -181,22 +226,20 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
+
         const eventFinded = await this.EventService.getOneEvent(id)
 
-        const user = eventFinded.createdByUser as UserEntity
-
-        if (checkUserRole(Role.ADMIN) || user.id === userId) {
+        if (isUserAdmin(ctx.user) || eventFinded.companyId === ctx.user.companyId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
 
           await this.saveEventRedisCache(eventUpdated)
 
           return res.status(200).json(eventUpdated)
         } else {
-          throw new ApiError(422, 'Événement non mis à jour').Handler(res)
+          throw new ApiError(422, 'Événement non mis à jour')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 
@@ -205,24 +248,23 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
-        const userId = ctx.user.id
+        const user = ctx.user
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
-        if (eventToDelete.createdByUserId === userId || checkUserRole(Role.ADMIN)) {
-          await this.repository.softDelete(id)
+        if (!eventToDelete) {
+          throw new ApiError(422, 'L\'événement n\'éxiste pas')
+        }
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.EVENT,
-            field: 'id',
-            id,
-          }))
+        if (eventToDelete?.companyId === user.companyId || isUserAdmin(ctx.user)) {
+          await this.EventService.deleteOneAndRelations(eventToDelete)
+          await this.RediceService.updateCurrentUserInCache({ userId: user.id })
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })
         } else {
-          throw new ApiError(401, 'Action non autorisée').Handler(res)
+          throw new ApiError(401, 'Action non autorisée')
         }
       }
-      throw new ApiError(422, 'identifiant de l\'événement manquant').Handler(res)
+      throw new ApiError(422, 'identifiant de l\'événement manquant')
     })
   }
 }

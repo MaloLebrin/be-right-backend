@@ -1,2 +1,2 @@
-// export * from './SubscriptionService'
-export * from './AddressService'
+export { AddressService } from './AddressService'
+export { MailjetService } from './MailjetService'

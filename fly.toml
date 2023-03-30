@@ -1,8 +1,9 @@
-# fly.toml file generated for be-right-backend on 2022-12-24T00:59:19+01:00
+# fly.toml file generated for be-right-backend on 2023-03-29T11:50:23+02:00
 
 app = "be-right-backend"
 kill_signal = "SIGINT"
 kill_timeout = 5
+primary_region = "cdg"
 processes = []
 
 [env]

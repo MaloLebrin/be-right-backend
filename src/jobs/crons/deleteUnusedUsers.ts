@@ -1,12 +1,10 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import { UserEntity } from '../entity/UserEntity'
-import { useLogger } from '../middlewares/loggerService'
-import UserService from '../services/UserService'
+import { UserEntity } from '../../entity/UserEntity'
+import { logger } from '../../middlewares/loggerService'
+import UserService from '../../services/UserService'
 
 export default async function deleteUnusedUsersJob(APP_SOURCE: DataSource) {
-  const { logger } = useLogger()
-
   try {
     const now = dayjs().locale('fr')
     const yearAgoDate = now.subtract(1, 'year')

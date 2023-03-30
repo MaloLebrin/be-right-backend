@@ -2,12 +2,11 @@ import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
-import { Role, ThemeEnumArray } from '../../types'
-import { useLogger } from '../loggerService'
+import { NotificationTypeEnumArray, Role } from '../../types'
+import { logger } from '../loggerService'
 
 export function useValidation() {
   const validate = <T extends ObjectShape>(schema: ObjectSchema<T>) => async (req: Request, res: Response, next: NextFunction) => {
-    const { logger } = useLogger()
     logger.info(`${req.url} validation started`)
 
     try {
@@ -44,16 +43,44 @@ export function useValidation() {
       password: string().required('Le mot de passe est requis'),
       firstName: string().required('Le prénom est requis'),
       lastName: string().required('le nom est requis'),
-      roles: string().oneOf([Role.PHOTOGRAPHER, Role.COMPANY]),
     }),
   })
 
-  const themeSchema = object({
+  const newUserSchema = object({
     body: object({
-      theme: string().oneOf(ThemeEnumArray),
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      firstName: string().required('Le prénom est requis'),
+      lastName: string().required('le nom est requis'),
+      roles: string().oneOf([Role.OWNER, Role.USER], 'Vous devre renseigner un rôle').required('Le rôle est requis'),
+    }),
+  })
+
+  const patchUserSchema = object({
+    body: object({
+      user: object({
+        email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+        firstName: string().required('Le prénom est requis'),
+        lastName: string().required('le nom est requis'),
+        roles: string().oneOf([Role.OWNER, Role.USER], 'Vous devre renseigner un rôle').required('Le rôle est requis'),
+      }).required('L\'utilisateur est requis'),
     }),
     params: object({
       id: number().required('L\'identifiant de l\'utilisateur est requis'),
+    }),
+  })
+
+  const patchAddressSchema = object({
+    body: object({
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }).required('L\'adresse est requis'),
+    }),
+    params: object({
+      id: number().required('L\'identifiant de l\'adresse est requis'),
     }),
   })
 
@@ -147,9 +174,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     }),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesSchema = object({
@@ -168,9 +192,6 @@ export function useValidation() {
         phone: string().required('Le numéro de téléphone est requis'),
       }),
     })),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-    }),
   })
 
   const createManyEmployeesOnEventSchema = object({
@@ -183,8 +204,7 @@ export function useValidation() {
       }),
     })),
     params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
-      eventId: number().required('L\'identifiant de l\'utilisateur est requis'),
+      eventId: number().required('L\'identifiant de l\'événement est requis'),
     }),
   })
 
@@ -200,15 +220,37 @@ export function useValidation() {
       event: object({
         name: string().required('le nom de l\'événement est obligatoire'),
         description: string().nullable(),
-        // period: object().shape({
-        // }).required('L\'événement doit avoir une date de début et une date de fin'),
         start: date().required('La date de début est obligatoire'),
         end: date().required('La date de fin est obligatoire'),
+        employeeIds: array().of(number()).min(1, 'Sélectionnez au moins un destinataire')
+          .required('Les destinataires sont obligatoire'),
       }),
       photographerId: number().required('L\'identifiant du photographe est requis'),
     }),
-    params: object({
-      id: number().required('L\'identifiant de l\'utilisateur est requis'),
+  })
+
+  const subscribeNotification = object({
+    body: object({
+      type: string().oneOf(NotificationTypeEnumArray).required('Le type d\'abonnement est requis'),
+    }),
+  })
+
+  const createGroupSchema = object({
+    body: object({
+      group: object({
+        name: string().required('Le nom du groupe est requis'),
+        description: string().nullable(),
+        employeeIds: array().of(number()).required(),
+      }),
+    }),
+  })
+
+  const createGroupCSVSchema = object({
+    body: object({
+      group: object({
+        name: string().required('Le nom du groupe est requis'),
+        description: string().nullable(),
+      }),
     }),
   })
 
@@ -216,6 +258,8 @@ export function useValidation() {
     createAddressSchema,
     createbugSchema,
     createEmployeeSchema,
+    createGroupSchema,
+    createGroupCSVSchema,
     createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
@@ -225,9 +269,12 @@ export function useValidation() {
     emailAlreadyExistSchema,
     idParamsSchema,
     loginSchema,
+    newUserSchema,
+    patchAddressSchema,
+    patchUserSchema,
     registerSchema,
     resetPasswordSchema,
-    themeSchema,
+    subscribeNotification,
     tokenSchema,
     updateAnswerStatusSchema,
     validate,

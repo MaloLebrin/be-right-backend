@@ -1,11 +1,11 @@
 import type { Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
-import type { FindOperator } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import { DataSource, ILike } from 'typeorm'
 import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { dataBaseConfig } from '../ormconfig'
-import { useLogger } from './middlewares/loggerService'
+import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import type { FileEntity } from './entity/FileEntity'
 import type { UserEntity } from './entity/UserEntity'
@@ -27,7 +27,7 @@ export const generateHash = (salt: string, password: string) => {
  * @param req req to find query and search value
  * @returns filters build with searchable fields form entity as key, and search value
  */
-export const generateWhereFieldsByEntity = (searchableFields: string[], req: Request): Record<string, FindOperator<string>>[] => {
+export const generateWhereFieldsByEntity = <T>(searchableFields: string[], req: Request): FindOptionsWhere<T> => {
   const search = req.query.search ? ILike(`%${req.query.search}%`) : null
 
   // const filters: Record<string, string> = {}
@@ -38,7 +38,7 @@ export const generateWhereFieldsByEntity = (searchableFields: string[], req: Req
     }
     // }
   })
-  return filters
+  return filters as unknown as FindOptionsWhere<T>
 }
 
 /**
@@ -46,15 +46,15 @@ export const generateWhereFieldsByEntity = (searchableFields: string[], req: Req
  * @param req to find queries
  * @returns queries then pass them to find() entity
  */
-export const paginator = (req: Request, searchableField: string[]) => {
+export const paginator = <T>(req: Request, searchableField: string[]) => {
   const page = req.query.page ? parseInt(req.query.page.toString()) : 1
   const limit = req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 5
   const search = req.query.search ? ILike(`%${req.query.search}%`) : null
 
-  let where: Record<string, FindOperator<string> | string>[] | null = null
+  let where: FindOptionsWhere<T> | null = null
 
   if (req.query.filters) {
-    where = req.query.filters as Record<string, string>[]
+    where = req.query.filters as FindOptionsWhere<T>
   } else if (search && searchableField.length > 0) {
     where = generateWhereFieldsByEntity(searchableField, req)
   }
@@ -86,8 +86,6 @@ export const userResponse = (entity: UserEntity): UserEntity => {
 }
 
 export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {
-  const { logger } = useLogger()
-
   try {
     logger.info(`${req.url} route accessed`)
     await request()

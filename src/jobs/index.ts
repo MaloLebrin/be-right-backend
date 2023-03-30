@@ -1,12 +1,13 @@
 import cron from 'node-cron'
 import * as dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
-import { CronJobInterval } from './utils/cronHelper'
-import udpateEventStatusJob from './jobs/updateEventsStatusJob'
-import { useLogger } from './middlewares/loggerService'
-import { useEnv } from './env'
-import { createAppSource } from './utils'
-import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
+import { CronJobInterval } from '../utils/cronHelper'
+import { logger } from '../middlewares/loggerService'
+import { useEnv } from '../env'
+import { createAppSource } from '../utils'
+import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
+import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
+import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
 
 (async () => {
   const {
@@ -14,7 +15,6 @@ import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
   } = useEnv()
-  const { logger } = useLogger()
   dotenv.config()
 
   const JOB_APP_SOURCE = createAppSource()
@@ -33,11 +33,19 @@ import deleteUnusedUsersJob from './jobs/deleteUnusedUsers'
     api_secret: CLOUDINARY_API_SECRET,
   })
 
+  // cron.schedule(
+  //   CronJobInterval.EVERY_DAY_4_AM,
+  //   async () => {
+  //     await udpateEventStatusJob(JOB_APP_SOURCE)
+  //   },
+  // )
+
   cron.schedule(
-    CronJobInterval.EVERY_DAY_4_AM,
+    CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,
     async () => {
-      await udpateEventStatusJob(JOB_APP_SOURCE)
       await deleteUnusedUsersJob(JOB_APP_SOURCE)
+      await deleteReadOldNotifications(JOB_APP_SOURCE)
+      await deleteOldEventsJob(JOB_APP_SOURCE)
     },
   )
 })()

@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { SubscriptionEnum } from '../types/Subscription'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { PaymentEntity } from './PaymentEntity'
 
 @Entity()
@@ -14,6 +14,7 @@ export class SubscriptionEntity extends BaseEntity {
   @OneToOne(() => PaymentEntity, payment => payment.subscription, { nullable: true })
   @JoinColumn()
   payment: PaymentEntity
+  // FIXME can subscripiton have multiple payments ? YES!!!!!!!!!
 
   @RelationId((subscription: SubscriptionEntity) => subscription.payment)
   paymentId: number

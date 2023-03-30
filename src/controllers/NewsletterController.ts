@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import { paginator, wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
-import { EmployeeEntity } from '../entity/EmployeeEntity'
+import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
@@ -10,10 +10,12 @@ import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../e
 export default class NewsletterController {
   getManager: EntityManager
   repository: Repository<NewsletterRecipient>
+  UserRepository: Repository<UserEntity>
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.repository = APP_SOURCE.getRepository(NewsletterRecipient)
+    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
   }
 
   public createOne = async (req: Request, res: Response) => {
@@ -30,7 +32,7 @@ export default class NewsletterController {
       const recipientAlreadyExist = await this.repository.findOneBy({ email })
 
       if (recipientAlreadyExist) {
-        throw new ApiError(423, 'cet email existe déjà').Handler(res)
+        throw new ApiError(423, 'cet email existe déjà')
       }
 
       const employee = await this.getManager.findOneBy(EmployeeEntity, { email })
@@ -40,11 +42,18 @@ export default class NewsletterController {
         newsletterRecipient.lastName = employee.lastName
       }
 
-      const user = await this.getManager.findOneBy(UserEntity, { email })
+      const user = await this.UserRepository.findOne({
+        where: {
+          email,
+        },
+        relations: {
+          company: true,
+        },
+      })
       if (user) {
         newsletterRecipient.firstName = user.firstName
         newsletterRecipient.lastName = user.lastName
-        newsletterRecipient.companyName = user.companyName
+        newsletterRecipient.companyName = user.company.name
       }
 
       const recipient = this.repository.create(newsletterRecipient)
@@ -80,7 +89,7 @@ export default class NewsletterController {
         await this.repository.softDelete(id)
         return res.status(204).json({ data: recipient, message: 'événement supprimé' })
       }
-      throw new ApiError(401, 'Action non autorisée').Handler(res)
+      throw new ApiError(401, 'Action non autorisée')
     })
   }
 }

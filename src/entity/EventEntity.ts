@@ -1,7 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { EventStatusEnum } from '../types/Event'
 import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
+import { CompanyEntity } from './Company.entity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 
@@ -34,20 +35,20 @@ export default class EventEntity extends BaseEntity {
   @RelationId((event: EventEntity) => event.partner)
   partnerId: number
 
-  @ManyToOne(() => UserEntity, user => user.events, { onDelete: 'CASCADE' })
+  @ManyToOne(() => CompanyEntity, company => company.events)
   @JoinColumn()
-  createdByUser: UserEntity
+  company: CompanyEntity
 
-  @RelationId((event: EventEntity) => event.createdByUser)
-  createdByUserId: number
+  @RelationId((event: EventEntity) => event.company)
+  companyId: number
 
-  @OneToMany(() => FileEntity, file => file.event, { cascade: true })
+  @OneToMany(() => FileEntity, file => file.event, { orphanedRowAction: 'soft-delete' })
   files: FileEntity[]
 
   @RelationId((event: EventEntity) => event.files)
   filesIds: number[]
 
-  @OneToOne(() => AddressEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => AddressEntity, { orphanedRowAction: 'delete', onDelete: 'SET NULL' })
   @JoinColumn()
   address: AddressEntity
 

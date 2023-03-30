@@ -22,6 +22,10 @@ export function isUserAdmin(user: UserEntity) {
   return user.roles === Role.ADMIN
 }
 
+export function isUserOwner(user: UserEntity) {
+  return user.roles === Role.OWNER
+}
+
 export function createJwtToken(user: JWTTokenPayload) {
   const { JWT_SECRET } = useEnv()
   return sign(

@@ -1,9 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { BaseEntity } from './BaseEntity'
-import { EmployeeEntity } from './EmployeeEntity'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
+import { BaseEntity } from './bases/BaseEntity'
+import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
+import { MailEntity } from './MailEntity'
 
 @Entity()
+@Index(['event', 'employee'], { unique: true })
 export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
@@ -14,19 +16,37 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true })
   reason: string | null
 
-  @ManyToOne(() => EmployeeEntity, employee => employee.id, { onDelete: 'CASCADE' })
+  @Column({ unique: true })
+  token: string
+
+  @Column({ unique: true, nullable: true })
+  twoFactorCode: string | null
+
+  @Column({ unique: true, nullable: true, update: false })
+  readonly twoFactorSecret: string | null
+
+  @Column({ nullable: true, default: null })
+  mailSendAt: Date
+
+  @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })
   employee: number | EmployeeEntity
 
   @RelationId((answer: AnswerEntity) => answer.employee)
   employeeId: number
 
-  @ManyToOne(() => EventEntity, event => event.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => EventEntity, event => event.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'eventId' })
-  event: number
+  event: EventEntity
 
   @RelationId((answer: AnswerEntity) => answer.event)
   eventId: number
+
+  @OneToMany(() => MailEntity, mail => mail.answer, { cascade: true })
+  mails: MailEntity[]
+
+  @RelationId((answer: AnswerEntity) => answer.mails)
+  mailsIds: number[]
 }
 
 export const answerSearchFields = [

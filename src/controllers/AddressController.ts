@@ -5,7 +5,7 @@ import { APP_SOURCE, REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
-import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
+import { generateRedisKey } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
 
 export class AddresController {
@@ -37,7 +37,7 @@ export class AddresController {
         return res.status(200).json(address)
       }
 
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 
@@ -47,20 +47,12 @@ export class AddresController {
       const addressIds = ids.split(',').map(id => parseInt(id))
 
       if (addressIds && addressIds.length > 0) {
-        const addresses = await this.redisCache.getMany<AddressEntity>({
-          keys: generateRedisKeysArray({
-            field: 'id',
-            typeofEntity: EntitiesEnum.ADDRESS,
-            ids: addressIds,
-          }),
-          typeofEntity: EntitiesEnum.ADDRESS,
-          fetcher: () => this.AddressService.getMany(addressIds),
-        })
+        const addresses = await this.AddressService.getMany(addressIds)
 
         return res.status(200).json(addresses)
       }
 
-      throw new ApiError(422, 'Identifiants des addresses sont requis').Handler(res)
+      throw new ApiError(422, 'Identifiants des addresses sont requis')
     })
   }
 
@@ -70,27 +62,27 @@ export class AddresController {
         address,
         eventId,
         employeeId,
-        userId,
+        companyId,
       }:
       {
         address: Partial<AddressEntity>
         eventId?: number
         employeeId?: number
-        userId?: number
+        companyId?: number
       } = req.body
 
       const newAddress = await this.AddressService.createOne({
         address,
         employeeId,
         eventId,
-        userId,
+        companyId,
       })
 
       if (newAddress) {
         await this.saveAddressInCache(newAddress)
         return res.status(200).json(newAddress)
       }
-      throw new ApiError(422, 'Addresse non crée').Handler(res)
+      throw new ApiError(422, 'Addresse non crée')
     })
   }
 
@@ -109,9 +101,9 @@ export class AddresController {
           return res.status(200).json(addressUpdated)
         }
 
-        throw new ApiError(422, 'Addresse manquante').Handler(res)
+        throw new ApiError(422, 'Addresse manquante')
       }
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 
@@ -130,7 +122,7 @@ export class AddresController {
         return res.status(203).json({ success: true, error: 'Adresse supprimée' })
       }
 
-      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de l\'addresse est requis')
     })
   }
 }
