@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { Repository } from 'typeorm'
-import { generateHash, userResponse, wrapperRequest } from '../utils'
+import { generateHash, wrapperRequest } from '../utils'
 import MailService from '../services/MailService'
 import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
@@ -13,6 +13,7 @@ import { CompanyEntity } from '../entity/Company.entity'
 import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
 import UserService from '../services/UserService'
+import { userResponse } from '../utils/userHelper'
 
 export default class AuthController {
   logger: Logger<{

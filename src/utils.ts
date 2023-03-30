@@ -7,8 +7,6 @@ import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/Postgres
 import { dataBaseConfig } from '../ormconfig'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
-import type { FileEntity } from './entity/FileEntity'
-import type { UserEntity } from './entity/UserEntity'
 
 /**
  * create hash password
@@ -65,24 +63,6 @@ export const paginator = <T>(req: Request, searchableField: string[]) => {
     skip: (page - 1) * limit,
     where,
   }
-}
-
-/**
-   * @param entity UserEntity
-   * @returns entity filtered without any confidential fields
-   */
-export const userResponse = (entity: UserEntity): UserEntity => {
-  const entityReturned = {} as Record<string, any>
-  for (const [key, value] of Object.entries(entity)) {
-    if (key !== 'password' && key !== 'salt') {
-      entityReturned[key] = value
-    }
-    if (key === 'profilePicture' && value) {
-      const picture = value as FileEntity
-      entityReturned[key] = picture.secure_url
-    }
-  }
-  return entityReturned as UserEntity
 }
 
 export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {

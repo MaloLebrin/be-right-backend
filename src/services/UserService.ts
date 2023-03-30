@@ -1,10 +1,10 @@
 import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
 import { UserEntity } from '../entity/UserEntity'
-import { generateHash, userResponse } from '../utils'
+import { generateHash } from '../utils'
 import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
 import { Role } from '../types'
-import { createJwtToken } from '../utils/'
+import { createJwtToken, userResponse } from '../utils/'
 
 export default class UserService {
   repository: Repository<UserEntity>
