@@ -32,14 +32,14 @@ services:
     env_file:
       - .env
 
-  cron:
-    depends_on:
-      - postgres
-    build:
-      context: .
-      dockerfile: ./cron.Dockerfile
-    env_file:
-      - .env
+  # cron:
+  #   depends_on:
+  #     - postgres
+  #   build:
+  #     context: .
+  #     dockerfile: ./cron.Dockerfile
+  #   env_file:
+  #     - .env
 
 
 volumes:
