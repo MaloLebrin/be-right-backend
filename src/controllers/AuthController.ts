@@ -49,7 +49,20 @@ export default class AuthController {
 
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
-      const user = await this.getUserByMail(email)
+      const user = await this.userRepository.findOne({
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          twoFactorSecret: true,
+          twoFactorRecoveryCode: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          token: true,
+        },
+      })
 
       if (!user) {
         throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
@@ -160,7 +173,12 @@ export default class AuthController {
 
       await this.companyRepository.save(newCompany)
 
-      return res.status(200).json({ user: userResponse(newUser), company: newCompany })
+      delete newCompany.users
+
+      return res.status(200).json({
+        user: userResponse(newUser),
+        company: newCompany,
+      })
     })
   }
 }
