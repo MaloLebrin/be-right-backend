@@ -12,7 +12,7 @@ export function getfullUsername(user: UserEntity | Pick<UserEntity, 'firstName' 
 }
 
 export function isUserEntity(user: any): user is UserEntity {
-  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'salt')
+  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'roles') && hasOwnProperty(user, 'profilePictureId')
 }
 
 export function isSubscriptionOptionField(field: string): boolean {
