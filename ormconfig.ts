@@ -4,20 +4,10 @@ export const dataBaseConfig = {
   production: {
     name: 'production',
     type: 'postgres',
-    host: 'postgres',
-    port: 5432,
-    username: process.env.DB_USERNAME_PROD,
-    password: process.env.DB_PASSWORD_PROD,
-    database: 'be-right-db',
     url: process.env.DATABASE_URL,
     synchronize: true,
     logging: false,
     ssl: true,
-    extra: {
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    },
     entities: [
       ...entities,
     ],
@@ -67,7 +57,7 @@ export const dataBaseConfig = {
     port: process.env.POSTGRES_PORT_TEST,
     username: process.env.DB_USERNAME_TEST,
     password: process.env.DB_PASSWORD_TEST,
-    url: process.env.DATABASE_URL,
+    url: process.env.DATABASE_URL_TEST,
     database: 'be-right-backend-db',
     synchronize: true,
     logging: false,
