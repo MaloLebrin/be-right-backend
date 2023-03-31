@@ -32,7 +32,6 @@ export default async function isAuthenticated(req: Request, res: Response, next:
             loadRelationIds: true,
           }))
 
-        console.log(user, '<==== user')
         if (user && isUserEntity(user)) {
           const ctx = Context.get(req)
           ctx.user = user
