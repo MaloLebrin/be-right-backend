@@ -230,9 +230,9 @@ async function StartApp() {
 
   // User
   app.get('/user/many', [isAuthenticated], new UserController().getMany)
+  app.get('/user/partners', [isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
   app.get('/user/', [isAuthenticated, checkUserRole(Role.ADMIN)], new UserController().getAll)
   app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
-  app.get('/user/partners/:id', [validate(idParamsSchema), isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
   app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
   app.post('/user', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
   app.post('/user/login', [validate(loginSchema)], new UserController().login)

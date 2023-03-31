@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
-import { generateHash, paginator, userResponse, wrapperRequest } from '../utils'
+import { generateHash, paginator, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
 import type { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -264,34 +264,6 @@ export default class UserController {
     })
   }
 
-  // public updatesubscription = async (req: Request, res: Response) => {
-  //   await wrapperRequest(req, res, async () => {
-  //     const userId = parseInt(req.params.id)
-  //     const { subscription }: { subscription: SubscriptionEnum } = req.body
-
-  //     if (userId) {
-  //       const user = await this.UserService.getOne(userId)
-  //       await this.SubscriptionService.updateSubscription(user.subscriptionId, subscription)
-
-  //       if (user) {
-  //         user.token = createJwtToken({
-  //           email: user.email,
-  //           roles: user.roles,
-  //           firstName: user.firstName,
-  //           lastName: user.lastName,
-  //           subscription,
-  //         })
-  //         user.subscriptionLabel = subscription
-
-  //         await this.repository.save(user)
-  //         await this.saveUserInCache(user)
-  //         return res.status(200).json(userResponse(user))
-  //       }
-  //     }
-  //     throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
-  //   })
-  // }
-
   public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
@@ -360,7 +332,20 @@ export default class UserController {
         relations: {
           profilePicture: true,
           notificationSubscriptions: true,
+          company: true,
         },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          firstName: true,
+          lastName: true,
+          password: true,
+          salt: true,
+          email: true,
+          token: true,
+        },
+        loadRelationIds: true,
       })
 
       if (user && user.password && user.salt) {
@@ -383,7 +368,7 @@ export default class UserController {
             },
           })
 
-          const userToSend = userResponse(user)
+          const userToSend = userResponse({ ...user, companyId: company?.id })
 
           await this.saveUserInCache(userToSend)
 

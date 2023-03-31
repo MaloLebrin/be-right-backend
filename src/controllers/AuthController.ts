@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { Repository } from 'typeorm'
-import { generateHash, userResponse, wrapperRequest } from '../utils'
+import { generateHash, wrapperRequest } from '../utils'
 import MailService from '../services/MailService'
 import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
@@ -13,6 +13,7 @@ import { CompanyEntity } from '../entity/Company.entity'
 import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
 import UserService from '../services/UserService'
+import { userResponse } from '../utils/userHelper'
 
 export default class AuthController {
   logger: Logger<{
@@ -48,7 +49,20 @@ export default class AuthController {
 
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
-      const user = await this.getUserByMail(email)
+      const user = await this.userRepository.findOne({
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          twoFactorSecret: true,
+          twoFactorRecoveryCode: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          token: true,
+        },
+      })
 
       if (!user) {
         throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
@@ -159,7 +173,12 @@ export default class AuthController {
 
       await this.companyRepository.save(newCompany)
 
-      return res.status(200).json({ user: userResponse(newUser), company: newCompany })
+      delete newCompany.users
+
+      return res.status(200).json({
+        user: userResponse(newUser),
+        company: newCompany,
+      })
     })
   }
 }
