@@ -33,7 +33,6 @@ export default async function isAuthenticated(req: Request, res: Response, next:
           }))
 
         if (user && isUserEntity(user)) {
-          console.log(user, '<==== user')
           const ctx = Context.get(req)
           ctx.user = user
 
