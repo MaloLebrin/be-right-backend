@@ -1,0 +1,9 @@
+{
+  "id": 2,
+  "createdAt": "2023-03-23T11:46:36.686Z",
+  "updatedAt": "2023-03-23T11:46:36.693Z",
+  "deletedAt": null,
+  "type": "PREMIUM",
+  "expireAt": "2024-03-23T11:46:36.686Z",
+  "paymentId": null
+}
