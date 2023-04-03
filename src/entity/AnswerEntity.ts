@@ -19,10 +19,15 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ unique: true })
   token: string
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: true, select: false })
   twoFactorCode: string | null
 
-  @Column({ unique: true, nullable: true, update: false })
+  @Column({
+    unique: true,
+    nullable: true,
+    update: false,
+    select: false,
+  })
   readonly twoFactorSecret: string | null
 
   @Column({ nullable: true, default: null })
