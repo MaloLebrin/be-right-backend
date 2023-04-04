@@ -42,3 +42,6 @@ jobs:
 
       - name: 🏗 Build
         run: nr tsc
+      
+      - name: ✅ Tests
+        run: nr test:ci
