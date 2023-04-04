@@ -4,7 +4,7 @@ import {
   isArrayOfNumbers,
   uniq,
   uniqByKey,
-} from '../../src/utils/arrayHelper'
+} from '../../utils/arrayHelper'
 
 const arrayData = [
   { id: 1 },

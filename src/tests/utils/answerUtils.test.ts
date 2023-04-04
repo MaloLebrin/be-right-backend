@@ -5,8 +5,8 @@ import {
   isAnswerSigned,
   isAnswerTruthy,
   secretAnswerKeys,
-} from '../../src/utils/answerHelper'
-import type AnswerEntity from '../../src/entity/AnswerEntity'
+} from '../../utils/answerHelper'
+import type AnswerEntity from '../../entity/AnswerEntity'
 
 const answers = answersJSON as unknown as AnswerEntity[]
 

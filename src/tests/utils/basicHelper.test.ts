@@ -4,7 +4,7 @@ import {
   isNumber,
   parseBoolean,
   parseQueryIds,
-} from '../../src/utils/basicHelper'
+} from '../../utils/basicHelper'
 
 test('getType send right type', () => {
   expect(getType({})).toEqual('Object')
