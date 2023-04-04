@@ -16,12 +16,6 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "compilerOptions": {
-      "types": ["vitest/globals"]
-    },
-    "include": [
-      "./test/**/*.ts",
-      "vitest.config.ts"
-    ]
-  }
+    "types": ["vitest/globals"],
+  },
 }
