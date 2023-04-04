@@ -5,7 +5,7 @@
   "email": "albus@poudlard.com",
   "firstName": "Albus",
   "lastName": "Dumbledore",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsYnVzQHBvdWRsYXJkLmNvbSIsImZpcnN0TmFtZSI6IkFsYnVzIiwibGFzdE5hbWUiOiJEdW1ibGVkb3JlIiwiZnVsbE5hbWUiOiJBbGJ1cyBEdW1ibGVkb3JlIiwicm9sZXMiOlsiT1dORVIiXSwic3Vic2NyaXB0aW9uIjoiUFJFTUlVTSIsInVuaUpXVCI6Ik44RFV3ZW5UcUVsUWpuYU9BbkdmVU5IU1dwR0lfblpyTDFVOGV3YUN6Mnlqc2JNZkdLYVVkT0RxSlR0WExvMW9faU01THRFTnlQa1FidFM2YU9pS0h6VHBENVhza1B0V1JaU3FvcHVkSF9URzhrTXJsNC1ickFldm5lM1ZiUW9YIiwiaWF0IjoxNjc5NTcxOTk2fQ.LuPqWoYQYVxqev2SbOPC03TJdgGqpnDw7r0nfe98_DI",
+  "token": "token",
   "profilePicture": null,
   "shootingEvent": [
     7,
