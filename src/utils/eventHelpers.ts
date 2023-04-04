@@ -44,6 +44,5 @@ export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity): E
 export function removeUnecessaryFieldsEvent(event: EventEntity) {
   delete event.partnerId
   delete event.addressId
-  delete event.files
   return event
 }

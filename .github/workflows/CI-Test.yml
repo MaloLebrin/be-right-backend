@@ -34,8 +34,8 @@ jobs:
       - name: 🔧 Install
         run: nci
 
-      - name: 🔧 Install Vitest
-        run: ni vitest
+      # - name: 🔧 Install Vitest
+      #   run: ni vitest
 
       - name: 📖 Lint
         run: nr lint
