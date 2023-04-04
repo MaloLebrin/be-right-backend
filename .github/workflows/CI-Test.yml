@@ -44,4 +44,4 @@ jobs:
         run: nr tsc
       
       - name: ✅ Tests
-        run: nr test
+        run: nr test:ci
