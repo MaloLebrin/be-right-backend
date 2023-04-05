@@ -15,6 +15,6 @@ export const logger = pino(
 )
 
 export const loggerMiddleware = expressPinoLogger({
-  logger,
+  logger: logger as any,
   autoLogging: true,
 })

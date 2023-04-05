@@ -16,7 +16,7 @@ export default class BugReportService {
     return bugReport
   }
 
-  async getOne(id: number): Promise<BugReportEntity> {
+  async getOne(id: number): Promise<BugReportEntity | null> {
     const bugReport = await this.repository.findOne({
       where: {
         id,
@@ -26,7 +26,7 @@ export default class BugReportService {
     return bugReport
   }
 
-  async updateOne(id: number, bugReport: BugReportEntity): Promise<BugReportEntity> {
+  async updateOne(id: number, bugReport: BugReportEntity): Promise<BugReportEntity | null> {
     const bugReportFinded = await this.getOne(id)
     if (!bugReport || bugReportFinded) {
       return null
@@ -35,7 +35,7 @@ export default class BugReportService {
     return this.getOne(id)
   }
 
-  async updateStatus(id: number, status: BugReportStatus): Promise<BugReportEntity> {
+  async updateStatus(id: number, status: BugReportStatus): Promise<BugReportEntity | null> {
     const bugReportFinded = await this.getOne(id)
     if (!bugReportFinded) {
       return null

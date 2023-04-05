@@ -25,6 +25,10 @@ export class BadgeController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       if (ctx.user) {
         const badges = await this.repository.find({
           where: {

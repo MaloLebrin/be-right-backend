@@ -20,7 +20,7 @@ export class UserAdminSeed extends BaseSeedClass {
   }
 
   async CreateAdminUser() {
-    if (process.env.ADMIN_EMAIL) {
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
       const subscription = this.getManager.create(SubscriptionEntity, {
         type: SubscriptionEnum.PREMIUM,
         expireAt: dayjs().add(1, 'year'),

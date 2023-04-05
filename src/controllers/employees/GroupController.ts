@@ -35,6 +35,11 @@ export class GroupController {
       const { group }: { group: GroupCreationPayload } = req.body
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const currentUser = ctx.user
 
       if (!group || !currentUser) {
@@ -57,6 +62,11 @@ export class GroupController {
       const fileRecieved = req.file
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const currentUser = ctx.user
 
       if (!name || !fileRecieved || !currentUser) {
@@ -88,16 +98,19 @@ export class GroupController {
         await Promise.all(
           newEmployeesToCreate.map(async emp => {
             const newOne = await this.EmployeeService.createOne({ ...emp }, currentUser.companyId)
-            await this.AddressService.createOne({
-              address: {
-                addressLine: emp.addressLine,
-                postalCode: emp.postalCode,
-                city: emp.city,
-                country: emp.country,
-              },
-              employeeId: newOne.id,
-            })
-            return arrayOfEmployeeIdsInGroup.push(newOne.id)
+
+            if (newOne) {
+              await this.AddressService.createOne({
+                address: {
+                  addressLine: emp.addressLine,
+                  postalCode: emp.postalCode,
+                  city: emp.city,
+                  country: emp.country,
+                },
+                employeeId: newOne.id,
+              })
+              return arrayOfEmployeeIdsInGroup.push(newOne.id)
+            }
           }),
         )
       }
@@ -123,6 +136,10 @@ export class GroupController {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
       const currentUser = ctx.user
 
       if (id && currentUser.id) {
@@ -142,7 +159,11 @@ export class GroupController {
         const groupIds = parseQueryIds(ids)
 
         const ctx = Context.get(req)
-        const currentUser = ctx.user
+        const currentUser = ctx?.user
+
+        if (!currentUser) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
 
         if (groupIds?.length > 0 && currentUser.companyId) {
           const groups = await this.groupService.getMany(groupIds, currentUser.companyId)
@@ -161,7 +182,11 @@ export class GroupController {
   public getManyByUserId = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
-      const currentUser = ctx.user
+      const currentUser = ctx?.user
+
+      if (!currentUser) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       if (currentUser.companyId) {
         const employees = await this.groupService.getAllForUser(currentUser.companyId)
@@ -176,7 +201,12 @@ export class GroupController {
   public getManyByEmployeeId = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
-      const currentUser = ctx.user
+      const currentUser = ctx?.user
+
+      if (!currentUser) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const id = parseInt(req.params.id)
 
       if (id && currentUser.companyId) {
@@ -198,7 +228,11 @@ export class GroupController {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
-      const currentUser = ctx.user
+      const currentUser = ctx?.user
+
+      if (!currentUser) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       if (id && currentUser.companyId) {
         const groupUpdated = await this.groupService.updateOne(id, currentUser.companyId, group)
@@ -214,12 +248,17 @@ export class GroupController {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const user = ctx.user
 
       if (id && user?.id) {
         const getGroupe = await this.groupService.getOne(id, user.id)
 
-        if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
+        if (getGroupe?.companyId === user.companyId || isUserAdmin(user)) {
           await this.groupService.deleteOne(id)
 
           return res.status(204).json(getGroupe)

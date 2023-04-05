@@ -29,18 +29,20 @@ export function isUserOwner(user: UserEntity) {
 
 export function createJwtToken(user: JWTTokenPayload) {
   const { JWT_SECRET } = useEnv()
-  return sign(
-    {
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      fullName: getfullUsername(user),
-      roles: [user.roles],
-      subscription: user.subscription ?? SubscriptionEnum.BASIC,
-      uniJWT: uid2(128),
-    },
-    JWT_SECRET,
-  )
+  if (JWT_SECRET) {
+    return sign(
+      {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: getfullUsername(user),
+        roles: [user.roles],
+        subscription: user.subscription ?? SubscriptionEnum.BASIC,
+        uniJWT: uid2(128),
+      },
+      JWT_SECRET,
+    )
+  }
 }
 
 export const secretUserKeys = [

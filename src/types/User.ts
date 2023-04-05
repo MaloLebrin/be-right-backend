@@ -21,7 +21,7 @@ export interface CreateUserPayload {
   email: string
   firstName: string
   lastName: string
-  password: string
+  password: string | null
   role: Role
   subscription: SubscriptionEnum
   subscriptionId?: number

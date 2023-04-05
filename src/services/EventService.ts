@@ -7,6 +7,7 @@ import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { EventStatusEnum } from '../types/Event'
 import { generateRedisKey, isAnswerSigned, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { ApiError } from '../middlewares/ApiError'
 import { AddressService } from './AddressService'
 import AnswerService from './AnswerService'
 
@@ -79,6 +80,9 @@ export default class EventService {
       totalSignatureNeeded: signatureNeeded,
     })
     const event = await this.getOneWithoutRelations(eventId)
+    if (!event) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
     await this.saveEventRedisCache(event)
     return event
   }
@@ -96,11 +100,15 @@ export default class EventService {
     })
 
     const event = await this.getOneWithoutRelations(id)
+    if (!event) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
+
     await this.saveEventRedisCache(event)
     return event
   }
 
-  async getOneEvent(eventId: number): Promise<EventEntity> {
+  async getOneEvent(eventId: number): Promise<EventEntity | null> {
     return this.repository.findOne({
       where: {
         id: eventId,
@@ -143,6 +151,10 @@ export default class EventService {
     await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToSave))
     await this.multipleUpdateForEvent(eventId)
     const eventSaved = await this.getOneEvent(eventId)
+    if (!eventSaved) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
+
     await this.saveEventRedisCache(eventSaved)
     return eventSaved
   }
@@ -173,6 +185,11 @@ export default class EventService {
     })
 
     const eventSaved = await this.getOneEvent(id)
+
+    if (!eventSaved) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
+
     await this.saveEventRedisCache(eventSaved)
   }
 
@@ -193,6 +210,11 @@ export default class EventService {
       }
     }
     const eventSaved = await this.getOneEvent(event.id)
+
+    if (!eventSaved) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
+
     await this.saveEventRedisCache(eventSaved)
 
     return eventSaved

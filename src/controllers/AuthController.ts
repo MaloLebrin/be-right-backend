@@ -173,8 +173,6 @@ export default class AuthController {
 
       await this.companyRepository.save(newCompany)
 
-      delete newCompany.users
-
       return res.status(200).json({
         user: userResponse(newUser),
         company: newCompany,

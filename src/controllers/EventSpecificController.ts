@@ -56,8 +56,12 @@ export default class EventSpecificController {
       const eventId = parseInt(req.params.id)
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       if (eventId && ctx.user.companyId) {
-        const event = await this.redisCache.get<EventEntity>(
+        const event = await this.redisCache.get<EventEntity | null>(
           generateRedisKey({
             field: 'id',
             typeofEntity: EntitiesEnum.EVENT,
@@ -66,9 +70,9 @@ export default class EventSpecificController {
           () => this.EventService.getOneWithoutRelations(eventId))
 
         if (event && (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId)) {
-          let employees = []
+          let employees: EmployeeEntity[] = []
 
-          const address = await this.redisCache.get<AddressEntity>(
+          const address = await this.redisCache.get<AddressEntity | null>(
             generateRedisKey({
               field: 'id',
               typeofEntity: EntitiesEnum.ADDRESS,
@@ -90,7 +94,7 @@ export default class EventSpecificController {
                 }),
                 typeofEntity: EntitiesEnum.EMPLOYEE,
                 fetcher: () => this.EmployeeService.getMany(employeesIds),
-              })
+              }) as EmployeeEntity[]
             }
           }
 
@@ -112,6 +116,11 @@ export default class EventSpecificController {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const companyId = ctx.user.companyId
       const userId = ctx.user.id
 

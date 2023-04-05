@@ -13,7 +13,7 @@ export default class UserService {
     this.repository = APP_SOURCE.getRepository(UserEntity)
   }
 
-  async getByToken(token: string, withRelation?: boolean): Promise<UserEntity> {
+  async getByToken(token: string, withRelation?: boolean): Promise<UserEntity | null> {
     return await this.repository.findOne({
       where: { token },
       relations: {
@@ -34,7 +34,7 @@ export default class UserService {
     })
   }
 
-  async getOneWithRelations(id: number): Promise<UserEntity> {
+  async getOneWithRelations(id: number): Promise<UserEntity | null> {
     const user = await this.repository.findOne({
       where: { id },
       relations: ['profilePicture', 'company', 'badges'],
@@ -44,26 +44,28 @@ export default class UserService {
 
   async getMany(ids: number[]): Promise<UserEntity[]> {
     const users = await Promise.all(ids.map(id => this.getOneWithRelations(id)))
-    return users.length > 0 ? users.filter(user => user).map(user => userResponse(user)) : []
+    return users.length > 0 ? users.filter(user => user).map(user => userResponse(user!)) : []
   }
 
   async updateOne(id: number, payload: UserEntity) {
     const userFinded = await this.repository.findOne({ where: { id } })
 
-    const userUpdated = {
-      ...userFinded,
-      ...payload,
-      updatedAt: new Date(),
-      token: payload.roles !== userFinded.roles
-        ? createJwtToken({
-          email: userFinded.email,
-          firstName: userFinded.firstName,
-          lastName: userFinded.lastName,
-          roles: payload.roles,
-        })
-        : userFinded.token,
+    if (userFinded) {
+      const userUpdated = {
+        ...userFinded,
+        ...payload,
+        updatedAt: new Date(),
+        token: payload.roles !== userFinded.roles
+          ? createJwtToken({
+            email: userFinded.email,
+            firstName: userFinded.firstName,
+            lastName: userFinded.lastName,
+            roles: payload.roles,
+          })
+          : userFinded.token,
+      }
+      await this.repository.save(userUpdated)
     }
-    await this.repository.save(userUpdated)
   }
 
   async findOneByEmail(email: string) {
@@ -112,8 +114,8 @@ export default class UserService {
         roles: role,
         subscription,
       }),
-      password: generateHash(salt, password),
-      loggedAt: loggedAt || null,
+      password: password ? generateHash(salt, password) : undefined,
+      loggedAt: loggedAt || undefined,
       company: {
         id: companyId,
       },
@@ -131,7 +133,9 @@ export default class UserService {
         ...photographer,
       })
       const newPhotographer = await this.getOneWithRelations(userAlReadyExist.id)
-      return newPhotographer
+      if (newPhotographer) {
+        return newPhotographer
+      }
     }
     return await this.createOnePhotoGrapher(photographer) as UserEntity
   }

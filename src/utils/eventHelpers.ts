@@ -27,7 +27,7 @@ export function hasNotEventStartedYet(event: EventEntity): boolean {
  * @description update event based on his dates (start, end) and date of excution of this function
  * @return event as EventEntity
  */
-export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity): EventStatusEnum {
+export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity) {
   if (isEventOver(event)) {
     return EventStatusEnum.CLOSED
   }
@@ -42,7 +42,12 @@ export function updateStatusEventBasedOnStartEndTodayDate(event: EventEntity): E
 }
 
 export function removeUnecessaryFieldsEvent(event: EventEntity) {
-  delete event.partnerId
-  delete event.addressId
-  return event
+  const obj = event as any
+  if (obj.partnerId) {
+    delete obj.partnerId
+  }
+  if (obj.addressId) {
+    delete obj.addressId
+  }
+  return obj
 }

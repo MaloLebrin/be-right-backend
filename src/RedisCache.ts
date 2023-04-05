@@ -1,4 +1,3 @@
-/* eslint-disable security/detect-object-injection */
 import type { Redis as RedisClient } from 'ioredis'
 import Redis from 'ioredis'
 import type { Logger } from 'pino'
@@ -6,39 +5,42 @@ import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
 import { parseRedisKey } from './utils/redisHelper'
+import { isProduction } from './utils/envHelper'
 
 export default class RedisCache {
-  private client: RedisClient
+  private client: RedisClient | undefined
   private connected = false
   private logger: Logger
 
   constructor() {
     this.logger = logger
 
-    if (!this.connected) {
+    if (!this.connected && process.env.REDIS_PORT && process.env.REDIS_HOST) {
       this.client = new Redis(
         parseInt(process.env.REDIS_PORT),
         process.env.REDIS_HOST,
         {
           password: process.env.REDIS_PASSWORD,
-          showFriendlyErrorStack: true,
+          showFriendlyErrorStack: !isProduction(),
         },
       )
       this.connected = true
     }
 
-    this.client.on('error', (err: Error) => {
-      this.logger.error(err.message)
-    })
+    if (this.client) {
+      this.client.on('error', (err: Error) => {
+        this.logger.error(err.message)
+      })
 
-    this.client.on('connect', () => {
-      this.logger.info('Connected successfully to redis')
-    })
+      this.client.on('connect', () => {
+        this.logger.info('Connected successfully to redis')
+      })
+    }
   }
 
   async save<T>(key: RedisKeys, value: T, expireTime?: number): Promise<void> {
-    await this.client.set(key, JSON.stringify(value))
-    await this.client.expire(key, expireTime || 3600)
+    await this.client?.set(key, JSON.stringify(value))
+    await this.client?.expire(key, expireTime || 3600)
   }
 
   async multiSave<T extends BaseEntity>({
@@ -61,24 +63,24 @@ export default class RedisCache {
   }
 
   async invalidate(key: string): Promise<void> {
-    await this.client.del(key)
+    await this.client?.del(key)
   }
 
   private parseArray<T>(strings: string[]): T[] {
     return strings.filter(st => st).map(str => JSON.parse(str))
   }
 
-  async get<T>(key: RedisKeys, fetcher: () => Promise<T>): Promise<T> {
+  async get<T>(key: RedisKeys, fetcher: () => Promise<T>): Promise<T | undefined> {
     if (!this.connected) {
       this.logger.info('redis not connected')
       return await fetcher()
     }
 
-    const value = await this.client.get(key)
+    const value = await this.client?.get(key)
 
     if (value) {
       this.logger.info('redis value retrieved')
-      await this.client.expire(key, 3600)
+      await this.client?.expire(key, 3600)
       return JSON.parse(value)
     }
 
@@ -100,7 +102,7 @@ export default class RedisCache {
     typeofEntity: EntitiesEnum
     fetcher: () => Promise<T[]>
     objKey?: RedisEntitiesField
-  }): Promise<T[]> {
+  }): Promise<T[] | undefined> {
     const field = objKey || 'id'
 
     if (!this.connected) {
@@ -108,7 +110,7 @@ export default class RedisCache {
       return await fetcher()
     }
 
-    const value = await this.client.mget(keys)
+    const value = await this.client?.mget(keys)
 
     if (!value || value.filter(str => str).length < 1) {
       this.logger.info('no value in redis cache')
@@ -122,11 +124,11 @@ export default class RedisCache {
     }
 
     if (value) {
-      const array = this.parseArray<T>(value)
+      const array = this.parseArray<T>(value.filter(val => val) as string[])
 
       const isEveryDataInCache = keys.every(key => {
         const { value, field } = parseRedisKey(key)
-        const finalValue = array.find(item => item[field] === value)
+        const finalValue = array.find(item => item[field as keyof T] === value)
         return finalValue !== undefined && finalValue !== null
       })
 

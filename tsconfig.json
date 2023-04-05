@@ -13,9 +13,12 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
+    "strictNullChecks": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "types": ["vitest/globals"]
   },
   "exclude": [

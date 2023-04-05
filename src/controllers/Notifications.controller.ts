@@ -36,7 +36,7 @@ export default class NotificationController {
       },
     })
 
-    return notificationSubscriptions.reduce((acc, subscriber) => [...acc, ...subscriber.notifications], [])
+    return notificationSubscriptions.reduce((acc, subscriber) => [...acc, ...subscriber.notifications], [] as NotificationEntity[])
   }
 
   public GetForUser = async (req: Request, res: Response) => {
@@ -44,11 +44,12 @@ export default class NotificationController {
       const ctx = Context.get(req)
       const user = ctx?.user
 
-      if (user) {
-        const notifications = await this.getNotificationByUserForClient(user)
-        return res.status(200).json(notifications)
+      if (!user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
       }
-      throw new ApiError(401, 'Missing Authentication')
+
+      const notifications = await this.getNotificationByUserForClient(user)
+      return res.status(200).json(notifications)
     })
   }
 
@@ -57,6 +58,10 @@ export default class NotificationController {
       const ids = req.query.ids as string
       const ctx = Context.get(req)
       const user = ctx?.user
+
+      if (!user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       const notifIds = uniq(ids?.split(','))
         .map(id => parseInt(id))

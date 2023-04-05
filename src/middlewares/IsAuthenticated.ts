@@ -5,6 +5,7 @@ import Context from '../context'
 import { UserEntity } from '../entity/UserEntity'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import { useEnv } from '../env'
+import type { ErrorType } from '../types'
 import { logger } from './loggerService'
 import { ApiError } from './ApiError'
 
@@ -14,15 +15,16 @@ export default async function isAuthenticated(req: Request, res: Response, next:
 
     if (req.headers.authorization) {
       const token = req.headers.authorization.replace('Bearer ', '')
+      const { JWT_SECRET } = useEnv()
 
-      if (!token) {
+      if (!token || !JWT_SECRET) {
         throw new ApiError(401, 'action non autorisée')
       }
-      const { JWT_SECRET } = useEnv()
+
       verify(token, JWT_SECRET)
 
       if (token) {
-        const user = await REDIS_CACHE.get<UserEntity>(
+        const user = await REDIS_CACHE.get<UserEntity | null>(
           `user-token-${token}`,
           () => APP_SOURCE.getRepository(UserEntity).findOne({
             where: { token },
@@ -34,7 +36,9 @@ export default async function isAuthenticated(req: Request, res: Response, next:
 
         if (user && isUserEntity(user)) {
           const ctx = Context.get(req)
-          ctx.user = user
+          if (ctx) {
+            ctx.user = user
+          }
 
           logger.info(`${req.url} User is allowed`)
           return next()
@@ -45,7 +49,8 @@ export default async function isAuthenticated(req: Request, res: Response, next:
       success: false,
       message: 'Action non autorisée',
     })
-  } catch (error) {
+  } catch (err) {
+    const error = err as ErrorType
     logger.debug(error.message)
 
     logger.error(error)

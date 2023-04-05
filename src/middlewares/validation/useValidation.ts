@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
 import { array, boolean, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
+import type { ErrorType } from '../../types'
 import { NotificationTypeEnumArray, Role } from '../../types'
 import { logger } from '../loggerService'
 
@@ -18,8 +19,9 @@ export function useValidation() {
       logger.info(`${req.url} validation ended with success`)
       return next()
     } catch (err) {
-      logger.debug({ type: err.name, message: err.message, request: req.url })
-      return res.status(422).json({ type: err.name, message: err.message, request: req.url })
+      const error = err as ErrorType
+      logger.debug({ type: error.name, message: error.message, request: req.url })
+      return res.status(422).json({ type: error.name, message: error.message, request: req.url })
     }
   }
 

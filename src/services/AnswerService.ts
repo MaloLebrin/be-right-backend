@@ -6,6 +6,7 @@ import AnswerEntity from '../entity/AnswerEntity'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EventEntity from '../entity/EventEntity'
 import { useEnv } from '../env'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class AnswerService {
   getManager: EntityManager
@@ -23,6 +24,9 @@ export default class AnswerService {
 
   private generateAnswerToken(employee: EmployeeEntity, answerId: number, eventId: number) {
     const { JWT_SECRET } = useEnv()
+    if (!JWT_SECRET) {
+      throw new ApiError(422, 'le JWT secret est manquant')
+    }
     return sign(
       {
         employeeId: employee.id,
@@ -45,11 +49,19 @@ export default class AnswerService {
       },
     })
 
+    if (!event) {
+      throw new ApiError(422, 'l\'événément n\'existe pas')
+    }
+
     const employee = await this.employeeRepository.findOne({
       where: {
         id: employeeId,
       },
     })
+
+    if (!employee) {
+      throw new ApiError(422, 'le destinataire n\'existe pas')
+    }
 
     const newAnswer = this.repository.create({
       event,
@@ -129,7 +141,7 @@ export default class AnswerService {
     })
   }
 
-  public getOne = async (answerId: number, withRelations?: boolean): Promise<AnswerEntity> => {
+  public getOne = async (answerId: number, withRelations?: boolean): Promise<AnswerEntity | null> => {
     return await this.repository.findOne({
       where: {
         id: answerId,

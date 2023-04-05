@@ -9,14 +9,17 @@ import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 
 export class MailjetService {
-  SecretKey: string
-  PublicKey: string
+  SecretKey: string | undefined
+  PublicKey: string | undefined
   mailJetClient: Client | undefined
-  FromObj: FromMailObj
+  FromObj: FromMailObj | undefined
   repository: Repository<MailEntity>
   answerRepository: Repository<AnswerEntity>
 
   constructor(APP_SOURCE: DataSource) {
+    this.repository = APP_SOURCE.getRepository(MailEntity)
+    this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
+
     const {
       MJ_APIKEY_PUBLIC,
       MJ_APIKEY_PRIVATE,
@@ -26,7 +29,7 @@ export class MailjetService {
       IS_FEATURE_MAIL_ENABLED,
     } = useEnv()
 
-    if (IS_FEATURE_MAIL_ENABLED) {
+    if (IS_FEATURE_MAIL_ENABLED && MJ_APIKEY_PUBLIC && MJ_APIKEY_PRIVATE && ADMIN_EMAIL) {
       this.PublicKey = MJ_APIKEY_PUBLIC
       this.SecretKey = MJ_APIKEY_PRIVATE
       this.mailJetClient = this.connection()
@@ -34,9 +37,6 @@ export class MailjetService {
         Email: ADMIN_EMAIL,
         Name: `${ADMIN_FIRTNAME} ${ADMIN_LASTNAME}`,
       }
-
-      this.repository = APP_SOURCE.getRepository(MailEntity)
-      this.answerRepository = APP_SOURCE.getRepository(AnswerEntity)
     } else {
       logger.warn('Send email feature in not enabled')
     }

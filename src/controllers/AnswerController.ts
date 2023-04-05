@@ -53,6 +53,14 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
+      if (!req.query.eventId || !req.query.employeeId) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
 
@@ -96,6 +104,10 @@ export default class AnswerController {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
@@ -152,6 +164,10 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getMany(answerIds),
           })
 
+          if (!answers) {
+            throw new ApiError(422, 'Les réponses n\'ont pu être récupérées')
+          }
+
           return res.status(200).json(this.filterSecretAnswersKeys(answers))
         }
       }
@@ -176,6 +192,10 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getAnswersForManyEvents(eventIds),
           })
 
+          if (!answers) {
+            throw new ApiError(422, 'Les réponses n\'ont pu être récupérées')
+          }
+
           return res.status(200).json(this.filterSecretAnswersKeys(answers))
         }
       }
@@ -187,7 +207,11 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
-      const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
+      const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer) as AnswerEntity
+
+      if (!answerUpdated) {
+        throw new ApiError(422, 'La réponse n\'a pas été mise à jour')
+      }
 
       await this.saveAnswerInCache(answerUpdated)
 
@@ -201,9 +225,22 @@ export default class AnswerController {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       if (id) {
         const answer = await this.AnswerService.getOne(id)
+
+        if (!answer) {
+          throw new ApiError(422, 'La réponse n\'éxiste pas')
+        }
+
         const event = await this.EventService.getOneEvent(answer.eventId)
+
+        if (!event) {
+          throw new ApiError(422, 'L\'événement n\'éxiste pas')
+        }
 
         if (answer && (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user))) {
           // TODO add job to update event and another to send notification
@@ -226,6 +263,11 @@ export default class AnswerController {
       const id = parseInt(req.params.id)
       if (id) {
         const answerToDelete = await this.AnswerService.getOne(id)
+
+        if (!answerToDelete) {
+          throw new ApiError(422, 'La réponse n\'éxiste pas')
+        }
+
         const answer = await this.AnswerService.deleteOne(id)
 
         await this.redisCache.invalidate(generateRedisKey({

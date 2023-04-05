@@ -101,11 +101,11 @@ export class GroupService {
 
     const { name, description, employeeIds } = group
 
-    let newEmployeeIds = []
-    if (employeeIds?.length > 0) {
+    let newEmployeeIds: number[] = []
+    if (employeeIds && employeeIds?.length > 0) {
       newEmployeeIds = [...employeeIds]
     } else {
-      newEmployeeIds = [existingGroup.employeeIds]
+      newEmployeeIds = existingGroup.employeeIds
     }
 
     const employees = await this.employeeService.getMany(newEmployeeIds)

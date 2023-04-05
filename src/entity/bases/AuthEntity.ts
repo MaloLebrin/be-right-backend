@@ -5,7 +5,7 @@ import { BasePersonEntity } from './BasePerson'
 @Entity()
 export abstract class BaseAuthEntity extends BasePersonEntity {
   @Column({ nullable: true, select: false })
-  password: string
+  password: string | null
 
   @Column({ unique: true, update: false, select: false })
   salt: string
@@ -20,16 +20,16 @@ export abstract class BaseAuthEntity extends BasePersonEntity {
   twoFactorSecret: string | null
 
   @Column({ nullable: true, unique: true, select: false })
-  apiKey: string
+  apiKey: string | null
 
   @Column({ nullable: true, default: null, select: false })
-  loggedAt: Date
+  loggedAt: Date | null
 
   @Column({ nullable: true, default: null, select: false })
-  passwordUpdatedAt: Date
+  passwordUpdatedAt: Date | null
 
   @Column({ nullable: true, default: null, select: false })
-  saltUpdatedAt: Date
+  saltUpdatedAt: Date | null
 
   @OneToOne(() => SessionEntity, { cascade: true })
   @JoinColumn()

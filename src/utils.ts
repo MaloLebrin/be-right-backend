@@ -7,6 +7,7 @@ import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/Postgres
 import { dataBaseConfig } from '../ormconfig'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import type { ErrorType } from './types'
 
 /**
  * create hash password
@@ -69,7 +70,8 @@ export async function wrapperRequest<T>(req: Request, res: Response, request: ()
   try {
     logger.info(`${req.url} route accessed`)
     await request()
-  } catch (error) {
+  } catch (err) {
+    const error = err as ErrorType
     logger.debug(error.message)
 
     logger.error(error)

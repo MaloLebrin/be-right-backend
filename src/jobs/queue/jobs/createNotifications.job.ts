@@ -33,8 +33,8 @@ export class CreateEventNotificationsJob extends BaseJob implements JobImp {
 
       const eventNotif = await eventNotificationService.createOne({
         name: type,
-        answer: answer || null,
-        event: event || null,
+        answer: answer || undefined,
+        event: event || undefined,
       })
 
       const notificationSubscriptionService = new NotificationSubscriptionService(APP_SOURCE)

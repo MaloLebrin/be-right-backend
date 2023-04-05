@@ -6,6 +6,7 @@ import { UserEntity } from '../entity/UserEntity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class FileService {
   getManager: EntityManager
@@ -100,6 +101,10 @@ export default class FileService {
       },
     })
     const userToSave = await this.getManager.findOne(UserEntity, { where: { id: user.id } })
+
+    if (!userToSave) {
+      throw new ApiError(422, 'l\'utilisateur n\'existe pas')
+    }
 
     if (existProfilePicture) {
       userToSave.profilePicture = null

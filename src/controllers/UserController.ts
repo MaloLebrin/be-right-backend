@@ -71,7 +71,7 @@ export default class UserController {
           roles: Role
         } = req.body
 
-      const companyId = ctx.user.companyId
+      const companyId = ctx?.user?.companyId
 
       if (!email || !firstName || !lastName || !roles || !companyId) {
         throw new ApiError(422, 'Imformations manquantes')
@@ -130,7 +130,7 @@ export default class UserController {
       const [data, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: where || {},
       })
 
       return res.status(200).json({
@@ -151,7 +151,7 @@ export default class UserController {
       const id = parseInt(req.params.id)
 
       if (id) {
-        const user = await this.redisCache.get<UserEntity>(
+        const user = await this.redisCache.get<UserEntity | null>(
           `user-id-${id}`,
           () => this.UserService.getOneWithRelations(id))
 
@@ -187,7 +187,7 @@ export default class UserController {
       const token = req.body.token
 
       if (token) {
-        const user = await this.redisCache.get<UserEntity>(
+        const user = await this.redisCache.get<UserEntity | null>(
           `user-token-${token}`,
           () => this.UserService.getByToken(token, true))
 
@@ -227,10 +227,11 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
-      if (id) {
-        const ctx = Context.get(req)
 
-        if (id === ctx.user.id || isUserAdmin(ctx.user)) {
+      const ctx = Context.get(req)
+
+      if (id && ctx?.user) {
+        if (id === ctx?.user?.id || isUserAdmin(ctx.user)) {
           const userFinded = await this.UserService.getOne(id)
 
           if (!userFinded) {
@@ -238,6 +239,10 @@ export default class UserController {
           }
 
           if (user.roles !== userFinded.roles) {
+            if (!id || !user.email || !user.roles || !user.firstName || !user.lastName) {
+              throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
+            }
+
             user.token = createJwtToken({
               email: user.email,
               roles: user.roles,
@@ -249,9 +254,9 @@ export default class UserController {
           await this.repository.update(id, user)
 
           const userToSend = await this.UserService.getOne(id, true)
-          await this.saveUserInCache(userResponse(userToSend))
 
           if (userToSend) {
+            await this.saveUserInCache(userResponse(userToSend))
             return res.status(200).json(userResponse(userToSend))
           }
 
@@ -260,6 +265,7 @@ export default class UserController {
           throw new ApiError(401, 'Action non autorisée')
         }
       }
+
       throw new ApiError(422, 'L\'identifiant de l\'utilisateur est requis')
     })
   }
@@ -269,56 +275,58 @@ export default class UserController {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
 
-      if (id === ctx.user.id || isUserAdmin(ctx.user)) {
-        const userToDelete = await this.UserService.getOne(id, true)
+      if (id && ctx?.user) {
+        if (id === ctx.user.id || isUserAdmin(ctx.user)) {
+          const userToDelete = await this.UserService.getOne(id, true)
 
-        if (!userToDelete) {
-          throw new ApiError(422, 'L\'utilisateur n\'éxiste pas')
-        }
+          if (!userToDelete) {
+            throw new ApiError(422, 'L\'utilisateur n\'éxiste pas')
+          }
 
-        if (userToDelete.company.addressId) {
-          await this.AddressService.softDelete(userToDelete.company.addressId)
+          if (userToDelete.company.addressId) {
+            await this.AddressService.softDelete(userToDelete.company.addressId)
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.ADDRESS,
-            field: 'id',
-            id: userToDelete.company.addressId,
-          }))
-        }
-
-        if (userToDelete.company.employeeIds?.length > 0) {
-          await this.EmployeeService.deleteMany(userToDelete.company.employeeIds)
-
-          await Promise.all(userToDelete.company.employeeIds.map(async id => {
             await this.redisCache.invalidate(generateRedisKey({
-              typeofEntity: EntitiesEnum.EMPLOYEE,
+              typeofEntity: EntitiesEnum.ADDRESS,
               field: 'id',
-              id,
+              id: userToDelete.company.addressId,
             }))
-          }))
+          }
+
+          if (userToDelete.company.employeeIds?.length > 0) {
+            await this.EmployeeService.deleteMany(userToDelete.company.employeeIds)
+
+            await Promise.all(userToDelete.company.employeeIds.map(async id => {
+              await this.redisCache.invalidate(generateRedisKey({
+                typeofEntity: EntitiesEnum.EMPLOYEE,
+                field: 'id',
+                id,
+              }))
+            }))
+          }
+
+          if (userToDelete.company.events?.length > 0) {
+            await Promise.all(userToDelete.company.events.map(async event => {
+              await this.EventService.deleteOneAndRelations(event)
+            }))
+          }
+
+          if (userToDelete.company.filesIds?.length > 0) {
+            await this.FileService.deleteManyfiles(userToDelete.company.filesIds)
+          }
+
+          const userDeleted = await this.repository.softDelete(id)
+
+          await this.redisCache.invalidate(`user-id-${id}`)
+
+          if (userDeleted) {
+            return res.status(204).json(userDeleted)
+          }
+
+          throw new ApiError(422, 'Utilisateur non supprimé')
+        } else {
+          throw new ApiError(401, 'Action non autorisée')
         }
-
-        if (userToDelete.company.events?.length > 0) {
-          await Promise.all(userToDelete.company.events.map(async event => {
-            await this.EventService.deleteOneAndRelations(event)
-          }))
-        }
-
-        if (userToDelete.company.filesIds?.length > 0) {
-          await this.FileService.deleteManyfiles(userToDelete.company.filesIds)
-        }
-
-        const userDeleted = await this.repository.softDelete(id)
-
-        await this.redisCache.invalidate(`user-id-${id}`)
-
-        if (userDeleted) {
-          return res.status(204).json(userDeleted)
-        }
-
-        throw new ApiError(422, 'Utilisateur non supprimé')
-      } else {
-        throw new ApiError(401, 'Action non autorisée')
       }
     })
   }
@@ -368,14 +376,16 @@ export default class UserController {
             },
           })
 
-          const userToSend = userResponse({ ...user, companyId: company?.id })
+          if (company) {
+            const userToSend = userResponse({ ...user, companyId: company?.id })
 
-          await this.saveUserInCache(userToSend)
+            await this.saveUserInCache(userToSend)
 
-          return res.status(200).json({
-            user: userToSend,
-            company,
-          })
+            return res.status(200).json({
+              user: userToSend,
+              company,
+            })
+          }
         } else {
           throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
         }
@@ -403,7 +413,7 @@ export default class UserController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
-      if (ctx.user.companyId) {
+      if (ctx?.user?.companyId) {
         const company = await this.companyRepository.findOne({
           where: { id: ctx.user.companyId },
           relations: ['events', 'events.partner'],
