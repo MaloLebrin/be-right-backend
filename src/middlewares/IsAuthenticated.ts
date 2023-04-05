@@ -5,6 +5,7 @@ import Context from '../context'
 import { UserEntity } from '../entity/UserEntity'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import { useEnv } from '../env'
+import type { ErrorType } from '../types'
 import { logger } from './loggerService'
 import { ApiError } from './ApiError'
 
@@ -48,7 +49,8 @@ export default async function isAuthenticated(req: Request, res: Response, next:
       success: false,
       message: 'Action non autorisée',
     })
-  } catch (error) {
+  } catch (err) {
+    const error = err as ErrorType
     logger.debug(error.message)
 
     logger.error(error)

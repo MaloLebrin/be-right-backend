@@ -36,7 +36,7 @@ export default class NotificationController {
       },
     })
 
-    return notificationSubscriptions.reduce((acc, subscriber) => [...acc, ...subscriber.notifications], [])
+    return notificationSubscriptions.reduce((acc, subscriber) => [...acc, ...subscriber.notifications], [] as NotificationEntity[])
   }
 
   public GetForUser = async (req: Request, res: Response) => {

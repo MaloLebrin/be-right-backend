@@ -1,4 +1,3 @@
-/* eslint-disable security/detect-object-injection */
 import type { Redis as RedisClient } from 'ioredis'
 import Redis from 'ioredis'
 import type { Logger } from 'pino'
@@ -6,9 +5,10 @@ import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
 import { parseRedisKey } from './utils/redisHelper'
+import { isProduction } from './utils/envHelper'
 
 export default class RedisCache {
-  private client: RedisClient
+  private client: RedisClient | undefined
   private connected = false
   private logger: Logger
 
@@ -21,24 +21,26 @@ export default class RedisCache {
         process.env.REDIS_HOST,
         {
           password: process.env.REDIS_PASSWORD,
-          showFriendlyErrorStack: true,
+          showFriendlyErrorStack: !isProduction(),
         },
       )
       this.connected = true
     }
 
-    this.client.on('error', (err: Error) => {
-      this.logger.error(err.message)
-    })
+    if (this.client) {
+      this.client.on('error', (err: Error) => {
+        this.logger.error(err.message)
+      })
 
-    this.client.on('connect', () => {
-      this.logger.info('Connected successfully to redis')
-    })
+      this.client.on('connect', () => {
+        this.logger.info('Connected successfully to redis')
+      })
+    }
   }
 
   async save<T>(key: RedisKeys, value: T, expireTime?: number): Promise<void> {
-    await this.client.set(key, JSON.stringify(value))
-    await this.client.expire(key, expireTime || 3600)
+    await this.client?.set(key, JSON.stringify(value))
+    await this.client?.expire(key, expireTime || 3600)
   }
 
   async multiSave<T extends BaseEntity>({
@@ -61,7 +63,7 @@ export default class RedisCache {
   }
 
   async invalidate(key: string): Promise<void> {
-    await this.client.del(key)
+    await this.client?.del(key)
   }
 
   private parseArray<T>(strings: string[]): T[] {
@@ -74,11 +76,11 @@ export default class RedisCache {
       return await fetcher()
     }
 
-    const value = await this.client.get(key)
+    const value = await this.client?.get(key)
 
     if (value) {
       this.logger.info('redis value retrieved')
-      await this.client.expire(key, 3600)
+      await this.client?.expire(key, 3600)
       return JSON.parse(value)
     }
 
@@ -108,7 +110,7 @@ export default class RedisCache {
       return await fetcher()
     }
 
-    const value = await this.client.mget(keys)
+    const value = await this.client?.mget(keys)
 
     if (!value || value.filter(str => str).length < 1) {
       this.logger.info('no value in redis cache')
@@ -126,7 +128,7 @@ export default class RedisCache {
 
       const isEveryDataInCache = keys.every(key => {
         const { value, field } = parseRedisKey(key)
-        const finalValue = array.find(item => item[field] === value)
+        const finalValue = array.find(item => item[field as keyof T] === value)
         return finalValue !== undefined && finalValue !== null
       })
 
