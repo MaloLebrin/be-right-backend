@@ -28,6 +28,10 @@ export class AnswerSpecificController {
   private async isValidToken(token: string, email: string) {
     const { JWT_SECRET } = useEnv()
 
+    if (!JWT_SECRET) {
+      throw new ApiError(401, 'Secret manquant')
+    }
+
     const decodedToken = verify(token, JWT_SECRET) as DecodedJWTToken | string
 
     if (decodedToken && typeof decodedToken !== 'string') {
@@ -41,6 +45,10 @@ export class AnswerSpecificController {
 
   public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      if (!req.query.token || !req.query.email) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
       const token = req.query.token.toString()
       const email = req.query.email.toString()
 

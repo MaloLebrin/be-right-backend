@@ -4,6 +4,7 @@ import type AnswerEntity from '../../entity/AnswerEntity'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import type EventEntity from '../../entity/EventEntity'
 import type { NotificationTypeEnum } from '../../types'
+import { ApiError } from '../../middlewares/ApiError'
 
 export class EventNotificationService {
   repository: Repository<EventNotificationEntity>
@@ -43,10 +44,14 @@ export class EventNotificationService {
     event?: EventEntity
     answer?: AnswerEntity
   }) => {
+    if (!event && !answer) {
+      throw new ApiError(422, 'Paramètres manquants')
+    }
+
     const eventNotifCreated = this.repository.create({
       name,
-      event: event || null,
-      answer: answer || null,
+      event: event || undefined,
+      answer: answer || undefined,
     })
     await this.repository.save(eventNotifCreated)
     return eventNotifCreated

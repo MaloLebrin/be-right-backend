@@ -26,7 +26,7 @@ export class AddresController {
       const id = parseInt(req.params.id)
 
       if (id) {
-        const address = await this.redisCache.get<AddressEntity>(
+        const address = await this.redisCache.get<AddressEntity | null>(
           generateRedisKey({
             field: 'id',
             typeofEntity: EntitiesEnum.ADDRESS,

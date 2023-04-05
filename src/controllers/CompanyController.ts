@@ -41,6 +41,10 @@ export class CompanyController {
 
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const companyId = ctx.user.companyId
 
       if (id && companyId) {
@@ -95,6 +99,10 @@ export class CompanyController {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       const companyId = ctx.user.companyId
       if (id && companyId) {

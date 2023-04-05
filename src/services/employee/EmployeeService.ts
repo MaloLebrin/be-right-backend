@@ -4,6 +4,7 @@ import { CompanyEntity } from '../../entity/Company.entity'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { UserEntity } from '../../entity/UserEntity'
 import AnswerService from '../AnswerService'
+import { ApiError } from '../../middlewares/ApiError'
 
 export default class EmployeeService {
   repository: Repository<EmployeeEntity>
@@ -20,6 +21,10 @@ export default class EmployeeService {
 
   async createOne(employee: Partial<EmployeeEntity>, companyId: number) {
     const company = await this.companyRepository.findOne({ where: { id: companyId } })
+
+    if (!company) {
+      throw new ApiError(422, 'l\'entreprise n\'existe pas')
+    }
     employee.company = company
     const newEmployee = this.repository.create(employee)
 

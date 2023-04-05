@@ -24,6 +24,10 @@ export default class BugReportController {
       const { bugReport }: { bugReport: BugReportEntity } = req.body
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const userId = ctx.user.id
       const bugReportToCreate = {
         ...bugReport,
@@ -81,7 +85,7 @@ export default class BugReportController {
       const [data, total] = await this.bugRepository.findAndCount({
         take,
         skip,
-        where,
+        where: where || {},
       })
 
       return res.status(200).json({

@@ -26,7 +26,7 @@ export class MailjetService {
       IS_FEATURE_MAIL_ENABLED,
     } = useEnv()
 
-    if (IS_FEATURE_MAIL_ENABLED) {
+    if (IS_FEATURE_MAIL_ENABLED && MJ_APIKEY_PUBLIC && MJ_APIKEY_PRIVATE && ADMIN_EMAIL) {
       this.PublicKey = MJ_APIKEY_PUBLIC
       this.SecretKey = MJ_APIKEY_PRIVATE
       this.mailJetClient = this.connection()

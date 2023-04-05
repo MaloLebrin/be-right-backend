@@ -51,7 +51,12 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
-      let userId = null
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
+      let userId: null | number = null
       if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
@@ -94,7 +99,11 @@ export default class EventController {
       if (id) {
         const ctx = Context.get(req)
 
-        const event = await this.redisCache.get<EventEntity>(
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
+        const event = await this.redisCache.get<EventEntity | null>(
           generateRedisKey({
             field: 'id',
             typeofEntity: EntitiesEnum.EVENT,
@@ -102,7 +111,7 @@ export default class EventController {
           }),
           () => this.EventService.getOneEvent(id))
 
-        if (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId) {
+        if (isUserAdmin(ctx.user) || event?.companyId === ctx.user.companyId) {
           return res.status(200).json(event)
         } else {
           throw new ApiError(401, 'Action non autorisée')
@@ -142,6 +151,10 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const eventsIds = ctx.user.company.eventIds
 
       if (eventsIds && eventsIds.length > 0) {
@@ -164,6 +177,10 @@ export default class EventController {
   public getAllDeletedForUser = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
 
       if (ctx.user?.id) {
         const events = await this.repository.find({
@@ -193,6 +210,10 @@ export default class EventController {
 
       const whereFields = {
         ...where,
+      }
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
       }
 
       if (!isUserAdmin(ctx.user)) {
@@ -227,10 +248,22 @@ export default class EventController {
       if (id) {
         const ctx = Context.get(req)
 
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
         const eventFinded = await this.EventService.getOneEvent(id)
+
+        if (!eventFinded) {
+          throw new ApiError(422, 'L\'événement n\'éxiste pas')
+        }
 
         if (isUserAdmin(ctx.user) || eventFinded.companyId === ctx.user.companyId) {
           const eventUpdated = await this.EventService.updateOneEvent(id, event as EventEntity)
+
+          if (!eventUpdated) {
+            throw new ApiError(422, 'Événement non mis à jour')
+          }
 
           await this.saveEventRedisCache(eventUpdated)
 
@@ -248,6 +281,11 @@ export default class EventController {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
         const user = ctx.user
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 

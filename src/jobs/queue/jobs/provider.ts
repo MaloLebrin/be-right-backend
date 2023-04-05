@@ -11,7 +11,7 @@ export const JobDictonary = new Map([
   [CreateEventNotificationsJob.name, CreateEventNotificationsJob],
 ])
 
-export const getJobInstance = (data: JobImp): JobImp => {
+export const getJobInstance = (data: JobImp): JobImp | null => {
   const jobClass = JobDictonary.get(data.name)
   if (jobClass) {
     return plainToInstance(jobClass, data)

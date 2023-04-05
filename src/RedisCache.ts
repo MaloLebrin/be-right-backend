@@ -15,7 +15,7 @@ export default class RedisCache {
   constructor() {
     this.logger = logger
 
-    if (!this.connected) {
+    if (!this.connected && process.env.REDIS_PORT && process.env.REDIS_HOST) {
       this.client = new Redis(
         parseInt(process.env.REDIS_PORT),
         process.env.REDIS_HOST,
@@ -68,7 +68,7 @@ export default class RedisCache {
     return strings.filter(st => st).map(str => JSON.parse(str))
   }
 
-  async get<T>(key: RedisKeys, fetcher: () => Promise<T>): Promise<T> {
+  async get<T>(key: RedisKeys, fetcher: () => Promise<T>): Promise<T | undefined> {
     if (!this.connected) {
       this.logger.info('redis not connected')
       return await fetcher()
@@ -100,7 +100,7 @@ export default class RedisCache {
     typeofEntity: EntitiesEnum
     fetcher: () => Promise<T[]>
     objKey?: RedisEntitiesField
-  }): Promise<T[]> {
+  }): Promise<T[] | undefined> {
     const field = objKey || 'id'
 
     if (!this.connected) {
@@ -122,7 +122,7 @@ export default class RedisCache {
     }
 
     if (value) {
-      const array = this.parseArray<T>(value)
+      const array = this.parseArray<T>(value.filter(val => val) as string[])
 
       const isEveryDataInCache = keys.every(key => {
         const { value, field } = parseRedisKey(key)

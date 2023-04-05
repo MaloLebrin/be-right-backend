@@ -5,6 +5,9 @@ export function isAnswerSigned(answer: AnswerEntity): boolean {
 }
 
 export function isAnswerTruthy(answer: AnswerEntity): boolean {
+  if (answer.hasSigned === null) {
+    return false
+  }
   return answer.hasSigned
 }
 

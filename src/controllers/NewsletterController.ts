@@ -24,9 +24,13 @@ export default class NewsletterController {
 
       const newsletterRecipient = {
         email,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        companyName: companyName || null,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        companyName: companyName || undefined,
+      }
+
+      if (!newsletterRecipient) {
+        throw new ApiError(422, 'paramètres manquant')
       }
 
       const recipientAlreadyExist = await this.repository.findOneBy({ email })
@@ -51,9 +55,9 @@ export default class NewsletterController {
         },
       })
       if (user) {
-        newsletterRecipient.firstName = user.firstName
-        newsletterRecipient.lastName = user.lastName
-        newsletterRecipient.companyName = user.company.name
+        newsletterRecipient.firstName = user.firstName || undefined
+        newsletterRecipient.lastName = user.lastName || undefined
+        newsletterRecipient.companyName = user.company.name || undefined
       }
 
       const recipient = this.repository.create(newsletterRecipient)
@@ -69,7 +73,7 @@ export default class NewsletterController {
       const [newsletterRecipients, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: where || {},
       })
 
       return res.status(200).json({

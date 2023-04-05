@@ -10,6 +10,10 @@ export default function checkUserRole(roles: Role | Role[]) {
     logger.info(`${req.url} checkRole started`)
     const ctx = Context.get(req)
 
+    if (!ctx || !ctx.user) {
+      throw new ApiError(401, 'Action non autorisée')
+    }
+
     const user = ctx.user
     if (user && user.roles) {
       if (isArray(roles)) {

@@ -55,7 +55,12 @@ export default class EmployeeController {
       const { employee, address }: EmployeeCreateOneRequest = req.body
 
       const ctx = Context.get(req)
-      let userId = null
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
+      let userId: null | number = null
 
       if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
@@ -83,9 +88,11 @@ export default class EmployeeController {
 
         const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
 
-        await this.saveEmployeeRedisCache(employeeToSend)
+        if (employeeToSend) {
+          await this.saveEmployeeRedisCache(employeeToSend)
 
-        return res.status(200).json(employeeToSend)
+          return res.status(200).json(employeeToSend)
+        }
       }
     })
   }
@@ -96,7 +103,12 @@ export default class EmployeeController {
 
       if (employees.length > 0) {
         const ctx = Context.get(req)
-        let userId = null
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
+        let userId: null | number = null
 
         if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
@@ -104,19 +116,26 @@ export default class EmployeeController {
           userId = ctx.user.id
         }
 
+        if (!userId) {
+          throw new ApiError(422, 'Paramètres manquants')
+        }
+
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
 
           if (!isEmployeeAlreadyExist) {
-            const emp = await this.EmployeeService.createOne(employee, userId)
+            const emp = await this.EmployeeService.createOne(employee, userId!)
 
             if (emp) {
-              await this.AddressService.createOne({ address, employeeId: emp.id })
-            }
-            await this.RediceService.updateCurrentUserInCache({ userId })
+              if (address) {
+                await this.AddressService.createOne({ address, employeeId: emp.id })
+              }
 
-            await this.saveEmployeeRedisCache(emp)
-            return this.EmployeeService.getOne(emp.id)
+              await this.RediceService.updateCurrentUserInCache({ userId: userId || undefined })
+
+              await this.saveEmployeeRedisCache(emp)
+              return this.EmployeeService.getOne(emp.id)
+            }
           }
         }))
         return res.status(200).json(newEmployees)
@@ -132,7 +151,12 @@ export default class EmployeeController {
 
       if (employees.length > 0) {
         const ctx = Context.get(req)
-        let userId = null
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
+        let userId: undefined | number
 
         if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
           userId = parseInt(req.params.id)
@@ -140,23 +164,28 @@ export default class EmployeeController {
           userId = ctx.user.id
         }
 
+        if (!userId) {
+          throw new ApiError(422, 'Paramètres manquants')
+        }
+
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
 
           if (!isEmployeeAlreadyExist) {
-            const emp = await this.EmployeeService.createOne(employee, userId)
+            const emp = await this.EmployeeService.createOne(employee, userId!)
 
             if (emp) {
-              await this.AddressService.createOne({ address, employeeId: emp.id })
+              if (address) {
+                await this.AddressService.createOne({ address, employeeId: emp.id })
+              }
+              await this.RediceService.updateCurrentUserInCache({ userId })
+              await this.saveEmployeeRedisCache(emp)
+              return this.EmployeeService.getOne(emp.id)
             }
-
-            await this.RediceService.updateCurrentUserInCache({ userId })
-            await this.saveEmployeeRedisCache(emp)
-            return this.EmployeeService.getOne(emp.id)
           }
-        }))
+        }).filter(emp => emp))
 
-        const newEmployeesIds = newEmployees.map(employee => employee.id)
+        const newEmployeesIds = newEmployees.map(employee => employee!.id)
         await this.AnswerService.createMany(eventId, newEmployeesIds)
         await this.EventService.getNumberSignatureNeededForEvent(eventId)
 
@@ -174,7 +203,7 @@ export default class EmployeeController {
       const id = parseInt(req.params.id)
 
       if (id) {
-        const employee = await this.redisCache.get<EmployeeEntity>(
+        const employee = await this.redisCache.get<EmployeeEntity | null>(
           generateRedisKey({
             field: 'id',
             typeofEntity: EntitiesEnum.EMPLOYEE,
@@ -257,7 +286,7 @@ export default class EmployeeController {
       const [employees, total] = await this.employeeRepository.findAndCount({
         take,
         skip,
-        where,
+        where: where || {},
       })
 
       return res.status(200).json({
@@ -280,7 +309,10 @@ export default class EmployeeController {
 
       if (id) {
         const employeeUpdated = await this.EmployeeService.updateOne(id, employee)
-        await this.saveEmployeeRedisCache(employeeUpdated)
+
+        if (employeeUpdated) {
+          await this.saveEmployeeRedisCache(employeeUpdated)
+        }
 
         return res.status(200).json(employeeUpdated)
       }
@@ -306,11 +338,16 @@ export default class EmployeeController {
 
       if (id) {
         const ctx = Context.get(req)
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
         const userId = ctx.user.id
 
         const getEmployee = await this.EmployeeService.getOne(id)
 
-        if (getEmployee.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
+        if (getEmployee?.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           await this.EmployeeService.deleteOne(id)
 
           await this.redisCache.invalidate(generateRedisKey({
@@ -332,6 +369,11 @@ export default class EmployeeController {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const ctx = Context.get(req)
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       const userId = ctx.user?.id
 
       if (fileRecieved && userId) {
@@ -367,11 +409,11 @@ export default class EmployeeController {
                 },
                 employeeId: emp.id,
               })
-            }
-            await this.RediceService.updateCurrentUserInCache({ userId })
+              await this.RediceService.updateCurrentUserInCache({ userId })
 
-            await this.saveEmployeeRedisCache(emp)
-            return this.EmployeeService.getOne(emp.id)
+              await this.saveEmployeeRedisCache(emp)
+              return this.EmployeeService.getOne(emp.id)
+            }
           }
         }))
         return res.status(200).json(newEmployees)

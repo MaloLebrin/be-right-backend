@@ -17,11 +17,13 @@ export default class FileController {
   getManager: EntityManager
   FileService: FileService
   repository: Repository<FileEntity>
+  UserRepository: Repository<UserEntity>
 
   constructor() {
     this.getManager = APP_SOURCE.manager
     this.FileService = new FileService(APP_SOURCE)
     this.repository = APP_SOURCE.getRepository(FileEntity)
+    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
   }
 
   public newFile = async (req: Request, res: Response) => {
@@ -34,18 +36,30 @@ export default class FileController {
 
       const ctx = Context.get(req)
 
-      let userId = null
+      let userId: null | number = null
 
-      let user = ctx.user
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
+      if (!fileRecieved) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
+      let user: null | UserEntity = ctx.user
       if (user.roles === Role.ADMIN) {
         if (req.params.id) {
           userId = parseInt(req.params.id)
-          user = await this.getManager.findOne(UserEntity, userId)
+          user = await this.UserRepository.findOneBy({ id: userId })
         } else {
           userId = user.id
         }
       } else {
         userId = user.id
+      }
+
+      if (!user) {
+        throw new ApiError(401, 'Problème d\'authentification')
       }
 
       const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
@@ -86,6 +100,11 @@ export default class FileController {
 
       if (fileRecieved) {
         const ctx = Context.get(req)
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
         const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
         return res.status(200).json(profilePicture)
       }
@@ -99,6 +118,11 @@ export default class FileController {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'vous n\'êtes pas identifié')
+        }
+
         const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
         return res.status(200).json(logo)
       }
@@ -188,6 +212,10 @@ export default class FileController {
       const eventId = parseInt(req.params.eventId)
       const ctx = Context.get(req)
 
+      if (!ctx?.user) {
+        throw new ApiError(401, 'vous n\'êtes pas identifié')
+      }
+
       if (ctx.user.companyId && eventId) {
         const files = await this.repository.find({ where: { company: { id: ctx.user.companyId }, eventId } })
 
@@ -205,7 +233,7 @@ export default class FileController {
       const [data, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: where || {},
       })
 
       return res.status(200).json({

@@ -15,6 +15,8 @@ import { GroupService } from '../../services/employee/GroupService'
 import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { BadgeEntity } from '../../entity/repositories/Badge.entity'
+import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
+import { ApiError } from '../../middlewares/ApiError'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -115,7 +117,7 @@ export class UserSeedClass extends BaseSeedClass {
           return emp
         }
       }
-    }))
+    }).filter(emp => emp)) as EmployeeEntity[]
 
     const group = await this.GroupService.createOne({
       name: 'Armée de Dumbledore',
@@ -136,6 +138,10 @@ export class UserSeedClass extends BaseSeedClass {
         email: 'lee.jordan@poudlard.com',
       },
     })
+
+    if (!partner) {
+      throw new ApiError(422, 'le partner n\'existe pas')
+    }
 
     const recipients = employees
 
@@ -193,8 +199,11 @@ export class UserSeedClass extends BaseSeedClass {
     })
 
     const badge = await this.getManager.findOne(BadgeEntity, { where: { name: BadgeEnumName.CREATE_10_RECIPIENTS } })
-    user.badges = [badge]
-    await this.getManager.save(UserEntity, user)
+
+    if (badge) {
+      user.badges = [badge]
+      await this.getManager.save(UserEntity, user)
+    }
 
     newCompany.users = [user]
 
@@ -216,13 +225,15 @@ export class UserSeedClass extends BaseSeedClass {
     const employees = await Promise.all(employeesFixtureCompanyPremium.map(
       async item => {
         const emp = await this.EmployeeService.createOne(item.employee, newCompany.id)
-        await this.AddressService.createOne({
-          address: item.address,
-          employeeId: emp.id,
-        })
-        return emp
+        if (emp) {
+          await this.AddressService.createOne({
+            address: item.address,
+            employeeId: emp.id,
+          })
+          return emp
+        }
       },
-    ))
+    ).filter(emp => emp)) as EmployeeEntity[]
 
     await this.seedCSVEmployee(newCompany.id)
 
@@ -259,13 +270,16 @@ export class UserSeedClass extends BaseSeedClass {
         },
       },
     })
-    const notif = this.getManager.create(NotificationEntity, {
-      eventNotification: eventNotif,
-      type: NotificationTypeEnum.EVENT_CREATED,
-      subscriber,
-    })
 
-    await this.getManager.save(notif)
+    if (eventNotif && subscriber) {
+      const notif = this.getManager.create(NotificationEntity, {
+        eventNotification: eventNotif,
+        type: NotificationTypeEnum.EVENT_CREATED,
+        subscriber,
+      })
+
+      await this.getManager.save(notif)
+    }
 
     await this.AddressService.createOne({
       address: eventFixtureCompanyPremium.address,
@@ -299,12 +313,14 @@ export class UserSeedClass extends BaseSeedClass {
           },
         },
       })
-      const answerNotif = this.getManager.create(NotificationEntity, {
-        eventNotification: answerEventNotif,
-        type: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
-        subscriber,
-      })
-      await this.getManager.save(answerNotif)
+      if (answerEventNotif && subscriber) {
+        const answerNotif = this.getManager.create(NotificationEntity, {
+          eventNotification: answerEventNotif,
+          type: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
+          subscriber,
+        })
+        await this.getManager.save(answerNotif)
+      }
     }
 
     const answer2 = await this.AnswerService.getOneAnswerForEventEmployee({
@@ -332,12 +348,15 @@ export class UserSeedClass extends BaseSeedClass {
           },
         },
       })
-      const answerNotif2 = this.getManager.create(NotificationEntity, {
-        eventNotification: answerEventNotif2,
-        type: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
-        subscriber,
-      })
-      await this.getManager.save(answerNotif2)
+
+      if (answerEventNotif2 && subscriber) {
+        const answerNotif2 = this.getManager.create(NotificationEntity, {
+          eventNotification: answerEventNotif2,
+          type: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
+          subscriber,
+        })
+        await this.getManager.save(answerNotif2)
+      }
     }
   }
 
@@ -387,13 +406,15 @@ export class UserSeedClass extends BaseSeedClass {
     const employees = await Promise.all(employeesFixtureCompanyMedium.map(
       async item => {
         const emp = await this.EmployeeService.createOne(item.employee, newCompany.id)
-        await this.AddressService.createOne({
-          address: item.address,
-          employeeId: emp.id,
-        })
-        return emp
+        if (emp) {
+          await this.AddressService.createOne({
+            address: item.address,
+            employeeId: emp.id,
+          })
+          return emp
+        }
       },
-    ))
+    ).filter(emp => emp)) as EmployeeEntity[]
 
     const employeeIds = employees.map(employee => employee.id)
 
@@ -402,6 +423,10 @@ export class UserSeedClass extends BaseSeedClass {
         email: 'rita.skitter@gazette.com',
       },
     })
+
+    if (!partner) {
+      throw new ApiError(422, 'le partner n\'existe pas')
+    }
 
     const event = await this.EventService.createOneEvent(
       {
@@ -426,22 +451,26 @@ export class UserSeedClass extends BaseSeedClass {
       employeeId: employeeIds[0],
     })
 
-    await this.AnswerService.updateOneAnswer(answer.id, {
-      ...answer,
-      hasSigned: true,
-      signedAt: new Date(),
-    })
+    if (answer) {
+      await this.AnswerService.updateOneAnswer(answer.id, {
+        ...answer,
+        hasSigned: true,
+        signedAt: new Date(),
+      })
+    }
 
     const answer2 = await this.AnswerService.getOneAnswerForEventEmployee({
       eventId: event.id,
       employeeId: employeeIds[1],
     })
 
-    await this.AnswerService.updateOneAnswer(answer2.id, {
-      ...answer2,
-      hasSigned: false,
-      signedAt: new Date(),
-    })
+    if (answer2) {
+      await this.AnswerService.updateOneAnswer(answer2.id, {
+        ...answer2,
+        hasSigned: false,
+        signedAt: new Date(),
+      })
+    }
   }
 
   public async SeedDataBase() {

@@ -18,7 +18,7 @@ export function isNumber(value: any): value is number {
   return getType(value) === 'Number'
 }
 
-export function parseBoolean(v: string) {
+export function parseBoolean(v: string | undefined) {
   switch (v) {
     case 'false':
       return false

@@ -12,9 +12,9 @@ export class UserEntity extends BaseAuthEntity {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
-  @OneToOne(() => FileEntity, { cascade: true })
+  @OneToOne(() => FileEntity, { cascade: true, nullable: true })
   @JoinColumn()
-  profilePicture: FileEntity
+  profilePicture: FileEntity | null
 
   @RelationId((user: UserEntity) => user.profilePicture)
   profilePictureId: number
