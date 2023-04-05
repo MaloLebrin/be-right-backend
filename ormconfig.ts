@@ -4,6 +4,11 @@ export const dataBaseConfig = {
   production: {
     name: 'production',
     type: 'postgres',
+    host: 'postgres',
+    port: 5432,
+    username: process.env.DB_USERNAME_PROD,
+    password: process.env.DB_PASSWORD_PROD,
+    database: 'be-right-db',
     url: process.env.DATABASE_URL,
     synchronize: true,
     logging: false,
