@@ -106,6 +106,8 @@ export function createAppSource() {
     connectionsOptions = {
       ...dataBaseConfig.production as unknown as PostgresConnectionOptions,
     }
+
+    console.log(connectionsOptions, '<==== connectionsOptions')
   } else if (NODE_ENV === 'test') {
     connectionsOptions = {
       ...dataBaseConfig.test as unknown as PostgresConnectionOptions,
