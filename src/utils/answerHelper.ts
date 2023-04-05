@@ -18,11 +18,10 @@ export const secretAnswerKeys = [
 ]
 
 export function answerResponse(answer: AnswerEntity) {
-  const entityReturned = {}
+  const entityReturned: Partial<AnswerEntity> = {}
   for (const [key, value] of Object.entries(answer)) {
     if (!secretAnswerKeys.includes(key)) {
-      // eslint-disable-next-line security/detect-object-injection
-      entityReturned[key] = value
+      entityReturned[key as keyof Omit<AnswerEntity, 'id' | 'twoFactorSecret'>] = value
     }
   }
   return entityReturned as AnswerEntity
