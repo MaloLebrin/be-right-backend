@@ -1,5 +1,5 @@
 export function PasswordRecoveryTemplate(token: string, fullName: string) {
-  const link = `${process.env.FRONT_URL}/mot-de-passe-oublie?token=${token}`
+  const link = `${process.env.FRONT_URL}/modifier-mot-de-passe?token=${token}`
 
   return `
     <!doctype html>
