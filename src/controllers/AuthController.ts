@@ -3,7 +3,6 @@ import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import MailService from '../services/MailService'
 import { logger } from '../middlewares/loggerService'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
@@ -25,7 +24,6 @@ export default class AuthController {
     }
   }>
 
-  MailService: MailService
   MailjetService: MailjetService
   companyRepository: Repository<CompanyEntity>
   userRepository: Repository<UserEntity>
@@ -33,7 +31,6 @@ export default class AuthController {
   UserService: UserService
 
   constructor() {
-    this.MailService = new MailService()
     this.MailjetService = new MailjetService(APP_SOURCE)
     this.logger = logger
     this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
