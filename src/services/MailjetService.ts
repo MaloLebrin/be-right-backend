@@ -7,6 +7,8 @@ import { useEnv } from '../env'
 import { ApiError } from '../middlewares/ApiError'
 import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
+import type { UserEntity } from '../entity/UserEntity'
+import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
 
 export class MailjetService {
   SecretKey: string
@@ -131,6 +133,52 @@ export class MailjetService {
       logger.warn('Send email feature in not enabled')
     } catch (error) {
       console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendRecoveryPasswordEmail = async ({ user }: { user: UserEntity }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const fullName = this.getFullName(user)
+      const template = PasswordRecoveryTemplate(user.twoFactorRecoveryCode, fullName)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: user.email,
+                  Name: fullName,
+                },
+              ],
+              TextPart: 'Be Right - Réinitialisez votre mot de passe',
+              HTMLPart: template,
+              TemplateLanguage: true,
+              Subject: 'Be Right - Réinitialisez votre mot de passe',
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
+
+      throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
     }
   }
 }
