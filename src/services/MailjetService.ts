@@ -145,7 +145,11 @@ export class MailjetService {
       }
 
       const fullName = this.getFullName(user)
-      const template = PasswordRecoveryTemplate(user.twoFactorRecoveryCode, fullName)
+      const template = PasswordRecoveryTemplate({
+        token: user.twoFactorRecoveryCode,
+        fullName,
+        email: user.email,
+      })
 
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })

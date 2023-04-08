@@ -1,5 +1,7 @@
-export function PasswordRecoveryTemplate(token: string, fullName: string) {
-  const link = `${process.env.FRONT_URL}/modifier-mot-de-passe?token=${token}`
+import { isProduction } from '../envHelper'
+
+export function PasswordRecoveryTemplate({ token, fullName, email }: { token: string; fullName: string; email: string }) {
+  const link = `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${email}&token=${token}`
 
   return `
     <!doctype html>
