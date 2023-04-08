@@ -90,13 +90,29 @@ export default class AuthController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      const user = await this.getUserByMail(email)
+      const user = await this.userRepository.findOne({
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          twoFactorSecret: true,
+          twoFactorRecoveryCode: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          token: true,
+          salt: true,
+        },
+      })
 
       if (!user) {
         throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
       }
 
-      if (user.twoFactorRecoveryCode !== twoFactorRecoveryCode || email !== user.email) {
+      const hash = generateHash(user.twoFactorSecret, email)
+
+      if (user.twoFactorRecoveryCode !== hash || email !== user.email) {
         throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
       }
 
