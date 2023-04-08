@@ -77,8 +77,8 @@ dependencies:
     specifier: 10.9.1
     version: 10.9.1(@types/node@18.15.10)(typescript@5.0.2)
   typeorm:
-    specifier: 0.3.12
-    version: 0.3.12(ioredis@5.3.1)(pg@8.10.0)(redis@4.6.5)(ts-node@10.9.1)
+    specifier: 0.3.13
+    version: 0.3.13(ioredis@5.3.1)(pg@8.10.0)(redis@4.6.5)(ts-node@10.9.1)
   uid2:
     specifier: 1.0.0
     version: 1.0.0
@@ -1622,11 +1622,6 @@ packages:
     engines: {node: '>= 6'}
     dev: false
     optional: true
-
-  /date-fns@2.29.3:
-    resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
-    engines: {node: '>=0.11'}
-    dev: false
 
   /dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
@@ -4978,8 +4973,8 @@ packages:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
     dev: false
 
-  /typeorm@0.3.12(ioredis@5.3.1)(pg@8.10.0)(redis@4.6.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-sYSxBmCf1nJLLTcYtwqZ+lQIRtLPyUoO93rHTOKk9vJCyT4UfRtU7oRsJvfvKP3nnZTD1hzz2SEy2zwPEN6OyA==}
+  /typeorm@0.3.13(ioredis@5.3.1)(pg@8.10.0)(redis@4.6.5)(ts-node@10.9.1):
+    resolution: {integrity: sha512-AqyKG4xtYST2zpgX/LdAleP8WAjwyO7EemRtG67EmmbFpWsPBk9BVr87wkN59huBned3qPEehVOSUQ81pNuH8A==}
     engines: {node: '>= 12.9.0'}
     hasBin: true
     peerDependencies:
@@ -4989,7 +4984,7 @@ packages:
       hdb-pool: ^0.1.6
       ioredis: ^5.0.4
       mongodb: ^3.6.0
-      mssql: ^7.3.0
+      mssql: ^9.1.1
       mysql2: ^2.2.5 || ^3.0.1
       oracledb: ^5.1.0
       pg: ^8.5.1
@@ -5041,7 +5036,6 @@ packages:
       buffer: 6.0.3
       chalk: 4.1.2
       cli-highlight: 2.1.11
-      date-fns: 2.29.3
       debug: 4.3.4
       dotenv: 16.0.3
       glob: 8.1.0
