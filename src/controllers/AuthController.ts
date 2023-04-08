@@ -3,9 +3,7 @@ import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import MailService from '../services/MailService'
 import { logger } from '../middlewares/loggerService'
-import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
@@ -14,6 +12,7 @@ import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
 import UserService from '../services/UserService'
 import { userResponse } from '../utils/userHelper'
+import { MailjetService } from '../services'
 
 export default class AuthController {
   logger: Logger<{
@@ -25,14 +24,14 @@ export default class AuthController {
     }
   }>
 
-  MailService: MailService
+  MailjetService: MailjetService
   companyRepository: Repository<CompanyEntity>
   userRepository: Repository<UserEntity>
   SubscriptionService: SubscriptionService
   UserService: UserService
 
   constructor() {
-    this.MailService = new MailService()
+    this.MailjetService = new MailjetService(APP_SOURCE)
     this.logger = logger
     this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.userRepository = APP_SOURCE.getRepository(UserEntity)
@@ -45,10 +44,13 @@ export default class AuthController {
   }
 
   public forgotPassword = async (req: Request, res: Response) => {
-    const { MAIL_ADRESS } = useEnv()
-
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
+
+      if (!email) {
+        throw new ApiError(422, 'Email manquant')
+      }
+
       const user = await this.userRepository.findOne({
         where: {
           email,
@@ -73,23 +75,7 @@ export default class AuthController {
       user.twoFactorSecret = twoFactorSecret
       user.twoFactorRecoveryCode = twoFactorRecoveryCode
 
-      const transporter = await this.MailService.getConnection()
-      const { emailBody, emailText } = this.MailService.getResetPasswordTemplate(user, twoFactorRecoveryCode)
-
-      transporter.sendMail({
-        from: `${MAIL_ADRESS}`,
-        to: email,
-        subject: 'Récupération de mot de passe Be-Right',
-        html: emailBody,
-        text: emailText,
-      }, err => {
-        if (err) {
-          this.logger.debug(err)
-          return console.error(err)
-        }
-
-        this.logger.info('Message sent successfully.')
-      })
+      await this.MailjetService.sendRecoveryPasswordEmail({ user })
 
       await this.userRepository.save(user)
       return res.status(200).json({ message: 'Email envoyé', isSuccess: true })
@@ -100,13 +86,33 @@ export default class AuthController {
     await wrapperRequest(req, res, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
-      const user = await this.getUserByMail(email)
+      if (!email || !twoFactorRecoveryCode || !password) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
+      const user = await this.userRepository.findOne({
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          twoFactorSecret: true,
+          twoFactorRecoveryCode: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          token: true,
+          salt: true,
+        },
+      })
 
       if (!user) {
         throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
       }
 
-      if (user.twoFactorRecoveryCode !== twoFactorRecoveryCode || email !== user.email) {
+      const hash = generateHash(user.twoFactorSecret, email)
+
+      if (user.twoFactorRecoveryCode !== hash || email !== user.email) {
         throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
       }
 
