@@ -35,7 +35,7 @@ export default class AnswerEntity extends BaseEntity {
 
   @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })
-  employee: number | EmployeeEntity
+  employee: EmployeeEntity
 
   @RelationId((answer: AnswerEntity) => answer.employee)
   employeeId: number

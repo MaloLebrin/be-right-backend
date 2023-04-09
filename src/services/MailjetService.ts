@@ -9,6 +9,9 @@ import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 import type { UserEntity } from '../entity/UserEntity'
 import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
+import { RaiseAnswerTemplate } from '../utils/mailJetTemplates/RaiseAnswerTemplate'
+import type EventEntity from '../entity/EventEntity'
+import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 
 export class MailjetService {
   SecretKey: string
@@ -60,15 +63,12 @@ export class MailjetService {
       From: this.FromObj,
       To: [
         {
-          // FIXME
-          Email: 'malolebrin@icloud.com',
-          // Email: employee.email,
+          Email: employee.email,
           Name: this.getFullName(employee),
         },
       ],
       Subject: 'Vous avez un document à signer',
-      // TemplateID: 4583388,
-      // TemplateLanguage: true,
+      TemplateLanguage: true,
       TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
       HTMLPart: template || '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
       data: { prénom: employee.firstName },
@@ -167,6 +167,63 @@ export class MailjetService {
               HTMLPart: template,
               TemplateLanguage: true,
               Subject: 'Be Right - Réinitialisez votre mot de passe',
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
+
+      throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendRaiseAnswerEmail = async ({
+    owner,
+    event,
+    employee,
+  }:
+  {
+    owner: UserEntity
+    event: EventEntity
+    employee: EmployeeEntity
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const fullName = this.getFullName(employee)
+      const template = RaiseAnswerTemplate({
+        owner,
+        event,
+      })
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: employee.email,
+                  Name: fullName,
+                },
+              ],
+              TextPart: 'Be Right - Vous avez un document à signer',
+              HTMLPart: template,
+              TemplateLanguage: true,
+              Subject: 'Be Right - Vous avez un document à signer',
             },
           ],
         })

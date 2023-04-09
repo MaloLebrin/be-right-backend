@@ -15,8 +15,9 @@ import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
-import { isUserAdmin } from '../utils/userHelper'
-import { answerResponse } from '../utils/answerHelper'
+import { isUserAdmin, isUserOwner } from '../utils/userHelper'
+import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
+import { CompanyEntity } from '../entity/Company.entity'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -24,12 +25,14 @@ export default class AnswerController {
   mailJetService: MailjetService
   redisCache: RedisCache
   employeeRepository: Repository<EmployeeEntity>
+  companyRepository: Repository<CompanyEntity>
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
     this.mailJetService = new MailjetService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
   }
 
@@ -245,6 +248,46 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       if (id) {
+        const answer = await this.AnswerService.getOne(id, true)
+
+        if (!answer || !answer.employee || !answer.event) {
+          throw new ApiError(422, 'Le destinataire ne participe pas à cet événement')
+        }
+
+        if (!isAnswerSigned(answer) && canAnswerBeRaise(answer)) {
+          const company = await this.companyRepository.findOne({
+            where: {
+              id: answer.event.companyId,
+            },
+            relations: {
+              users: true,
+            },
+          })
+
+          if (!company) {
+            throw new ApiError(422, 'Un problème est survenu')
+          }
+          const owner = company.users?.find(user => isUserOwner(user))
+
+          if (!owner) {
+            throw new ApiError(422, 'Un problème est survenu')
+          }
+
+          await this.mailJetService.sendRaiseAnswerEmail({
+            event: answer.event,
+            employee: answer.employee,
+            owner,
+          })
+
+          answer.mailSendAt = new Date()
+          await this.AnswerService.updateOneAnswer(id, answer)
+
+          return res.status(200).json({
+            message: 'Le destinataire a été relancé',
+            isSuccess: true,
+          })
+        }
+        throw new ApiError(422, 'Le destinataire à déja répondu')
       }
       throw new ApiError(422, 'Identifiant de l\'événement manquant')
     })

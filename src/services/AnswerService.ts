@@ -53,7 +53,7 @@ export default class AnswerService {
 
     const newAnswer = this.repository.create({
       event,
-      employee: employeeId,
+      employee: { id: employeeId },
       twoFactorCode: uid2(5).toUpperCase(),
       twoFactorSecret: uid2(128),
     })
@@ -153,7 +153,7 @@ export default class AnswerService {
     })
   }
 
-  public updateOneAnswer = async (id: number, answer: AnswerEntity) => {
+  public signOneAnswer = async (id: number, answer: AnswerEntity) => {
     const answerToUpdate = await this.getOne(id)
     const updatedAnswer = {
       ...answerToUpdate,
@@ -163,6 +163,11 @@ export default class AnswerService {
     }
     await this.repository.save(updatedAnswer)
     return updatedAnswer
+  }
+
+  public updateOneAnswer = async (id: number, answer: Partial<AnswerEntity>) => {
+    await this.repository.update(id, answer)
+    return this.getOne(id)
   }
 
   public deleteOne = async (id: number) => {
