@@ -1,16 +1,14 @@
-import type AnswerEntity from '../../entity/AnswerEntity'
 import type EventEntity from '../../entity/EventEntity'
-import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
+import type { UserEntity } from '../../entity/UserEntity'
 import { isProduction } from '../envHelper'
+import { getfullUsername } from '../userHelper'
 
 export function RaiseAnswerTemplate({
-  answer,
   event,
-  employee,
+  owner,
 }: {
-  answer: AnswerEntity
   event: EventEntity
-  employee: EmployeeEntity
+  owner: UserEntity
 }) {
   const link = `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/`
   return `
@@ -108,9 +106,9 @@ export function RaiseAnswerTemplate({
                                                       <tr>
                                                           <td align="left" style="font-size:0px;padding:0px 25px 0px 25px;padding-top:0px;padding-right:25px;padding-bottom:0px;padding-left:25px;word-break:break-word;">
                                                             <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                                <p style="text-align: left; margin: 10px 0; margin-top: 10px;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">difficultés à se connecter?</span></p>
-                                                                <p style="text-align: left; margin: 10px 0;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Réinitialiser votre mot de passe est facile.</span></p>
-                                                                <p style="text-align: left; margin: 10px 0;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Appuyez simplement sur le bouton ci-dessous et suivez les instructions. Vous serez opérationnel en un rien de temps.</span></p>
+                                                                <p style="text-align: left; margin: 10px 0; margin-top: 10px;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Vous n'avez toujours pas répondu !</span></p>
+                                                                <p style="text-align: left; margin: 10px 0;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Vous avez un doucment à signer pour l'événement ${event.name} organisé par ${getfullUsername(owner)}</span></p>
+                                                                <p style="text-align: left; margin: 10px 0;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Appuyez simplement sur le bouton ci-dessous et suivez les instructions.</span></p>
                                                                 <p style="text-align: left; margin: 10px 0; margin-bottom: 10px;"><span style="line-height:26px;letter-spacing:normal;font-size:16px;font-family:Arial;color:#27272b;text-align:left;">Si vous n'avez pas fait cette demande, veuillez ignorer cet e-mail.</span></p>
                                                             </div>
                                                           </td>
@@ -147,63 +145,6 @@ export function RaiseAnswerTemplate({
                   </td>
                 </tr>
             </table>
-            <table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" >
-                <tr>
-                  <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-                      <![endif]-->
-                      <div style="margin:0px auto;max-width:600px;">
-                        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-                            <tbody>
-                              <tr>
-                                  <td style="direction:ltr;font-size:0px;padding:20px 0px 20px 0px;text-align:center;">
-                                    <!--[if mso | IE]>
-                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                          <td class="" style="vertical-align:top;width:600px;" >
-                                              <![endif]-->
-                                              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                                                    <tbody>
-                                                      <tr>
-                                                          <td style="vertical-align:top;padding:0;">
-                                                            <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                                                                <tbody>
-                                                                  <tr>
-                                                                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                                                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                                            <p style="text-align: center; margin: 10px 0; margin-top: 10px; margin-bottom: 10px;"><span style="text-align:center;line-height:22px;font-size:16px;">Cet email a été envoyé à [[EMAIL_TO]], <a href="[[UNSUB_LINK_FR]]" style="color:inherit;text-decoration:none;" target="_blank">cliquez ici pour vous désabonner</a>.</span></p>
-                                                                        </div>
-                                                                      </td>
-                                                                  </tr>
-                                                                  <tr>
-                                                                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                                                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                                            <p style="text-align: center; margin: 10px 0; margin-top: 10px; margin-bottom: 10px;"><span style="text-align:center;line-height:22px;font-size:16px;">   FR</span></p>
-                                                                        </div>
-                                                                      </td>
-                                                                  </tr>
-                                                                </tbody>
-                                                            </table>
-                                                          </td>
-                                                      </tr>
-                                                    </tbody>
-                                                </table>
-                                              </div>
-                                              <!--[if mso | IE]>
-                                          </td>
-                                        </tr>
-                                    </table>
-                                    <![endif]-->
-                                  </td>
-                              </tr>
-                            </tbody>
-                        </table>
-                      </div>
-                      <!--[if mso | IE]>
-                  </td>
-                </tr>
-            </table>
-            <![endif]-->
           </div>
       </body>
     </html>
