@@ -62,10 +62,10 @@
     "@types/node-cron": "^3.0.7",
     "@types/nodemailer": "^6.4.7",
     "@types/uid2": "0.0.0",
-    "@vitest/ui": "^0.29.8",
+    "@vitest/ui": "^0.30.0",
     "eslint": "^8.36.0",
     "eslint-plugin-security": "^1.7.1",
     "typescript": "^5.0.0",
-    "vitest": "^0.29.8"
+    "vitest": "^0.30.0"
   }
 }
