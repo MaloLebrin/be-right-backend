@@ -136,6 +136,7 @@ async function StartApp() {
   app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
+  app.get('/answer/raise/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().raiseAnswer)
   app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
   app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
   app.patch('/answer/', [isAuthenticated], new AnswerController().updateOne)

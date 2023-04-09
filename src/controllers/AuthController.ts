@@ -39,10 +39,6 @@ export default class AuthController {
     this.UserService = new UserService(APP_SOURCE)
   }
 
-  private getUserByMail(email: string) {
-    return this.userRepository.findOneBy({ email })
-  }
-
   public forgotPassword = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const { email }: { email: string } = req.body
