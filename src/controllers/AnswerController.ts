@@ -240,4 +240,13 @@ export default class AnswerController {
       throw new ApiError(422, 'Identifiant de l\'événement manquant')
     })
   }
+
+  public raiseAnswer = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const id = parseInt(req.params.id)
+      if (id) {
+      }
+      throw new ApiError(422, 'Identifiant de l\'événement manquant')
+    })
+  }
 }
