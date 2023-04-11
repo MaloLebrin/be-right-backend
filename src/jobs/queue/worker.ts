@@ -33,6 +33,6 @@ export const defaultWorker = async (queueName: string) => {
   worker.on('failed', (job: Job) => {
     const instance = getJobInstance(job.data)
     instance?.failed(job)
-    logger.info(`${job.id} has failed`)
+    logger.info(`Job ${job.id} has failed`)
   })
 }

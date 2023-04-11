@@ -12,6 +12,12 @@ export class NotificationEntity extends BaseEntity {
   })
   type: NotificationTypeEnum
 
+  @Column()
+  title: string
+
+  @Column({ default: null, nullable: true })
+  description: string
+
   @Column({ default: null, nullable: true })
   readAt: Date
 

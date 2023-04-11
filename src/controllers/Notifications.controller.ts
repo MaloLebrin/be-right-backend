@@ -1,23 +1,27 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
+import { verify } from 'jsonwebtoken'
 import { APP_SOURCE } from '..'
 import Context from '../context'
 import { NotificationEntity } from '../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../entity/notifications/NotificationSubscription.entity'
-import type { UserEntity } from '../entity/UserEntity'
+import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
 import type { SSEManager } from '../serverSendEvent/SSEManager'
 import { NotificationService } from '../services/notifications/NotificationService'
 import { wrapperRequest } from '../utils'
 import { uniq } from '../utils/arrayHelper'
+import { useEnv } from '../env'
 
 export default class NotificationController {
   NotificationRepository: Repository<NotificationEntity>
   NotificationSubscriptionRepository: Repository<NotificationSubcriptionEntity>
+  UserRepository: Repository<UserEntity>
   NotificationService: NotificationService
 
   constructor() {
     this.NotificationRepository = APP_SOURCE.getRepository(NotificationEntity)
+    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
     this.NotificationSubscriptionRepository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
     this.NotificationService = new NotificationService(APP_SOURCE)
   }
@@ -77,13 +81,26 @@ export default class NotificationController {
 
   public streamNotifications = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      const token = req.query.token as string
+      const { JWT_SECRET } = useEnv()
+
+      if (!token || !JWT_SECRET) {
+        throw new ApiError(422, 'Vous n\'êtes pas authentifié')
+      }
+
+      verify(token, JWT_SECRET)
+
       const SSEManager: SSEManager = req.app.get('sseManager')
-      const ctx = Context.get(req)
-      const user = ctx?.user
 
       if (!SSEManager) {
         throw new ApiError(422, 'SSE manager not found')
       }
+
+      const user = await this.UserRepository.findOne({
+        where: {
+          token,
+        },
+      })
 
       if (!user) {
         throw new ApiError(401, 'vous n\'êtes pas identifié')
@@ -102,12 +119,6 @@ export default class NotificationController {
       return req.on('close', () => {
         /* En cas de deconnexion on supprime le client de notre manager */
         SSEManager.delete(user.id)
-
-        // SSEManager.broadcast({
-        //   id: Date.now(),
-        //   type: 'notifications',
-        //   data: SSEManager.count(),
-        // })
       })
     })
   }

@@ -4,11 +4,13 @@ import { CreateEventNotificationsJob } from './createNotifications.job'
 import type { JobImp } from './job.definition'
 import { SendMailAnswerCreationjob } from './sendMailAnswerCreation.job'
 import { UpdateEventStatusJob } from './updateEventStatus.job'
+import { CreateEmployeeNotificationsJob } from './createEmployeeNotifications.job'
 
 export const JobDictonary = new Map([
   [UpdateEventStatusJob.name, UpdateEventStatusJob],
   [SendMailAnswerCreationjob.name, SendMailAnswerCreationjob],
   [CreateEventNotificationsJob.name, CreateEventNotificationsJob],
+  [CreateEmployeeNotificationsJob.name, CreateEmployeeNotificationsJob],
 ])
 
 export const getJobInstance = (data: JobImp): JobImp => {
@@ -40,6 +42,9 @@ export function generateQueueName(type?: NotificationTypeEnum) {
 
     case NotificationTypeEnum.EVENT_COMPLETED:
       return `complete-event-notif-${name}`
+
+    case NotificationTypeEnum.EMPLOYEE_CREATED:
+      return `create-employee-notif-${name}`
 
     default:
       return name

@@ -7,6 +7,7 @@ export enum NotificationTypeEnum {
   EVENT_CREATED = 'EVENT_CREATED',
   EVENT_COMPLETED = 'EVENT_COMPLETED',
   EVENT_CLOSED = 'EVENT_CLOSED',
+  EMPLOYEE_CREATED = 'EMPLOYEE_CREATED',
 }
 
 export const NotificationTypeEnumArray = Object.values(NotificationTypeEnum)

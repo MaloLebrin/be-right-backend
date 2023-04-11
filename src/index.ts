@@ -70,11 +70,11 @@ async function StartApp() {
 
   // Middlewares
   dotenv.config()
+  app.use(helmet())
   app.use(cors({
-    origin: NODE_ENV === 'production' ? FRONT_URL : '*',
+    origin: isProduction() ? FRONT_URL : '*',
     optionsSuccessStatus: 200,
   }))
-  app.use(helmet())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   // app.use(loggerMiddleware)
@@ -221,7 +221,7 @@ async function StartApp() {
 
   // Notification
   app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
-  app.get('/notifications/stream', [isAuthenticated], new NotificationController().streamNotifications)
+  app.get('/notifications/sse', new NotificationController().streamNotifications)
   app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
 
   // Notification Subscriptions

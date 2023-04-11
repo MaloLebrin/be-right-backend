@@ -10,11 +10,14 @@ import EventService from '../../services/EventService'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin, isUserEntity, parseQueryIds } from '../../utils/index'
 import { AddressService } from '../../services'
 import type { EmployeeCreateOneRequest, UploadCSVEmployee } from '../../types'
-import { EntitiesEnum } from '../../types'
+import { EntitiesEnum, NotificationTypeEnum } from '../../types'
 import { APP_SOURCE, REDIS_CACHE } from '../..'
 import type RedisCache from '../../RedisCache'
 import { ApiError } from '../../middlewares/ApiError'
 import RedisService from '../../services/RedisService'
+import { defaultQueue } from '../../jobs/queue/queue'
+import { generateQueueName } from '../../jobs/queue/jobs/provider'
+import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -57,13 +60,21 @@ export default class EmployeeController {
       const ctx = Context.get(req)
       let userId = null
 
-      if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
+      if (!ctx && !ctx.user) {
+        throw new ApiError(401, 'Vous n\'êtes pas authentifié')
+      }
+
+      if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
       } else {
         userId = ctx.user.id
       }
 
-      const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
+      const isEmployeeAlreadyExist = await this.employeeRepository.exist({
+        where: {
+          email: employee.email,
+        },
+      })
 
       if (isEmployeeAlreadyExist) {
         throw new ApiError(423, 'cet email existe déjà')
@@ -72,6 +83,14 @@ export default class EmployeeController {
       const newEmployee = await this.EmployeeService.createOne(employee, userId)
 
       if (newEmployee) {
+        await defaultQueue.add(
+          generateQueueName(NotificationTypeEnum.EMPLOYEE_CREATED),
+          new CreateEmployeeNotificationsJob({
+            type: NotificationTypeEnum.EMPLOYEE_CREATED,
+            employees: [newEmployee],
+            userId,
+          }))
+
         if (address) {
           await this.AddressService.createOne({
             address,
@@ -119,6 +138,14 @@ export default class EmployeeController {
             return this.EmployeeService.getOne(emp.id)
           }
         }))
+        await defaultQueue.add(
+          generateQueueName(NotificationTypeEnum.EMPLOYEE_CREATED),
+          new CreateEmployeeNotificationsJob({
+            type: NotificationTypeEnum.EMPLOYEE_CREATED,
+            employees: newEmployees,
+            userId,
+          }))
+
         return res.status(200).json(newEmployees)
       }
       throw new ApiError(422, 'Destinataires manquant')
@@ -155,6 +182,14 @@ export default class EmployeeController {
             return this.EmployeeService.getOne(emp.id)
           }
         }))
+
+        await defaultQueue.add(
+          generateQueueName(NotificationTypeEnum.EMPLOYEE_CREATED),
+          new CreateEmployeeNotificationsJob({
+            type: NotificationTypeEnum.EMPLOYEE_CREATED,
+            employees: newEmployees,
+            userId,
+          }))
 
         const newEmployeesIds = newEmployees.map(employee => employee.id)
         await this.AnswerService.createMany(eventId, newEmployeesIds)
@@ -306,6 +341,11 @@ export default class EmployeeController {
 
       if (id) {
         const ctx = Context.get(req)
+
+        if (!ctx?.user) {
+          throw new ApiError(401, 'Action non autorisée')
+        }
+
         const userId = ctx.user.id
 
         const getEmployee = await this.EmployeeService.getOne(id)
