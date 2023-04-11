@@ -36,6 +36,7 @@ export class MyNewNotificationsJob extends BaseJob implements JobImp {
     } = this.payoad
 
     // Do things here
+    data
   }
 
   failed = (job: Job) => {
