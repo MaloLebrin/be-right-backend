@@ -4,6 +4,7 @@ import type AnswerEntity from '../../entity/AnswerEntity'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import type EventEntity from '../../entity/EventEntity'
 import type { NotificationTypeEnum } from '../../types'
+import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 
 export class EventNotificationService {
   repository: Repository<EventNotificationEntity>
@@ -38,15 +39,18 @@ export class EventNotificationService {
     name,
     event,
     answer,
+    employee,
   }: {
     name: NotificationTypeEnum
     event?: EventEntity
     answer?: AnswerEntity
+    employee?: EmployeeEntity
   }) => {
     const eventNotifCreated = this.repository.create({
       name,
       event: event || null,
       answer: answer || null,
+      employee: employee || null,
     })
     await this.repository.save(eventNotifCreated)
     return eventNotifCreated

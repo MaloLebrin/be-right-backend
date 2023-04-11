@@ -3,6 +3,7 @@ import { NotificationTypeEnum } from '../../types'
 import AnswerEntity from '../AnswerEntity'
 import EventEntity from '../EventEntity'
 import { NotificationEntity } from '../notifications/Notification.entity'
+import { EmployeeEntity } from '../employees/EmployeeEntity'
 import { BaseEntity } from './BaseEntity'
 
 @Entity()
@@ -32,4 +33,11 @@ export class EventNotificationEntity extends BaseEntity {
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answer)
   answerId: number
+
+  @OneToOne(() => EmployeeEntity, { nullable: true })
+  @JoinColumn()
+  employee: EmployeeEntity
+
+  @RelationId((eventNotif: EventNotificationEntity) => eventNotif.employee)
+  employeeId: number
 }
