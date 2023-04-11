@@ -12,7 +12,7 @@ export class NotificationEntity extends BaseEntity {
   })
   type: NotificationTypeEnum
 
-  @Column()
+  @Column({ default: null, nullable: true })
   title: string
 
   @Column({ default: null, nullable: true })
