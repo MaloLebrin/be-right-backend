@@ -3,7 +3,6 @@ import type { DataSource, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import EventEntity from '../../entity/EventEntity'
-import { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { UserEntity } from '../../entity/UserEntity'
@@ -15,6 +14,7 @@ import { GroupService } from '../../services/employee/GroupService'
 import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { BadgeEntity } from '../../entity/repositories/Badge.entity'
+import { NotificationService } from '../../services/notifications'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -33,11 +33,13 @@ import {
 export class UserSeedClass extends BaseSeedClass {
   GroupService: GroupService
   CompanyRepository: Repository<CompanyEntity>
+  NotificationService: NotificationService
 
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
     this.GroupService = new GroupService(SEED_SOURCE)
     this.CompanyRepository = SEED_SOURCE.getRepository(CompanyEntity)
+    this.NotificationService = new NotificationService(SEED_SOURCE)
   }
 
   private async photographersSeeder() {
@@ -259,13 +261,12 @@ export class UserSeedClass extends BaseSeedClass {
         },
       },
     })
-    const notif = this.getManager.create(NotificationEntity, {
-      eventNotification: eventNotif,
+
+    await this.NotificationService.createOne({
       type: NotificationTypeEnum.EVENT_CREATED,
       subscriber,
+      eventNotificationId: eventNotif.id,
     })
-
-    await this.getManager.save(notif)
 
     await this.AddressService.createOne({
       address: eventFixtureCompanyPremium.address,
@@ -299,12 +300,12 @@ export class UserSeedClass extends BaseSeedClass {
           },
         },
       })
-      const answerNotif = this.getManager.create(NotificationEntity, {
-        eventNotification: answerEventNotif,
+
+      await this.NotificationService.createOne({
         type: NotificationTypeEnum.ANSWER_RESPONSE_ACCEPTED,
         subscriber,
+        eventNotificationId: answerEventNotif.id,
       })
-      await this.getManager.save(answerNotif)
     }
 
     const answer2 = await this.AnswerService.getOneAnswerForEventEmployee({
@@ -332,12 +333,12 @@ export class UserSeedClass extends BaseSeedClass {
           },
         },
       })
-      const answerNotif2 = this.getManager.create(NotificationEntity, {
-        eventNotification: answerEventNotif2,
+
+      await this.NotificationService.createOne({
         type: NotificationTypeEnum.ANSWER_RESPONSE_REFUSED,
         subscriber,
+        eventNotificationId: answerEventNotif2.id,
       })
-      await this.getManager.save(answerNotif2)
     }
   }
 

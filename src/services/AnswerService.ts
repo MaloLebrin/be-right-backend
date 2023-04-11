@@ -166,6 +166,18 @@ export default class AnswerService {
   }
 
   public updateOneAnswer = async (id: number, answer: Partial<AnswerEntity>) => {
+    if (answer.employeeId) {
+      delete answer.employeeId
+    }
+
+    if (answer.eventId) {
+      delete answer.eventId
+    }
+
+    if (answer.mailsIds) {
+      delete answer.mailsIds
+    }
+
     await this.repository.update(id, answer)
     return this.getOne(id)
   }

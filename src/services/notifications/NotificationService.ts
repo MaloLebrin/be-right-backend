@@ -1,15 +1,21 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import type { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
+import { EventNotificationEntity } from '../../entity/bases/EventNotification.entity'
 import { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import type { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import type { NotificationTypeEnum } from '../../types'
+import AnswerEntity from '../../entity/AnswerEntity'
+import { getfullUsername } from '../../utils/userHelper'
 
 export class NotificationService {
   repository: Repository<NotificationEntity>
+  eventNotifRepository: Repository<EventNotificationEntity>
+  AnswerRepository: Repository<AnswerEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(NotificationEntity)
+    this.eventNotifRepository = APP_SOURCE.getRepository(EventNotificationEntity)
+    this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
   }
 
   public getOne = async (id: number, withRelations?: boolean) => {
@@ -66,19 +72,57 @@ export class NotificationService {
   public createOne = async ({
     type,
     subscriber,
-    eventNotification,
+    eventNotificationId,
   }: {
     type: NotificationTypeEnum
     subscriber: NotificationSubcriptionEntity
-    eventNotification: EventNotificationEntity
+    eventNotificationId: number
   }) => {
-    const eventNotifCreated = this.repository.create({
+    let title: string | null = null
+    let description: string | null = null
+
+    const eventNotif = await this.eventNotifRepository.findOne({
+      where: {
+        id: eventNotificationId,
+      },
+      relations: {
+        answer: true,
+        event: true,
+        employee: true,
+      },
+    })
+
+    if (eventNotif.employee) {
+      title = `Destinataire ${getfullUsername(eventNotif.employee)} créé`
+    }
+
+    else if (eventNotif.event) {
+      title = `Événement ${eventNotif.event.name} créé`
+    }
+
+    else if (eventNotif.answer) {
+      const answer = await this.AnswerRepository.findOne({
+        where: {
+          id: eventNotif.answer.id,
+        },
+        relations: {
+          event: true,
+          employee: true,
+        },
+      })
+      description = `Destinataire ${getfullUsername(answer.employee)} a répondu à l'\événement ${answer.event.name} en ${answer.hasSigned ? 'acceptant' : 'refusant'}`
+      title = `Réponse ${answer.hasSigned ? 'acceptée' : 'refusée'} ${answer.event.name}`
+    }
+
+    const notification = this.repository.create({
       type,
       subscriber,
-      eventNotification,
+      eventNotification: eventNotif,
+      title,
+      description,
     })
-    await this.repository.save(eventNotifCreated)
-    return eventNotifCreated
+    await this.repository.save(notification)
+    return notification
   }
 
   public deleteOne = async (id: number) => {

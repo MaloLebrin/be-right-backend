@@ -49,7 +49,7 @@ export class CreateEventNotificationsJob extends BaseJob implements JobImp {
         await notificationService.createOne({
           type,
           subscriber: notifSubscription,
-          eventNotification: eventNotif,
+          eventNotificationId: eventNotif.id,
         })
       }
     }
