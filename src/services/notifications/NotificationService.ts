@@ -110,7 +110,7 @@ export class NotificationService {
           employee: true,
         },
       })
-      description = `Destinataire ${getfullUsername(answer.employee)} a répondu à l'\événement ${answer.event.name} en ${answer.hasSigned ? 'acceptant' : 'refusant'}`
+      description = `Destinataire ${getfullUsername(answer.employee)} a répondu à l'événement ${answer.event.name} en ${answer.hasSigned ? 'acceptant' : 'refusant'}`
       title = `Réponse ${answer.hasSigned ? 'acceptée' : 'refusée'} ${answer.event.name}`
     }
 
