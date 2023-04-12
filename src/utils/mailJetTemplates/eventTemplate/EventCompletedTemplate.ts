@@ -102,7 +102,7 @@ export function EventCompletedTemplate({
                                       <tr>
                                         <td align="left" style="font-size:0px;padding:0px 25px 0px 25px;padding-top:0px;padding-right:25px;padding-bottom:0px;padding-left:25px;word-break:break-word;">
                                           <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                            <p class="text-build-content" data-testid="5uFtXfbniGAPGQx06Mn2D" style="margin: 10px 0; margin-top: 10px;">Bravo ! Tous les destinataires ont accepté ou refusé les droits à l'image de l'événement !!!!!!!!! .</p>
+                                            <p class="text-build-content" data-testid="5uFtXfbniGAPGQx06Mn2D" style="margin: 10px 0; margin-top: 10px;">Bravo ! Tous les destinataires ont accepté ou refusé les droits à l'image de l'événement ${event.name} .</p>
                                             <p class="text-build-content" data-testid="5uFtXfbniGAPGQx06Mn2D" style="margin: 10px 0;">&nbsp;</p>
                                             <p class="text-build-content" data-testid="5uFtXfbniGAPGQx06Mn2D" style="margin: 10px 0; margin-bottom: 10px;">Vous pouvez dès à présent consulter cet événement dans votre espace
                                               <a class="link-build-content" style="color:inherit;; text-decoration: none;" target="_blank" href="${accountLink}">
