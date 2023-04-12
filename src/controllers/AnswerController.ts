@@ -209,9 +209,18 @@ export default class AnswerController {
 
       if (id) {
         const answer = await this.AnswerService.getOne(id)
+
+        if (!answer) {
+          throw new ApiError(422, 'Cet entité n\'existe pas')
+        }
+
         const event = await this.EventService.getOneEvent(answer.eventId)
 
-        if (answer && (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user))) {
+        if (!event) {
+          throw new ApiError(422, 'L\événement n\'existe pas')
+        }
+
+        if (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           // TODO add job to update event and another to send notification
           const now = new Date()
           await this.repository.update(id, {
