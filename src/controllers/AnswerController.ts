@@ -218,7 +218,7 @@ export default class AnswerController {
         const event = await this.EventService.getOneEvent(answer.eventId)
 
         if (!event) {
-          throw new ApiError(422, 'L\événement n\'existe pas')
+          throw new ApiError(422, 'L\'événement n\'existe pas')
         }
 
         if (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
@@ -243,7 +243,7 @@ export default class AnswerController {
           const eventToSendMail = await this.EventService.getOneEvent(answer.eventId)
 
           if (!eventToSendMail) {
-            throw new ApiError(422, 'L\événement n\'existe pas')
+            throw new ApiError(422, 'L\'événement n\'existe pas')
           }
 
           await defaultQueue.add(name, new SendMailEventCompletedJob({
