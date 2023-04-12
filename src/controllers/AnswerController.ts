@@ -18,6 +18,7 @@ import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCrea
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
 import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
+import { SendMailEventCompletedJob } from '../jobs/queue/jobs/sendMailEventCompleted.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -237,6 +238,16 @@ export default class AnswerController {
           const name = Date.now().toString()
           await defaultQueue.add(name, new UpdateEventStatusJob({
             eventId: event.id,
+          }))
+
+          const eventToSendMail = await this.EventService.getOneEvent(answer.eventId)
+
+          if (!eventToSendMail) {
+            throw new ApiError(422, 'L\événement n\'existe pas')
+          }
+
+          await defaultQueue.add(name, new SendMailEventCompletedJob({
+            event: eventToSendMail,
           }))
 
           await this.saveAnswerInCache(answerToSend)
