@@ -234,6 +234,11 @@ export default class AnswerController {
             signedAt: new Date(),
           }
 
+          const name = Date.now().toString()
+          await defaultQueue.add(name, new UpdateEventStatusJob({
+            eventId: event.id,
+          }))
+
           await this.saveAnswerInCache(answerToSend)
 
           await this.EventService.multipleUpdateForEvent(answerToSend.eventId)
