@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
-import type AnswerEntity from '../entity/AnswerEntity'
+import AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -26,6 +26,7 @@ export default class AnswerController {
   redisCache: RedisCache
   employeeRepository: Repository<EmployeeEntity>
   companyRepository: Repository<CompanyEntity>
+  repository: Repository<AnswerEntity>
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
@@ -34,6 +35,7 @@ export default class AnswerController {
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
+    this.repository = APP_SOURCE.getRepository(AnswerEntity)
   }
 
   private saveAnswerInCache = async (answer: AnswerEntity) => {
@@ -203,6 +205,7 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
+      const { isAnswerAccepted }: { isAnswerAccepted: boolean } = req.body
 
       if (id) {
         const answer = await this.AnswerService.getOne(id)
@@ -210,14 +213,22 @@ export default class AnswerController {
 
         if (answer && (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user))) {
           // TODO add job to update event and another to send notification
-          answer.hasSigned = !answer.hasSigned
-          answer.signedAt = new Date()
-          await APP_SOURCE.manager.save(answer)
+          const now = new Date()
+          await this.repository.update(id, {
+            hasSigned: isAnswerAccepted,
+            signedAt: now,
+          })
 
-          await this.saveAnswerInCache(answer)
+          const answerToSend = {
+            ...answer,
+            hasSigned: isAnswerAccepted,
+            signedAt: new Date(),
+          }
 
-          await this.EventService.multipleUpdateForEvent(answer.eventId)
-          return res.status(200).json(answerResponse(answer))
+          await this.saveAnswerInCache(answerToSend)
+
+          await this.EventService.multipleUpdateForEvent(answerToSend.eventId)
+          return res.status(200).json(answerResponse(answerToSend))
         }
       }
       throw new ApiError(422, 'Paramètres manquants')

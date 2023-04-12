@@ -74,7 +74,9 @@ export class AnswerSpecificController {
       })
 
       if (!event || !employee) {
-        throw new ApiError(422, `${!event ? 'Événement' : ''} ${(!event && !employee) ? 'et' : ''} ${!employee ? 'Destinataire' : ''} introuvable `)
+        throw new ApiError(
+          422,
+          `${!event ? 'Événement' : ''} ${(!event && !employee) ? 'et' : ''} ${!employee ? 'Destinataire' : ''} introuvable `)
       }
 
       return res.status(200).json({
@@ -82,6 +84,12 @@ export class AnswerSpecificController {
         event,
         employee,
       })
+    })
+  }
+
+  public updateAnswerByEmployee = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      // TODO
     })
   }
 }
