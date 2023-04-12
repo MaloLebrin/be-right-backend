@@ -140,10 +140,10 @@ async function StartApp() {
   app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
   app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
   app.patch('/answer/', [isAuthenticated], new AnswerController().updateOne)
-  app.patch('/answer/status/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
   app.delete('/answer/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
 
   // Answer For Employee
+  // app.patch('/answer/status/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
   app.get('/answer/forSignature', new AnswerSpecificController().getOne)
 
   // Auth

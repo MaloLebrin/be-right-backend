@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
-import type AnswerEntity from '../entity/AnswerEntity'
+import AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { APP_SOURCE, REDIS_CACHE } from '..'
@@ -18,6 +18,7 @@ import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCrea
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
 import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
+import { SendMailEventCompletedJob } from '../jobs/queue/jobs/sendMailEventCompleted.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -26,6 +27,7 @@ export default class AnswerController {
   redisCache: RedisCache
   employeeRepository: Repository<EmployeeEntity>
   companyRepository: Repository<CompanyEntity>
+  repository: Repository<AnswerEntity>
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
@@ -34,6 +36,7 @@ export default class AnswerController {
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
+    this.repository = APP_SOURCE.getRepository(AnswerEntity)
   }
 
   private saveAnswerInCache = async (answer: AnswerEntity) => {
@@ -203,21 +206,54 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
+      const { isAnswerAccepted }: { isAnswerAccepted: boolean } = req.body
 
       if (id) {
         const answer = await this.AnswerService.getOne(id)
+
+        if (!answer) {
+          throw new ApiError(422, 'Cet entité n\'existe pas')
+        }
+
         const event = await this.EventService.getOneEvent(answer.eventId)
 
-        if (answer && (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user))) {
+        if (!event) {
+          throw new ApiError(422, 'L\'événement n\'existe pas')
+        }
+
+        if (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
           // TODO add job to update event and another to send notification
-          answer.hasSigned = !answer.hasSigned
-          answer.signedAt = new Date()
-          await APP_SOURCE.manager.save(answer)
+          const now = new Date()
+          await this.repository.update(id, {
+            hasSigned: isAnswerAccepted,
+            signedAt: now,
+          })
 
-          await this.saveAnswerInCache(answer)
+          const answerToSend = {
+            ...answer,
+            hasSigned: isAnswerAccepted,
+            signedAt: new Date(),
+          }
 
-          await this.EventService.multipleUpdateForEvent(answer.eventId)
-          return res.status(200).json(answerResponse(answer))
+          const name = Date.now().toString()
+          await defaultQueue.add(name, new UpdateEventStatusJob({
+            eventId: event.id,
+          }))
+
+          const eventToSendMail = await this.EventService.getOneEvent(answer.eventId)
+
+          if (!eventToSendMail) {
+            throw new ApiError(422, 'L\'événement n\'existe pas')
+          }
+
+          await defaultQueue.add(name, new SendMailEventCompletedJob({
+            event: eventToSendMail,
+          }))
+
+          await this.saveAnswerInCache(answerToSend)
+
+          await this.EventService.multipleUpdateForEvent(answerToSend.eventId)
+          return res.status(200).json(answerResponse(answerToSend))
         }
       }
       throw new ApiError(422, 'Paramètres manquants')

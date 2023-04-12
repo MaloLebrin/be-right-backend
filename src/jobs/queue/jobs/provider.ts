@@ -5,12 +5,14 @@ import type { JobImp } from './job.definition'
 import { SendMailAnswerCreationjob } from './sendMailAnswerCreation.job'
 import { UpdateEventStatusJob } from './updateEventStatus.job'
 import { CreateEmployeeNotificationsJob } from './createEmployeeNotifications.job'
+import { SendMailEventCompletedJob } from './sendMailEventCompleted.job'
 
 export const JobDictonary = new Map([
   [UpdateEventStatusJob.name, UpdateEventStatusJob],
   [SendMailAnswerCreationjob.name, SendMailAnswerCreationjob],
   [CreateEventNotificationsJob.name, CreateEventNotificationsJob],
   [CreateEmployeeNotificationsJob.name, CreateEmployeeNotificationsJob],
+  [SendMailEventCompletedJob.name, SendMailEventCompletedJob],
 ])
 
 export const getJobInstance = (data: JobImp): JobImp => {
