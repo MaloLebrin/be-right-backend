@@ -323,7 +323,7 @@ export default class AnswerController {
           return res.status(200).json({
             message: 'Le destinataire a été relancé',
             isSuccess: true,
-            answer: answerResponse(answerToSend)
+            answer: answerResponse(answerToSend),
           })
         }
         throw new ApiError(422, 'Le destinataire à déja répondu')
