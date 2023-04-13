@@ -318,9 +318,12 @@ export default class AnswerController {
           answer.mailSendAt = new Date()
           await this.AnswerService.updateOneAnswer(id, answer)
 
+          const answerToSend = await this.AnswerService.getOne(id)
+
           return res.status(200).json({
             message: 'Le destinataire a été relancé',
             isSuccess: true,
+            answer: answerResponse(answerToSend),
           })
         }
         throw new ApiError(422, 'Le destinataire à déja répondu')
