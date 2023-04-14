@@ -255,5 +255,4 @@ export default class FileController {
       throw new ApiError(422, 'identitfiant du fichier manquant')
     })
   }
-  // TODO add update file
 }
