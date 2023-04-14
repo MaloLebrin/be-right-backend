@@ -222,7 +222,6 @@ export default class AnswerController {
         }
 
         if (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
-          // TODO add job to update event and another to send notification
           const now = new Date()
           await this.repository.update(id, {
             hasSigned: isAnswerAccepted,
