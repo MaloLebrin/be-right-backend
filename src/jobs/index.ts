@@ -6,6 +6,7 @@ import { createAppSource } from '../utils'
 import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
 import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
 import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
+import { sendMailBeforeStartEvent } from './crons/sendMailBeforeStartEvent.cron'
 
 (async () => {
   dotenv.config()
@@ -20,12 +21,13 @@ import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
       logger.error(err, 'Error during Cron Job Data Source initialization')
     })
 
-  // cron.schedule(
-  //   CronJobInterval.EVERY_DAY_4_AM,
-  //   async () => {
-  //     await udpateEventStatusJob(JOB_APP_SOURCE)
-  //   },
-  // )
+  cron.schedule(
+    CronJobInterval.EVERY_DAY_4_AM,
+    async () => {
+      // await udpateEventStatusJob(JOB_APP_SOURCE)
+      await sendMailBeforeStartEvent(JOB_APP_SOURCE)
+    },
+  )
 
   cron.schedule(
     CronJobInterval.EVERY_FIRST_DAY_MONTH_MIDNIGHT,
