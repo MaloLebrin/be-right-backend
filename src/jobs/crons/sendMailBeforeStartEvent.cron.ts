@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import { LessThan } from 'typeorm'
+import { Between, IsNull, MoreThan } from 'typeorm'
 import { logger } from '../../middlewares/loggerService'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { MailjetService } from '../../services'
@@ -12,18 +12,24 @@ export async function sendMailBeforeStartEvent(APP_SOURCE: DataSource) {
     const dateStart = now.format('YYYY-MM-DD-HH-mm')
     logger.info(`Sarting cron send Mail before start event Reminder status at ${dateStart}`)
 
-    const nowPLus6Days = now.add(6, 'day')
+    const nowPLus6Days = now.add(6, 'day').toDate()
     const answerRepository = APP_SOURCE.getRepository(AnswerEntity)
     const answers = await answerRepository.find({
       where: [
         {
+          signedAt: IsNull(),
+          mailSendAt: MoreThan(nowPLus6Days),
           event: {
-            start: LessThan(nowPLus6Days.toDate()),
+            start: Between(now.toDate(), nowPLus6Days),
+            end: MoreThan(nowPLus6Days),
           },
         },
         {
+          signedAt: IsNull(),
+          mailSendAt: IsNull(),
           event: {
-            end: LessThan(nowPLus6Days.toDate()),
+            start: Between(now.toDate(), nowPLus6Days),
+            end: MoreThan(nowPLus6Days),
           },
         },
       ],
