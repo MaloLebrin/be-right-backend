@@ -24,7 +24,6 @@ import { sendMailBeforeStartEvent } from './crons/sendMailBeforeStartEvent.cron'
   cron.schedule(
     CronJobInterval.EVERY_DAY_4_AM,
     async () => {
-      // await udpateEventStatusJob(JOB_APP_SOURCE)
       await sendMailBeforeStartEvent(JOB_APP_SOURCE)
     },
   )
