@@ -28,6 +28,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
 
     if (events.length > 0) {
       await eventService.updateStatusForEventArray(events)
+      await Promise.all(events.map(async event => this.updateStatusEventWhenCompleted(event)))
     }
   } catch (error) {
     logger.error(error, 'error')
