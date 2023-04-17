@@ -1,17 +1,29 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
+import { LessThan, Not } from 'typeorm'
 import EventEntity from '../../entity/EventEntity'
 import { logger } from '../../middlewares/loggerService'
 import EventService from '../../services/EventService'
+import { EventStatusEnum } from '../../types'
 
 export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
+  const now = dayjs().locale('fr')
+
   try {
-    const dateStart = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
+    const dateStart = now.format('YYYY-MM-DD-HH-mm')
     logger.warn(`Sarting update event status at ${dateStart}`)
 
+    const EventRepository = APP_SOURCE.getRepository(EventEntity)
     const eventService = new EventService(APP_SOURCE)
 
-    const events = await APP_SOURCE.manager.find(EventEntity)
+    const events = await EventRepository.find({
+      where: [
+        {
+          status: Not(EventStatusEnum.CLOSED),
+          end: LessThan(now.subtract(1, 'day').toDate()),
+        },
+      ],
+    })
     logger.info(events.length, 'events')
 
     if (events.length > 0) {
@@ -20,7 +32,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
   } catch (error) {
     logger.error(error, 'error')
   } finally {
-    const dateEnd = dayjs().locale('fr').format('YYYY-MM-DD-HH-mm')
+    const dateEnd = now.format('YYYY-MM-DD-HH-mm')
     logger.warn(`update event status ended at ${dateEnd}`)
   }
 }
