@@ -162,23 +162,19 @@ export default class EventService {
     return newEvent
   }
 
-  async updateStatusForEvent(id: number) {
-    const event = await this.getOneWithoutRelations(id)
+  async updateStatusForEvent(event: EventEntity) {
     if (!event) {
       return null
     }
 
-    await this.repository.update(id, {
+    await this.repository.update(event.id, {
       status: updateStatusEventBasedOnStartEndTodayDate(event),
     })
-
-    const eventSaved = await this.getOneEvent(id)
-    await this.saveEventRedisCache(eventSaved)
   }
 
   async updateStatusForEventArray(events: EventEntity[]) {
     if (events.length > 0) {
-      events.forEach(event => this.updateStatusForEvent(event.id))
+      events.forEach(event => this.updateStatusForEvent(event))
     }
   }
 
@@ -201,9 +197,9 @@ export default class EventService {
   async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
       await this.getNumberSignatureNeededForEvent(eventId)
-      await this.updateStatusForEvent(eventId)
       const event = await this.getOneWithoutRelations(eventId)
       if (event) {
+        await this.updateStatusForEvent(event)
         await this.updateStatusEventWhenCompleted(event)
       }
     }
