@@ -206,13 +206,37 @@ export default class AnswerController {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
-      const { isAnswerAccepted }: { isAnswerAccepted: boolean } = req.body
+      const {
+        isAnswerAccepted,
+        email,
+        twoFactorCode,
+      }: {
+        isAnswerAccepted: boolean
+        email: string
+        twoFactorCode: string
+      } = req.body
 
       if (id) {
-        const answer = await this.AnswerService.getOne(id)
+        const answer = await this.repository.findOne({
+          where: {
+            id,
+            twoFactorCode,
+          },
+        })
 
         if (!answer) {
           throw new ApiError(422, 'Cet entité n\'existe pas')
+        }
+
+        const employee = await this.employeeRepository.findOne({
+          where: {
+            email,
+            id: answer.employeeId,
+          },
+        })
+
+        if (!employee) {
+          throw new ApiError(422, 'Aucun destinataire n\'est associé à cet événement')
         }
 
         const event = await this.EventService.getOneEvent(answer.eventId)

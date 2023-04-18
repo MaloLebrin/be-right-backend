@@ -5,13 +5,15 @@ import type { EmployeeEntity } from '../../../entity/employees/EmployeeEntity'
 import type { UserEntity } from '../../../entity/UserEntity'
 import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
-import { firtSendAnswerTemplate } from '../../../utils/mailJetHelpers'
+import type EventEntity from '../../../entity/EventEntity'
+import { ApiError } from '../../../middlewares/ApiError'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
 interface JobPayload {
   answers: AnswerEntity[]
   user: UserEntity
+  event: EventEntity
 }
 
 export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
@@ -22,11 +24,18 @@ export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
   handle = async () => {
     const mailjetService = new MailjetService(APP_SOURCE)
 
-    const { answers, user } = this.payoad as unknown as JobPayload
+    const { answers, user, event } = this.payoad as unknown as JobPayload
+
+    if (!event || !user || !event) {
+      throw new ApiError(422, 'Missing parameters')
+    }
+
+    console.log(user, '<==== user')
 
     if (answers?.length > 0 && user) {
       await Promise.all(answers.map(async answer => {
-        if (!answer) {
+        if (!answer || !event) {
+          logger.error(`Missing parametter job ${this.name}`)
           return
         }
 
@@ -36,11 +45,8 @@ export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
           await mailjetService.sendEmployeeMail({
             answer,
             employee,
-            template: firtSendAnswerTemplate({
-              employee,
-              creator: user,
-              companyName: user.company.name,
-            }),
+            event,
+            creator: user,
           })
         }
       }))

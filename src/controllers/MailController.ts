@@ -50,7 +50,7 @@ export class MailController {
         const employee = answer.employee as EmployeeEntity
 
         if (employee) {
-          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee })
+          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, event, creator: currentUser })
           return res.status(200).json({ status, message, body })
         }
       }

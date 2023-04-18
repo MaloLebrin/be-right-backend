@@ -13,6 +13,7 @@ import { RaiseAnswerTemplate } from '../utils/mailJetTemplates/RaiseAnswerTempla
 import { EventCompletedTemplate } from '../utils/mailJetTemplates/eventTemplate/EventCompletedTemplate'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import { isProduction } from '../utils/envHelper'
 
 export class MailjetService {
   SecretKey: string
@@ -60,7 +61,7 @@ export class MailjetService {
   }
 
   private buildMailsCreationAnswer = (payload: SendMailPayload[]) => {
-    return payload.map(({ employee, template }) => ({
+    return payload.map(({ employee, creator, event, answer }) => ({
       From: this.FromObj,
       To: [
         {
@@ -70,9 +71,17 @@ export class MailjetService {
       ],
       Subject: 'Vous avez un document à signer',
       TemplateLanguage: true,
+      TemplateID: 4740559,
       TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
-      HTMLPart: template || '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
-      data: { prénom: employee.firstName },
+      Variables: {
+        recipientFirstName: employee.firstName,
+        recipientLastName: employee.lastName,
+        recipientEmail: employee.email,
+        eventName: event.name,
+        eventDescription: event.description,
+        creator: this.getFullName(creator),
+        link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/answer-show-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
+      },
     }))
   }
 
