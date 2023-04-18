@@ -5,7 +5,7 @@ import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
 
 @Entity()
-@Index(['event', 'employee'], { unique: true })
+@Index(['event', 'employee', 'twoFactorCode'], { unique: true })
 export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
@@ -19,7 +19,7 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ unique: true })
   token: string
 
-  @Column({ unique: true, nullable: true, select: false })
+  @Column({ unique: true, select: false })
   twoFactorCode: string | null
 
   @Column({

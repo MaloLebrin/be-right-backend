@@ -6,6 +6,7 @@ import AnswerEntity from '../entity/AnswerEntity'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EventEntity from '../entity/EventEntity'
 import { useEnv } from '../env'
+import { ApiError } from '../middlewares/ApiError'
 
 export default class AnswerService {
   getManager: EntityManager
@@ -51,6 +52,10 @@ export default class AnswerService {
       },
     })
 
+    if (!event || !employee) {
+      throw new ApiError(422, 'Missing parameters')
+    }
+
     const newAnswer = this.repository.create({
       event,
       employee: { id: employeeId },
@@ -59,7 +64,10 @@ export default class AnswerService {
     })
     newAnswer.token = this.generateAnswerToken(employee, newAnswer.id, eventId)
     await this.repository.save(newAnswer)
-    return newAnswer
+    return {
+      ...newAnswer,
+      employee,
+    }
   }
 
   public createMany = async (eventId: number, employeeIds: number[]) => {
