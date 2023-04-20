@@ -9,7 +9,6 @@ import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 import type { UserEntity } from '../entity/UserEntity'
 import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
-import { EventCompletedTemplate } from '../utils/mailJetTemplates/eventTemplate/EventCompletedTemplate'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { isProduction } from '../utils/envHelper'
@@ -270,8 +269,6 @@ export class MailjetService {
         throw new ApiError(422, 'Service d\'envoie de mails non disponible')
       }
 
-      const template = EventCompletedTemplate({ event })
-
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
         .request({
@@ -285,9 +282,16 @@ export class MailjetService {
                 })),
               ],
               TextPart: 'Be Right - Tous les destinataires ont signé',
-              HTMLPart: template,
               TemplateLanguage: true,
+              TemplateID: 4726278,
               Subject: 'Be Right - Tous les destinataires ont signé',
+              Variables: {
+                eventName: event.name,
+                link: `${isProduction()
+                  ? process.env.FRONT_URL
+                  : 'http://localhost:3000'}/evenement-show-id${event.id}`,
+              },
+
             },
           ],
         })
