@@ -27,10 +27,8 @@ export class SendMailAnswerCreationjob extends BaseJob implements JobImp {
     const { answers, user, event } = this.payoad as unknown as JobPayload
 
     if (!event || !user || !event) {
-      throw new ApiError(422, 'Missing parameters')
+      throw new ApiError(422, `Missing parametter job ${this.name}`)
     }
-
-    console.log(user, '<==== user')
 
     if (answers?.length > 0 && user) {
       await Promise.all(answers.map(async answer => {

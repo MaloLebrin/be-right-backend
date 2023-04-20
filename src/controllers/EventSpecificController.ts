@@ -118,8 +118,6 @@ export default class EventSpecificController {
       if (event && companyId) {
         const newEvent = await this.EventService.createOneEvent(event, companyId, photographerId)
 
-        console.log(newEvent, '<==== newEvent')
-
         if (newEvent && address) {
           await defaultQueue.add(
             generateQueueName(NotificationTypeEnum.EVENT_CREATED),
