@@ -9,7 +9,6 @@ import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 import type { UserEntity } from '../entity/UserEntity'
 import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
-import { RaiseAnswerTemplate } from '../utils/mailJetTemplates/RaiseAnswerTemplate'
 import { EventCompletedTemplate } from '../utils/mailJetTemplates/eventTemplate/EventCompletedTemplate'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
@@ -200,10 +199,12 @@ export class MailjetService {
     owner,
     event,
     employee,
+    answer,
   }: {
     owner: UserEntity
     event: EventEntity
     employee: EmployeeEntity
+    answer: AnswerEntity
   }) => {
     try {
       if (!this.mailJetClient) {
@@ -212,10 +213,6 @@ export class MailjetService {
       }
 
       const fullName = this.getFullName(employee)
-      const template = RaiseAnswerTemplate({
-        owner,
-        event,
-      })
 
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
@@ -230,9 +227,17 @@ export class MailjetService {
                 },
               ],
               TextPart: 'Be Right - Vous avez un document à signer',
-              HTMLPart: template,
               TemplateLanguage: true,
+              TemplateID: 4720760,
               Subject: 'Be Right - Vous avez un document à signer',
+              Variables: {
+                recipientFirstName: employee.firstName,
+                eventName: event.name,
+                creator: this.getFullName(owner),
+                link: `${isProduction()
+                  ? process.env.FRONT_URL
+                  : 'http://localhost:3000'}/answer-show-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
+              },
             },
           ],
         })

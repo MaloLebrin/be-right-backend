@@ -336,6 +336,7 @@ export default class AnswerController {
             event: answer.event,
             employee: answer.employee,
             owner,
+            answer,
           })
 
           answer.mailSendAt = new Date()

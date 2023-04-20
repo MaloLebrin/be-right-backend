@@ -43,6 +43,7 @@ export async function sendMailBeforeStartEvent(APP_SOURCE: DataSource) {
           owner: answer.event.company.users.find(user => isUserOwner(user)),
           event: answer.event,
           employee: answer.employee,
+          answer,
         })),
       )
     }
