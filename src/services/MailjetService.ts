@@ -8,7 +8,6 @@ import { ApiError } from '../middlewares/ApiError'
 import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 import type { UserEntity } from '../entity/UserEntity'
-import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { isProduction } from '../utils/envHelper'
@@ -153,11 +152,6 @@ export class MailjetService {
       }
 
       const fullName = this.getFullName(user)
-      const template = PasswordRecoveryTemplate({
-        token: user.twoFactorRecoveryCode,
-        fullName,
-        email: user.email,
-      })
 
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
@@ -172,9 +166,12 @@ export class MailjetService {
                 },
               ],
               TextPart: 'Be Right - Réinitialisez votre mot de passe',
-              HTMLPart: template,
+              TemplateID: 4715983,
               TemplateLanguage: true,
               Subject: 'Be Right - Réinitialisez votre mot de passe',
+              Variables: {
+                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${user.email}&token=${user.twoFactorRecoveryCode}`,
+              },
             },
           ],
         })
