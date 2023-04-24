@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
+import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
 import { wrapperRequest } from '../../utils'
 import { APP_SOURCE } from '../..'
@@ -41,8 +42,7 @@ export class AnswerSpecificController {
 
   public getOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const token = req.query.token.toString()
-      const email = req.query.email.toString()
+      const { token, email }: { token: string; email: string } = req.body
 
       if (!token || !email) {
         throw new ApiError(422, 'identifiant du destinataire manquant')
@@ -83,6 +83,38 @@ export class AnswerSpecificController {
         answer: answerResponse(answer),
         event,
         employee,
+      })
+    })
+  }
+
+  public checkTwoAuth = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const { token, email, twoFactorCode }: { token: string; email: string; twoFactorCode: string } = req.body
+
+      if (!token || !email || !twoFactorCode) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
+      await this.isValidToken(token, email)
+
+      const isExist = await this.AnswerRepository.exist({
+        where: {
+          token,
+          twoFactorCode,
+          employee: {
+            email,
+          },
+          signedAt: IsNull(),
+        },
+      })
+
+      if (!isExist) {
+        throw new ApiError(422, 'Élément introuvable')
+      }
+
+      return res.status(200).json({
+        message: 'Code approuvé',
+        status: 200,
       })
     })
   }
