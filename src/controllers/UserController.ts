@@ -356,25 +356,13 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
-          const company = await this.companyRepository.findOne({
-            where: { id: user.companyId },
-            relations: {
-              address: true,
-              employees: true,
-              events: true,
-              files: true,
-              subscription: true,
-              users: true,
-            },
-          })
-
-          const userToSend = userResponse({ ...user, companyId: company?.id })
+          const userToSend = userResponse({ ...user, companyId: user.company?.id })
 
           await this.saveUserInCache(userToSend)
 
           return res.status(200).json({
             user: userToSend,
-            company,
+            company: user.company,
           })
         } else {
           throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
