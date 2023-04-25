@@ -254,6 +254,25 @@ export function useValidation() {
     }),
   })
 
+  const doubleAuthSchema = object({
+    body: object({
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      token: string().min(128).required('Le token est requis'),
+      twoFactorCode: string()
+        .matches(/^[a-zA-Z0-9]+$/)
+        .min(5, 'Veuillez remplir les 5 cases')
+        .max(5, 'Vous devez remplir 5 cases')
+        .required('Le code vérification est obligatoire'),
+    }),
+  })
+
+  const getAnswerForEmployee = object({
+    body: object({
+      email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
+      token: string().min(128).required('Le token est requis'),
+    }),
+  })
+
   return {
     createAddressSchema,
     createbugSchema,
@@ -266,7 +285,9 @@ export function useValidation() {
     createOneAnswerSchema,
     createOneEventSchema,
     createPhotographerSchema,
+    doubleAuthSchema,
     emailAlreadyExistSchema,
+    getAnswerForEmployee,
     idParamsSchema,
     loginSchema,
     newUserSchema,
