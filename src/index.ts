@@ -107,7 +107,9 @@ async function StartApp() {
     createOneAnswerSchema,
     createOneEventSchema,
     createPhotographerSchema,
+    doubleAuthSchema,
     emailAlreadyExistSchema,
+    getAnswerForEmployee,
     idParamsSchema,
     loginSchema,
     newUserSchema,
@@ -144,7 +146,8 @@ async function StartApp() {
 
   // Answer For Employee
   // app.patch('/answer/status/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
-  app.get('/answer/forSignature', new AnswerSpecificController().getOne)
+  app.post('/answer/forSignature', [validate(getAnswerForEmployee)], new AnswerSpecificController().getOne)
+  app.post('/answer/checkDoubleAuth', [validate(doubleAuthSchema)], new AnswerSpecificController().checkTwoAuth)
 
   // Auth
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
