@@ -77,7 +77,7 @@ export class MailjetService {
         eventName: event.name,
         eventDescription: event.description,
         creator: this.getFullName(creator),
-        link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/answer-show-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
+        link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
       },
     }))
   }
@@ -232,7 +232,7 @@ export class MailjetService {
                 creator: this.getFullName(owner),
                 link: `${isProduction()
                   ? process.env.FRONT_URL
-                  : 'http://localhost:3000'}/answer-show-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
+                  : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.twoFactorCode}`,
               },
             },
           ],
