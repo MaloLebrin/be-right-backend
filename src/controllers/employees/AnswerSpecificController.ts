@@ -50,7 +50,18 @@ export class AnswerSpecificController {
 
       await this.isValidToken(token, email)
 
-      const answer = await this.AnswerRepository.findOneBy({ token })
+      const answer = await this.AnswerRepository.findOne({
+        where: {
+          token,
+        },
+        relations: [
+          'employee.address',
+          'event.address',
+          'event.company.address',
+          'event.company.users',
+          'event.partner',
+        ],
+      })
 
       if (!answer) {
         throw new ApiError(422, 'Élément introuvable')
@@ -60,18 +71,9 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Vous avez déjà donné une réponse')
       }
 
-      const event = await this.EventRepository.findOne({
-        where: {
-          id: answer.eventId,
-        },
-      })
+      const event = answer.event
 
-      const employee = await this.EmployeeRepository.findOne({
-        where: {
-          email,
-          id: answer.employeeId,
-        },
-      })
+      const employee = answer.employee
 
       if (!event || !employee) {
         throw new ApiError(
