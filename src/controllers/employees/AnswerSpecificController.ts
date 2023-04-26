@@ -12,6 +12,8 @@ import type { DecodedJWTToken } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
+import { defaultQueue } from '../../jobs/queue/queue'
+import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -111,7 +113,7 @@ export class AnswerSpecificController {
       })
 
       if (!isExist) {
-        throw new ApiError(422, 'Élément introuvable')
+        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
       }
 
       return res.status(200).json({
@@ -123,7 +125,51 @@ export class AnswerSpecificController {
 
   public updateAnswerByEmployee = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      // TODO
+      const answerId = parseInt(req.params.id)
+      const {
+        token,
+        email,
+        hasSigned,
+        reason,
+      }: {
+        token: string
+        email: string
+        reason?: string
+        hasSigned: boolean
+      } = req.body
+
+      if (!token || !email || !answerId) {
+        throw new ApiError(422, 'Paramètres manquants')
+      }
+
+      await this.isValidToken(token, email)
+
+      const answer = await this.AnswerRepository.findOne({
+        where: {
+          token,
+          id: answerId,
+          employee: {
+            email,
+          },
+          signedAt: IsNull(),
+        },
+      })
+
+      if (!answer) {
+        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
+      }
+
+      await this.AnswerRepository.update(answerId, {
+        signedAt: new Date(),
+        hasSigned,
+        reason: reason || null,
+      })
+
+      await defaultQueue.add(Date.now().toString(), new UpdateEventStatusJob({
+        eventId: answer.eventId,
+      }))
+
+      return res.status(200).json(answer)
     })
   }
 }
