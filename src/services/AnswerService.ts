@@ -161,16 +161,12 @@ export default class AnswerService {
     })
   }
 
-  public signOneAnswer = async (id: number, answer: AnswerEntity) => {
-    const answerToUpdate = await this.getOne(id)
-    const updatedAnswer = {
-      ...answerToUpdate,
+  public signOneAnswer = async (id: number, { hasSigned, reason }: { hasSigned: boolean; reason?: string }) => {
+    await this.repository.update(id, {
       signedAt: new Date(),
-      hasSigned: answer.hasSigned,
-      reason: answer.reason,
-    }
-    await this.repository.save(updatedAnswer)
-    return updatedAnswer
+      hasSigned,
+      reason: reason || null,
+    })
   }
 
   public updateOneAnswer = async (id: number, answer: Partial<AnswerEntity>) => {

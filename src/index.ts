@@ -10,7 +10,16 @@ import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
-import { checkUserRole, isAuthenticated, useValidation } from './middlewares'
+import {
+  checkUserRole,
+  createManyAnswersSchema,
+  createOneAnswerSchema,
+  doubleAuthSchema,
+  getAnswerForEmployee,
+  isAuthenticated,
+  signeAnswerValidation,
+  useValidation,
+} from './middlewares'
 import { Role } from './types'
 import NewsletterController from './controllers/NewsletterController'
 import { AddresController } from './controllers/AddressController'
@@ -101,15 +110,11 @@ async function StartApp() {
     createbugSchema,
     createEmployeeSchema,
     createGroupSchema,
-    createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
-    createOneAnswerSchema,
     createOneEventSchema,
     createPhotographerSchema,
-    doubleAuthSchema,
     emailAlreadyExistSchema,
-    getAnswerForEmployee,
     idParamsSchema,
     loginSchema,
     newUserSchema,
@@ -145,7 +150,7 @@ async function StartApp() {
   app.delete('/answer/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
 
   // Answer For Employee
-  // app.patch('/answer/status/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().updateAnswerStatus)
+  app.patch('/answer/signed/:id', [validate(signeAnswerValidation)], new AnswerSpecificController().updateAnswerByEmployee)
   app.post('/answer/forSignature', [validate(getAnswerForEmployee)], new AnswerSpecificController().getOne)
   app.post('/answer/checkDoubleAuth', [validate(doubleAuthSchema)], new AnswerSpecificController().checkTwoAuth)
 
