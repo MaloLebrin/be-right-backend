@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
-import { LessThan, Not } from 'typeorm'
+import { In, LessThan, Not } from 'typeorm'
 import EventEntity from '../../entity/EventEntity'
 import { logger } from '../../middlewares/loggerService'
 import EventService from '../../services/EventService'
@@ -8,6 +8,11 @@ import { EventStatusEnum } from '../../types'
 import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { MailjetService } from '../../services/MailjetService'
+import { uniq } from '../../utils/arrayHelper'
+import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
+import { EventNotificationService } from '../../services/notifications/EventNotificationService'
+import { getNotificationTypeByEventStatus } from '../../utils/notificationHelper'
+import { NotificationService } from '../../services/notifications/NotificationService'
 
 export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
   const now = dayjs().locale('fr')
@@ -26,6 +31,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
           end: LessThan(now.subtract(1, 'day').toDate()),
         },
       ],
+      relations: ['company.users'],
     })
     logger.info(events.length, 'events')
 
@@ -42,7 +48,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
       const eventsCompleted = promises.filter((item: EventEntity) =>
         item.status
         && item.status === EventStatusEnum.COMPLETED
-        && dayjs(item.updatedAt).isAfter(now.subtract(1, 'hour')))
+        && dayjs(item.updatedAt).isAfter(now.subtract(1, 'hour'))) as EventEntity[]
 
       if (eventsCompleted.length > 0) {
         await Promise.all(eventsCompleted.map(async (event: EventEntity) => {
@@ -63,6 +69,45 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
             })
           }
         }))
+      }
+
+      const eventNeedNotifs = promises.filter((item: EventEntity) =>
+        item.status
+        && dayjs(item.updatedAt).isAfter(now.subtract(1, 'hour'))) as EventEntity[]
+
+      if (eventNeedNotifs.length > 0) {
+        const userIds = uniq(eventNeedNotifs.reduce((acc, event) => [...acc, ...event.company.userIds], [] as number[]))
+        if (userIds.length > 0) {
+          const notifSubscriptions = await APP_SOURCE.getRepository(NotificationSubcriptionEntity).find({
+            where: {
+              createdByUser: {
+                id: In(userIds),
+              },
+            },
+            relations: [
+              'createdByUser.company',
+            ],
+          })
+
+          const eventNotificationService = new EventNotificationService(APP_SOURCE)
+          const notificationService = new NotificationService(APP_SOURCE)
+
+          await Promise.all(eventNeedNotifs.map(async event => {
+            const notifSubscription = notifSubscriptions.find(notifSub => notifSub.createdByUser.companyId === event.companyId)
+            if (notifSubscription) {
+              const eventNotif = await eventNotificationService.createOne({
+                name: getNotificationTypeByEventStatus(event),
+                event,
+              })
+
+              return notificationService.createOne({
+                type: getNotificationTypeByEventStatus(event),
+                subscriber: notifSubscription,
+                eventNotificationId: eventNotif.id,
+              })
+            }
+          }))
+        }
       }
     }
   } catch (error) {
