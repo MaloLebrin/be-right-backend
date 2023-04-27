@@ -5,6 +5,9 @@ import EventEntity from '../../entity/EventEntity'
 import { logger } from '../../middlewares/loggerService'
 import EventService from '../../services/EventService'
 import { EventStatusEnum } from '../../types'
+import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
+import { CompanyEntity } from '../../entity/Company.entity'
+import { MailjetService } from '../../services/MailjetService'
 
 export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
   const now = dayjs().locale('fr')
@@ -27,8 +30,39 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
     logger.info(events.length, 'events')
 
     if (events.length > 0) {
-      await eventService.updateStatusForEventArray(events)
-      await Promise.all(events.map(async event => this.updateStatusEventWhenCompleted(event)))
+      const promises = await Promise.all([
+        ...events.map(async event => EventRepository.update(event.id, {
+          status: updateStatusEventBasedOnStartEndTodayDate(event),
+        })),
+        ...events.map(event => eventService.getNumberSignatureNeededForEvent(event.id)),
+        ...events.map(event => eventService.updateStatusEventWhenCompleted(event)),
+      ])
+
+      const eventsCompleted = promises.filter((item: EventEntity) =>
+        item.status
+        && item.status === EventStatusEnum.COMPLETED
+        && dayjs(item.updatedAt).isAfter(now.subtract(1, 'hour')))
+
+      if (eventsCompleted.length > 0) {
+        await Promise.all(eventsCompleted.map(async (event: EventEntity) => {
+          const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
+            where: {
+              id: event.companyId,
+            },
+            relations: {
+              users: true,
+            },
+          })
+
+          if (company && company.users.length > 0) {
+            const mailjetService = new MailjetService(APP_SOURCE)
+            return mailjetService.sendEventCompletedEmail({
+              event,
+              users: company.users,
+            })
+          }
+        }))
+      }
     }
   } catch (error) {
     logger.error(error, 'error')

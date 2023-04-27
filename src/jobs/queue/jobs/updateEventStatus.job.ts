@@ -7,6 +7,8 @@ import { NotificationSubscriptionService } from '../../../services/notifications
 import { NotificationService } from '../../../services/notifications/NotificationService'
 import { getNotificationTypeByEventStatus } from '../../../utils/notificationHelper'
 import { CompanyEntity } from '../../../entity/Company.entity'
+import { EventStatusEnum } from '../../../types'
+import { MailjetService } from '../../../services/MailjetService'
 import { BaseJob } from './job.definition'
 import type { JobImp } from './job.definition'
 
@@ -63,6 +65,25 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
               })
             }
           }))
+        }
+      }
+
+      if (event.status === EventStatusEnum.COMPLETED) {
+        const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
+          where: {
+            id: event.companyId,
+          },
+          relations: {
+            users: true,
+          },
+        })
+
+        if (company && company.users.length > 0) {
+          const mailjetService = new MailjetService(APP_SOURCE)
+          await mailjetService.sendEventCompletedEmail({
+            event,
+            users: company.users,
+          })
         }
       }
     }
