@@ -32,6 +32,7 @@ export default async function udpateEventStatusJob(APP_SOURCE: DataSource) {
     if (events.length > 0) {
       const promises = await Promise.all([
         ...events.map(async event => EventRepository.update(event.id, {
+          updatedAt: now,
           status: updateStatusEventBasedOnStartEndTodayDate(event),
         })),
         ...events.map(event => eventService.getNumberSignatureNeededForEvent(event.id)),
