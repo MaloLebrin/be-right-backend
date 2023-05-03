@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
 import AnswerEntity from '../AnswerEntity'
 import { AddressEntity } from '../AddressEntity'
 import { FileEntity } from '../FileEntity'
@@ -7,7 +7,6 @@ import { CompanyEntity } from '../Company.entity'
 import { GroupEntity } from './Group.entity'
 
 @Entity()
-@Index(['id', 'company', 'firstName', 'lastName', 'email'], { unique: true })
 export class EmployeeEntity extends BasePersonEntity {
   @Column({ nullable: true })
   phone: string

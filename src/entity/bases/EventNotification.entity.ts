@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { NotificationTypeEnum } from '../../types'
 import AnswerEntity from '../AnswerEntity'
 import EventEntity from '../EventEntity'
@@ -7,6 +7,9 @@ import { EmployeeEntity } from '../employees/EmployeeEntity'
 import { BaseEntity } from './BaseEntity'
 
 @Entity()
+@Index('UNIQ_EVENT_NAME', ['name', 'event'], { unique: true })
+@Index('UNIQ_ANSWER_NAME', ['name', 'answer'], { unique: true })
+@Index('UNIQ_EMPLOYEE_NAME', ['name', 'employee'], { unique: true })
 export class EventNotificationEntity extends BaseEntity {
   @Column({
     type: 'enum',
@@ -20,21 +23,21 @@ export class EventNotificationEntity extends BaseEntity {
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.notifications)
   notificationIds: number[]
 
-  @OneToOne(() => EventEntity, { nullable: true })
+  @ManyToOne(() => EventEntity, { nullable: true })
   @JoinColumn()
   event: EventEntity
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.event)
   eventId: number
 
-  @OneToOne(() => AnswerEntity, { nullable: true })
+  @ManyToOne(() => AnswerEntity, { nullable: true })
   @JoinColumn()
   answer: AnswerEntity
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answer)
   answerId: number
 
-  @OneToOne(() => EmployeeEntity, { nullable: true })
+  @ManyToOne(() => EmployeeEntity, { nullable: true })
   @JoinColumn()
   employee: EmployeeEntity
 

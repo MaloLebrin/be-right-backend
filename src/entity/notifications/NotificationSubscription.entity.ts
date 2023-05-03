@@ -5,7 +5,7 @@ import { UserEntity } from '../UserEntity'
 import { NotificationEntity } from './Notification.entity'
 
 @Entity()
-@Index(['type', 'createdByUser'], { unique: true })
+@Index('UNIQ_NOTIFSUB_TYPE_USER', ['type', 'createdByUser'], { unique: true })
 export class NotificationSubcriptionEntity extends BaseEntity {
   @Column({
     type: 'enum',
