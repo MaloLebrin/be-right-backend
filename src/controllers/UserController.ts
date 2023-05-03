@@ -329,11 +329,15 @@ export default class UserController {
 
       const user = await this.repository.findOne({
         where: { email },
-        relations: {
-          profilePicture: true,
-          notificationSubscriptions: true,
-          company: true,
-        },
+        relations: [
+          'profilePicture',
+          'notificationSubscriptions',
+          'company.events',
+          'company.employees',
+          'company.groups',
+          'company.subscription',
+          'company.address',
+        ],
         select: {
           id: true,
           createdAt: true,
