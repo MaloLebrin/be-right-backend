@@ -1,4 +1,4 @@
-import { unlink } from 'fs'
+import { unlink } from 'node:fs'
 import type { Request, Response } from 'express'
 import puppeteer from 'puppeteer'
 import type { Logger } from 'pino'
@@ -11,14 +11,17 @@ import { hasOwnProperty } from '../utils/objectHelper'
 import { wrapperRequest } from '../utils'
 import UserService from '../services/UserService'
 import { AddressService } from '../services'
-import type { EmployeeEntity } from '../entity/EmployeeEntity'
-import { useLogger } from '../middlewares/loggerService'
+import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import { logger } from '../middlewares/loggerService'
+import { CompanyService } from '../services/CompanyService'
+import { isUserOwner } from '../utils/userHelper'
 
 export default class AuthController {
   AnswerService: AnswerService
   AddressService: AddressService
   EventService: EventService
   UserService: UserService
+  CompanyService: CompanyService
   logger: Logger<{
     transport: {
       target: string
@@ -27,15 +30,14 @@ export default class AuthController {
       }
     }
   }>
-  // redisCache: RedisCache
 
   constructor() {
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
     this.UserService = new UserService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
-    this.logger = useLogger().logger
-    // this.redisCache = REDIS_CACHE
+    this.CompanyService = new CompanyService(APP_SOURCE)
+    this.logger = logger
   }
 
   // eslint-disable-next-line promise/param-names
@@ -53,13 +55,13 @@ export default class AuthController {
           const employee = answer.employee as EmployeeEntity
 
           const partner = await this.UserService.getOne(event.partnerId)
-          const user = await this.UserService.getOneWithRelations(event.createdByUserId)
-          const userAddress = user.address
+          const company = await this.CompanyService.getOne(event.companyId, true)
           const employeeAddress = await this.AddressService.getOne(employee.addressId)
+          const user = company.users.find(user => isUserOwner(user))
 
           return res.render('answer', {
             todayDate: new Date().toISOString(),
-            companyName: user.companyName,
+            companyName: company.name,
 
             employeeFirstName: employee.firstName,
             employeeLastName: employee.lastName,
@@ -71,9 +73,9 @@ export default class AuthController {
             partnerFirstName: partner.firstName,
             partnerLastName: partner.lastName,
 
-            userCity: userAddress.city,
-            userFirstName: user.firstName,
-            userLastName: user.lastName,
+            userCity: company.address?.city,
+            userFirstName: user?.firstName,
+            userLastName: user?.lastName,
           })
         }
       }
