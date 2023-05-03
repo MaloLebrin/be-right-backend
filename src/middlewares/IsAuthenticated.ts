@@ -30,7 +30,6 @@ export default async function isAuthenticated(req: Request, res: Response, next:
             relations: {
               company: true,
             },
-            loadRelationIds: true,
           }))
 
         if (user && isUserEntity(user)) {
