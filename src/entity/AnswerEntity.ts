@@ -5,7 +5,7 @@ import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
 
 @Entity()
-@Index(['event', 'employee', 'twoFactorCode'], { unique: true })
+@Index('UNIQ_EVENT_EMPLOYEE_TWOFACTORCODE', ['event', 'employee', 'twoFactorCode'], { unique: true })
 export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
