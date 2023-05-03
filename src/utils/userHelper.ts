@@ -4,6 +4,7 @@ import { useEnv } from '../env'
 import type { UserEntity } from '../entity/UserEntity'
 import type { JWTTokenPayload } from '../types'
 import { Role, SubscriptionEnum } from '../types'
+import type { FileEntity } from '../entity/FileEntity'
 import { hasOwnProperty } from './objectHelper'
 
 export function getfullUsername(user: UserEntity | Pick<UserEntity, 'firstName' | 'lastName'>): string {
@@ -11,7 +12,7 @@ export function getfullUsername(user: UserEntity | Pick<UserEntity, 'firstName' 
 }
 
 export function isUserEntity(user: any): user is UserEntity {
-  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'salt')
+  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'roles') && hasOwnProperty(user, 'profilePictureId')
 }
 
 export function isSubscriptionOptionField(field: string): boolean {
@@ -20,6 +21,10 @@ export function isSubscriptionOptionField(field: string): boolean {
 
 export function isUserAdmin(user: UserEntity) {
   return user.roles === Role.ADMIN
+}
+
+export function isUserOwner(user: UserEntity) {
+  return user.roles === Role.OWNER
 }
 
 export function createJwtToken(user: JWTTokenPayload) {
@@ -36,4 +41,34 @@ export function createJwtToken(user: JWTTokenPayload) {
     },
     JWT_SECRET,
   )
+}
+
+export const secretUserKeys = [
+  'password',
+  'salt',
+  'twoFactorSecret',
+  'twoFactorRecoveryCode',
+  'apiKey',
+  'saltUpdatedAt',
+  'passwordUpdatedAt',
+]
+
+/**
+   * @param entity UserEntity
+   * @returns entity filtered without any confidential fields
+   */
+export const userResponse = (entity: UserEntity): UserEntity => {
+  const entityReturned = {} as Record<string, any>
+  for (const [key, value] of Object.entries(entity)) {
+    if (!secretUserKeys.includes(key)) {
+      // eslint-disable-next-line security/detect-object-injection
+      entityReturned[key] = value
+    }
+    if (key === 'profilePicture' && value) {
+      const picture = value as FileEntity
+      // eslint-disable-next-line security/detect-object-injection
+      entityReturned[key] = picture.secure_url
+    }
+  }
+  return entityReturned as UserEntity
 }

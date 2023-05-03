@@ -1,21 +1,23 @@
 import * as dotenv from 'dotenv'
 import type { DataSource } from 'typeorm'
-import { useLogger } from '../middlewares/loggerService'
+import { logger } from '../middlewares/loggerService'
 import { useEnv } from '../env'
 import { clearDB, createAppSource } from '../utils'
-import { createAdminUser } from './admin'
-import { createPhotographers } from './shared/photographerFixtures'
-import { seedMediumUserData, seedUnUsedUser, seedUserCompany } from './UserCompany'
+import { UserAdminSeed } from './admin'
+import { UserSeedClass } from './UserCompany/UserSeedClass'
+import { RepositorySeeder } from './repositories/RepositorySeeder'
 
 export const APP_SOURCE_SEEDER = createAppSource()
 
 export async function seedersFunction(DATA_SOURCE: DataSource) {
+  const UserSeedService = new UserSeedClass(DATA_SOURCE)
+  const UserAdminSeedClass = new UserAdminSeed(DATA_SOURCE)
+  const repositorySeeder = new RepositorySeeder(DATA_SOURCE)
+
   await clearDB(DATA_SOURCE)
-  await createPhotographers(DATA_SOURCE)
-  await createAdminUser(DATA_SOURCE)
-  await seedUserCompany(DATA_SOURCE)
-  await seedMediumUserData(DATA_SOURCE)
-  await seedUnUsedUser(DATA_SOURCE)
+  await repositorySeeder.startRepositoriesSeeders()
+  await UserAdminSeedClass.CreateAdminUser()
+  await UserSeedService.SeedDataBase()
 }
 
 async function createDevSeeders() {
@@ -25,13 +27,14 @@ async function createDevSeeders() {
 
   if (NODE_ENV === 'test') {
     APP_SOURCE_SEEDER.initialize().then(async () => {
-      const { logger } = useLogger()
       dotenv.config()
 
       logger.info('Clear DB start')
       await seedersFunction(APP_SOURCE_SEEDER)
       logger.info('Clear DB end')
       logger.info('seeder done')
+    }).catch(err => {
+      logger.error('Error during Data Source initialization seeder:', err)
     })
   }
 }

@@ -43,7 +43,7 @@ export default class BugReportController {
         const updatedBugReport = await this.BugReportService.updateStatus(id, status)
         return res.status(200).json(updatedBugReport)
       }
-      throw new ApiError(422, 'Le status est requis').Handler(res)
+      throw new ApiError(422, 'Le status est requis')
     })
   }
 
@@ -55,7 +55,7 @@ export default class BugReportController {
         const updatedBugReport = await this.BugReportService.updateOne(id, bugReport)
         return res.status(200).json(updatedBugReport)
       }
-      throw new ApiError(422, 'Le bug est requis').Handler(res)
+      throw new ApiError(422, 'Le bug est requis')
     })
   }
 
@@ -70,7 +70,7 @@ export default class BugReportController {
         const bugReport = await this.BugReportService.getOne(id)
         return bugReport ? res.status(200).json(bugReport) : res.status(400).json('user not found')
       }
-      throw new ApiError(422, 'L\identifiant est requis').Handler(res)
+      throw new ApiError(422, 'L\identifiant est requis')
     })
   }
 
@@ -100,7 +100,7 @@ export default class BugReportController {
         const deletedBugReport = await this.BugReportService.deleteOne(id)
         return res.status(200).json(deletedBugReport)
       }
-      throw new ApiError(422, 'L\identifiant est requis').Handler(res)
+      throw new ApiError(422, 'L\identifiant est requis')
     })
   }
 }

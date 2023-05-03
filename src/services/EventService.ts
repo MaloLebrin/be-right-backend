@@ -29,6 +29,14 @@ export default class EventService {
     this.redisCache = REDIS_CACHE
   }
 
+  public saveEventRedisCache = async (event: EventEntity) => {
+    await this.redisCache.save(generateRedisKey({
+      typeofEntity: EntitiesEnum.EVENT,
+      field: 'id',
+      id: event.id,
+    }), event)
+  }
+
   async deleteOneAndRelations(event: EventEntity) {
     if (event.addressId) {
       await this.addressService.softDelete(event.addressId)
@@ -53,6 +61,9 @@ export default class EventService {
         }))
       }))
     }
+    await this.repository.update(event.id, {
+      status: EventStatusEnum.CLOSED,
+    })
 
     await this.repository.softDelete(event.id)
     await this.redisCache.invalidate(generateRedisKey({
@@ -67,7 +78,9 @@ export default class EventService {
       updatedAt: new Date(),
       totalSignatureNeeded: signatureNeeded,
     })
-    return this.getOneWithoutRelations(eventId)
+    const event = await this.getOneWithoutRelations(eventId)
+    await this.saveEventRedisCache(event)
+    return event
   }
 
   async getNumberSignatureNeededForEvent(id: number) {
@@ -82,19 +95,17 @@ export default class EventService {
       totalSignatureNeeded: answers.length,
     })
 
-    return this.getOneWithoutRelations(id)
+    const event = await this.getOneWithoutRelations(id)
+    await this.saveEventRedisCache(event)
+    return event
   }
 
-  /* TODO
-  in this operation get total answers for event and set as totalSignatureNeeded use answer service
-  use this get every where
-  */
   async getOneEvent(eventId: number): Promise<EventEntity> {
     return this.repository.findOne({
       where: {
         id: eventId,
       },
-      relations: ['createdByUser', 'partner', 'address'],
+      relations: ['partner', 'address'],
     })
   }
 
@@ -103,18 +114,18 @@ export default class EventService {
   }
 
   async getManyEvents(eventIds: number[], withRelations?: boolean) {
-    if (withRelations) {
-      return await this.repository.find({
-        where: {
-          id: In(eventIds),
-        },
-        relations: ['createdByUser', 'partner', 'address', 'files'],
-      })
-    }
-
-    return this.repository.find({
+    return await this.repository.find({
       where: {
         id: In(eventIds),
+      },
+      relations: {
+        company: withRelations,
+        partner: withRelations,
+        address: withRelations,
+        files: withRelations,
+      },
+      order: {
+        start: 'DESC',
       },
     })
   }
@@ -131,33 +142,39 @@ export default class EventService {
     }
     await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToSave))
     await this.multipleUpdateForEvent(eventId)
-    return this.getOneEvent(eventId)
+    const eventSaved = await this.getOneEvent(eventId)
+    await this.saveEventRedisCache(eventSaved)
+    return eventSaved
   }
 
-  async createOneEvent(event: Partial<EventEntity>, userId: number, photographerId?: number) {
-    if (photographerId) {
-      event.partnerId = photographerId
-    }
-    event.createdByUserId = userId
-    const newEvent = this.repository.create(event)
+  async createOneEvent(event: Partial<EventEntity>, companyId: number, photographerId?: number) {
+    const newEvent = this.repository.create({
+      ...event,
+      partner: {
+        id: photographerId,
+      },
+      company: {
+        id: companyId,
+      },
+    })
     await this.repository.save(newEvent)
+    await this.saveEventRedisCache(newEvent)
     return newEvent
   }
 
-  async updateStatusForEvent(id: number) {
-    const event = await this.getOneWithoutRelations(id)
+  async updateStatusForEvent(event: EventEntity) {
     if (!event) {
       return null
     }
 
-    await this.repository.update(id, {
+    await this.repository.update(event.id, {
       status: updateStatusEventBasedOnStartEndTodayDate(event),
     })
   }
 
   async updateStatusForEventArray(events: EventEntity[]) {
     if (events.length > 0) {
-      events.forEach(event => this.updateStatusForEvent(event.id))
+      events.forEach(event => this.updateStatusForEvent(event))
     }
   }
 
@@ -171,15 +188,18 @@ export default class EventService {
         }
       }
     }
-    return event
+    const eventSaved = await this.getOneEvent(event.id)
+    await this.saveEventRedisCache(eventSaved)
+
+    return eventSaved
   }
 
   async multipleUpdateForEvent(eventId: number) {
     if (typeof eventId === 'number') {
       await this.getNumberSignatureNeededForEvent(eventId)
-      await this.updateStatusForEvent(eventId)
       const event = await this.getOneWithoutRelations(eventId)
       if (event) {
+        await this.updateStatusForEvent(event)
         await this.updateStatusEventWhenCompleted(event)
       }
     }

@@ -17,7 +17,7 @@ export interface JWTTokenPayload {
 }
 
 export interface CreateUserPayload {
-  companyName: string
+  companyId: number
   email: string
   firstName: string
   lastName: string
@@ -26,4 +26,5 @@ export interface CreateUserPayload {
   subscription: SubscriptionEnum
   subscriptionId?: number
   loggedAt?: null | Date
+  badges?: number[]
 }

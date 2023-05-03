@@ -1,0 +1,47 @@
+{
+  "id": 2,
+  "createdAt": "2023-03-23T11:46:36.913Z",
+  "updatedAt": "2023-03-31T17:04:09.352Z",
+  "deletedAt": null,
+  "name": "Poudlard",
+  "siret": "6665544",
+  "subscriptionLabel": "PREMIUM",
+  "userIds": [
+    6,
+    11
+  ],
+  "addressId": 2,
+  "eventIds": [
+    1,
+    3,
+    4,
+    2,
+    6,
+    7,
+    9,
+    8
+  ],
+  "employeeIds": [
+    2,
+    1,
+    4,
+    3,
+    5,
+    6,
+    8,
+    10,
+    7,
+    9,
+    13,
+    11,
+    12,
+    14
+  ],
+  "groupIds": [
+    1,
+    2,
+    3
+  ],
+  "filesIds": [],
+  "subscriptionId": 2
+}

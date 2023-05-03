@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import { BugReportStatus, BugReportType } from '../types/BugReport'
-import { BaseEntity } from './BaseEntity'
+import { BaseEntity } from './bases/BaseEntity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 

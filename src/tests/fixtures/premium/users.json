@@ -1,0 +1,155 @@
+[
+  {
+    "id": 11,
+    "createdAt": "2023-04-01T09:05:52.776Z",
+    "updatedAt": "2023-04-01T09:05:52.776Z",
+    "deletedAt": null,
+    "email": "phineas@poudlard.com",
+    "firstName": "Phineas Nigellus",
+    "lastName": "Black",
+    "token": "token",
+    "sessionId": null,
+    "roles": "USER",
+    "profilePicture": null,
+    "profilePictureId": null,
+    "notificationSubscriptionIds": [],
+    "company": {
+      "id": 2,
+      "createdAt": "2023-03-23T11:46:36.913Z",
+      "updatedAt": "2023-03-31T17:04:09.352Z",
+      "deletedAt": null,
+      "name": "Poudlard",
+      "siret": "6665544",
+      "subscriptionLabel": "PREMIUM",
+      "userIds": [
+        6,
+        11
+      ],
+      "addressId": 2,
+      "eventIds": [
+        1,
+        3,
+        4,
+        2,
+        6,
+        7,
+        9,
+        8
+      ],
+      "employeeIds": [
+        2,
+        1,
+        4,
+        3,
+        5,
+        6,
+        8,
+        10,
+        7,
+        9,
+        13,
+        11,
+        12,
+        14
+      ],
+      "groupIds": [
+        1,
+        2,
+        3
+      ],
+      "filesIds": [],
+      "subscriptionId": 2
+    },
+    "companyId": 2,
+    "badges": [],
+    "badgeIds": []
+  },
+  {
+    "id": 6,
+    "createdAt": "2023-03-23T11:46:36.916Z",
+    "updatedAt": "2023-04-03T08:54:26.509Z",
+    "deletedAt": null,
+    "email": "albus@poudlard.com",
+    "firstName": "Albus",
+    "lastName": "Dumbledore",
+    "token": "token",
+    "sessionId": null,
+    "roles": "OWNER",
+    "profilePicture": null,
+    "profilePictureId": null,
+    "notificationSubscriptionIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "company": {
+      "id": 2,
+      "createdAt": "2023-03-23T11:46:36.913Z",
+      "updatedAt": "2023-03-31T17:04:09.352Z",
+      "deletedAt": null,
+      "name": "Poudlard",
+      "siret": "6665544",
+      "subscriptionLabel": "PREMIUM",
+      "userIds": [
+        6,
+        11
+      ],
+      "addressId": 2,
+      "eventIds": [
+        1,
+        3,
+        4,
+        2,
+        6,
+        7,
+        9,
+        8
+      ],
+      "employeeIds": [
+        2,
+        1,
+        4,
+        3,
+        5,
+        6,
+        8,
+        10,
+        7,
+        9,
+        13,
+        11,
+        12,
+        14
+      ],
+      "groupIds": [
+        1,
+        2,
+        3
+      ],
+      "filesIds": [],
+      "subscriptionId": 2
+    },
+    "companyId": 2,
+    "badges": [
+      {
+        "id": 4,
+        "createdAt": "2023-03-23T11:46:36.677Z",
+        "updatedAt": "2023-03-23T11:46:36.677Z",
+        "deletedAt": null,
+        "name": "CREATE_10_RECIPIENTS",
+        "slug": "Créer-10-destinataires",
+        "label": "Créer 10 destinataires",
+        "icon": "UserPlusIcon",
+        "userIds": [
+          6
+        ]
+      }
+    ],
+    "badgeIds": [
+      4
+    ]
+  }
+]

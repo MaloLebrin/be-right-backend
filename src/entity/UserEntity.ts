@@ -1,121 +1,49 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from 'typeorm'
-import { Role, ThemeEnum } from '../types/'
-import { SubscriptionEnum } from '../types/Subscription'
-import { AddressEntity } from './AddressEntity'
-import { BaseEntity } from './BaseEntity'
-import { EmployeeEntity } from './EmployeeEntity'
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, RelationId } from 'typeorm'
+import { Role } from '../types/'
+import { BaseAuthEntity } from './bases/AuthEntity'
+import { CompanyEntity } from './Company.entity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
-import { SessionEntity } from './SessionEntity'
-import { SubscriptionEntity } from './SubscriptionEntity'
+import { NotificationSubcriptionEntity } from './notifications/NotificationSubscription.entity'
+import { BadgeEntity } from './repositories/Badge.entity'
 
 @Entity()
-export class UserEntity extends BaseEntity {
-  @Column({ unique: true })
-  email: string
-
-  @Column({ nullable: true })
-  password: string
-
-  @Column({ unique: true, update: false })
-  salt: string
-
-  @Column({ unique: true, update: false })
-  token: string
-
-  @Column({ unique: true, nullable: true })
-  twoFactorRecoveryCode: string | null
-
-  @Column({ unique: true, nullable: true })
-  twoFactorSecret: string | null
-
-  @Column({ length: 100, nullable: true })
-  firstName: string
-
-  @Column({ length: 100, nullable: true })
-  lastName: string
-
-  @Column({ nullable: true })
-  companyName: string
-
-  @Column({ nullable: true })
-  siret: string
-
-  @Column({ nullable: true })
-  apiKey: string
-
+export class UserEntity extends BaseAuthEntity {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
-  @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
-  subscriptionLabel: SubscriptionEnum
-
-  @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
-  theme: ThemeEnum
-
-  @OneToOne(() => AddressEntity, { cascade: true })
-  @JoinColumn()
-  address: AddressEntity
-
-  @RelationId((user: UserEntity) => user.address)
-  addressId: number
-
-  @OneToOne(() => SessionEntity, { cascade: true })
-  @JoinColumn()
-  session: SessionEntity
-
-  @RelationId((user: UserEntity) => user.session)
-  sessionId: number
-
-  @OneToMany(() => EventEntity, event => event.createdByUser, { cascade: true })
-  events: EventEntity[]
-
-  @RelationId((user: UserEntity) => user.events)
-  eventIds: number[]
-
-  @OneToMany(() => EmployeeEntity, employee => employee.createdByUser, { cascade: true })
-  @JoinColumn()
-  employees: EmployeeEntity[]
-
-  @RelationId((user: UserEntity) => user.employees)
-  employeeIds: number[]
-
-  @OneToMany(() => FileEntity, file => file.createdByUser, { cascade: true })
-  files: FileEntity[]
-
-  @RelationId((user: UserEntity) => user.files)
-  filesIds: number[]
-
-  @OneToOne(() => FileEntity, file => file.createdByUser)
+  @OneToOne(() => FileEntity, { cascade: true })
   @JoinColumn()
   profilePicture: FileEntity
 
-  @OneToOne(() => SubscriptionEntity, { cascade: true })
-  @JoinColumn()
-  subscription: SubscriptionEntity
-
-  @RelationId((user: UserEntity) => user.subscription)
-  subscriptionId: number
-
-  @Column({ nullable: true, default: null })
-  loggedAt: Date
-
-  @Column({ nullable: true, default: null })
-  passwordUpdatedAt: Date
-
-  @Column({ nullable: true, default: null })
-  saltUpdatedAt: Date
+  @RelationId((user: UserEntity) => user.profilePicture)
+  profilePictureId: number
 
   @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
   shootingEvent: EventEntity[]
+
+  @OneToMany(() => NotificationSubcriptionEntity, notificationSubcription => notificationSubcription.createdByUser, { cascade: true })
+  notificationSubscriptions: NotificationSubcriptionEntity[]
+
+  @RelationId((user: UserEntity) => user.notificationSubscriptions)
+  notificationSubscriptionIds: number[]
+
+  @ManyToOne(() => CompanyEntity, user => user.users)
+  company: CompanyEntity
+
+  @RelationId((user: UserEntity) => user.company)
+  companyId: number
+
+  @ManyToMany(() => BadgeEntity)
+  @JoinTable()
+  badges: BadgeEntity[]
+
+  @RelationId((user: UserEntity) => user.badges)
+  badgeIds: number[]
 }
 
 export const userSearchableFields = [
   'email',
   'firstName',
   'lastName',
-  'companyName',
-  'siret',
 ]
-
-// TODO use select in column option to remove field in find methods

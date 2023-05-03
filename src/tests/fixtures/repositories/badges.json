@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_10_RECIPIENTS",
+    "slug": "Supprimer-10-destinataires",
+    "label": "Supprimer 10 destinataires",
+    "icon": "UserMinusIcon",
+    "userIds": []
+  },
+  {
+    "id": 2,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_50_RECIPIENTS",
+    "slug": "Supprimer-50-destinataires",
+    "label": "Supprimer 50 destinataires",
+    "icon": "UserMinusIcon",
+    "userIds": []
+  },
+  {
+    "id": 3,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_25_RECIPIENTS",
+    "slug": "Supprimer-25-destinataires",
+    "label": "Supprimer 25 destinataires",
+    "icon": "UserMinusIcon",
+    "userIds": []
+  },
+  {
+    "id": 4,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_10_RECIPIENTS",
+    "slug": "Créer-10-destinataires",
+    "label": "Créer 10 destinataires",
+    "icon": "UserPlusIcon",
+    "userIds": [
+      6
+    ]
+  },
+  {
+    "id": 5,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_25_RECIPIENTS",
+    "slug": "Créer-25-destinataires",
+    "label": "Créer 25 destinataires",
+    "icon": "UserPlusIcon",
+    "userIds": []
+  },
+  {
+    "id": 6,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_50_RECIPIENTS",
+    "slug": "Créer-50-destinataires",
+    "label": "Créer 50 destinataires",
+    "icon": "UserPlusIcon",
+    "userIds": []
+  },
+  {
+    "id": 7,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_10_EVENTS",
+    "slug": "Supprimer-10-événements",
+    "label": "Supprimer 10 événements",
+    "icon": "CalendarIcon",
+    "userIds": []
+  },
+  {
+    "id": 8,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_25_EVENTS",
+    "slug": "Supprimer-25-événements",
+    "label": "Supprimer 25 événements",
+    "icon": "CalendarIcon",
+    "userIds": []
+  },
+  {
+    "id": 9,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "DELETE_50_EVENTS",
+    "slug": "Supprimer-50-événements",
+    "label": "Supprimer 50 événements",
+    "icon": "CalendarIcon",
+    "userIds": []
+  },
+  {
+    "id": 10,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_10_EVENTS",
+    "slug": "Créer-10-événements",
+    "label": "Créer 10 événements",
+    "icon": "CalendarDaysIcon",
+    "userIds": []
+  },
+  {
+    "id": 11,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_25_EVENTS",
+    "slug": "Créer-25-événements",
+    "label": "Créer 25 événements",
+    "icon": "CalendarDaysIcon",
+    "userIds": []
+  },
+  {
+    "id": 12,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "CREATE_50_EVENTS",
+    "slug": "Créer-50-événements",
+    "label": "Créer 50 événements",
+    "icon": "CalendarDaysIcon",
+    "userIds": []
+  },
+  {
+    "id": 13,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "COMPLETED_10_EVENTS",
+    "slug": "Compléter-10-événements",
+    "label": "Compléter 10 événements",
+    "icon": "CheckBadgeIcon",
+    "userIds": []
+  },
+  {
+    "id": 14,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "COMPLETED_25_EVENTS",
+    "slug": "Compléter-25-événements",
+    "label": "Compléter 25 événements",
+    "icon": "CheckBadgeIcon",
+    "userIds": []
+  },
+  {
+    "id": 15,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "COMPLETED_50_EVENTS",
+    "slug": "Compléter-50-événements",
+    "label": "Compléter 50 événements",
+    "icon": "CheckBadgeIcon",
+    "userIds": []
+  },
+  {
+    "id": 16,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "BASIC_SUBSCRIPTION",
+    "slug": "Souscrire-à-un-abonnement-BASIC",
+    "label": "Souscrire à un abonnement BASIC",
+    "icon": "ShoppingCartIcon",
+    "userIds": []
+  },
+  {
+    "id": 17,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "MEDIUM_SUBSCRIPTION",
+    "slug": "Souscrire-à-un-abonnement-MEDIUM",
+    "label": "Souscrire à un abonnement MEDIUM",
+    "icon": "ShoppingCartIcon",
+    "userIds": []
+  },
+  {
+    "id": 18,
+    "createdAt": "2023-03-23T11:46:36.677Z",
+    "updatedAt": "2023-03-23T11:46:36.677Z",
+    "deletedAt": null,
+    "name": "PREMIUM_SUBSCRIPTION",
+    "slug": "Souscrire-à-un-abonnement-PREMIUM",
+    "label": "Souscrire à un abonnement PREMIUM",
+    "icon": "ShoppingCartIcon",
+    "userIds": []
+  }
+]

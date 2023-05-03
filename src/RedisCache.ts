@@ -1,9 +1,11 @@
+/* eslint-disable security/detect-object-injection */
 import type { Redis as RedisClient } from 'ioredis'
 import Redis from 'ioredis'
 import type { Logger } from 'pino'
-import type { BaseEntity } from './entity/BaseEntity'
-import { useLogger } from './middlewares/loggerService'
+import type { BaseEntity } from './entity/bases/BaseEntity'
+import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
+import { parseRedisKey } from './utils/redisHelper'
 
 export default class RedisCache {
   private client: RedisClient
@@ -11,7 +13,6 @@ export default class RedisCache {
   private logger: Logger
 
   constructor() {
-    const { logger } = useLogger()
     this.logger = logger
 
     if (!this.connected) {
@@ -19,7 +20,8 @@ export default class RedisCache {
         parseInt(process.env.REDIS_PORT),
         process.env.REDIS_HOST,
         {
-          showFriendlyErrorStack: process.env.NODE_ENV !== 'production',
+          password: process.env.REDIS_PASSWORD,
+          showFriendlyErrorStack: true,
         },
       )
       this.connected = true
@@ -121,7 +123,12 @@ export default class RedisCache {
 
     if (value) {
       const array = this.parseArray<T>(value)
-      const isEveryDataInCache = array.every(item => keys.includes(`${typeofEntity}-${field}-${item[field]}` as RedisKeys))
+
+      const isEveryDataInCache = keys.every(key => {
+        const { value, field } = parseRedisKey(key)
+        const finalValue = array.find(item => item[field] === value)
+        return finalValue !== undefined && finalValue !== null
+      })
 
       if (isEveryDataInCache) {
         this.logger.info('redis value retrieved')
