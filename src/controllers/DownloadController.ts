@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 import puppeteer from 'puppeteer'
 import type { Logger } from 'pino'
 import type { Repository } from 'typeorm'
-import { In } from 'typeorm'
+import { In, IsNull, Not } from 'typeorm'
 import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
@@ -56,6 +56,7 @@ export default class AuthController {
         const answer = await this.repository.findOne({
           where: {
             id,
+            signedAt: Not(IsNull()),
           },
           relations: [
             'event.company',
@@ -67,6 +68,10 @@ export default class AuthController {
           ],
         })
 
+        if (!answer) {
+          throw new ApiError(422, 'le destinataire n\'a pas répondu')
+        }
+
         if (answer && hasOwnProperty(answer, 'event') && hasOwnProperty(answer, 'employee')) {
           const event = answer.event
           const employee = answer.employee as EmployeeEntity
@@ -77,7 +82,7 @@ export default class AuthController {
           const user = company.users.find(user => isUserOwner(user))
 
           return res.render('answer', {
-            todayDate: new Date().toISOString(),
+            todayDate: answer.signedAt.toISOString(),
             companyName: company.name,
 
             employeeFirstName: employee.firstName,
@@ -93,10 +98,12 @@ export default class AuthController {
             userCity: company.address?.city,
             userFirstName: user?.firstName,
             userLastName: user?.lastName,
+            isAccepted: answer.hasSigned,
+
           })
         }
       }
-      throw new ApiError(422, 'L\'identifiant de la réponse est requis').Handler(res)
+      throw new ApiError(422, 'L\'identifiant de la réponse est requis')
     })
   }
 
