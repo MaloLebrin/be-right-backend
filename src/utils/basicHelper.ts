@@ -1,3 +1,5 @@
+import type { Request } from 'express'
+
 /**
  * Returns the object type of the given value.
  *
@@ -33,4 +35,13 @@ export function parseBoolean(v: string) {
 export function parseQueryIds(ids: string) {
   return ids
     .split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+}
+
+export function getCookies(req: Request) {
+  return req.headers?.cookie.split('; ')
+}
+
+export function getCookie(req: Request, name: string) {
+  const cookies = getCookies(req)
+  return cookies.find(str => str.startsWith(name)).split('=')[1]
 }
