@@ -84,8 +84,9 @@ export default class AuthController {
   public ViewAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
+      const currentUser = ctx.user
 
-      if (!ctx?.user?.token) {
+      if (!currentUser?.companyId) {
         throw new ApiError(401, 'Action non authorisée')
       }
 
@@ -102,9 +103,7 @@ export default class AuthController {
           hasSigned: true,
           event: {
             company: {
-              users: {
-                token: ctx?.user.token,
-              },
+              id: currentUser?.companyId,
             },
           },
         },
@@ -133,15 +132,20 @@ export default class AuthController {
   public downLoadAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
-      const answerIds = parseQueryIds(req.query.ids as string)
 
-      if (!ctx?.user?.token) {
+      const currentUser = ctx.user
+
+      if (!currentUser?.companyId) {
         throw new ApiError(401, 'Action non authorisée')
       }
+
+      const answerIds = parseQueryIds(req.query.ids as string)
 
       if (!answerIds || answerIds.length < 1) {
         throw new ApiError(422, 'L\'identifiant de la réponse est requis')
       }
+
+      console.log(currentUser, '<==== currentUser')
 
       const answers = await this.repository.find({
         where: {
@@ -150,9 +154,7 @@ export default class AuthController {
           hasSigned: true,
           event: {
             company: {
-              users: {
-                token: ctx?.user.token,
-              },
+              id: currentUser?.companyId,
             },
           },
         },
@@ -160,6 +162,8 @@ export default class AuthController {
           employee: true,
         },
       })
+
+      console.log(answers, '<==== answers')
 
       if (answers.length < 1) {
         throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')

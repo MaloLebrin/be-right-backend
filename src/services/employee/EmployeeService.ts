@@ -30,10 +30,17 @@ export default class EmployeeService {
     return this.getOne(newEmployee.id)
   }
 
-  async getOne(id: number) {
+  async getOne(id: number, withRelations?: boolean) {
     return this.repository.findOne({
       where: {
         id,
+      },
+      relations: {
+        address: withRelations,
+        company: withRelations,
+        answers: withRelations,
+        files: withRelations,
+        groups: withRelations,
       },
     })
   }
