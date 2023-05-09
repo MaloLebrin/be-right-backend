@@ -10,7 +10,7 @@ import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { hasOwnProperty } from '../utils/objectHelper'
 import { wrapperRequest } from '../utils'
-import { parseQueryIds } from '../utils/basicHelper'
+import { getCookie, parseQueryIds } from '../utils/basicHelper'
 import UserService from '../services/UserService'
 import { AddressService } from '../services'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
@@ -18,6 +18,7 @@ import { logger } from '../middlewares/loggerService'
 import { CompanyService } from '../services/CompanyService'
 import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
+import Context from '../context'
 
 export default class AuthController {
   AnswerService: AnswerService
@@ -82,6 +83,12 @@ export default class AuthController {
 
   public ViewAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
+      if (!ctx?.user?.token) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
+
       const answerIds = parseQueryIds(req.query.ids as string)
 
       if (!answerIds || answerIds.length < 1) {
@@ -93,6 +100,13 @@ export default class AuthController {
           id: In(answerIds),
           signedAt: Not(IsNull()),
           hasSigned: true,
+          event: {
+            company: {
+              users: {
+                token: ctx?.user.token,
+              },
+            },
+          },
         },
         relations: [
           'event.company',
@@ -118,7 +132,12 @@ export default class AuthController {
 
   public downLoadAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
       const answerIds = parseQueryIds(req.query.ids as string)
+
+      if (!ctx?.user?.token) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
 
       if (!answerIds || answerIds.length < 1) {
         throw new ApiError(422, 'L\'identifiant de la réponse est requis')
@@ -129,6 +148,13 @@ export default class AuthController {
           id: In(answerIds),
           signedAt: Not(IsNull()),
           hasSigned: true,
+          event: {
+            company: {
+              users: {
+                token: ctx?.user.token,
+              },
+            },
+          },
         },
         relations: {
           employee: true,
@@ -161,6 +187,13 @@ export default class AuthController {
 
         const page = await browser.newPage()
 
+        const cookie = getCookie(req, 'userToken')
+        if (cookie) {
+          await page.setExtraHTTPHeaders({
+            authorization: `Bearer ${cookie}`,
+          })
+        }
+
         await page.goto(url)
         const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
         await browser.close()
@@ -170,12 +203,15 @@ export default class AuthController {
           .download(filePath)
       } catch (error) {
         this.logger.error(error)
-        return res.status(error.status || 500).send({
-          success: false,
-          message: error.message,
-          stack: error.stack,
-          description: error.cause,
-        })
+
+        return res
+          .status(error.status || 500)
+          .send({
+            success: false,
+            message: error.message,
+            stack: error.stack,
+            description: error.cause,
+          })
       } finally {
         await this.delay(1000)
 
