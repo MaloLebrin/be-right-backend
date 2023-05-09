@@ -20,7 +20,7 @@ import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
 import Context from '../context'
 
-export default class AuthController {
+export default class DownloadController {
   AnswerService: AnswerService
   repository: Repository<AnswerEntity>
   AddressService: AddressService
