@@ -148,8 +148,8 @@ async function StartApp() {
 
   // Answer
   // TODO add auth
-  app.get('/answer/view/:id', new DownloadController().ViewAnswer)
-  app.get('/answer/download/:id', new DownloadController().downLoadAnswer)
+  app.get('/answer/view', new DownloadController().ViewAnswer)
+  app.get('/answer/download', new DownloadController().downLoadAnswer)
   app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)

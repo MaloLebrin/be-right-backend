@@ -45,158 +45,42 @@ export default class AuthController {
     this.logger = logger
   }
 
+  private mapAnswersToDownload = (answers: AnswerEntity[]) => {
+    return answers.map(answer => {
+      const event = answer.event
+      const employee = answer.employee as EmployeeEntity
+
+      const partner = event.partner
+      const company = event.company
+      const employeeAddress = answer.employee.address
+      const user = company.users.find(user => isUserOwner(user))
+
+      return {
+        todayDate: answer.signedAt.toISOString(),
+        companyName: company.name,
+
+        employeeFirstName: employee.firstName,
+        employeeLastName: employee.lastName,
+        employeeStreet: employeeAddress.addressLine,
+        employeePostalCode: employeeAddress.postalCode,
+        employeeCity: employeeAddress.city,
+        employeeCountry: employeeAddress.country,
+
+        partnerFirstName: partner.firstName,
+        partnerLastName: partner.lastName,
+
+        userCity: company.address?.city,
+        userFirstName: user?.firstName,
+        userLastName: user?.lastName,
+        isAccepted: answer.hasSigned,
+      }
+    })
+  }
+
   // eslint-disable-next-line promise/param-names
   private delay = async (ms: number) => new Promise(res => setTimeout(res, ms))
 
   public ViewAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-
-      if (id) {
-        const answer = await this.repository.findOne({
-          where: {
-            id,
-            signedAt: Not(IsNull()),
-          },
-          relations: [
-            'event.company',
-            'event.company.address',
-            'event.company.users',
-            'event.partner',
-            'employee',
-            'employee.address',
-          ],
-        })
-
-        if (!answer) {
-          throw new ApiError(422, 'le destinataire n\'a pas répondu')
-        }
-
-        if (answer && hasOwnProperty(answer, 'event') && hasOwnProperty(answer, 'employee')) {
-          const event = answer.event
-          const employee = answer.employee as EmployeeEntity
-
-          const partner = event.partner
-          const company = event.company
-          const employeeAddress = answer.employee.address
-          const user = company.users.find(user => isUserOwner(user))
-
-          return res.render('answer', {
-            todayDate: answer.signedAt.toISOString(),
-            companyName: company.name,
-
-            employeeFirstName: employee.firstName,
-            employeeLastName: employee.lastName,
-            employeeStreet: employeeAddress.addressLine,
-            employeePostalCode: employeeAddress.postalCode,
-            employeeCity: employeeAddress.city,
-            employeeCountry: employeeAddress.country,
-
-            partnerFirstName: partner.firstName,
-            partnerLastName: partner.lastName,
-
-            userCity: company.address?.city,
-            userFirstName: user?.firstName,
-            userLastName: user?.lastName,
-            isAccepted: answer.hasSigned,
-
-          })
-        }
-      }
-      throw new ApiError(422, 'L\'identifiant de la réponse est requis')
-    })
-  }
-
-  public downLoadAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-
-      if (!id) {
-        throw new ApiError(422, 'L\'identifiant de la réponse est requis')
-      }
-
-      const answer = await this.repository.findOne({
-        where: {
-          id,
-        },
-        relations: {
-          employee: true,
-        },
-      })
-
-      if (!answer) {
-        throw new ApiError(422, 'La réponse n\'éxiste pas')
-      }
-
-      if (!answer.signedAt) {
-        throw new ApiError(422, 'Le destinataire n\'a pas encore répondu')
-      }
-
-      if (!answer.hasSigned) {
-        throw new ApiError(422, 'Le destinataire a refusé')
-      }
-
-      if (!answer.employee) {
-        throw new ApiError(422, 'Le destinataire n\'a pas été trouvé')
-      }
-
-      const employee = answer?.employee as EmployeeEntity
-      if (employee) {
-        const baseUrl = `${req.protocol}://${req.get('host')}`
-        const url = `${baseUrl}/answer/view/${id}`
-
-        const filePath = `/app/uploads/droit-image-${employee.slug}.pdf`
-
-        try {
-          const browser = await puppeteer.launch({
-            headless: true,
-            executablePath: '/usr/bin/chromium-browser',
-            args: [
-              '--no-sandbox',
-              '--disable-gpu',
-            ],
-          })
-
-          const page = await browser.newPage()
-
-          await page.goto(url)
-          const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-          await browser.close()
-
-          return res
-            .set({ 'Content-Type': 'application/pdf', 'Content-Length': pdf.length })
-            .download(filePath)
-        } catch (error) {
-          this.logger.error(error)
-          return res.status(error.status || 500).send({
-            success: false,
-            message: error.message,
-            stack: error.stack,
-            description: error.cause,
-          })
-        } finally {
-          await this.delay(1000)
-
-          // eslint-disable-next-line security/detect-non-literal-fs-filename
-          unlink(filePath, err => {
-            if (err) {
-              this.logger.error(err)
-              return res.status(422).send({
-                success: false,
-                message: err.message,
-                stack: err.stack,
-                description: err.cause,
-              })
-            } else {
-              this.logger.info(`${filePath} was deleted`)
-            }
-          })
-        }
-      }
-    })
-  }
-
-  public downLoadAnswers = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const answerIds = parseQueryIds(req.query.ids as string)
 
@@ -207,12 +91,109 @@ export default class AuthController {
       const answers = await this.repository.find({
         where: {
           id: In(answerIds),
+          signedAt: Not(IsNull()),
+          hasSigned: true,
+        },
+        relations: [
+          'event.company',
+          'event.company.address',
+          'event.company.users',
+          'event.partner',
+          'employee',
+          'employee.address',
+        ],
+      })
+
+      if (!answers && answers.length < 1) {
+        throw new ApiError(422, 'le destinataire n\'a pas répondu')
+      }
+
+      if (answers.every(answer => hasOwnProperty(answer, 'event') && hasOwnProperty(answer, 'employee'))) {
+        return res.render('answer', {
+          data: this.mapAnswersToDownload(answers),
+        })
+      }
+    })
+  }
+
+  public downLoadAnswer = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const answerIds = parseQueryIds(req.query.ids as string)
+
+      if (!answerIds || answerIds.length < 1) {
+        throw new ApiError(422, 'L\'identifiant de la réponse est requis')
+      }
+
+      const answers = await this.repository.find({
+        where: {
+          id: In(answerIds),
+          signedAt: Not(IsNull()),
+          hasSigned: true,
         },
         relations: {
           employee: true,
         },
       })
-      return answers
+
+      if (answers.length < 1) {
+        throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`
+      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
+
+      let filePath = `/app/uploads/droit-image-${answers[0].employee.slug}.pdf`
+
+      if (answers.length > 1) {
+        const event = await this.EventService.getOneWithoutRelations(answers[0].eventId)
+        filePath = `/app/uploads/droit-image-${event.name}.pdf`
+      }
+
+      try {
+        const browser = await puppeteer.launch({
+          headless: true,
+          executablePath: '/usr/bin/chromium-browser',
+          args: [
+            '--no-sandbox',
+            '--disable-gpu',
+          ],
+        })
+
+        const page = await browser.newPage()
+
+        await page.goto(url)
+        const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
+        await browser.close()
+
+        return res
+          .set({ 'Content-Type': 'application/pdf', 'Content-Length': pdf.length })
+          .download(filePath)
+      } catch (error) {
+        this.logger.error(error)
+        return res.status(error.status || 500).send({
+          success: false,
+          message: error.message,
+          stack: error.stack,
+          description: error.cause,
+        })
+      } finally {
+        await this.delay(1000)
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        unlink(filePath, err => {
+          if (err) {
+            this.logger.error(err)
+            return res.status(422).send({
+              success: false,
+              message: err.message,
+              stack: err.stack,
+              description: err.cause,
+            })
+          } else {
+            this.logger.info(`${filePath} was deleted`)
+          }
+        })
+      }
     })
   }
 }
