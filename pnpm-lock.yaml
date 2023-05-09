@@ -33,7 +33,7 @@ specifiers:
   node-cron: ^3.0.2
   node-mailjet: ^6.0.2
   pg: ^8.10.0
-  pino: 8.12.0
+  pino: 8.14.1
   pino-pretty: 10.0.0
   redis: ^4.6.5
   reflect-metadata: ^0.1.13
@@ -65,7 +65,7 @@ dependencies:
   node-cron: 3.0.2
   node-mailjet: 6.0.2
   pg: 8.10.0
-  pino: 8.12.0
+  pino: 8.14.1
   pino-pretty: 10.0.0
   redis: 4.6.6
   reflect-metadata: 0.1.13
@@ -4037,8 +4037,8 @@ packages:
       thread-stream: 0.15.2
     dev: false
 
-  /pino/8.12.0:
-    resolution: {integrity: sha512-qHiXP7x9hFnJb0EnrLzD4onHj82Vh91lEtx6UiPT2eNoHD7lwi50CUIz+s0Z7YXgtMc7IIjss4yIIxZu6T1Tdg==}
+  /pino/8.14.1:
+    resolution: {integrity: sha512-8LYNv7BKWXSfS+k6oEc6occy5La+q2sPwU3q2ljTX5AZk7v+5kND2o5W794FyRaqha6DJajmkNRsWtPpFyMUdw==}
     hasBin: true
     dependencies:
       atomic-sleep: 1.0.0
