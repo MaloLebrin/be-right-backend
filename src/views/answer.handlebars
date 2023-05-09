@@ -20,25 +20,6 @@ h1 {
   margin-bottom: 2rem;
 }
 
-h2 {
-  position: absolute;
-  font-size: 15rem;
-  transform: rotate(-45deg);
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  opacity: 0.2;
-}
-
-.accepted {
-  color: #86efac;
-}
-
-.refused {
-  color: #fca5a5;
-}
-
 .text-wrapper {
   margin: 1rem 0;
 }
@@ -55,25 +36,21 @@ h2 {
   font-weight: bold;
 }
 
-.signature {
-  font-family: 'Alex Brush', cursive;
-  font-size: 16px;
-}
-
 p {
   font-size: 10px;
   line-height: 2.0;
 }
+
+.signature {
+  font-family: 'Alex Brush', cursive;
+  font-size: 14px;
+}
+
 </style>
 
 {{#each data}}
   <main class="main">
     <h1>Autorisation exploitation droit à l'image</h1>
-    {{!-- {{#if isAccepted}}
-      <h2 class="accepted">Accepté</h2>
-    {{else}}
-      <h2 class="refused">Refusé</h2>
-    {{/if}} --}}
 
     <div class="text-wrapper">
       <p>Je soussigné(e) <span class="field-bold">{{employeeFirstName}} {{ employeeLastName }}</span></p>
