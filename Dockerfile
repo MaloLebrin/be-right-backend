@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile --unsafe-perm \
     && chown -R 0:0 /app/node_modules
 
 # RUN mkdir node_modules/.cache
-RUN chmod -R 777 node_modules/.cache
+# RUN chmod -R 777 node_modules/.cache
 # Be careful with this env variable
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV}
@@ -36,12 +36,11 @@ RUN pnpm run tsc
 RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/scriptSeed.sh
 
-# RUN mkdir /app/uploads
-RUN chmod -R 777 /app/uploads
+RUN chmod -R 777 /app/src/uploads
 RUN chmod 777 /app/build/src/middlewares/
 
 USER chrome
-RUN chmod +x /app/uploads
+# RUN chmod +x /app/uploads
 
 ENTRYPOINT ["node", "/app/build/src/index.js"]
 # ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]

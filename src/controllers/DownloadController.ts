@@ -142,11 +142,11 @@ export default class AuthController {
       const baseUrl = `${req.protocol}://${req.get('host')}`
       const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
 
-      let filePath = `/app/uploads/droit-image-${answers[0].employee.slug}.pdf`
+      let filePath = `/app/src/uploads/droit-image-${answers[0].employee.slug}.pdf`
 
       if (answers.length > 1) {
         const event = await this.EventService.getOneWithoutRelations(answers[0].eventId)
-        filePath = `/app/uploads/droit-image-${event.name}.pdf`
+        filePath = `/app/src/uploads/droit-image-${event.name}.pdf`
       }
 
       try {
