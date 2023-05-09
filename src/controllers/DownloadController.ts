@@ -115,7 +115,30 @@ export default class AuthController {
         throw new ApiError(422, 'L\'identifiant de la réponse est requis')
       }
 
-      const answer = await this.AnswerService.getOne(id, true)
+      const answer = await this.repository.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          employee: true,
+        },
+      })
+
+      if (!answer) {
+        throw new ApiError(422, 'La réponse n\'éxiste pas')
+      }
+
+      if (!answer.signedAt) {
+        throw new ApiError(422, 'Le destinataire n\'a pas encore répondu')
+      }
+
+      if (!answer.hasSigned) {
+        throw new ApiError(422, 'Le destinataire a refusé')
+      }
+
+      if (!answer.employee) {
+        throw new ApiError(422, 'Le destinataire n\'a pas été trouvé')
+      }
 
       const employee = answer?.employee as EmployeeEntity
       if (employee) {
