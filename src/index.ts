@@ -107,6 +107,7 @@ async function StartApp() {
     api_key: CLOUDINARY_API_KEY,
     api_secret: CLOUDINARY_API_SECRET,
   })
+
   const upload = multer({ dest: 'src/uploads/' })
 
   app.get('/', (req: Request, res: Response) => {
