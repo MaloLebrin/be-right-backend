@@ -15,10 +15,9 @@ import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
-import { isUserAdmin, isUserOwner } from '../utils/userHelper'
+import { isUserOwner } from '../utils/userHelper'
 import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
-import { SendMailEventCompletedJob } from '../jobs/queue/jobs/sendMailEventCompleted.job'
 
 export default class AnswerController {
   AnswerService: AnswerService

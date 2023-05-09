@@ -145,8 +145,6 @@ export default class AuthController {
         throw new ApiError(422, 'L\'identifiant de la réponse est requis')
       }
 
-      console.log(currentUser, '<==== currentUser')
-
       const answers = await this.repository.find({
         where: {
           id: In(answerIds),
@@ -162,8 +160,6 @@ export default class AuthController {
           employee: true,
         },
       })
-
-      console.log(answers, '<==== answers')
 
       if (answers.length < 1) {
         throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')
