@@ -1,4 +1,6 @@
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
+
 .main {
  padding: 4rem;
  position: relative;
@@ -52,6 +54,11 @@ h2 {
   font-weight: bold;
 }
 
+.signature {
+  font-family: 'Alex Brush', cursive;
+  font-size: 16px;
+}
+
 p {
   font-size: 10px;
   line-height: 2.0;
@@ -60,11 +67,11 @@ p {
 
 <main class="main">
   <h1>Autorisation exploitation droit à l'image</h1>
-  {{#if isAccepted}}
+  {{!-- {{#if isAccepted}}
     <h2 class="accepted">Accepté</h2>
   {{else}}
     <h2 class="refused">Refusé</h2>
-  {{/if}}
+  {{/if}} --}}
 
   <div class="text-wrapper">
     <p>Je soussigné(e) <span class="field-bold">{{employeeFirstName}} {{ employeeLastName }}</span></p>
@@ -124,10 +131,16 @@ p {
         <p class="field-bold">
           {{ employeeFirstName }} {{ employeeLastName }}
         </p>
+        <p class="field-bold signature">
+          {{ employeeFirstName }} {{ employeeLastName }}
+        </p>
       </div>
       <div>
         <p>Nom et prénom du représentant {{ companyName }} :</p>
         <p class="field-bold">
+          {{ userFirstName }} {{ userLastName }}
+        </p>
+        <p class="field-bold signature">
           {{ userFirstName }} {{ userLastName }}
         </p>
       </div>
