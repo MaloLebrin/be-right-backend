@@ -18,12 +18,12 @@ COPY .env /app/.env
 COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 
-COPY cronScript.sh /app/
+# COPY cronScript.sh /app/
 
 COPY ./src /app/src
 
 RUN pnpm run tsc
 
-RUN chmod +x /app/cronScript.sh
+# RUN chmod +x /app/cronScript.sh
 
-ENTRYPOINT ["/bin/bash","/app/cronScript.sh"]
+ENTRYPOINT ["node", "/app/build/src/jobs/index.js"]

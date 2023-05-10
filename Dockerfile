@@ -15,7 +15,7 @@ COPY pnpm-lock.yaml /app/
 # RUN npm install
 RUN npm i -g pnpm
 
-RUN pnpm install --frozen-lockfile --unsafe-perm \
+RUN pnpm install --no-frozen-lockfile --unsafe-perm \
     && chown -R 0:0 /app/node_modules
 
 # RUN mkdir node_modules/.cache
@@ -27,13 +27,13 @@ ENV NODE_ENV=${NODE_ENV}
 # COPY .env /app/.env
 COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
-COPY entrypoint.sh /app/
+# COPY entrypoint.sh /app/
 COPY scriptSeed.sh /app/
 COPY ./src /app/src
 
 RUN pnpm run tsc
 
-RUN chmod +x /app/entrypoint.sh
+# RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/scriptSeed.sh
 
 RUN chmod -R 777 /app/src/uploads
@@ -43,4 +43,4 @@ USER chrome
 # RUN chmod +x /app/uploads
 
 ENTRYPOINT ["node", "/app/build/src/index.js"]
-# ENTRYPOINT ["/bin/bash","/app/entrypoint.sh"]
+# ENTRYPOINT ["/bin/bash -c","/app/entrypoint.sh"]
