@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
+import puppeteer from 'puppeteer'
 import { wrapperRequest } from '../../utils'
 import { APP_SOURCE } from '../..'
 import AnswerService from '../../services/AnswerService'
@@ -14,18 +15,21 @@ import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
+import { MailjetService } from '../../services'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
   EventRepository: Repository<EventEntity>
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
+  MailJetService: MailjetService
 
   constructor() {
     this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.EventRepository = APP_SOURCE.getRepository(EventEntity)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
+    this.MailJetService = new MailjetService(APP_SOURCE)
   }
 
   private async isValidToken(token: string, email: string) {
@@ -153,6 +157,9 @@ export class AnswerSpecificController {
           },
           signedAt: IsNull(),
         },
+        relations: {
+          employee: true,
+        },
       })
 
       if (!answer) {
@@ -168,6 +175,34 @@ export class AnswerSpecificController {
       await defaultQueue.add(Date.now().toString(), new UpdateEventStatusJob({
         eventId: answer.eventId,
       }))
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`
+      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
+      const fileName = `droit-image-${answer.employee.slug}.pdf`
+      const filePath = `/app/src/uploads/${fileName}`
+
+      const browser = await puppeteer.launch({
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser',
+        args: [
+          '--no-sandbox',
+          '--disable-gpu',
+        ],
+      })
+
+      const page = await browser.newPage()
+
+      await page.goto(url)
+      const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
+      await browser.close()
+
+      await this.MailJetService.sendEmployeeAnswerWithPDF({
+        creatorFullName: 'Test',
+        employee: answer.employee,
+        companyName: 'Test',
+        pdfBase64: pdf.toString('base64'),
+        fileName,
+      })
 
       return res.status(200).json(answer)
     })
