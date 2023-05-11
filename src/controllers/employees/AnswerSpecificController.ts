@@ -2,7 +2,6 @@ import type { Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
-import puppeteer from 'puppeteer'
 import { wrapperRequest } from '../../utils'
 import { APP_SOURCE } from '../..'
 import AnswerService from '../../services/AnswerService'
@@ -16,6 +15,9 @@ import EventEntity from '../../entity/EventEntity'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
 import { MailjetService } from '../../services'
+import { generateQueueName } from '../../jobs/queue/jobs/provider'
+import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
+import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -157,9 +159,7 @@ export class AnswerSpecificController {
           },
           signedAt: IsNull(),
         },
-        relations: {
-          employee: true,
-        },
+        relations: ['employee', 'event.company.users'],
       })
 
       if (!answer) {
@@ -172,37 +172,21 @@ export class AnswerSpecificController {
         reason: reason || null,
       })
 
-      await defaultQueue.add(Date.now().toString(), new UpdateEventStatusJob({
+      const creator = answer.event.company.users.find(user => isUserOwner(user))
+
+      await defaultQueue.add(
+        generateQueueName(),
+        new SendSubmitAnswerConfirmationJob({
+          req,
+          answer,
+          creatorFullName: getfullUsername(creator),
+          companyName: answer.event.company.name,
+        }),
+      )
+
+      await defaultQueue.add(generateQueueName(), new UpdateEventStatusJob({
         eventId: answer.eventId,
       }))
-
-      const baseUrl = `${req.protocol}://${req.get('host')}`
-      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
-      const fileName = `droit-image-${answer.employee.slug}.pdf`
-      const filePath = `/app/src/uploads/${fileName}`
-
-      const browser = await puppeteer.launch({
-        headless: true,
-        executablePath: '/usr/bin/chromium-browser',
-        args: [
-          '--no-sandbox',
-          '--disable-gpu',
-        ],
-      })
-
-      const page = await browser.newPage()
-
-      await page.goto(url)
-      const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-      await browser.close()
-
-      await this.MailJetService.sendEmployeeAnswerWithPDF({
-        creatorFullName: 'Test',
-        employee: answer.employee,
-        companyName: 'Test',
-        pdfBase64: pdf.toString('base64'),
-        fileName,
-      })
 
       return res.status(200).json(answer)
     })
