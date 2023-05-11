@@ -20,6 +20,8 @@ services:
       - 6379
 
   app:
+    restart: always
+    image: zenika/alpine-chrome:with-puppeteer
     links:
     - redis
     depends_on:

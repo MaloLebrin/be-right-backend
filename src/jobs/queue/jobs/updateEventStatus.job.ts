@@ -30,6 +30,25 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
 
       const eventUpdated = await eventService.getOneWithoutRelations(event.id)
 
+      if (event.status === EventStatusEnum.COMPLETED) {
+        const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
+          where: {
+            id: event.companyId,
+          },
+          relations: {
+            users: true,
+          },
+        })
+
+        if (company && company.users.length > 0) {
+          const mailjetService = new MailjetService(APP_SOURCE)
+          await mailjetService.sendEventCompletedEmail({
+            event,
+            users: company.users,
+          })
+        }
+      }
+
       if (eventUpdated && eventUpdated.status !== event.status) {
         const eventNotificationService = new EventNotificationService(APP_SOURCE)
 
@@ -65,25 +84,6 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
               })
             }
           }))
-        }
-      }
-
-      if (event.status === EventStatusEnum.COMPLETED) {
-        const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
-          where: {
-            id: event.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        })
-
-        if (company && company.users.length > 0) {
-          const mailjetService = new MailjetService(APP_SOURCE)
-          await mailjetService.sendEventCompletedEmail({
-            event,
-            users: company.users,
-          })
         }
       }
     }

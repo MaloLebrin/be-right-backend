@@ -44,6 +44,9 @@ import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { AnswerSpecificController } from './controllers/employees/AnswerSpecificController'
 import { isProduction } from './utils/envHelper'
+import DownloadController from './controllers/DownloadController'
+import { hbs } from './utils/handlebarsHelper'
+import downloadAuth from './middlewares/downloadAuth'
 
 const {
   CLOUDINARY_API_KEY,
@@ -94,12 +97,17 @@ async function StartApp() {
   })
   app.set('sseManager', new SSEManager())
 
+  app.engine('handlebars', hbs.engine)
+  app.set('view engine', 'handlebars')
+  app.set('views', '/app/src/views')
+
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
     api_key: CLOUDINARY_API_KEY,
     api_secret: CLOUDINARY_API_SECRET,
   })
-  const upload = multer({ dest: 'uploads/' })
+
+  const upload = multer({ dest: 'src/uploads/' })
 
   app.get('/', (req: Request, res: Response) => {
     return res.send('Hello World')
@@ -140,6 +148,9 @@ async function StartApp() {
   app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
 
   // Answer
+  app.get('/answer/view', [isAuthenticated], new DownloadController().ViewAnswer)
+  app.get('/answer/download', [downloadAuth], new DownloadController().downLoadAnswer)
+
   app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
   app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
   app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)

@@ -15,10 +15,9 @@ import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
-import { isUserAdmin, isUserOwner } from '../utils/userHelper'
+import { isUserOwner } from '../utils/userHelper'
 import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
-import { SendMailEventCompletedJob } from '../jobs/queue/jobs/sendMailEventCompleted.job'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -199,87 +198,6 @@ export default class AnswerController {
 
       await this.EventService.multipleUpdateForEvent(answerUpdated.eventId)
       return res.status(200).json(answerResponse(answerUpdated))
-    })
-  }
-
-  public updateAnswerStatus = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
-      const {
-        isAnswerAccepted,
-        email,
-        twoFactorCode,
-      }: {
-        isAnswerAccepted: boolean
-        email: string
-        twoFactorCode: string
-      } = req.body
-
-      if (id) {
-        const answer = await this.repository.findOne({
-          where: {
-            id,
-            twoFactorCode,
-          },
-        })
-
-        if (!answer) {
-          throw new ApiError(422, 'Cet entité n\'existe pas')
-        }
-
-        const employee = await this.employeeRepository.findOne({
-          where: {
-            email,
-            id: answer.employeeId,
-          },
-        })
-
-        if (!employee) {
-          throw new ApiError(422, 'Aucun destinataire n\'est associé à cet événement')
-        }
-
-        const event = await this.EventService.getOneEvent(answer.eventId)
-
-        if (!event) {
-          throw new ApiError(422, 'L\'événement n\'existe pas')
-        }
-
-        if (event.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
-          const now = new Date()
-          await this.repository.update(id, {
-            hasSigned: isAnswerAccepted,
-            signedAt: now,
-          })
-
-          const answerToSend = {
-            ...answer,
-            hasSigned: isAnswerAccepted,
-            signedAt: new Date(),
-          }
-
-          const name = Date.now().toString()
-          await defaultQueue.add(name, new UpdateEventStatusJob({
-            eventId: event.id,
-          }))
-
-          const eventToSendMail = await this.EventService.getOneEvent(answer.eventId)
-
-          if (!eventToSendMail) {
-            throw new ApiError(422, 'L\'événement n\'existe pas')
-          }
-
-          await defaultQueue.add(name, new SendMailEventCompletedJob({
-            event: eventToSendMail,
-          }))
-
-          await this.saveAnswerInCache(answerToSend)
-
-          await this.EventService.multipleUpdateForEvent(answerToSend.eventId)
-          return res.status(200).json(answerResponse(answerToSend))
-        }
-      }
-      throw new ApiError(422, 'Paramètres manquants')
     })
   }
 
