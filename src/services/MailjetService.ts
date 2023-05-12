@@ -11,6 +11,7 @@ import type { UserEntity } from '../entity/UserEntity'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { isProduction } from '../utils/envHelper'
+import { MailjetTemplateId } from '../utils/mailJetHelpers'
 
 export class MailjetService {
   SecretKey: string
@@ -68,7 +69,7 @@ export class MailjetService {
       ],
       Subject: 'Vous avez un document à signer',
       TemplateLanguage: true,
-      TemplateID: 4740559,
+      TemplateID: MailjetTemplateId.EVENT_CREATED,
       TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
       Variables: {
         recipientFirstName: employee.firstName,
@@ -166,7 +167,7 @@ export class MailjetService {
                 },
               ],
               TextPart: 'Be Right - Réinitialisez votre mot de passe',
-              TemplateID: 4715983,
+              TemplateID: MailjetTemplateId.RECOVERY_PASSWORD,
               TemplateLanguage: true,
               Subject: 'Be Right - Réinitialisez votre mot de passe',
               Variables: {
@@ -224,7 +225,7 @@ export class MailjetService {
               ],
               TextPart: 'Be Right - Vous avez un document à signer',
               TemplateLanguage: true,
-              TemplateID: 4720760,
+              TemplateID: MailjetTemplateId.RAISE_ANSWER,
               Subject: 'Be Right - Vous avez un document à signer',
               Variables: {
                 recipientFirstName: employee.firstName,
@@ -280,7 +281,7 @@ export class MailjetService {
               ],
               TextPart: 'Be Right - Tous les destinataires ont signé',
               TemplateLanguage: true,
-              TemplateID: 4726278,
+              TemplateID: MailjetTemplateId.EVENT_COMPLETED,
               Subject: 'Be Right - Tous les destinataires ont signé',
               Variables: {
                 eventName: event.name,
@@ -302,6 +303,72 @@ export class MailjetService {
       }
 
       throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendEmployeeAnswerWithPDF = async ({
+    creatorFullName,
+    employee,
+    companyName,
+    pdfBase64,
+    fileName,
+  }: {
+    creatorFullName: string
+    employee: EmployeeEntity
+    companyName: string
+    pdfBase64: string
+    fileName: string
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const fullName = this.getFullName(employee)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: employee.email,
+                  Name: fullName,
+                },
+              ],
+              TextPart: 'Be Right - Vous avez répondu',
+              TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.EMPLOYEE_ANSWER,
+              Subject: 'Be Right - Vous avez répondu',
+              Variables: {
+                creator: creatorFullName,
+                company: companyName,
+                recipientFirstName: fullName,
+              },
+              Attachments: [
+                {
+                  ContentType: 'application/pdf',
+                  Filename: fileName,
+                  Base64Content: pdfBase64,
+                },
+              ],
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
     } catch (error) {
       console.error(error, '<==== error')
       throw new ApiError(422, error)

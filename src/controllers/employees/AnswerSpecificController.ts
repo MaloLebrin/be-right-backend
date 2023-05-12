@@ -14,6 +14,9 @@ import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
+import { generateQueueName } from '../../jobs/queue/jobs/provider'
+import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
+import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -153,6 +156,7 @@ export class AnswerSpecificController {
           },
           signedAt: IsNull(),
         },
+        relations: ['employee', 'event.company.users'],
       })
 
       if (!answer) {
@@ -165,7 +169,23 @@ export class AnswerSpecificController {
         reason: reason || null,
       })
 
-      await defaultQueue.add(Date.now().toString(), new UpdateEventStatusJob({
+      const creator = answer?.event?.company?.users.find(user => isUserOwner(user))
+
+      if (!creator || !answer.event.company) {
+        throw new ApiError(422, 'Créateur introuvable')
+      }
+
+      await defaultQueue.add(
+        generateQueueName('SendSubmitAnswerConfirmationJob'),
+        new SendSubmitAnswerConfirmationJob({
+          req,
+          answer,
+          creatorFullName: getfullUsername(creator),
+          companyName: answer.event.company.name,
+        }),
+      )
+
+      await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
         eventId: answer.eventId,
       }))
 

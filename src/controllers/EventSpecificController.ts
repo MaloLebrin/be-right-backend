@@ -135,18 +135,22 @@ export default class EventSpecificController {
           const answers = await this.AnswerService.createMany(newEvent.id, event.employeeIds)
 
           if (answers.length > 0) {
-            const name = Date.now().toString()
-            await defaultQueue.add(name, new SendMailAnswerCreationjob({
-              answers,
-              user: ctx.user,
-              event: newEvent,
-            }))
+            await defaultQueue.add(
+              generateQueueName('SendMailAnswerCreationjob'),
+              new SendMailAnswerCreationjob({
+                answers,
+                user: ctx.user,
+                event: newEvent,
+              }),
+            )
           }
 
-          const name = Date.now().toString()
-          await defaultQueue.add(name, new UpdateEventStatusJob({
-            eventId: newEvent.id,
-          }))
+          await defaultQueue.add(
+            generateQueueName('UpdateEventStatusJob'),
+            new UpdateEventStatusJob({
+              eventId: newEvent.id,
+            }),
+          )
 
           await this.RediceService.updateCurrentUserInCache({ userId })
 
