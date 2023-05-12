@@ -14,7 +14,6 @@ import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
-import { MailjetService } from '../../services'
 import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
@@ -24,14 +23,12 @@ export class AnswerSpecificController {
   EventRepository: Repository<EventEntity>
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
-  MailJetService: MailjetService
 
   constructor() {
     this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.EventRepository = APP_SOURCE.getRepository(EventEntity)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
-    this.MailJetService = new MailjetService(APP_SOURCE)
   }
 
   private async isValidToken(token: string, email: string) {
@@ -172,10 +169,14 @@ export class AnswerSpecificController {
         reason: reason || null,
       })
 
-      const creator = answer.event.company.users.find(user => isUserOwner(user))
+      const creator = answer?.event?.company?.users.find(user => isUserOwner(user))
+
+      if (!creator || !answer.event.company) {
+        throw new ApiError(422, 'Créateur introuvable')
+      }
 
       await defaultQueue.add(
-        generateQueueName(),
+        generateQueueName('SendSubmitAnswerConfirmationJob'),
         new SendSubmitAnswerConfirmationJob({
           req,
           answer,
@@ -184,7 +185,7 @@ export class AnswerSpecificController {
         }),
       )
 
-      await defaultQueue.add(generateQueueName(), new UpdateEventStatusJob({
+      await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
         eventId: answer.eventId,
       }))
 

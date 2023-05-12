@@ -18,6 +18,7 @@ import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCrea
 import { isUserOwner } from '../utils/userHelper'
 import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
+import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export default class AnswerController {
   AnswerService: AnswerService
@@ -66,10 +67,12 @@ export default class AnswerController {
 
       const event = await this.EventService.getOneEvent(eventId)
 
-      const name = Date.now().toString()
-      await defaultQueue.add(name, new UpdateEventStatusJob({
-        eventId,
-      }))
+      await defaultQueue.add(
+        generateQueueName('UpdateEventStatusJob'),
+        new UpdateEventStatusJob({
+          eventId,
+        }),
+      )
 
       const employee = await this.employeeRepository.findOne({
         where: {
@@ -78,14 +81,16 @@ export default class AnswerController {
       })
 
       if (employee && event) {
-        const name = Date.now().toString()
-        await defaultQueue.add(name, new SendMailAnswerCreationjob({
-          answers: [{
-            ...answer,
-            employee,
-          }],
-          user: ctx.user,
-        }))
+        await defaultQueue.add(
+          generateQueueName('SendMailAnswerCreationjob'),
+          new SendMailAnswerCreationjob({
+            answers: [{
+              ...answer,
+              employee,
+            }],
+            user: ctx.user,
+          }),
+        )
       }
 
       if (answer) {
@@ -109,17 +114,21 @@ export default class AnswerController {
       const event = await this.EventService.getOneEvent(eventId)
 
       if (answersToSendMail.length > 0 && event) {
-        const name = Date.now().toString()
-        await defaultQueue.add(name, new SendMailAnswerCreationjob({
-          answers: answersToSendMail,
-          user: ctx.user,
-        }))
+        await defaultQueue.add(
+          generateQueueName('SendMailAnswerCreationjob'),
+          new SendMailAnswerCreationjob({
+            answers: answersToSendMail,
+            user: ctx.user,
+          }),
+        )
       }
 
-      const name = Date.now().toString()
-      await defaultQueue.add(name, new UpdateEventStatusJob({
-        eventId,
-      }))
+      await defaultQueue.add(
+        generateQueueName('UpdateEventStatusJob'),
+        new UpdateEventStatusJob({
+          eventId,
+        }),
+      )
 
       if (answers && answers.length > 0) {
         return res.status(200).json(this.filterSecretAnswersKeys(answers))
