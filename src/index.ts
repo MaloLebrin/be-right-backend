@@ -47,6 +47,7 @@ import { isProduction } from './utils/envHelper'
 import DownloadController from './controllers/DownloadController'
 import { hbs } from './utils/handlebarsHelper'
 import downloadAuth from './middlewares/downloadAuth'
+import { cronJobsStart } from './jobs'
 
 const {
   CLOUDINARY_API_KEY,
@@ -275,3 +276,4 @@ async function StartApp() {
 }
 
 StartApp()
+cronJobsStart()

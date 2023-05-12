@@ -8,7 +8,7 @@ import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
 import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
 import { sendMailBeforeStartEvent } from './crons/sendMailBeforeStartEvent.cron'
 
-(async () => {
+export async function cronJobsStart() {
   dotenv.config()
 
   const JOB_APP_SOURCE = createAppSource()
@@ -36,4 +36,4 @@ import { sendMailBeforeStartEvent } from './crons/sendMailBeforeStartEvent.cron'
       await deleteOldEventsJob(JOB_APP_SOURCE)
     },
   )
-})()
+}
