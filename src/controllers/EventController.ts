@@ -144,20 +144,23 @@ export default class EventController {
 
       const eventsIds = ctx.user.company.eventIds
 
-      if (eventsIds && eventsIds.length > 0) {
-        const events = await this.redisCache.getMany<EventEntity>({
-          keys: generateRedisKeysArray({
-            field: 'id',
-            typeofEntity: EntitiesEnum.EVENT,
-            ids: eventsIds,
-          }),
-          typeofEntity: EntitiesEnum.EVENT,
-          fetcher: () => this.EventService.getManyEvents(eventsIds, true),
-        })
+      const currentUser = ctx.user
 
-        return res.status(200).json(events)
+      if (!currentUser || !currentUser.company || !currentUser.company.eventIds || currentUser.company.eventIds?.length < 1) {
+        throw new ApiError(422, 'identifiants des événements manquant')
       }
-      throw new ApiError(422, 'identifiants des événements manquant')
+
+      const events = await this.redisCache.getMany<EventEntity>({
+        keys: generateRedisKeysArray({
+          field: 'id',
+          typeofEntity: EntitiesEnum.EVENT,
+          ids: eventsIds,
+        }),
+        typeofEntity: EntitiesEnum.EVENT,
+        fetcher: () => this.EventService.getManyEvents(eventsIds, true),
+      })
+
+      return res.status(200).json(events)
     })
   }
 
