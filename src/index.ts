@@ -96,6 +96,7 @@ async function StartApp() {
     Context.bind(req)
     next()
   })
+
   app.set('sseManager', new SSEManager())
 
   app.engine('handlebars', hbs.engine)
