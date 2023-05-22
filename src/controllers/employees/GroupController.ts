@@ -2,13 +2,14 @@ import type { Request, Response } from 'express'
 import csv from 'csvtojson'
 import type { Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { APP_SOURCE } from '../..'
+import { APP_SOURCE, REDIS_CACHE } from '../..'
 import Context from '../../context'
 import type { GroupEntity } from '../../entity/employees/Group.entity'
 import { ApiError } from '../../middlewares/ApiError'
 import type { GroupCreationPayload } from '../../services/employee/GroupService'
 import { GroupService } from '../../services/employee/GroupService'
 import type { UploadCSVEmployee } from '../../types'
+import { EntitiesEnum } from '../../types'
 import { wrapperRequest } from '../../utils'
 import { parseQueryIds } from '../../utils/basicHelper'
 import { isUserAdmin } from '../../utils/userHelper'
@@ -16,18 +17,38 @@ import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import EmployeeService from '../../services/employee/EmployeeService'
 import { AddressService } from '../../services'
 import { uniq } from '../../utils/arrayHelper'
+import type RedisCache from '../../RedisCache'
+import { generateRedisKey } from '../../utils/redisHelper'
+import type { UserEntity } from '../../entity/UserEntity'
 
 export class GroupController {
   AddressService: AddressService
   EmployeeService: EmployeeService
   groupService: GroupService
   EmployeeRepository: Repository<EmployeeEntity>
+  redisCache: RedisCache
 
   constructor() {
     this.groupService = new GroupService(APP_SOURCE)
     this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.EmployeeService = new EmployeeService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
+    this.redisCache = REDIS_CACHE
+  }
+
+  private invalidateUserInRedis = async (user: UserEntity) => {
+    await Promise.all([
+      this.redisCache.invalidate(generateRedisKey({
+        id: user.id,
+        typeofEntity: EntitiesEnum.USER,
+        field: 'id',
+      })),
+      this.redisCache.invalidate(generateRedisKey({
+        id: user.token,
+        typeofEntity: EntitiesEnum.USER,
+        field: 'token',
+      })),
+    ])
   }
 
   public createOne = async (req: Request, res: Response) => {
@@ -44,6 +65,7 @@ export class GroupController {
       const newGroup = await this.groupService.createOne(group, currentUser.companyId)
 
       if (newGroup) {
+        await this.invalidateUserInRedis(currentUser)
         return res.status(200).json(newGroup)
       }
       throw new ApiError(422, 'Le groupe n\'a pu être créé')
@@ -110,6 +132,7 @@ export class GroupController {
         }, currentUser.companyId)
 
         if (newGroup) {
+          await this.invalidateUserInRedis(currentUser)
           return res.status(200).json(newGroup)
         }
       }
