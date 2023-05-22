@@ -46,6 +46,8 @@ export async function sendMailBeforeStartEvent(APP_SOURCE: DataSource) {
           answer,
         })),
       )
+
+      logger.info(`${answers.length} Relances ont été envoyées`)
     }
   } catch (error) {
     logger.error(error, 'error')
