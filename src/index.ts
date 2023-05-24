@@ -21,7 +21,6 @@ import {
   useValidation,
 } from './middlewares'
 import { Role } from './types'
-import NewsletterController from './controllers/NewsletterController'
 import { AddresController } from './controllers/AddressController'
 import AnswerController from './controllers/AnswerController'
 import AuthController from './controllers/AuthController'
@@ -48,6 +47,8 @@ import DownloadController from './controllers/DownloadController'
 import { hbs } from './utils/handlebarsHelper'
 import downloadAuth from './middlewares/downloadAuth'
 import { cronJobsStart } from './jobs'
+import { StatsRouter } from './routes/Admin/StatsRoutes'
+import { NewsletterRoutes } from './routes/NewsletterRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -138,9 +139,10 @@ async function StartApp() {
   } = useValidation()
 
   // Newsletter
-  app.get('/newsletter/', [isAuthenticated, checkUserRole(Role.ADMIN)], new NewsletterController().getAllPaginate)
-  app.delete('/newsletter/:id', [validate(idParamsSchema), isAuthenticated], new NewsletterController().deleteOne)
-  app.post('/newsletter/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
+  app.use('/newsletter', new NewsletterRoutes(APP_SOURCE).intializeRoutes())
+
+  // Admin
+  app.use('/admin', new StatsRouter(APP_SOURCE).intializeRoutes())
 
   // Address
   app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)

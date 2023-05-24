@@ -1,21 +1,22 @@
 import type { Request, Response } from 'express'
-import type { EntityManager, Repository } from 'typeorm'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { paginator, wrapperRequest } from '../utils'
-import { APP_SOURCE } from '..'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
 import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
 
-export default class NewsletterController {
+export class NewsletterController {
   getManager: EntityManager
   repository: Repository<NewsletterRecipient>
   UserRepository: Repository<UserEntity>
 
-  constructor() {
-    this.getManager = APP_SOURCE.manager
-    this.repository = APP_SOURCE.getRepository(NewsletterRecipient)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.getManager = DATA_SOURCE.manager
+      this.repository = DATA_SOURCE.getRepository(NewsletterRecipient)
+      this.UserRepository = DATA_SOURCE.getRepository(UserEntity)
+    }
   }
 
   public createOne = async (req: Request, res: Response) => {
