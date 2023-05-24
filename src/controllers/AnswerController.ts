@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
@@ -20,7 +20,7 @@ import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answe
 import { CompanyEntity } from '../entity/Company.entity'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 
-export default class AnswerController {
+export class AnswerController {
   AnswerService: AnswerService
   EventService: EventService
   mailJetService: MailjetService
@@ -29,14 +29,16 @@ export default class AnswerController {
   companyRepository: Repository<CompanyEntity>
   repository: Repository<AnswerEntity>
 
-  constructor() {
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.mailJetService = new MailjetService(APP_SOURCE)
-    this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
-    this.redisCache = REDIS_CACHE
-    this.repository = APP_SOURCE.getRepository(AnswerEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AnswerService = new AnswerService(APP_SOURCE)
+      this.EventService = new EventService(APP_SOURCE)
+      this.mailJetService = new MailjetService(APP_SOURCE)
+      this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
+      this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
+      this.redisCache = REDIS_CACHE
+      this.repository = APP_SOURCE.getRepository(AnswerEntity)
+    }
   }
 
   private saveAnswerInCache = async (answer: AnswerEntity) => {

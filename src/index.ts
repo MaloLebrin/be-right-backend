@@ -12,8 +12,6 @@ import { useEnv } from './env'
 import { createAppSource } from './utils'
 import {
   checkUserRole,
-  createManyAnswersSchema,
-  createOneAnswerSchema,
   doubleAuthSchema,
   getAnswerForEmployee,
   isAuthenticated,
@@ -21,7 +19,6 @@ import {
   useValidation,
 } from './middlewares'
 import { Role } from './types'
-import AnswerController from './controllers/AnswerController'
 import AuthController from './controllers/AuthController'
 import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
@@ -42,13 +39,12 @@ import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { AnswerSpecificController } from './controllers/employees/AnswerSpecificController'
 import { isProduction } from './utils/envHelper'
-import DownloadController from './controllers/DownloadController'
 import { hbs } from './utils/handlebarsHelper'
-import downloadAuth from './middlewares/downloadAuth'
 import { cronJobsStart } from './jobs'
 import { StatsRouter } from './routes/Admin/StatsRoutes'
 import { NewsletterRoutes } from './routes/NewsletterRoutes'
 import { AddressRoutes } from './routes/AddressRoutes'
+import { AnswerRoutes } from './routes/AnswerRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -146,17 +142,7 @@ async function StartApp() {
   app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
 
   // Answer
-  app.get('/answer/view', [isAuthenticated], new DownloadController().ViewAnswer)
-  app.get('/answer/download', [downloadAuth], new DownloadController().downLoadAnswer)
-
-  app.get('/answer/manyByIds', [isAuthenticated], new AnswerController().getMany)
-  app.get('/answer/event/manyByIds', [isAuthenticated], new AnswerController().getManyForManyEvents)
-  app.get('/answer/event/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().getManyForEvent)
-  app.get('/answer/raise/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().raiseAnswer)
-  app.post('/answer/', [validate(createOneAnswerSchema), isAuthenticated], new AnswerController().createOne)
-  app.post('/answer/many', [validate(createManyAnswersSchema), isAuthenticated], new AnswerController().createMany)
-  app.patch('/answer/', [isAuthenticated], new AnswerController().updateOne)
-  app.delete('/answer/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController().deleteOne)
+  app.use('/answer', new AnswerRoutes(APP_SOURCE).intializeRoutes())
 
   // Answer For Employee
   app.patch('/answer/signed/:id', [validate(signeAnswerValidation)], new AnswerSpecificController().updateAnswerByEmployee)
