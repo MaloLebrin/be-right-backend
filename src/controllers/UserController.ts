@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import type { EntityManager, Repository } from 'typeorm'
+import type { Repository } from 'typeorm'
 import { generateHash, paginator, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -12,7 +12,6 @@ import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { APP_SOURCE, REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
-import { SubscriptionService } from '../services/SubscriptionService'
 import { ApiError } from '../middlewares/ApiError'
 import { AddressService } from '../services'
 import EmployeeService from '../services/employee/EmployeeService'
@@ -21,28 +20,24 @@ import FileService from '../services/FileService'
 import { CompanyEntity } from '../entity/Company.entity'
 
 export default class UserController {
-  getManager: EntityManager
-  UserService: UserService
-  repository: Repository<UserEntity>
-  companyRepository: Repository<CompanyEntity>
-  redisCache: RedisCache
-  SubscriptionService: SubscriptionService
-  AddressService: AddressService
-  EmployeeService: EmployeeService
-  EventService: EventService
-  FileService: FileService
+  private AddressService: AddressService
+  private companyRepository: Repository<CompanyEntity>
+  private EmployeeService: EmployeeService
+  private EventService: EventService
+  private FileService: FileService
+  private redisCache: RedisCache
+  private repository: Repository<UserEntity>
+  private UserService: UserService
 
   constructor() {
-    this.getManager = APP_SOURCE.manager
-    this.UserService = new UserService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(UserEntity)
-    this.redisCache = REDIS_CACHE
-    this.SubscriptionService = new SubscriptionService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.EmployeeService = new EmployeeService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
     this.FileService = new FileService(APP_SOURCE)
-    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
+    this.redisCache = REDIS_CACHE
+    this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.UserService = new UserService(APP_SOURCE)
   }
 
   private saveUserInCache = async (user: UserEntity) => {
