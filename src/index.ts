@@ -48,7 +48,7 @@ import DownloadController from './controllers/DownloadController'
 import { hbs } from './utils/handlebarsHelper'
 import downloadAuth from './middlewares/downloadAuth'
 import { cronJobsStart } from './jobs'
-import { AdminStatsController } from './controllers/Admin/StatsController'
+import { StatsRouter } from './routes/Admin/StatsRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -144,7 +144,7 @@ async function StartApp() {
   app.post('/newsletter/', [validate(emailAlreadyExistSchema)], new NewsletterController().createOne)
 
   // Admin
-  app.get('/admin/stats', [isAuthenticated, checkUserRole(Role.ADMIN)], new AdminStatsController().statsHome)
+  app.use('/admin', new StatsRouter(APP_SOURCE).intializeRoutes())
 
   // Address
   app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)

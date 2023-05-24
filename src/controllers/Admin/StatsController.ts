@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { MoreThan } from 'typeorm'
 import dayjs from 'dayjs'
 import { wrapperRequest } from '../../utils'
@@ -8,16 +8,17 @@ import { ApiError } from '../../middlewares/ApiError'
 import Context from '../../context'
 import AnswerEntity from '../../entity/AnswerEntity'
 import EventEntity from '../../entity/EventEntity'
-import { APP_SOURCE } from '../..'
 import { EventStatusEnum } from '../../types'
 
 export class AdminStatsController {
   private AnswerRepository: Repository<AnswerEntity>
   private EventRepository: Repository<EventEntity>
 
-  constructor() {
-    this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
-    this.EventRepository = APP_SOURCE.getRepository(EventEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
+      this.EventRepository = DATA_SOURCE.getRepository(EventEntity)
+    }
   }
 
   public statsHome = async (req: Request, res: Response) => {

@@ -20,5 +20,3 @@ Steps to run this project:
 `docker rmi -f $(docker images -a -q)`
 `docker rmi $(docker images -a -q)`
 `docker system prune -a`
-
-mettre plus de ligne de logs
