@@ -21,7 +21,6 @@ import {
   useValidation,
 } from './middlewares'
 import { Role } from './types'
-import { AddresController } from './controllers/AddressController'
 import AnswerController from './controllers/AnswerController'
 import AuthController from './controllers/AuthController'
 import BugReportController from './controllers/BugReportController'
@@ -49,6 +48,7 @@ import downloadAuth from './middlewares/downloadAuth'
 import { cronJobsStart } from './jobs'
 import { StatsRouter } from './routes/Admin/StatsRoutes'
 import { NewsletterRoutes } from './routes/NewsletterRoutes'
+import { AddressRoutes } from './routes/AddressRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -117,7 +117,6 @@ async function StartApp() {
   })
 
   const {
-    createAddressSchema,
     createbugSchema,
     createEmployeeSchema,
     createGroupSchema,
@@ -129,7 +128,6 @@ async function StartApp() {
     idParamsSchema,
     loginSchema,
     newUserSchema,
-    patchAddressSchema,
     patchUserSchema,
     registerSchema,
     resetPasswordSchema,
@@ -145,11 +143,7 @@ async function StartApp() {
   app.use('/admin', new StatsRouter(APP_SOURCE).intializeRoutes())
 
   // Address
-  app.get('/address/manyByIds', [isAuthenticated], new AddresController().getMany)
-  app.get('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().getOne)
-  app.post('/address/', [validate(createAddressSchema), isAuthenticated], new AddresController().createOne)
-  app.patch('/address/:id', [validate(patchAddressSchema), isAuthenticated], new AddresController().updateOne)
-  app.delete('/address/:id', [validate(idParamsSchema), isAuthenticated], new AddresController().deleteOne)
+  app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
 
   // Answer
   app.get('/answer/view', [isAuthenticated], new DownloadController().ViewAnswer)

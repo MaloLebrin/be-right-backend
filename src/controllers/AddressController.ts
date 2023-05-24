@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express'
+import type { DataSource } from 'typeorm'
 import { AddressService } from '../services'
 import { wrapperRequest } from '../utils'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
@@ -12,9 +13,11 @@ export class AddresController {
   AddressService: AddressService
   redisCache: RedisCache
 
-  constructor() {
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.redisCache = REDIS_CACHE
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
+    }
   }
 
   private saveAddressInCache = async (address: AddressEntity) => {
