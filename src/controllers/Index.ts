@@ -5,7 +5,6 @@ import BugReportController from './BugReportController'
 import EmployeeController from './employees/EmployeeController'
 import EventController from './EventController'
 import FileController from './FileController'
-import NewsletterController from './NewsletterController'
 import UserController from './UserController'
 
 export default {
@@ -16,7 +15,6 @@ export default {
   EmployeeController,
   EventController,
   FileController,
-  NewsletterController,
   UserController,
 }
 
