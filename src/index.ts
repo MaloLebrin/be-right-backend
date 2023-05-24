@@ -47,7 +47,7 @@ import DownloadController from './controllers/DownloadController'
 import { hbs } from './utils/handlebarsHelper'
 import downloadAuth from './middlewares/downloadAuth'
 import { cronJobsStart } from './jobs'
-import { StatsRouter } from './routes/Admin/statsRoutes'
+import { StatsRouter } from './routes/Admin/StatsRoutes'
 import { NewsletterRoutes } from './routes/NewsletterRoutes'
 
 const {
