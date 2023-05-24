@@ -12,10 +12,7 @@ import { useEnv } from './env'
 import { createAppSource } from './utils'
 import {
   checkUserRole,
-  doubleAuthSchema,
-  getAnswerForEmployee,
   isAuthenticated,
-  signeAnswerValidation,
   useValidation,
 } from './middlewares'
 import { Role } from './types'
@@ -37,7 +34,6 @@ import { SSEManager } from './serverSendEvent/SSEManager'
 import { GroupController } from './controllers/employees/GroupController'
 import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
-import { AnswerSpecificController } from './controllers/employees/AnswerSpecificController'
 import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
 import { cronJobsStart } from './jobs'
@@ -143,11 +139,6 @@ async function StartApp() {
 
   // Answer
   app.use('/answer', new AnswerRoutes(APP_SOURCE).intializeRoutes())
-
-  // Answer For Employee
-  app.patch('/answer/signed/:id', [validate(signeAnswerValidation)], new AnswerSpecificController().updateAnswerByEmployee)
-  app.post('/answer/forSignature', [validate(getAnswerForEmployee)], new AnswerSpecificController().getOne)
-  app.post('/answer/checkDoubleAuth', [validate(doubleAuthSchema)], new AnswerSpecificController().checkTwoAuth)
 
   // Auth
   app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
