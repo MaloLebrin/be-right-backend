@@ -16,10 +16,11 @@ import { isUserAdmin } from '../../utils/userHelper'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import EmployeeService from '../../services/employee/EmployeeService'
 import { AddressService } from '../../services'
-import { uniq } from '../../utils/arrayHelper'
 import type RedisCache from '../../RedisCache'
 import { generateRedisKey } from '../../utils/redisHelper'
 import type { UserEntity } from '../../entity/UserEntity'
+import { uniq } from '../../utils/arrayHelper'
+import { parseGroupCSVFields } from '../../utils/groupHelper'
 
 export class GroupController {
   AddressService: AddressService
@@ -91,7 +92,9 @@ export class GroupController {
         throw new ApiError(422, 'Un problème est survenue avec votre csv')
       }
 
-      const employeeEmails = newEmployeesData.map(emp => emp.email)
+      const formatedata = parseGroupCSVFields(newEmployeesData)
+
+      const employeeEmails = formatedata.map(emp => emp.email)
 
       const existingEmployees = await this.EmployeeRepository.find({
         where: {
@@ -102,7 +105,8 @@ export class GroupController {
         },
       })
 
-      const newEmployeesToCreate = newEmployeesData.filter(newEmp => !existingEmployees.map(emp => emp.email).includes(newEmp.email))
+      const newEmployeesToCreate = formatedata
+        .filter(newEmp => !existingEmployees.map(emp => emp.email).includes(newEmp.email))
 
       const arrayOfEmployeeIdsInGroup = [...existingEmployees.map(emp => emp.id)]
 
