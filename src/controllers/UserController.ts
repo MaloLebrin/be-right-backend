@@ -345,7 +345,6 @@ export default class UserController {
           email: true,
           token: true,
         },
-        loadRelationIds: true,
       })
 
       if (user && user.password && user.salt) {
@@ -382,7 +381,6 @@ export default class UserController {
               'company.subscription',
               'company.address',
             ],
-            loadRelationIds: true,
           })
 
           await this.saveUserInCache(userToSend)
