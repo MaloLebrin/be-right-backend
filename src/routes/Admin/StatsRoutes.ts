@@ -10,7 +10,7 @@ export class StatsRouter extends BaseRouter implements BaseInterfaceRouter {
 
   public intializeRoutes = () => {
     this.router.get(
-      '/stats',
+      '/',
       [isAuthenticated, checkUserRole(Role.ADMIN)],
       new AdminStatsController(this.DATA_SOURCE).statsHome,
     )

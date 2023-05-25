@@ -20,7 +20,6 @@ import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
 import EventController from './controllers/EventController'
 import FileController from './controllers/FileController'
-import UserController from './controllers/UserController'
 import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
 import EventSpecificController from './controllers/EventSpecificController'
@@ -41,6 +40,8 @@ import { NewsletterRoutes } from './routes/NewsletterRoutes'
 import { AddressRoutes } from './routes/AddressRoutes'
 import { AnswerRoutes } from './routes/AnswerRoutes'
 import { AuthRoutes } from './routes/AuthRoutes'
+import { UserRoutes } from './routes/UserRoutes'
+import { AdminUserRoutes } from './routes/Admin/AdminUserRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -115,14 +116,8 @@ async function StartApp() {
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
     createOneEventSchema,
-    createPhotographerSchema,
-    emailAlreadyExistSchema,
     idParamsSchema,
-    loginSchema,
-    newUserSchema,
-    patchUserSchema,
     subscribeNotification,
-    tokenSchema,
     validate,
   } = useValidation()
 
@@ -130,7 +125,8 @@ async function StartApp() {
   app.use('/newsletter', new NewsletterRoutes(APP_SOURCE).intializeRoutes())
 
   // Admin
-  app.use('/admin', new StatsRouter(APP_SOURCE).intializeRoutes())
+  app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
+  app.use('/admin/user', new AdminUserRoutes(APP_SOURCE).intializeRoutes())
 
   // Address
   app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
@@ -220,17 +216,7 @@ async function StartApp() {
   app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
 
   // User
-  app.get('/user/many', [isAuthenticated], new UserController().getMany)
-  app.get('/user/partners', [isAuthenticated], new UserController().getPhotographerAlreadyWorkWith)
-  app.get('/user/', [isAuthenticated, checkUserRole(Role.ADMIN)], new UserController().getAll)
-  app.get('/user/:id', [validate(idParamsSchema)], new UserController().getOne)
-  app.post('/user/token', [validate(tokenSchema)], new UserController().getOneByToken)
-  app.post('/user', [validate(newUserSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new UserController().newUser)
-  app.post('/user/login', [validate(loginSchema)], new UserController().login)
-  app.post('/user/photographer', [validate(createPhotographerSchema)], new UserController().createPhotographer)
-  app.post('/user/isMailAlreadyExist', [validate(emailAlreadyExistSchema)], new UserController().isMailAlreadyUsed)
-  app.patch('/user/:id', [validate(patchUserSchema), isAuthenticated], new UserController().updateOne)
-  app.delete('/user/:id', [validate(idParamsSchema), isAuthenticated], new UserController().deleteOne)
+  app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
 
   app.all('*', req => {
     throw new NotFoundError(req.path)
