@@ -1,9 +1,8 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
 import { wrapperRequest } from '../../utils'
-import { APP_SOURCE } from '../..'
 import AnswerService from '../../services/AnswerService'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { useEnv } from '../../env'
@@ -24,11 +23,13 @@ export class AnswerSpecificController {
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
 
-  constructor() {
-    this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-    this.EventRepository = APP_SOURCE.getRepository(EventEntity)
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.EmployeeRepository = DATA_SOURCE.getRepository(EmployeeEntity)
+      this.EventRepository = DATA_SOURCE.getRepository(EventEntity)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
+    }
   }
 
   private async isValidToken(token: string, email: string) {

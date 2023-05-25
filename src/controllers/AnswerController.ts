@@ -4,7 +4,7 @@ import { wrapperRequest } from '../utils'
 import AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
@@ -31,13 +31,13 @@ export class AnswerController {
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
-      this.AnswerService = new AnswerService(APP_SOURCE)
-      this.EventService = new EventService(APP_SOURCE)
-      this.mailJetService = new MailjetService(APP_SOURCE)
-      this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-      this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.mailJetService = new MailjetService(DATA_SOURCE)
+      this.employeeRepository = DATA_SOURCE.getRepository(EmployeeEntity)
+      this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.redisCache = REDIS_CACHE
-      this.repository = APP_SOURCE.getRepository(AnswerEntity)
+      this.repository = DATA_SOURCE.getRepository(AnswerEntity)
     }
   }
 

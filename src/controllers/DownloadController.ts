@@ -4,7 +4,6 @@ import puppeteer from 'puppeteer'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
-import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
@@ -20,7 +19,7 @@ import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
 import Context from '../context'
 
-export default class DownloadController {
+export class DownloadController {
   AnswerService: AnswerService
   repository: Repository<AnswerEntity>
   AddressService: AddressService
@@ -38,12 +37,12 @@ export default class DownloadController {
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
-      this.repository = APP_SOURCE.getRepository(AnswerEntity)
-      this.AnswerService = new AnswerService(APP_SOURCE)
-      this.AddressService = new AddressService(APP_SOURCE)
-      this.UserService = new UserService(APP_SOURCE)
-      this.EventService = new EventService(APP_SOURCE)
-      this.CompanyService = new CompanyService(APP_SOURCE)
+      this.repository = DATA_SOURCE.getRepository(AnswerEntity)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.UserService = new UserService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.CompanyService = new CompanyService(DATA_SOURCE)
       this.logger = logger
     }
   }
