@@ -99,12 +99,17 @@ export default class UserService {
     } = payload
 
     const salt = uid2(128)
+    const twoFactorSecret = uid2(128)
+    const twoFactorRecoveryCode = generateHash(twoFactorSecret, email)
+
     const newUser = this.repository.create({
       email,
       firstName,
       lastName,
       salt,
       roles: role,
+      twoFactorRecoveryCode,
+      twoFactorSecret,
       token: createJwtToken({
         email,
         firstName,

@@ -5,4 +5,5 @@ export type QueueJobName =
   'UpdateEventStatusJob' |
   'SendMailAnswerCreationjob' |
   'SendMailEventCompletedJob' |
-  'SendSubmitAnswerConfirmationJob'
+  'SendSubmitAnswerConfirmationJob' |
+  'SendMailUserOnAccountJob'
