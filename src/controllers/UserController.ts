@@ -365,11 +365,11 @@ export default class UserController {
                 roles: Role.ADMIN,
               }),
             })
+          } else {
+            await this.repository.update(user.id, {
+              loggedAt: new Date(),
+            })
           }
-
-          await this.repository.update(user.id, {
-            loggedAt: new Date(),
-          })
 
           const userToSend = await this.repository.findOne({
             where: { email },
