@@ -27,6 +27,14 @@ export function isUserOwner(user: UserEntity) {
   return user.roles === Role.OWNER
 }
 
+export function isUserPhotographer(user: UserEntity) {
+  return user.roles === Role.PHOTOGRAPHER
+}
+
+export function isSimplyUser(user: UserEntity) {
+  return user.roles === Role.USER
+}
+
 export function createJwtToken(user: JWTTokenPayload) {
   const { JWT_SECRET } = useEnv()
   return sign(
