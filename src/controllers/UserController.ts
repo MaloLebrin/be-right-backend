@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { generateHash, paginator, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
@@ -10,7 +10,7 @@ import UserService from '../services/UserService'
 import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
 import { AddressService } from '../services'
@@ -33,15 +33,17 @@ export default class UserController {
   private repository: Repository<UserEntity>
   private UserService: UserService
 
-  constructor() {
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
-    this.EmployeeService = new EmployeeService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.FileService = new FileService(APP_SOURCE)
-    this.redisCache = REDIS_CACHE
-    this.repository = APP_SOURCE.getRepository(UserEntity)
-    this.UserService = new UserService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
+      this.EmployeeService = new EmployeeService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.FileService = new FileService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
+      this.repository = DATA_SOURCE.getRepository(UserEntity)
+      this.UserService = new UserService(DATA_SOURCE)
+    }
   }
 
   private saveUserInCache = async (user: UserEntity) => {
