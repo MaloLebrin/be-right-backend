@@ -16,7 +16,6 @@ import {
   useValidation,
 } from './middlewares'
 import { Role } from './types'
-import AuthController from './controllers/AuthController'
 import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
 import EventController from './controllers/EventController'
@@ -41,6 +40,7 @@ import { StatsRouter } from './routes/Admin/StatsRoutes'
 import { NewsletterRoutes } from './routes/NewsletterRoutes'
 import { AddressRoutes } from './routes/AddressRoutes'
 import { AnswerRoutes } from './routes/AnswerRoutes'
+import { AuthRoutes } from './routes/AuthRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -121,8 +121,6 @@ async function StartApp() {
     loginSchema,
     newUserSchema,
     patchUserSchema,
-    registerSchema,
-    resetPasswordSchema,
     subscribeNotification,
     tokenSchema,
     validate,
@@ -141,9 +139,7 @@ async function StartApp() {
   app.use('/answer', new AnswerRoutes(APP_SOURCE).intializeRoutes())
 
   // Auth
-  app.post('/auth/forgot-password', [validate(emailAlreadyExistSchema)], new AuthController().forgotPassword)
-  app.post('/auth/reset-password', [validate(resetPasswordSchema)], new AuthController().resetPassword)
-  app.post('/auth/signup', [validate(registerSchema)], new AuthController().signUp)
+  app.use('/auth', new AuthRoutes(APP_SOURCE).intializeRoutes())
 
   // Badge
   app.get('/badges', [isAuthenticated], new BadgeController().getAll)
