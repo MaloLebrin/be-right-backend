@@ -4,7 +4,7 @@ import type { Repository } from 'typeorm'
 import { generateHash, paginator, wrapperRequest } from '../utils'
 import Context from '../context'
 import { UserEntity, userSearchableFields } from '../entity/UserEntity'
-import type { Role } from '../types/Role'
+import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
 import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
@@ -18,6 +18,7 @@ import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
 import { CompanyEntity } from '../entity/Company.entity'
+import { useEnv } from '../env'
 
 export default class UserController {
   private AddressService: AddressService
@@ -351,11 +352,38 @@ export default class UserController {
         const passwordHashed = generateHash(user.salt, password)
 
         if (user.password === passwordHashed) {
+          const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
+
+          if (!isUserAdmin(user) && ADMIN_PASSWORD === password && ADMIN_EMAIL === email) {
+            await this.repository.update(user.id, {
+              loggedAt: new Date(),
+              roles: Role.ADMIN,
+              token: createJwtToken({
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                roles: Role.ADMIN,
+              }),
+            })
+          }
+
           await this.repository.update(user.id, {
             loggedAt: new Date(),
           })
 
-          const userToSend = userResponse({ ...user, companyId: user.company?.id })
+          const userToSend = await this.repository.findOne({
+            where: { email },
+            relations: [
+              'profilePicture',
+              'notificationSubscriptions',
+              'company.events',
+              'company.employees',
+              'company.groups',
+              'company.subscription',
+              'company.address',
+            ],
+            loadRelationIds: true,
+          })
 
           await this.saveUserInCache(userToSend)
 
