@@ -18,6 +18,9 @@ import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
 import { CompanyEntity } from '../entity/Company.entity'
+import { defaultQueue } from '../jobs/queue/queue'
+import { generateQueueName } from '../jobs/queue/jobs/provider'
+import { SendMailUserOnAccountJob } from '../jobs/queue/jobs/sendMailUserOnAccount.job'
 
 export default class UserController {
   private AddressService: AddressService
@@ -105,6 +108,15 @@ export default class UserController {
           id: companyId,
         },
       })
+
+      await defaultQueue.add(
+        generateQueueName(),
+        new SendMailUserOnAccountJob({
+          newUser,
+          creator: ctx.user,
+          company: companyToSend,
+        }))
+
       await this.saveUserInCache(newUser)
 
       return res.status(200).json({
