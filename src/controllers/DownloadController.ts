@@ -178,7 +178,7 @@ export class DownloadController {
 
       try {
         const browser = await puppeteer.launch({
-          headless: true,
+          headless: 'new',
           executablePath: '/usr/bin/chromium-browser',
           args: [
             '--no-sandbox',
@@ -195,7 +195,7 @@ export class DownloadController {
           })
         }
 
-        await page.goto(url)
+        await page.goto(url, { waitUntil: 'networkidle0' })
         const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
         await browser.close()
 
