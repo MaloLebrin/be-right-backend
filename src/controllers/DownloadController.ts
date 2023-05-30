@@ -55,7 +55,7 @@ export class DownloadController {
       const partner = event.partner
       const company = event.company
       const employeeAddress = answer.employee.address
-      const user = company.users.find(user => isUserOwner(user))
+      const owner = company.users.find(user => isUserOwner(user))
 
       return {
         todayDate: answer.signedAt.toISOString(),
@@ -72,9 +72,12 @@ export class DownloadController {
         partnerLastName: partner.lastName,
 
         userCity: company.address?.city,
-        userFirstName: user?.firstName,
-        userLastName: user?.lastName,
+        userFirstName: owner?.firstName,
+        userLastName: owner?.lastName,
         isAccepted: answer.hasSigned,
+
+        recipientSignature: answer.signature,
+        ownerSignature: owner?.signature,
       }
     })
   }
