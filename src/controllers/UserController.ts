@@ -48,6 +48,7 @@ export default class UserController {
 
   private saveUserInCache = async (user: UserEntity) => {
     await this.redisCache.save(`user-id-${user.id}`, user)
+    await this.redisCache.save(`user-token-${user.token}`, user)
   }
 
   /**
@@ -466,6 +467,37 @@ export default class UserController {
       }
 
       throw new ApiError(422, 'Veuillez renseigner l\'email')
+    })
+  }
+
+  public addSignatureToUser = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const { signature }: { signature: string } = req.body
+      const ctx = Context.get(req)
+
+      if (!signature) {
+        throw new ApiError(422, 'Signature non reçu')
+      }
+
+      if (!ctx?.user) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
+
+      await this.repository.update(ctx.user.id, {
+        signature,
+      })
+
+      const user = await this.repository.findOne({
+        where: {
+          id: ctx.user.id,
+        },
+      })
+
+      await this.saveUserInCache(user)
+
+      return res.status(200).json({
+        user,
+      })
     })
   }
 }
