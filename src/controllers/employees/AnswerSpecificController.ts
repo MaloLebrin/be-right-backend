@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
+import puppeteer from 'puppeteer'
 import { wrapperRequest } from '../../utils'
 import AnswerService from '../../services/AnswerService'
 import AnswerEntity from '../../entity/AnswerEntity'
@@ -11,17 +12,19 @@ import type { DecodedJWTToken } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
-import { defaultQueue } from '../../jobs/queue/queue'
-import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
-import { generateQueueName } from '../../jobs/queue/jobs/provider'
-import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
+// import { defaultQueue } from '../../jobs/queue/queue'
+// import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
+// import { generateQueueName } from '../../jobs/queue/jobs/provider'
+// import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
+import { MailjetService } from '../../services'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
   EventRepository: Repository<EventEntity>
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
+  MailJetService: MailjetService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -29,6 +32,7 @@ export class AnswerSpecificController {
       this.EventRepository = DATA_SOURCE.getRepository(EventEntity)
       this.AnswerService = new AnswerService(DATA_SOURCE)
       this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
+      this.MailJetService = new MailjetService(DATA_SOURCE)
     }
   }
 
@@ -134,12 +138,16 @@ export class AnswerSpecificController {
         token,
         email,
         hasSigned,
+        signature,
         reason,
+        isSavedSignatureForNextTime,
       }: {
         token: string
         email: string
+        signature: string
         reason?: string
         hasSigned: boolean
+        isSavedSignatureForNextTime?: boolean
       } = req.body
 
       if (!token || !email || !answerId) {
@@ -148,7 +156,7 @@ export class AnswerSpecificController {
 
       await this.isValidToken(token, email)
 
-      const answer = await this.AnswerRepository.findOne({
+      const isAnswerExist = await this.AnswerRepository.exist({
         where: {
           token,
           id: answerId,
@@ -157,18 +165,33 @@ export class AnswerSpecificController {
           },
           signedAt: IsNull(),
         },
-        relations: ['employee', 'event.company.users'],
       })
 
-      if (!answer) {
+      if (!isAnswerExist) {
         throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
       }
 
       await this.AnswerRepository.update(answerId, {
         signedAt: new Date(),
         hasSigned,
+        signature,
         reason: reason || null,
       })
+
+      const answer = await this.AnswerRepository.findOne({
+        where: {
+          token,
+          id: answerId,
+          employee: {
+            email,
+          },
+        },
+        relations: ['employee', 'event.company.users'],
+      })
+
+      if (!answer) {
+        throw new ApiError(422, 'Une erreur est survenue')
+      }
 
       const creator = answer?.event?.company?.users.find(user => isUserOwner(user))
 
@@ -176,19 +199,57 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Créateur introuvable')
       }
 
-      await defaultQueue.add(
-        generateQueueName('SendSubmitAnswerConfirmationJob'),
-        new SendSubmitAnswerConfirmationJob({
-          req,
-          answer,
-          creatorFullName: getfullUsername(creator),
-          companyName: answer.event.company.name,
-        }),
-      )
+      // await defaultQueue.add(
+      //   generateQueueName('SendSubmitAnswerConfirmationJob'),
+      //   new SendSubmitAnswerConfirmationJob({
+      //     req,
+      //     answer,
+      //     creatorFullName: getfullUsername(creator),
+      //     companyName: answer.event.company.name,
+      //   }),
+      // )
 
-      await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
-        eventId: answer.eventId,
-      }))
+      // await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
+      //   eventId: answer.eventId,
+      // }))
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`
+      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
+      const fileName = `droit-image-${answer.employee.slug}.pdf`
+      const filePath = `/app/src/uploads/${fileName}`
+
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        executablePath: '/usr/bin/chromium-browser',
+        args: [
+          '--no-sandbox',
+          '--disable-gpu',
+        ],
+      })
+
+      const page = await browser.newPage()
+
+      await page.goto(url)
+      const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
+      await browser.close()
+
+      await this.MailJetService.sendEmployeeAnswerWithPDF({
+        creatorFullName: getfullUsername(creator),
+        employee: answer.employee,
+        companyName: answer.event.company.name,
+        pdfBase64: pdf.toString('base64'),
+        fileName,
+      })
+
+      const employee = answer.employee
+
+      if (isSavedSignatureForNextTime) {
+        if (!employee.signature || employee.signature !== signature) {
+          await this.EmployeeRepository.update(answer.employeeId, {
+            signature,
+          })
+        }
+      }
 
       return res.status(200).json(answer)
     })
