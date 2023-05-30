@@ -115,8 +115,8 @@ p {
           <p class="field-bold">
             {{ employeeFirstName }} {{ employeeLastName }}
           </p>
-          {{#if ownerSignature}}
-            <img class="signature-image" src="{{{ownerSignature}}}" alt="signature du représentant"/>
+          {{#if recipientSignature}}
+            <img class="signature-image" src="{{{recipientSignature}}}" alt="signature du représentant"/>
           {{else}}
             <p class="field-bold signature">
               {{ employeeFirstName }} {{ employeeLastName }}
@@ -129,8 +129,8 @@ p {
             {{ userFirstName }} {{ userLastName }}
           </p>
          
-          {{#if recipientSignature}}
-            <img class="signature-image" src="{{{recipientSignature}}}" alt="signature du représentant"/>
+          {{#if ownerSignature}}
+            <img class="signature-image" src="{{{ownerSignature}}}" alt="signature du représentant"/>
           {{else}}
             <p class="field-bold signature">
               {{ userFirstName }} {{ userLastName }}
