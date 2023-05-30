@@ -96,6 +96,7 @@ export default class UserService {
       subscription,
       loggedAt,
       companyId,
+      signature,
     } = payload
 
     const salt = uid2(128)
@@ -118,6 +119,7 @@ export default class UserService {
         subscription,
       }),
       password: generateHash(salt, password),
+      signature,
       loggedAt: loggedAt || null,
       company: {
         id: companyId,

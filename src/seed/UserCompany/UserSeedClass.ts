@@ -29,6 +29,7 @@ import {
   userCompanyFixturePremium,
   userNotUsed,
 } from './fixtures'
+import { tomJedusorSignature } from './signatureFixture'
 
 export class UserSeedClass extends BaseSeedClass {
   GroupService: GroupService
@@ -285,6 +286,7 @@ export class UserSeedClass extends BaseSeedClass {
         ...answer,
         hasSigned: true,
         signedAt: new Date(),
+        signature: tomJedusorSignature,
       })
 
       const answerEventNotif = this.getManager.create(EventNotificationEntity, {
@@ -431,6 +433,7 @@ export class UserSeedClass extends BaseSeedClass {
       ...answer,
       hasSigned: true,
       signedAt: new Date(),
+      signature: tomJedusorSignature,
     })
 
     const answer2 = await this.AnswerService.getOneAnswerForEventEmployee({
