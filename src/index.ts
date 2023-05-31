@@ -29,7 +29,6 @@ import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
-import { GroupController } from './controllers/employees/GroupController'
 import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { isProduction } from './utils/envHelper'
@@ -42,6 +41,8 @@ import { AnswerRoutes } from './routes/AnswerRoutes'
 import { AuthRoutes } from './routes/AuthRoutes'
 import { UserRoutes } from './routes/UserRoutes'
 import { AdminUserRoutes } from './routes/Admin/AdminUserRoutes'
+import { AdminGroupRoutes } from './routes/Admin/AdminGroupRoutes'
+import { GroupRoutes } from './routes/GroupRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -112,7 +113,6 @@ async function StartApp() {
   const {
     createbugSchema,
     createEmployeeSchema,
-    createGroupSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
     createOneEventSchema,
@@ -127,6 +127,7 @@ async function StartApp() {
   // Admin
   app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
   app.use('/admin/user', new AdminUserRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
 
   // Address
   app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
@@ -193,14 +194,7 @@ async function StartApp() {
   app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
 
   // Group
-  app.get('/group/manyByIds', [isAuthenticated], new GroupController().getMany)
-  app.get('/group/user', [isAuthenticated], new GroupController().getManyByUserId)
-  app.get('/group/employeeId/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getManyByEmployeeId)
-  app.get('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().getOne)
-  app.post('/group', [validate(createGroupSchema), isAuthenticated], new GroupController().createOne)
-  app.post('/group/csv', [isAuthenticated], upload.single('file'), new GroupController().createOneWithCSV)
-  app.patch('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().updateOne)
-  app.delete('/group/:id', [validate(idParamsSchema), isAuthenticated], new GroupController().deleteOne)
+  app.use('/group', new GroupRoutes(APP_SOURCE).intializeRoutes())
 
   // Mail
   app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
