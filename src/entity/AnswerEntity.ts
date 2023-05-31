@@ -33,6 +33,9 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   mailSendAt: Date
 
+  @Column({ nullable: true, default: null })
+  signature: string
+
   @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })
   employee: EmployeeEntity

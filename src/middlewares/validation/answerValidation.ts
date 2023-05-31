@@ -11,6 +11,8 @@ export const signeAnswerValidation = object({
     token: string().min(128).required('Le token est requis'),
     email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
     hasSigned: boolean().required('Vous devez accpeter ou refuser le droit à l\'image'),
+    signature: string().required('La signature est requise'),
+    isSavedSignatureForNextTime: boolean(),
   }),
   params: object({
     id: number().required('L\'identifiant de la réponse est requis'),

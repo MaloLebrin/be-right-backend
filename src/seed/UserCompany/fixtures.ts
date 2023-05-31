@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { Role, SubscriptionEnum } from '../../types'
+import { signatureAlbus } from './signatureFixture'
 
 export const userCompanyFixturePremium = {
   companyName: 'Poudlard',
@@ -9,6 +10,7 @@ export const userCompanyFixturePremium = {
   password: 'password',
   role: Role.OWNER,
   subscription: SubscriptionEnum.PREMIUM,
+  signature: signatureAlbus,
 }
 
 export const subscriptionUserCompanyFixturePremium = {
