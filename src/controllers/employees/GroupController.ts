@@ -168,10 +168,22 @@ export class GroupController {
       if (ids) {
         const groupIds = parseQueryIds(ids)
 
+        if (groupIds?.length < 1) {
+          throw new ApiError(422, 'identifiants des destinataires manquants')
+        }
+
         const ctx = Context.get(req)
         const currentUser = ctx.user
 
-        if (groupIds?.length > 0 && currentUser.companyId) {
+        if (isUserAdmin(currentUser)) {
+          const groups = this.GroupRepository.find({
+            where: { id: In(groupIds) },
+          })
+
+          return res.status(200).json(groups)
+        }
+
+        if (currentUser.companyId) {
           const groups = await this.groupService.getMany(groupIds, currentUser.companyId)
 
           return res.status(200).json(groups)
@@ -262,8 +274,21 @@ export class GroupController {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
-      if (id && currentUser.companyId) {
-        const groupUpdated = await this.groupService.updateOne(id, currentUser.companyId, group)
+      let companyId: null | number = null
+
+      if (isUserAdmin(ctx.user)) {
+        const group = await this.GroupRepository.findOne({
+          where: {
+            id,
+          },
+        })
+        companyId = group.companyId
+      } else {
+        companyId = currentUser.companyId
+      }
+
+      if (id && companyId) {
+        const groupUpdated = await this.groupService.updateOne(id, companyId, group)
 
         return res.status(200).json(groupUpdated)
       }
@@ -278,8 +303,21 @@ export class GroupController {
       const ctx = Context.get(req)
       const user = ctx.user
 
-      if (id && user?.id) {
-        const getGroupe = await this.groupService.getOne(id, user.id)
+      let companyId: null | number = null
+
+      if (isUserAdmin(ctx.user)) {
+        const group = await this.GroupRepository.findOne({
+          where: {
+            id,
+          },
+        })
+        companyId = group.companyId
+      } else {
+        companyId = user.companyId
+      }
+
+      if (id && companyId) {
+        const getGroupe = await this.groupService.getOne(id, companyId)
 
         if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
           await this.groupService.deleteOne(id)
