@@ -1,16 +1,16 @@
 import type { Request, Response } from 'express'
 import csv from 'csvtojson'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { APP_SOURCE, REDIS_CACHE } from '../..'
+import { REDIS_CACHE } from '../..'
 import Context from '../../context'
-import type { GroupEntity } from '../../entity/employees/Group.entity'
+import { GroupEntity, groupSearchablefields } from '../../entity/employees/Group.entity'
 import { ApiError } from '../../middlewares/ApiError'
 import type { GroupCreationPayload } from '../../services/employee/GroupService'
 import { GroupService } from '../../services/employee/GroupService'
 import type { UploadCSVEmployee } from '../../types'
 import { EntitiesEnum } from '../../types'
-import { wrapperRequest } from '../../utils'
+import { paginator, wrapperRequest } from '../../utils'
 import { parseQueryIds } from '../../utils/basicHelper'
 import { isUserAdmin } from '../../utils/userHelper'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
@@ -26,14 +26,18 @@ export class GroupController {
   EmployeeService: EmployeeService
   groupService: GroupService
   EmployeeRepository: Repository<EmployeeEntity>
+  GroupRepository: Repository<GroupEntity>
   redisCache: RedisCache
 
-  constructor() {
-    this.groupService = new GroupService(APP_SOURCE)
-    this.EmployeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-    this.EmployeeService = new EmployeeService(APP_SOURCE)
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.redisCache = REDIS_CACHE
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.groupService = new GroupService(DATA_SOURCE)
+      this.EmployeeRepository = DATA_SOURCE.getRepository(EmployeeEntity)
+      this.GroupRepository = DATA_SOURCE.getRepository(GroupEntity)
+      this.EmployeeService = new EmployeeService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
+    }
   }
 
   private invalidateUserInRedis = async (user: UserEntity) => {
@@ -164,10 +168,22 @@ export class GroupController {
       if (ids) {
         const groupIds = parseQueryIds(ids)
 
+        if (groupIds?.length < 1) {
+          throw new ApiError(422, 'identifiants des destinataires manquants')
+        }
+
         const ctx = Context.get(req)
         const currentUser = ctx.user
 
-        if (groupIds?.length > 0 && currentUser.companyId) {
+        if (isUserAdmin(currentUser)) {
+          const groups = this.GroupRepository.find({
+            where: { id: In(groupIds) },
+          })
+
+          return res.status(200).json(groups)
+        }
+
+        if (currentUser.companyId) {
           const groups = await this.groupService.getMany(groupIds, currentUser.companyId)
 
           return res.status(200).json(groups)
@@ -211,6 +227,41 @@ export class GroupController {
   }
 
   /**
+   * paginate function
+   * @returns paginate response
+   */
+  public getAll = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ctx = Context.get(req)
+
+      const { where, page, take, skip } = paginator<GroupEntity>(req, groupSearchablefields)
+
+      const whereFields = {
+        ...where,
+      }
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields.company = {
+          id: ctx.user.companyId,
+        }
+      }
+
+      const [groups, total] = await this.GroupRepository.findAndCount({
+        take,
+        skip,
+        where: whereFields,
+      })
+
+      return res.status(200).json({
+        data: groups,
+        currentPage: page,
+        limit: take,
+        total,
+      })
+    })
+  }
+
+  /**
    * @param group group: Partial<GroupEntity>
    * @return return group just updated
    */
@@ -223,8 +274,21 @@ export class GroupController {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
-      if (id && currentUser.companyId) {
-        const groupUpdated = await this.groupService.updateOne(id, currentUser.companyId, group)
+      let companyId: null | number = null
+
+      if (isUserAdmin(ctx.user)) {
+        const group = await this.GroupRepository.findOne({
+          where: {
+            id,
+          },
+        })
+        companyId = group.companyId
+      } else {
+        companyId = currentUser.companyId
+      }
+
+      if (id && companyId) {
+        const groupUpdated = await this.groupService.updateOne(id, companyId, group)
 
         return res.status(200).json(groupUpdated)
       }
@@ -239,8 +303,21 @@ export class GroupController {
       const ctx = Context.get(req)
       const user = ctx.user
 
-      if (id && user?.id) {
-        const getGroupe = await this.groupService.getOne(id, user.id)
+      let companyId: null | number = null
+
+      if (isUserAdmin(ctx.user)) {
+        const group = await this.GroupRepository.findOne({
+          where: {
+            id,
+          },
+        })
+        companyId = group.companyId
+      } else {
+        companyId = user.companyId
+      }
+
+      if (id && companyId) {
+        const getGroupe = await this.groupService.getOne(id, companyId)
 
         if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
           await this.groupService.deleteOne(id)
