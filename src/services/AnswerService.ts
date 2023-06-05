@@ -7,6 +7,7 @@ import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EventEntity from '../entity/EventEntity'
 import { useEnv } from '../env'
 import { ApiError } from '../middlewares/ApiError'
+import { answerResponse } from '../utils/answerHelper'
 
 export default class AnswerService {
   getManager: EntityManager
@@ -37,6 +38,12 @@ export default class AnswerService {
       },
       JWT_SECRET,
     )
+  }
+
+  public filterSecretAnswersKeys(answers: AnswerEntity[]) {
+    return answers?.length > 0
+      ? answers.map(answer => answerResponse(answer))
+      : []
   }
 
   public createOne = async (eventId: number, employeeId: number) => {

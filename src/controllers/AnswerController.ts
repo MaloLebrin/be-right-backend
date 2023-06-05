@@ -45,13 +45,9 @@ export class AnswerController {
     await this.redisCache.save(`answer-id-${answer.id}`, answerResponse(answer))
   }
 
-  private filterSecretAnswersKeys(answers: AnswerEntity[]) {
-    return answers.map(answer => answerResponse(answer))
-  }
-
   private saveManyAnswerInCache = async (answers: AnswerEntity[]) => {
     await this.redisCache.multiSave({
-      payload: this.filterSecretAnswersKeys(answers),
+      payload: this.AnswerService.filterSecretAnswersKeys(answers),
       typeofEntity: EntitiesEnum.ANSWER,
       objKey: 'id',
     })
@@ -133,7 +129,7 @@ export class AnswerController {
       )
 
       if (answers && answers.length > 0) {
-        return res.status(200).json(this.filterSecretAnswersKeys(answers))
+        return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
       }
       throw new ApiError(422, 'Destinataires non liés avec l\'événement')
     })
@@ -144,7 +140,7 @@ export class AnswerController {
       const id = parseInt(req.params.id)
       if (id) {
         const answers = await this.AnswerService.getAllAnswersForEvent(id)
-        return res.status(200).json(this.filterSecretAnswersKeys(answers))
+        return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
       }
 
       throw new ApiError(422, 'Identifiant de l\'événement manquant')
@@ -168,7 +164,7 @@ export class AnswerController {
             fetcher: () => this.AnswerService.getMany(answerIds),
           })
 
-          return res.status(200).json(this.filterSecretAnswersKeys(answers))
+          return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants manquants')
@@ -192,7 +188,7 @@ export class AnswerController {
             fetcher: () => this.AnswerService.getAnswersForManyEvents(eventIds),
           })
 
-          return res.status(200).json(this.filterSecretAnswersKeys(answers))
+          return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants des événements manquant')
