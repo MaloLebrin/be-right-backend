@@ -18,11 +18,9 @@ import {
 import { Role } from './types'
 import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
-import EventController from './controllers/EventController'
 import FileController from './controllers/FileController'
 import { seedersFunction } from './seed'
 import RedisCache from './RedisCache'
-import EventSpecificController from './controllers/EventSpecificController'
 import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
@@ -43,6 +41,8 @@ import { UserRoutes } from './routes/UserRoutes'
 import { AdminUserRoutes } from './routes/Admin/AdminUserRoutes'
 import { AdminGroupRoutes } from './routes/Admin/AdminGroupRoutes'
 import { GroupRoutes } from './routes/GroupRoutes'
+import { EventRoutes } from './routes/EventRoutes'
+import { AdminEventRoutes } from './routes/Admin/AdminEventRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -115,7 +115,6 @@ async function StartApp() {
     createEmployeeSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
-    createOneEventSchema,
     idParamsSchema,
     subscribeNotification,
     validate,
@@ -128,6 +127,7 @@ async function StartApp() {
   app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
   app.use('/admin/user', new AdminUserRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
 
   // Address
   app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
@@ -170,15 +170,7 @@ async function StartApp() {
   app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne)
 
   // Event
-  app.get('/event/manyByIds', [isAuthenticated], new EventController().getMany)
-  app.get('/event/', [isAuthenticated], new EventController().getAll)
-  app.get('/event/user', [isAuthenticated], new EventController().getAllForUser)
-  app.get('/event/deleted', [isAuthenticated], new EventController().getAllDeletedForUser)
-  app.get('/event/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController().fetchOneEventWithRelations)
-  app.get('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().getOne)
-  app.post('/event', [validate(createOneEventSchema), isAuthenticated], new EventSpecificController().posteOneWithRelations)
-  app.patch('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().updateOne)
-  app.delete('/event/:id', [validate(idParamsSchema), isAuthenticated], new EventController().deleteOne)
+  app.use('/event', new EventRoutes(APP_SOURCE).intializeRoutes())
 
   // File
   app.get('/file/many', [isAuthenticated], new FileController().getFiles)

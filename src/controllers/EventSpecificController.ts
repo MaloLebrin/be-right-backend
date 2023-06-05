@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import type RedisCache from '../RedisCache'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import EventEntity from '../entity/EventEntity'
 import EventService from '../services/EventService'
 import { AddressService } from '../services'
@@ -32,15 +32,16 @@ export default class EventSpecificController {
   AnswerService: AnswerService
   RediceService: RedisService
 
-  constructor() {
-    // this.getManager = APP_SOURCE.manager
-    this.EmployeeService = new EmployeeService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(EventEntity)
-    this.redisCache = REDIS_CACHE
-    this.RediceService = new RedisService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.EmployeeService = new EmployeeService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.repository = DATA_SOURCE.getRepository(EventEntity)
+      this.redisCache = REDIS_CACHE
+      this.RediceService = new RedisService(DATA_SOURCE)
+    }
   }
 
   private saveEventRedisCache = async (event: EventEntity) => {
