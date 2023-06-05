@@ -215,74 +215,77 @@ export class AnswerController {
   public deleteOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
-      if (id) {
-        const answerToDelete = await this.AnswerService.getOne(id)
-        const answer = await this.AnswerService.deleteOne(id)
 
-        await this.redisCache.invalidate(generateRedisKey({
-          field: 'id',
-          typeofEntity: EntitiesEnum.ANSWER,
-          id,
-        }))
-
-        await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
-        return res.status(200).json(answer)
+      if (!id) {
+        throw new ApiError(422, 'Identifiant de l\'événement manquant')
       }
-      throw new ApiError(422, 'Identifiant de l\'événement manquant')
+
+      const answerToDelete = await this.AnswerService.getOne(id)
+      const answer = await this.AnswerService.deleteOne(id)
+
+      await this.redisCache.invalidate(generateRedisKey({
+        field: 'id',
+        typeofEntity: EntitiesEnum.ANSWER,
+        id,
+      }))
+
+      await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
+      return res.status(200).json(answer)
     })
   }
 
   public raiseAnswer = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
-      if (id) {
-        const answer = await this.AnswerService.getOne(id, true)
 
-        if (!answer || !answer.employee || !answer.event) {
-          throw new ApiError(422, 'Le destinataire ne participe pas à cet événement')
-        }
-
-        if (isAnswerSigned(answer)) {
-          throw new ApiError(422, 'Le destinataire à déja répondu')
-        }
-
-        const company = await this.companyRepository.findOne({
-          where: {
-            id: answer.event.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        })
-
-        if (!company) {
-          throw new ApiError(422, 'Un problème est survenu')
-        }
-        const owner = company.users?.find(user => isUserOwner(user))
-
-        if (!owner) {
-          throw new ApiError(422, 'Un problème est survenu')
-        }
-
-        await this.mailJetService.sendRaiseAnswerEmail({
-          event: answer.event,
-          employee: answer.employee,
-          owner,
-          answer,
-        })
-
-        answer.mailSendAt = new Date()
-        await this.AnswerService.updateOneAnswer(id, answer)
-
-        const answerToSend = await this.AnswerService.getOne(id)
-
-        return res.status(200).json({
-          message: 'Le destinataire a été relancé',
-          isSuccess: true,
-          answer: answerResponse(answerToSend),
-        })
+      if (!id) {
+        throw new ApiError(422, 'Identifiant de l\'événement manquant')
       }
-      throw new ApiError(422, 'Identifiant de l\'événement manquant')
+
+      const answer = await this.AnswerService.getOne(id, true)
+
+      if (!answer || !answer.employee || !answer.event) {
+        throw new ApiError(422, 'Le destinataire ne participe pas à cet événement')
+      }
+
+      if (isAnswerSigned(answer)) {
+        throw new ApiError(422, 'Le destinataire à déja répondu')
+      }
+
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: answer.event.companyId,
+        },
+        relations: {
+          users: true,
+        },
+      })
+
+      if (!company) {
+        throw new ApiError(422, 'Un problème est survenu')
+      }
+      const owner = company.users?.find(user => isUserOwner(user))
+
+      if (!owner) {
+        throw new ApiError(422, 'Un problème est survenu')
+      }
+
+      await this.mailJetService.sendRaiseAnswerEmail({
+        event: answer.event,
+        employee: answer.employee,
+        owner,
+        answer,
+      })
+
+      await this.repository.update(answer.id, { mailSendAt: new Date() })
+
+      const answerToSend = await this.AnswerService.getOne(id)
+
+      return res.status(200).json({
+        message: 'Le destinataire a été relancé',
+        isSuccess: true,
+        answer: answerResponse(answerToSend),
+      })
     })
   }
 }
