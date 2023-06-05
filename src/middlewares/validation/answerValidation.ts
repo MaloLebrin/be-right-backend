@@ -27,6 +27,15 @@ export const createManyAnswersSchema = object({
   }),
 })
 
+export const AdminCreateManyAnswersSchema = object({
+  body: object({
+    eventId: number().required('L\'adresse est requise'),
+    userId: number().required('L\'utilisateur est requis'),
+    employeeIds: array().of(number()).min(1, 'Sélectionnez au moins un destinataire')
+      .required('Les destinataires sont obligatoire'),
+  }),
+})
+
 export const createOneAnswerSchema = object({
   body: object({
     eventId: number().required('L\'adresse est requise'),

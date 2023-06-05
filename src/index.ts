@@ -43,6 +43,7 @@ import { AdminGroupRoutes } from './routes/Admin/AdminGroupRoutes'
 import { GroupRoutes } from './routes/GroupRoutes'
 import { EventRoutes } from './routes/EventRoutes'
 import { AdminEventRoutes } from './routes/Admin/AdminEventRoutes'
+import { AdminAnswerRoutes } from './routes/Admin/AdminAnswerRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -124,10 +125,11 @@ async function StartApp() {
   app.use('/newsletter', new NewsletterRoutes(APP_SOURCE).intializeRoutes())
 
   // Admin
+  app.use('/admin/answer', new AdminAnswerRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
   app.use('/admin/user', new AdminUserRoutes(APP_SOURCE).intializeRoutes())
-  app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
-  app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
 
   // Address
   app.use('/address', new AddressRoutes(APP_SOURCE).intializeRoutes())
