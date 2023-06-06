@@ -1,16 +1,16 @@
 import type { Request, Response } from 'express'
 import csv from 'csvtojson'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { REDIS_CACHE } from '../..'
 import Context from '../../context'
-import { GroupEntity, groupSearchablefields } from '../../entity/employees/Group.entity'
+import { GroupEntity, groupRelationFields, groupSearchablefields } from '../../entity/employees/Group.entity'
 import { ApiError } from '../../middlewares/ApiError'
 import type { GroupCreationPayload } from '../../services/employee/GroupService'
 import { GroupService } from '../../services/employee/GroupService'
 import type { UploadCSVEmployee } from '../../types'
 import { EntitiesEnum } from '../../types'
-import { paginator, wrapperRequest } from '../../utils'
+import { wrapperRequest } from '../../utils'
 import { parseQueryIds } from '../../utils/basicHelper'
 import { isUserAdmin } from '../../utils/userHelper'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
@@ -20,6 +20,7 @@ import { uniq } from '../../utils/arrayHelper'
 import type RedisCache from '../../RedisCache'
 import { generateRedisKey } from '../../utils/redisHelper'
 import type { UserEntity } from '../../entity/UserEntity'
+import { newPaginator } from '../../utils/paginatorHelper'
 
 export class GroupController {
   AddressService: AddressService
@@ -234,22 +235,29 @@ export class GroupController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
-      const { where, page, take, skip } = paginator<GroupEntity>(req, groupSearchablefields)
+      const { where, page, take, skip, order } = newPaginator<GroupEntity>({
+        req,
+        searchableFields: groupSearchablefields,
+        relationFields: groupRelationFields,
+      })
 
-      const whereFields = {
-        ...where,
-      }
+      let whereFields = where
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields.company = {
-          id: ctx.user.companyId,
-        }
+        whereFields = where.map(obj => {
+          obj.company = {
+            ...obj.company as FindOptionsWhere<GroupEntity>,
+            id: ctx.user.companyId,
+          }
+          return obj
+        })
       }
 
       const [groups, total] = await this.GroupRepository.findAndCount({
         take,
         skip,
         where: whereFields,
+        order,
       })
 
       return res.status(200).json({
@@ -257,6 +265,7 @@ export class GroupController {
         currentPage: page,
         limit: take,
         total,
+        order,
       })
     })
   }
