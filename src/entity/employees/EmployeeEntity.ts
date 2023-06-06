@@ -56,3 +56,7 @@ export const employeeSearchablefields = [
   'firstName',
   'lastName',
 ]
+
+export const employeeRelationFields = [
+  'company.name',
+]
