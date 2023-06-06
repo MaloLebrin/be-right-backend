@@ -197,9 +197,7 @@ export default class EventController {
       const ctx = Context.get(req)
 
       const { where, page, take, skip, order } = newPaginator<EventEntity>({
-        search: req.query.search?.toLocaleString(),
-        page: 1,
-        filters: req.query.filters,
+        req,
         searchableFields: eventSearchableFields,
         relationFields: eventRelationFields,
       })
@@ -216,6 +214,8 @@ export default class EventController {
         })
       }
 
+      console.log(whereFields, '<==== whereFields')
+
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,
@@ -228,6 +228,7 @@ export default class EventController {
         currentPage: page,
         limit: take,
         total,
+        order,
       })
     })
   }

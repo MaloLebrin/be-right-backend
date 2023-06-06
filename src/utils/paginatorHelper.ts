@@ -1,7 +1,29 @@
 /* eslint-disable security/detect-object-injection */
 import type { FindOperator, FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import { ILike } from 'typeorm'
+import type { Request } from 'express'
 import type { BaseEntity } from '../entity/bases/BaseEntity'
+
+interface Paginator {
+  req: Request
+  searchableFields?: string[]
+  relationFields?: string[]
+}
+
+interface PaginatorReturnType<T extends BaseEntity> {
+  page: number
+  take: number
+  skip: number
+  where: FindOptionsWhere<T>[]
+  order: FindOptionsOrder<T>
+}
+
+interface ParseQueriesReturnType<T> {
+  page: number
+  limit: number
+  search: FindOperator<string>
+  filters: FindOptionsWhere<T> | null
+}
 
 function parsePathRelation(path: string, search: FindOperator<string>) {
   const dir = {}
@@ -18,31 +40,22 @@ function parsePathRelation(path: string, search: FindOperator<string>) {
   return dir
 }
 
-interface Paginator {
-  search?: string
-  page?: number
-  limit?: number
-  filters?: any
-  searchableFields?: string[]
-  relationFields?: string[]
-}
-
-interface PaginatorReturnType<T extends BaseEntity> {
-  page: number
-  take: number
-  skip: number
-  where: FindOptionsWhere<T>[]
-  order: FindOptionsOrder<T>
+function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
+  return {
+    page: req.query.page ? parseInt(req.query.page.toLocaleString()) : 1,
+    limit: req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 20,
+    search: req.query.search ? ILike(`%${req.query.search}%`) : null,
+    filters: req.query.filters as FindOptionsWhere<T> || null,
+  }
 }
 
 export function newPaginator<T extends BaseEntity>({
-  search = '',
-  page = 1,
-  limit = 20,
-  filters,
+  req,
   searchableFields = [],
   relationFields = [],
 }: Paginator): PaginatorReturnType<T> {
+  const { page, limit, search, filters } = parseQueries(req)
+
   const where = []
 
   const order = {
@@ -55,11 +68,9 @@ export function newPaginator<T extends BaseEntity>({
   }
 
   if (search) {
-    const searchValue = ILike(`%${search}%`)
-
     if (relationFields.length > 0) {
       relationFields.forEach(item => {
-        const t = parsePathRelation(item, searchValue)
+        const t = parsePathRelation(item, search)
         where.push(t)
       })
     }
@@ -67,7 +78,7 @@ export function newPaginator<T extends BaseEntity>({
     if (searchableFields.length > 0) {
       searchableFields.forEach(item => {
         order[item] = 'ASC'
-        where.push({ [item]: searchValue })
+        where.push({ [item]: search })
       })
     }
   }
