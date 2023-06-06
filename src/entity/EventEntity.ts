@@ -59,3 +59,9 @@ export default class EventEntity extends BaseEntity {
 export const eventSearchableFields = [
   'name',
 ]
+
+export const eventRelationFields = [
+  'company.name',
+  'company.users.firstName',
+  'company.users.lastName',
+]
