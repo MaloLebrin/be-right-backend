@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
-import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
-import { paginator, wrapperRequest } from '../utils'
+import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
+import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
@@ -17,6 +17,8 @@ import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
+import { newPaginator } from '../utils/paginatorHelper'
+import type { CompanyEntity } from '../entity/Company.entity'
 
 export default class EventController {
   AddressService: AddressService
@@ -194,22 +196,29 @@ export default class EventController {
     await wrapperRequest(req, res, async () => {
       const ctx = Context.get(req)
 
-      const { where, page, take, skip } = paginator<EventEntity>(req, eventSearchableFields)
+      const { where, page, take, skip, order } = newPaginator<EventEntity>({
+        req,
+        searchableFields: eventSearchableFields,
+        relationFields: eventRelationFields,
+      })
 
-      const whereFields = {
-        ...where,
-      }
+      let whereFields = where
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields.company = {
-          id: ctx.user.companyId,
-        }
+        whereFields = where.map(obj => {
+          obj.company = {
+            ...obj.company as FindOptionsWhere<CompanyEntity>,
+            id: ctx.user.companyId,
+          }
+          return obj
+        })
       }
 
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,
         where: whereFields,
+        order,
       })
 
       return res.status(200).json({
@@ -217,6 +226,7 @@ export default class EventController {
         currentPage: page,
         limit: take,
         total,
+        order,
       })
     })
   }

@@ -145,7 +145,7 @@ async function StartApp() {
   app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
 
   // Bug
-  app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
+  // app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
   app.get('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().getOne)
   app.post('/bugreport/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
   app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
@@ -181,7 +181,6 @@ async function StartApp() {
   app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
   app.post('/file/getProfiles', [isAuthenticated], new FileController().getProfilePictures)
   app.patch('/file/:id', [isAuthenticated], new FileController().updateOne)
-  app.get('/file/', [isAuthenticated], new FileController().getAllPaginate)
   app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
   app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
   app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)

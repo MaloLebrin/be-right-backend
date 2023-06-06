@@ -1,6 +1,5 @@
 import type { DataSource } from 'typeorm'
-import { checkUserRole, isAuthenticated, useValidation } from '../middlewares'
-import { Role } from '../types'
+import { isAuthenticated, useValidation } from '../middlewares'
 import { NewsletterController } from '../controllers/NewsletterController'
 import type { BaseInterfaceRouter } from './BaseRouter'
 import { BaseRouter } from './BaseRouter'
@@ -15,11 +14,11 @@ export class NewsletterRoutes extends BaseRouter implements BaseInterfaceRouter 
   constructor(SOURCE: DataSource) { super(SOURCE) }
 
   public intializeRoutes = () => {
-    this.router.get(
-      '/',
-      [isAuthenticated, checkUserRole(Role.ADMIN)],
-      new NewsletterController(this.DATA_SOURCE).getAllPaginate,
-    )
+    // this.router.get(
+    //   '/',
+    //   [isAuthenticated, checkUserRole(Role.ADMIN)],
+    //   new NewsletterController(this.DATA_SOURCE).getAllPaginate,
+    // )
 
     this.router.delete(
       '/:id',

@@ -28,3 +28,11 @@ export class GroupEntity extends BaseEntity {
 export const groupSearchablefields = [
   'name',
 ]
+
+export const groupRelationFields = [
+  'company.name',
+  // 'company.users.firstName',
+  // 'company.users.lastName',
+  'employees.firstName',
+  'employees.lastName',
+]

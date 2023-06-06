@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express'
 import type { DataSource, EntityManager, Repository } from 'typeorm'
-import { paginator, wrapperRequest } from '../utils'
+import { wrapperRequest } from '../utils'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
-import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
+import { NewsletterRecipient } from './../entity/NewsletterRecipientEntity'
 
 export class NewsletterController {
   getManager: EntityManager
@@ -60,25 +60,6 @@ export class NewsletterController {
       const recipient = this.repository.create(newsletterRecipient)
       await this.repository.save(recipient)
       return res.status(200).json(recipient)
-    })
-  }
-
-  public getAllPaginate = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, newsletterRecipientSearchableFields)
-
-      const [newsletterRecipients, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where,
-      })
-
-      return res.status(200).json({
-        data: newsletterRecipients,
-        currentPage: page,
-        limit: take,
-        total,
-      })
     })
   }
 

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Request, Response } from 'express'
-import type { DataSource, Repository } from 'typeorm'
-import { generateHash, paginator, wrapperRequest } from '../utils'
+import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
+import { generateHash, wrapperRequest } from '../utils'
 import Context from '../context'
-import { UserEntity, userSearchableFields } from '../entity/UserEntity'
+import { UserEntity, userRelationFields, userSearchableFields } from '../entity/UserEntity'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
@@ -22,6 +22,7 @@ import { defaultQueue } from '../jobs/queue/queue'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { SendMailUserOnAccountJob } from '../jobs/queue/jobs/sendMailUserOnAccount.job'
 import { useEnv } from '../env'
+import { newPaginator } from '../utils/paginatorHelper'
 
 export default class UserController {
   private AddressService: AddressService
@@ -136,12 +137,31 @@ export default class UserController {
   */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, userSearchableFields)
+      const ctx = Context.get(req)
+
+      const { where, page, take, skip, order } = newPaginator<UserEntity>({
+        req,
+        searchableFields: userSearchableFields,
+        relationFields: userRelationFields,
+      })
+
+      let whereFields = where
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields = where.map(obj => {
+          obj.company = {
+            ...obj.company as FindOptionsWhere<CompanyEntity>,
+            id: ctx.user.companyId,
+          }
+          return obj
+        })
+      }
 
       const [data, total] = await this.repository.findAndCount({
         take,
         skip,
-        where,
+        where: whereFields,
+        order,
       })
 
       return res.status(200).json({
@@ -149,6 +169,7 @@ export default class UserController {
         currentPage: page,
         limit: take,
         total,
+        order,
       })
     })
   }

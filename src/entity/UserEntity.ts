@@ -50,3 +50,7 @@ export const userSearchableFields = [
   'firstName',
   'lastName',
 ]
+
+export const userRelationFields = [
+  'company.name',
+]

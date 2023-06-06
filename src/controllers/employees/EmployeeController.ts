@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express'
-import type { EntityManager, Repository } from 'typeorm'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import Context from '../../context'
-import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
-import { paginator, wrapperRequest } from '../../utils'
+import { EmployeeEntity, employeeRelationFields, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
+import { wrapperRequest } from '../../utils'
 import EmployeeService from '../../services/employee/EmployeeService'
 import AnswerService from '../../services/AnswerService'
 import EventService from '../../services/EventService'
@@ -18,6 +18,7 @@ import RedisService from '../../services/RedisService'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
+import { newPaginator } from '../../utils/paginatorHelper'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -287,12 +288,31 @@ export default class EmployeeController {
    */
   public getAll = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, employeeSearchablefields)
+      const ctx = Context.get(req)
+
+      const { where, page, take, skip, order } = newPaginator<EmployeeEntity>({
+        req,
+        searchableFields: employeeSearchablefields,
+        relationFields: employeeRelationFields,
+      })
+
+      let whereFields = where
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields = where.map(obj => {
+          obj.company = {
+            ...obj.company as FindOptionsWhere<EmployeeEntity>,
+            id: ctx.user.companyId,
+          }
+          return obj
+        })
+      }
 
       const [employees, total] = await this.employeeRepository.findAndCount({
         take,
         skip,
-        where,
+        where: whereFields,
+        order,
       })
 
       return res.status(200).json({
@@ -300,6 +320,7 @@ export default class EmployeeController {
         currentPage: page,
         limit: take,
         total,
+        order,
       })
     })
   }
