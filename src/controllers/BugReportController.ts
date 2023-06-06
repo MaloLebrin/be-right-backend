@@ -3,8 +3,7 @@ import type { EntityManager, Repository } from 'typeorm'
 import { BugReportEntity } from '../entity/BugReportEntity'
 import BugReportService from '../services/BugReportService'
 import Context from '../context'
-import { paginator, wrapperRequest } from '../utils'
-import { bugReportSearchableFields } from '../types/BugReport'
+import { wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 
@@ -71,25 +70,6 @@ export default class BugReportController {
         return bugReport ? res.status(200).json(bugReport) : res.status(400).json('user not found')
       }
       throw new ApiError(422, 'L\'identifiant est requis')
-    })
-  }
-
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, bugReportSearchableFields)
-
-      const [data, total] = await this.bugRepository.findAndCount({
-        take,
-        skip,
-        where,
-      })
-
-      return res.status(200).json({
-        data,
-        currentPage: page,
-        limit: take,
-        total,
-      })
     })
   }
 

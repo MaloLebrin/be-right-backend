@@ -2,8 +2,8 @@ import cloudinary from 'cloudinary'
 import type { Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
-import { paginator, wrapperRequest } from '../utils'
+import { FileEntity } from '../entity/FileEntity'
+import { wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
 import { FileTypeEnum } from '../types/File'
 import Context from '../context'
@@ -30,7 +30,7 @@ export default class FileController {
     await wrapperRequest(req, res, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
-      { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
+        { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
       const ctx = Context.get(req)
 
@@ -195,25 +195,6 @@ export default class FileController {
       }
 
       throw new ApiError(422, 'Identifiant de l\'utilisateur ou de l\'événement manquant')
-    })
-  }
-
-  public getAllPaginate = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, filesSearchableFields)
-
-      const [data, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where,
-      })
-
-      return res.status(200).json({
-        data,
-        currentPage: page,
-        limit: take,
-        total,
-      })
     })
   }
 
