@@ -214,8 +214,6 @@ export default class EventController {
         })
       }
 
-      console.log(whereFields, '<==== whereFields')
-
       const [events, total] = await this.repository.findAndCount({
         take,
         skip,
