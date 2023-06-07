@@ -44,7 +44,7 @@ function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
   return {
     page: req.query.page ? parseInt(req.query.page.toLocaleString()) : 1,
     limit: req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 20,
-    search: req.query.search ? ILike(`%${req.query.search}%`) : null,
+    search: req.query.search ? ILike(`%${req.query.search.toLocaleString()}%`) : null,
     filters: req.query.filters as FindOptionsWhere<T> || null,
   }
 }
