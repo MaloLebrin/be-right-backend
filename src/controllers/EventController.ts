@@ -224,6 +224,7 @@ export default class EventController {
       return res.status(200).json({
         data: events,
         currentPage: page,
+        totalPages: Math.ceil(total / take),
         limit: take,
         total,
         order,
