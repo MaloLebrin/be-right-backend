@@ -9,6 +9,7 @@ import Context from '../context'
 import { APP_SOURCE } from '..'
 import { Role } from '../types'
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
+import { parseQueryIds } from '../utils/basicHelper'
 
 export class CompanyController {
   CompanyService: CompanyService
@@ -32,6 +33,23 @@ export class CompanyController {
       }
 
       throw new ApiError(422, 'L\'identifiant de l\'entreprise est requis')
+    })
+  }
+
+  public getMany = async (req: Request, res: Response) => {
+    await wrapperRequest(req, res, async () => {
+      const ids = req.query.ids as string
+
+      if (ids) {
+        const companyIds = parseQueryIds(ids)
+
+        if (companyIds?.length > 0) {
+          const employees = await this.CompanyService.getMany(companyIds)
+
+          return res.status(200).json(employees)
+        }
+      }
+      throw new ApiError(422, 'identifiants des entreprises manquants')
     })
   }
 
