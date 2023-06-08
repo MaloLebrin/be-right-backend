@@ -44,6 +44,7 @@ import { GroupRoutes } from './routes/GroupRoutes'
 import { EventRoutes } from './routes/EventRoutes'
 import { AdminEventRoutes } from './routes/Admin/AdminEventRoutes'
 import { AdminAnswerRoutes } from './routes/Admin/AdminAnswerRoutes'
+import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -126,6 +127,7 @@ async function StartApp() {
 
   // Admin
   app.use('/admin/answer', new AdminAnswerRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/employee', new AdminEmployeeRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
@@ -154,6 +156,7 @@ async function StartApp() {
 
   // Company
   app.get('/company/:id', [isAuthenticated], new CompanyController().getOne)
+  app.get('/company/manyByIds', [isAuthenticated, checkUserRole([Role.ADMIN])], new CompanyController().getMany)
   app.patch('/company/owners/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().addOrRemoveOwner)
   app.patch('/company/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().patchOne)
 
