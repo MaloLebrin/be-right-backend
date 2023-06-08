@@ -53,6 +53,11 @@ export class AdminEmployeeController extends BaseAdminController {
         throw new ApiError(422, 'Une erreur s\'est produite')
       }
 
+      await this.AddressService.createOne({
+        address,
+        employeeId: newEmployee.id,
+      })
+
       await defaultQueue.add(
         generateQueueName(NotificationTypeEnum.EMPLOYEE_CREATED),
         new CreateEmployeeNotificationsJob({
@@ -60,13 +65,6 @@ export class AdminEmployeeController extends BaseAdminController {
           employees: [newEmployee],
           userId,
         }))
-
-      if (address) {
-        await this.AddressService.createOne({
-          address,
-          employeeId: newEmployee.id,
-        })
-      }
 
       const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
 
