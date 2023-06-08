@@ -10,18 +10,21 @@ import { ApiError } from '../../middlewares/ApiError'
 import type { EmployeeCreateOneRequest } from '../../types'
 import { NotificationTypeEnum } from '../../types'
 import { wrapperRequest } from '../../utils'
+import { CompanyEntity } from '../../entity/Company.entity'
 import { BaseAdminController } from './BaseAdminController'
 
 export class AdminEmployeeController extends BaseAdminController {
   private EmployeeService: EmployeeService
   private AddressService: AddressService
   private employeeRepository: Repository<EmployeeEntity>
+  private CompanyRepository: Repository<CompanyEntity>
 
   constructor(SOURCE: DataSource) {
     super(SOURCE)
     this.EmployeeService = new EmployeeService(SOURCE)
     this.AddressService = new AddressService(SOURCE)
     this.employeeRepository = SOURCE.getRepository(EmployeeEntity)
+    this.CompanyRepository = SOURCE.getRepository(CompanyEntity)
   }
 
   /**
@@ -37,6 +40,18 @@ export class AdminEmployeeController extends BaseAdminController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
+      const company = await this.CompanyRepository.findOne({
+        where: {
+          users: {
+            id: userId,
+          },
+        },
+      })
+
+      if (!company) {
+        throw new ApiError(422, 'Entreprise non trounée')
+      }
+
       const isEmployeeAlreadyExist = await this.employeeRepository.exist({
         where: {
           email: employee.email,
@@ -47,7 +62,7 @@ export class AdminEmployeeController extends BaseAdminController {
         throw new ApiError(423, 'cet email existe déjà')
       }
 
-      const newEmployee = await this.EmployeeService.createOne(employee, userId)
+      const newEmployee = await this.EmployeeService.createOne(employee, company.id)
 
       if (!newEmployee) {
         throw new ApiError(422, 'Une erreur s\'est produite')
