@@ -19,6 +19,7 @@ import { defaultQueue } from '../../jobs/queue/queue'
 import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
 import { newPaginator } from '../../utils/paginatorHelper'
+import type { CompanyEntity } from '../../entity/Company.entity'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -299,13 +300,21 @@ export default class EmployeeController {
       let whereFields = where
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields = where.map(obj => {
-          obj.company = {
-            ...obj.company as FindOptionsWhere<EmployeeEntity>,
-            id: ctx.user.companyId,
-          }
-          return obj
-        })
+        if (where.length > 0) {
+          whereFields = where.map(obj => {
+            obj.company = {
+              ...obj.company as FindOptionsWhere<CompanyEntity>,
+              id: ctx.user.companyId,
+            }
+            return obj
+          })
+        } else {
+          whereFields.push({
+            company: {
+              id: ctx.user.companyId,
+            },
+          })
+        }
       }
 
       const [employees, total] = await this.employeeRepository.findAndCount({

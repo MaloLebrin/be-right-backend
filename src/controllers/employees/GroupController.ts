@@ -21,6 +21,7 @@ import type RedisCache from '../../RedisCache'
 import { generateRedisKey } from '../../utils/redisHelper'
 import type { UserEntity } from '../../entity/UserEntity'
 import { newPaginator } from '../../utils/paginatorHelper'
+import type { CompanyEntity } from '../../entity/Company.entity'
 
 export class GroupController {
   AddressService: AddressService
@@ -244,13 +245,21 @@ export class GroupController {
       let whereFields = where
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields = where.map(obj => {
-          obj.company = {
-            ...obj.company as FindOptionsWhere<GroupEntity>,
-            id: ctx.user.companyId,
-          }
-          return obj
-        })
+        if (where.length > 0) {
+          whereFields = where.map(obj => {
+            obj.company = {
+              ...obj.company as FindOptionsWhere<CompanyEntity>,
+              id: ctx.user.companyId,
+            }
+            return obj
+          })
+        } else {
+          whereFields.push({
+            company: {
+              id: ctx.user.companyId,
+            },
+          })
+        }
       }
 
       const [groups, total] = await this.GroupRepository.findAndCount({
