@@ -27,7 +27,6 @@ import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { SSEManager } from './serverSendEvent/SSEManager'
-import { CompanyController } from './controllers/CompanyController'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
@@ -45,6 +44,7 @@ import { EventRoutes } from './routes/EventRoutes'
 import { AdminEventRoutes } from './routes/Admin/AdminEventRoutes'
 import { AdminAnswerRoutes } from './routes/Admin/AdminAnswerRoutes'
 import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
+import { CompanyRoutes } from './routes/CompanyRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -155,10 +155,7 @@ async function StartApp() {
   app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
   // Company
-  app.get('/company/:id', [isAuthenticated], new CompanyController().getOne)
-  app.get('/company/manyByIds', [isAuthenticated, checkUserRole([Role.ADMIN])], new CompanyController().getMany)
-  app.patch('/company/owners/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().addOrRemoveOwner)
-  app.patch('/company/:id', [isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController().patchOne)
+  app.use('/company', new CompanyRoutes(APP_SOURCE).intializeRoutes())
 
   // Employee
   app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)

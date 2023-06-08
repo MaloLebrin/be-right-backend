@@ -1,12 +1,11 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import { CompanyEntity } from '../entity/Company.entity'
 import { UserEntity } from '../entity/UserEntity'
 import { CompanyService } from '../services/CompanyService'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
-import { APP_SOURCE } from '..'
 import { Role } from '../types'
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
 import { parseQueryIds } from '../utils/basicHelper'
@@ -16,10 +15,12 @@ export class CompanyController {
   repository: Repository<CompanyEntity>
   UserRepository: Repository<UserEntity>
 
-  constructor() {
-    this.CompanyService = new CompanyService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(CompanyEntity)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
+  constructor(SOURCE: DataSource) {
+    if (SOURCE) {
+      this.CompanyService = new CompanyService(SOURCE)
+      this.repository = SOURCE.getRepository(CompanyEntity)
+      this.UserRepository = SOURCE.getRepository(UserEntity)
+    }
   }
 
   public getOne = async (req: Request, res: Response) => {
