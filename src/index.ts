@@ -45,6 +45,7 @@ import { AdminEventRoutes } from './routes/Admin/AdminEventRoutes'
 import { AdminAnswerRoutes } from './routes/Admin/AdminAnswerRoutes'
 import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 import { CompanyRoutes } from './routes/CompanyRoutes'
+import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -127,6 +128,7 @@ async function StartApp() {
 
   // Admin
   app.use('/admin/answer', new AdminAnswerRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/admin/company', new AdminCompanyRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/employee', new AdminEmployeeRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
