@@ -1,12 +1,11 @@
 import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import { CompanyEntity } from '../entity/Company.entity'
 import { UserEntity } from '../entity/UserEntity'
 import { CompanyService } from '../services/CompanyService'
 import { ApiError } from '../middlewares/ApiError'
 import Context from '../context'
-import { APP_SOURCE } from '..'
 import { Role } from '../types'
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
 import { parseQueryIds } from '../utils/basicHelper'
@@ -16,10 +15,12 @@ export class CompanyController {
   repository: Repository<CompanyEntity>
   UserRepository: Repository<UserEntity>
 
-  constructor() {
-    this.CompanyService = new CompanyService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(CompanyEntity)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
+  constructor(SOURCE: DataSource) {
+    if (SOURCE) {
+      this.CompanyService = new CompanyService(SOURCE)
+      this.repository = SOURCE.getRepository(CompanyEntity)
+      this.UserRepository = SOURCE.getRepository(UserEntity)
+    }
   }
 
   public getOne = async (req: Request, res: Response) => {
@@ -111,28 +112,27 @@ export class CompanyController {
   public patchOne = async (req: Request, res: Response) => {
     await wrapperRequest(req, res, async () => {
       const id = parseInt(req.params.id)
+      const { company }: { company: Partial<CompanyEntity> } = req.body
 
       const ctx = Context.get(req)
 
       const companyId = ctx.user.companyId
-      if (id && companyId) {
+
+      if (!id || !ctx.user || !company) {
+        throw new ApiError(422, 'L\'identifiant de l\'entreprise est requis')
+      }
+
+      if (!isUserAdmin(ctx.user)) {
         if (id !== companyId) {
           throw new ApiError(401, 'Action non autorisée')
         }
-
-        const { company }: { company: Partial<CompanyEntity> } = req.body
-
-        if (!company) {
-          throw new ApiError(422, 'Les informations de l\'entreprise sont requis')
-        }
-
-        await this.repository.update(id, company)
-
-        const companyUpdated = await this.CompanyService.getOne(id)
-
-        return res.status(200).json(companyUpdated)
       }
-      throw new ApiError(422, 'L\'identifiant de l\'entreprise est requis')
+
+      await this.repository.update(id, company)
+
+      const companyUpdated = await this.CompanyService.getOne(id)
+
+      return res.status(200).json(companyUpdated)
     })
   }
 }
