@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { SHA256 } from 'crypto-js'
 import encBase64 from 'crypto-js/enc-base64'
 import { DataSource } from 'typeorm'
@@ -6,6 +6,7 @@ import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/Postgres
 import { dataBaseConfig } from '../ormconfig'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
+import { isProduction } from './utils/envHelper'
 
 /**
  * create hash password
@@ -18,21 +19,18 @@ export const generateHash = (salt: string, password: string) => {
   return hash
 }
 
-export async function wrapperRequest<T>(req: Request, res: Response, request: () => Promise<T>) {
+export async function wrapperRequest<T>(req: Request, res: Response, next: NextFunction, request: () => Promise<T>) {
   try {
     logger.info(`${req.url} route accessed`)
     await request()
   } catch (error) {
-    logger.debug(error.message)
+    if (!isProduction()) {
+      logger.debug(error.message)
+    }
 
     logger.error(error)
 
-    return res.status(error.status || 500).send({
-      success: false,
-      message: error.message,
-      stack: error.stack,
-      description: error.cause,
-    })
+    next(error)
   } finally {
     logger.info(`${req.url} route ended`)
   }

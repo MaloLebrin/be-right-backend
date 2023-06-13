@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
@@ -51,8 +51,8 @@ export default class EventController {
    * @param event event: Partial<EventEntity>
    * @returns return event just created
    */
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
       let userId = null
@@ -92,8 +92,8 @@ export default class EventController {
    * @param Id number
    * @returns entity form given id
    */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
@@ -116,8 +116,8 @@ export default class EventController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
 
@@ -142,8 +142,8 @@ export default class EventController {
    * @param id userId
    * @returns all event link with user
    */
-  public getAllForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAllForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const eventsIds = ctx.user.company.eventIds
@@ -168,8 +168,8 @@ export default class EventController {
     })
   }
 
-  public getAllDeletedForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAllDeletedForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       if (ctx.user?.id) {
@@ -192,8 +192,8 @@ export default class EventController {
    * paginate function
    * @returns paginate response
    */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const { where, page, take, skip, order } = newPaginator<EventEntity>({
@@ -244,8 +244,8 @@ export default class EventController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event }: { event: Partial<EventEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -267,8 +267,8 @@ export default class EventController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)

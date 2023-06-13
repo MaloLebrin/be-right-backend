@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import Context from '../../context'
@@ -55,8 +55,8 @@ export default class EmployeeController {
    * @param employee employee: Partial<employeeEntity>
    * @returns return employee just created
    */
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
 
       const ctx = Context.get(req)
@@ -111,8 +111,8 @@ export default class EmployeeController {
     })
   }
 
-  public createMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
       if (employees.length > 0) {
@@ -154,8 +154,8 @@ export default class EmployeeController {
     })
   }
 
-  public createManyEmployeeByEventId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createManyEmployeeByEventId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.eventId)
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
@@ -206,8 +206,8 @@ export default class EmployeeController {
    * @param Id number
    * @returns entity form given id
    */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -225,8 +225,8 @@ export default class EmployeeController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
 
       if (ids) {
@@ -254,8 +254,8 @@ export default class EmployeeController {
    * @param id user id
    * @returns all employees from user Id
    */
-  public getManyByUserId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByUserId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
         const employees = await this.EmployeeService.getAllForUser(userId)
@@ -271,8 +271,8 @@ export default class EmployeeController {
    * @param id event id
    * @returns all employees from event Id
    */
-  public getManyByEventId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByEventId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const answers = await this.AnswerService.getAllAnswersForEvent(eventId, true)
@@ -287,8 +287,8 @@ export default class EmployeeController {
    * paginate function
    * @returns paginate response
    */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const { where, page, take, skip, order } = newPaginator<EmployeeEntity>({
@@ -338,8 +338,8 @@ export default class EmployeeController {
    * @param employee employee: Partial<EmployeeEntity>
    * @returns return employee just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const id = parseInt(req.params.id)
 
@@ -353,8 +353,8 @@ export default class EmployeeController {
     })
   }
 
-  public patchOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public patchOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const event = await this.EventService.getNumberSignatureNeededForEvent(id)
@@ -365,8 +365,8 @@ export default class EmployeeController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -398,8 +398,8 @@ export default class EmployeeController {
     })
   }
 
-  public uploadFormCSV = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public uploadFormCSV = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const fileRecieved = req.file
       const ctx = Context.get(req)
       const userId = ctx.user?.id

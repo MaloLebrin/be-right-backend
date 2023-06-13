@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, EntityManager, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
@@ -19,8 +19,8 @@ export class NewsletterController {
     }
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, firstName, lastName, companyName }: { email: string; firstName: string; lastName: string; companyName: string } = req.body
 
       const newsletterRecipient = {
@@ -63,8 +63,8 @@ export class NewsletterController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const recipient = await this.repository.findOne({ where: { id } })
       if (recipient) {

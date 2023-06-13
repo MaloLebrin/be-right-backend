@@ -1,5 +1,5 @@
 import type { DataSource, Repository } from 'typeorm'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { BaseAdminController } from '../BaseAdminController'
 import { UserEntity } from '../../../entity/UserEntity'
 import { generateQueueName } from '../../../jobs/queue/jobs/provider'
@@ -23,8 +23,8 @@ export class AdminAnswerController extends BaseAdminController {
     this.AnswerService = new AnswerService(SOURCE)
   }
 
-  public createMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
       const userId = req.body.userId

@@ -1,5 +1,5 @@
 import type { DataSource, Repository } from 'typeorm'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { ApiError } from '../../middlewares/ApiError'
 import { wrapperRequest } from '../../utils'
@@ -13,8 +13,8 @@ export class AdminCompanyController extends BaseAdminController {
     this.CompanyRepository = SOURCE.getRepository(CompanyEntity)
   }
 
-  public deleteCompany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteCompany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (!id) {

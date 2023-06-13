@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/indent */
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
 import Context from '../context'
@@ -56,8 +56,8 @@ export default class UserController {
    * @param user user: Partial<userEntity>
    * @returns return user just created
    */
-  public newUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public newUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const {
@@ -135,8 +135,8 @@ export default class UserController {
   * paginate function
   * @returns paginate response
   */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const { where, page, take, skip, order } = newPaginator<UserEntity>({
@@ -186,8 +186,8 @@ export default class UserController {
    * @param Id number
    * @returns entity form given id
   */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -203,8 +203,8 @@ export default class UserController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const userIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -222,8 +222,8 @@ export default class UserController {
     })
   }
 
-  public getOneByToken = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOneByToken = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const token = req.body.token
 
       if (token) {
@@ -263,8 +263,8 @@ export default class UserController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -304,8 +304,8 @@ export default class UserController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
 
@@ -363,8 +363,8 @@ export default class UserController {
     })
   }
 
-  public login = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public login = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, password }: { email: string; password: string } = req.body
 
       const user = await this.repository.findOne({
@@ -391,59 +391,59 @@ export default class UserController {
         },
       })
 
-      if (user && user.password && user.salt) {
-        const passwordHashed = generateHash(user.salt, password)
-
-        if (user.password === passwordHashed) {
-          const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
-
-          if (!isUserAdmin(user) && ADMIN_PASSWORD === password && ADMIN_EMAIL === email) {
-            await this.repository.update(user.id, {
-              loggedAt: new Date(),
-              roles: Role.ADMIN,
-              token: createJwtToken({
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                roles: Role.ADMIN,
-              }),
-            })
-          } else {
-            await this.repository.update(user.id, {
-              loggedAt: new Date(),
-            })
-          }
-
-          const userToSend = await this.repository.findOne({
-            where: { email },
-            relations: [
-              'profilePicture',
-              'notificationSubscriptions',
-              'company.events',
-              'company.employees',
-              'company.groups',
-              'company.subscription',
-              'company.address',
-            ],
-          })
-
-          await this.saveUserInCache(userToSend)
-
-          return res.status(200).json({
-            user: userToSend,
-            company: user.company,
-          })
-        } else {
-          throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
-        }
-      } else {
+      if (!user || !user.password || !user.salt) {
         throw new ApiError(404, 'Utilisateur non trouvé')
       }
+
+      const passwordHashed = generateHash(user.salt, password)
+
+      if (user.password !== passwordHashed) {
+        throw new ApiError(401, 'Identifiant et/ou mot de passe incorrect')
+      }
+
+      const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
+
+      if (!isUserAdmin(user) && ADMIN_PASSWORD === password && ADMIN_EMAIL === email) {
+        await this.repository.update(user.id, {
+          loggedAt: new Date(),
+          roles: Role.ADMIN,
+          token: createJwtToken({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles: Role.ADMIN,
+          }),
+        })
+      } else {
+        await this.repository.update(user.id, {
+          loggedAt: new Date(),
+        })
+      }
+
+      const userToSend = await this.repository.findOne({
+        where: { email },
+        relations: [
+          'profilePicture',
+          'notificationSubscriptions',
+          'company.events',
+          'company.employees',
+          'company.groups',
+          'company.subscription',
+          'company.address',
+        ],
+      })
+
+      await this.saveUserInCache(userToSend)
+
+      return res.status(200).json({
+        user: userToSend,
+        company: user.company,
+      })
     })
   }
 
-  public createPhotographer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createPhotographer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, firstName, lastName }: { email: string; firstName: string; lastName: string } = req.body
 
       if (!email || !firstName || !lastName) {
@@ -456,8 +456,8 @@ export default class UserController {
     })
   }
 
-  public getPhotographerAlreadyWorkWith = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getPhotographerAlreadyWorkWith = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       if (ctx.user.companyId) {
@@ -476,8 +476,8 @@ export default class UserController {
     })
   }
 
-  public isMailAlreadyUsed = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public isMailAlreadyUsed = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email }: { email: string } = req.body
       if (email) {
         const userAlReadyExist = await this.UserService.findOneByEmail(email)
@@ -499,8 +499,8 @@ export default class UserController {
     })
   }
 
-  public addSignatureToUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public addSignatureToUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { signature }: { signature: string } = req.body
       const ctx = Context.get(req)
 

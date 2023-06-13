@@ -1,5 +1,5 @@
 import { unlink } from 'node:fs'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import puppeteer from 'puppeteer'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
@@ -85,8 +85,8 @@ export class DownloadController {
   // eslint-disable-next-line promise/param-names
   private delay = async (ms: number) => new Promise(res => setTimeout(res, ms))
 
-  public ViewAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public ViewAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
@@ -133,8 +133,8 @@ export class DownloadController {
     })
   }
 
-  public downLoadAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const currentUser = ctx.user

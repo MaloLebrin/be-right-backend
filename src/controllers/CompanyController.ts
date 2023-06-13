@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import { CompanyEntity } from '../entity/Company.entity'
@@ -23,8 +23,8 @@ export class CompanyController {
     }
   }
 
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -37,8 +37,8 @@ export class CompanyController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
 
       if (ids) {
@@ -54,8 +54,8 @@ export class CompanyController {
     })
   }
 
-  public addOrRemoveOwner = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public addOrRemoveOwner = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
@@ -109,8 +109,8 @@ export class CompanyController {
     })
   }
 
-  public patchOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public patchOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const { company }: { company: Partial<CompanyEntity> } = req.body
 

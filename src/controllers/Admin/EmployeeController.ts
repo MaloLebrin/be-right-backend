@@ -1,5 +1,5 @@
 import type { DataSource, Repository } from 'typeorm'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { AddressService } from '../../services/AddressService'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import EmployeeService from '../../services/employee/EmployeeService'
@@ -32,8 +32,8 @@ export class AdminEmployeeController extends BaseAdminController {
    * @param employee employee: Partial<employeeEntity>
    * @returns return employee just created
    */
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee, address, userId }: EmployeeCreateOneRequest & { userId: number } = req.body
 
       if (!employee || !address || !userId) {

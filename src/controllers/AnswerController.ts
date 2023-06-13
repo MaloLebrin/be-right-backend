@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import AnswerEntity from '../entity/AnswerEntity'
@@ -53,8 +53,8 @@ export class AnswerController {
     })
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const eventId = parseInt(req.query.eventId.toString())
@@ -99,8 +99,8 @@ export class AnswerController {
     })
   }
 
-  public createMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
       const ctx = Context.get(req)
@@ -135,8 +135,8 @@ export class AnswerController {
     })
   }
 
-  public getManyForEvent = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyForEvent = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const answers = await this.AnswerService.getAllAnswersForEvent(id)
@@ -147,8 +147,8 @@ export class AnswerController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const answerIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -171,8 +171,8 @@ export class AnswerController {
     })
   }
 
-  public getManyForManyEvents = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyForManyEvents = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const eventIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -195,8 +195,8 @@ export class AnswerController {
     })
   }
 
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
       const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
@@ -208,8 +208,8 @@ export class AnswerController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (!id) {
@@ -230,8 +230,8 @@ export class AnswerController {
     })
   }
 
-  public raiseAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public raiseAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (!id) {
