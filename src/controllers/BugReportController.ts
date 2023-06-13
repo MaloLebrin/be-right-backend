@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import { BugReportEntity } from '../entity/BugReportEntity'
 import BugReportService from '../services/BugReportService'
@@ -18,8 +18,8 @@ export default class BugReportController {
     this.bugRepository = APP_SOURCE.getRepository(BugReportEntity)
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { bugReport }: { bugReport: BugReportEntity } = req.body
       const ctx = Context.get(req)
 
@@ -34,8 +34,8 @@ export default class BugReportController {
     })
   }
 
-  public updateStatus = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateStatus = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const { status } = req.body
       if (status && id) {
@@ -46,8 +46,8 @@ export default class BugReportController {
     })
   }
 
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const { bugReport }: { bugReport: BugReportEntity } = req.body
       if (bugReport && id) {
@@ -62,8 +62,8 @@ export default class BugReportController {
  * @param Id number
  * @returns entity form given id
 */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const bugReport = await this.BugReportService.getOne(id)
@@ -73,8 +73,8 @@ export default class BugReportController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const deletedBugReport = await this.BugReportService.deleteOne(id)

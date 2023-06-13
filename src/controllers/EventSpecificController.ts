@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import type RedisCache from '../RedisCache'
 import { REDIS_CACHE } from '..'
@@ -52,8 +52,8 @@ export default class EventSpecificController {
     }), event)
   }
 
-  public fetchOneEventWithRelations = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public fetchOneEventWithRelations = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.id)
       const ctx = Context.get(req)
 
@@ -108,8 +108,8 @@ export default class EventSpecificController {
     })
   }
 
-  public posteOneWithRelations = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public posteOneWithRelations = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
       const ctx = Context.get(req)

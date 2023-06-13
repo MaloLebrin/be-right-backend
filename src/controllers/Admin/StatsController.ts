@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { MoreThan } from 'typeorm'
 import dayjs from 'dayjs'
@@ -26,8 +26,8 @@ export class AdminStatsController {
     }
   }
 
-  public statsHome = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public statsHome = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       if (!isUserAdmin(ctx.user)) {

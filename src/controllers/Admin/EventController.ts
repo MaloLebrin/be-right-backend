@@ -1,5 +1,5 @@
 import type { DataSource, Repository } from 'typeorm'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { wrapperRequest } from '../../utils'
 import type { EventWithRelationsCreationPayload } from '../../types/Event'
 import { ApiError } from '../../middlewares/ApiError'
@@ -32,8 +32,8 @@ export class AdminEventController extends BaseAdminController {
     this.AnswerService = new AnswerService(SOURCE)
   }
 
-  public createOneForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOneForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event, address, photographerId, companyId }: EventWithRelationsCreationPayload & { companyId: number } = req.body
 
       if (!event || !address || !photographerId || !companyId) {

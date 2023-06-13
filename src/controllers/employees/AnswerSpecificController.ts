@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
@@ -50,8 +50,8 @@ export class AnswerSpecificController {
     return false
   }
 
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { token, email }: { token: string; email: string } = req.body
 
       if (!token || !email) {
@@ -99,8 +99,8 @@ export class AnswerSpecificController {
     })
   }
 
-  public checkTwoAuth = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public checkTwoAuth = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { token, email, twoFactorCode }: { token: string; email: string; twoFactorCode: string } = req.body
 
       if (!token || !email || !twoFactorCode) {
@@ -131,8 +131,8 @@ export class AnswerSpecificController {
     })
   }
 
-  public updateAnswerByEmployee = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateAnswerByEmployee = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const answerId = parseInt(req.params.id)
       const {
         token,

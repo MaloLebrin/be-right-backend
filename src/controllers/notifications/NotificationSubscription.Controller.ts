@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { NotificationSubscriptionService } from '../../services/notifications/NotificationSubscriptionService'
 import { APP_SOURCE } from '../..'
@@ -17,8 +17,8 @@ export class NotificationSubscriptionController {
     this.NotificationSubscriptionService = new NotificationSubscriptionService(APP_SOURCE)
   }
 
-  public GetForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const user = ctx?.user
 
@@ -30,8 +30,8 @@ export class NotificationSubscriptionController {
     })
   }
 
-  public unsuscbribe = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public unsuscbribe = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const ctx = Context.get(req)
       const user = ctx?.user
@@ -52,8 +52,8 @@ export class NotificationSubscriptionController {
     })
   }
 
-  public subscribe = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public subscribe = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const type = req.body.type as NotificationTypeEnum
 
       const ctx = Context.get(req)

@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import csv from 'csvtojson'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { In } from 'typeorm'
@@ -57,8 +57,8 @@ export class GroupController {
     ])
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { group }: { group: GroupCreationPayload } = req.body
 
       const ctx = Context.get(req)
@@ -78,8 +78,8 @@ export class GroupController {
     })
   }
 
-  public createOneWithCSV = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOneWithCSV = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { name, description }: { name: string; description: string } = req.body
 
       const fileRecieved = req.file
@@ -147,8 +147,8 @@ export class GroupController {
     })
   }
 
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)
@@ -163,8 +163,8 @@ export class GroupController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
 
       if (ids) {
@@ -199,8 +199,8 @@ export class GroupController {
    * @param id user id
    * @returns all groups from userId
    */
-  public getManyByUserId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByUserId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
@@ -214,8 +214,8 @@ export class GroupController {
     })
   }
 
-  public getManyByEmployeeId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByEmployeeId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const currentUser = ctx.user
       const id = parseInt(req.params.id)
@@ -232,8 +232,8 @@ export class GroupController {
    * paginate function
    * @returns paginate response
    */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const { where, page, take, skip, order } = newPaginator<GroupEntity>({
@@ -283,8 +283,8 @@ export class GroupController {
    * @param group group: Partial<GroupEntity>
    * @return return group just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { group }: { group: Partial<GroupEntity> } = req.body
 
       const id = parseInt(req.params.id)
@@ -314,8 +314,8 @@ export class GroupController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       const ctx = Context.get(req)

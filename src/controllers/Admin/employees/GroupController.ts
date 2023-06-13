@@ -1,8 +1,7 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import csv from 'csvtojson'
-
 import { BaseAdminController } from '../BaseAdminController'
 import { wrapperRequest } from '../../../utils'
 import type { GroupCreationPayload } from '../../../services/employee/GroupService'
@@ -28,8 +27,8 @@ export class AdminGroupController extends BaseAdminController {
     this.EmployeeService = new EmployeeService(SOURCE)
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { group, companyId }: { group: GroupCreationPayload; companyId: number } = req.body
 
       if (!group || !companyId) {
@@ -45,8 +44,8 @@ export class AdminGroupController extends BaseAdminController {
     })
   }
 
-  public createOneWithCSV = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOneWithCSV = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { name, description, companyId }: { name: string; description: string; companyId: number } = req.body
 
       const fileRecieved = req.file

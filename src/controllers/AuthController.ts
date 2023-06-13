@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
@@ -40,8 +40,8 @@ export default class AuthController {
     }
   }
 
-  public forgotPassword = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email }: { email: string } = req.body
 
       if (!email) {
@@ -79,8 +79,8 @@ export default class AuthController {
     })
   }
 
-  public resetPassword = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       if (!email || !twoFactorRecoveryCode || !password) {
@@ -122,8 +122,8 @@ export default class AuthController {
     })
   }
 
-  public signUp = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public signUp = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const {
         email,
         firstName,
