@@ -46,6 +46,7 @@ import { AdminAnswerRoutes } from './routes/Admin/AdminAnswerRoutes'
 import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 import { CompanyRoutes } from './routes/CompanyRoutes'
 import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
+import { errorHandler } from './middlewares/ErrorHandler'
 
 const {
   CLOUDINARY_API_KEY,
@@ -210,6 +211,8 @@ async function StartApp() {
   app.all('*', req => {
     throw new NotFoundError(req.path)
   })
+
+  app.use(errorHandler)
 
   const port = PORT || 5555
   app.listen(port, '0.0.0.0', () => {
