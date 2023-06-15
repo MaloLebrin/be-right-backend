@@ -289,6 +289,7 @@ export class GroupController {
       return res.status(200).json({
         data: groups,
         currentPage: page,
+        totalPages: Math.ceil(total / take),
         limit: take,
         total,
         order,

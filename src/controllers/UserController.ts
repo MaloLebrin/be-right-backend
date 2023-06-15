@@ -176,6 +176,7 @@ export default class UserController {
         data: data.map(user => userResponse(user)),
         currentPage: page,
         limit: take,
+        totalPages: Math.ceil(total / take),
         total,
         order,
       })
