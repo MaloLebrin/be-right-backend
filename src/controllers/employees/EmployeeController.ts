@@ -328,6 +328,7 @@ export default class EmployeeController {
         data: employees,
         currentPage: page,
         limit: take,
+        totalPages: Math.ceil(total / take),
         total,
         order,
       })
