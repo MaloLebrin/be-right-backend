@@ -14,8 +14,8 @@ export class CompanyRoutes extends BaseRouter implements BaseInterfaceRouter {
   constructor(SOURCE: DataSource) { super(SOURCE) }
 
   public intializeRoutes = () => {
-    this.router.get('/:id', [validate(idParamsSchema), isAuthenticated], new CompanyController(this.DATA_SOURCE).getOne)
     this.router.get('/manyByIds', [isAuthenticated, checkUserRole([Role.ADMIN])], new CompanyController(this.DATA_SOURCE).getMany)
+    this.router.get('/:id', [validate(idParamsSchema), isAuthenticated], new CompanyController(this.DATA_SOURCE).getOne)
     this.router.patch('/owners/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController(this.DATA_SOURCE).addOrRemoveOwner)
     this.router.patch('/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole([Role.ADMIN, Role.OWNER])], new CompanyController(this.DATA_SOURCE).patchOne)
 
