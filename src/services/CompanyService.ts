@@ -50,7 +50,7 @@ export class CompanyService {
   }
 
   async getMany(companyIds: number[], withRelations?: boolean) {
-    return this.repository.findOne({
+    return this.repository.find({
       where: {
         id: In(companyIds),
       },
