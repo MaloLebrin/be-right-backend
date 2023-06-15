@@ -178,7 +178,7 @@ export class GroupController {
         const currentUser = ctx.user
 
         if (isUserAdmin(currentUser)) {
-          const groups = this.GroupRepository.find({
+          const groups = await this.GroupRepository.find({
             where: { id: In(groupIds) },
           })
 
@@ -220,11 +220,28 @@ export class GroupController {
       const currentUser = ctx.user
       const id = parseInt(req.params.id)
 
-      if (id && currentUser.companyId) {
-        const employees = await this.groupService.getAllForEmployee(id, currentUser.companyId)
-        return res.status(200).json(employees)
+      if (!id) {
+        throw new ApiError(422, 'identifiant du destinataire est manquant')
       }
-      throw new ApiError(422, 'identifiant de l\'utilisateur manquant')
+
+      if (isUserAdmin(currentUser)) {
+        const groups = await this.GroupRepository.find({
+          where: {
+            employees: {
+              id,
+            },
+          },
+          relations: {
+            company: true,
+            employees: true,
+          },
+        })
+        return res.status(200).json(groups)
+      } else if (currentUser.companyId) {
+        const groups = await this.groupService.getAllForEmployee(id, currentUser.companyId)
+        return res.status(200).json(groups)
+      }
+      throw new ApiError(401, 'Action non authorisée')
     })
   }
 
