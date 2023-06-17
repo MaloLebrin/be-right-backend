@@ -66,11 +66,7 @@ export default class EmployeeController {
         throw new ApiError(401, 'Vous n\'êtes pas authentifié')
       }
 
-      if (isUserAdmin(ctx.user)) {
-        userId = parseInt(req.params.id)
-      } else {
-        userId = ctx.user.id
-      }
+      userId = ctx.user.id
 
       const isEmployeeAlreadyExist = await this.employeeRepository.exist({
         where: {
@@ -119,11 +115,7 @@ export default class EmployeeController {
         const ctx = Context.get(req)
         let userId = null
 
-        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
-          userId = parseInt(req.params.id)
-        } else {
-          userId = ctx.user.id
-        }
+        userId = ctx.user.id
 
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
