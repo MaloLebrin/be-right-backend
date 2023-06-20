@@ -1,10 +1,10 @@
 import type { Job } from 'bullmq'
-import puppeteer from 'puppeteer'
 import type { Request } from 'express'
 import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
 import { APP_SOURCE } from '../../..'
 import type AnswerEntity from '../../../entity/AnswerEntity'
+import { launchPuppeteer } from '../../../utils/puppeteerHelper'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
@@ -33,14 +33,7 @@ export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
     const fileName = `droit-image-${answer.employee.slug}.pdf`
     const filePath = `/app/src/uploads/${fileName}`
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: '/usr/bin/chromium-browser',
-      args: [
-        '--no-sandbox',
-        '--disable-gpu',
-      ],
-    })
+    const browser = await launchPuppeteer()
 
     const page = await browser.newPage()
 

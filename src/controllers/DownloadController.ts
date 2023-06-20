@@ -1,6 +1,5 @@
 import { unlink } from 'node:fs'
 import type { NextFunction, Request, Response } from 'express'
-import puppeteer from 'puppeteer'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
@@ -18,6 +17,7 @@ import { CompanyService } from '../services/CompanyService'
 import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
 import Context from '../context'
+import { launchPuppeteer } from '../utils/puppeteerHelper'
 
 export class DownloadController {
   AnswerService: AnswerService
@@ -180,14 +180,7 @@ export class DownloadController {
       }
 
       try {
-        const browser = await puppeteer.launch({
-          headless: 'new',
-          executablePath: '/usr/bin/chromium-browser',
-          args: [
-            '--no-sandbox',
-            '--disable-gpu',
-          ],
-        })
+        const browser = await launchPuppeteer()
 
         const page = await browser.newPage()
 
