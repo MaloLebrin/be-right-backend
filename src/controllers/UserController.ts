@@ -389,6 +389,7 @@ export default class UserController {
           salt: true,
           email: true,
           token: true,
+          roles: true,
         },
       })
 
