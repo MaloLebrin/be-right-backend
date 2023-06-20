@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
-import puppeteer from 'puppeteer'
 import { wrapperRequest } from '../../utils'
 import AnswerService from '../../services/AnswerService'
 import AnswerEntity from '../../entity/AnswerEntity'
@@ -18,6 +17,7 @@ import EventEntity from '../../entity/EventEntity'
 // import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 import { MailjetService } from '../../services'
+import { launchPuppeteer } from '../../utils/puppeteerHelper'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -218,14 +218,7 @@ export class AnswerSpecificController {
       const fileName = `droit-image-${answer.employee.slug}.pdf`
       const filePath = `/app/src/uploads/${fileName}`
 
-      const browser = await puppeteer.launch({
-        headless: 'new',
-        executablePath: '/usr/bin/chromium-browser',
-        args: [
-          '--no-sandbox',
-          '--disable-gpu',
-        ],
-      })
+      const browser = await launchPuppeteer()
 
       const page = await browser.newPage()
 
