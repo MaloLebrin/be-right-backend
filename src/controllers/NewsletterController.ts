@@ -1,25 +1,26 @@
-import type { Request, Response } from 'express'
-import type { EntityManager, Repository } from 'typeorm'
-import { paginator, wrapperRequest } from '../utils'
-import { APP_SOURCE } from '..'
+import type { NextFunction, Request, Response } from 'express'
+import type { DataSource, EntityManager, Repository } from 'typeorm'
+import { wrapperRequest } from '../utils'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
-import { NewsletterRecipient, newsletterRecipientSearchableFields } from './../entity/NewsletterRecipientEntity'
+import { NewsletterRecipient } from './../entity/NewsletterRecipientEntity'
 
-export default class NewsletterController {
+export class NewsletterController {
   getManager: EntityManager
   repository: Repository<NewsletterRecipient>
   UserRepository: Repository<UserEntity>
 
-  constructor() {
-    this.getManager = APP_SOURCE.manager
-    this.repository = APP_SOURCE.getRepository(NewsletterRecipient)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.getManager = DATA_SOURCE.manager
+      this.repository = DATA_SOURCE.getRepository(NewsletterRecipient)
+      this.UserRepository = DATA_SOURCE.getRepository(UserEntity)
+    }
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, firstName, lastName, companyName }: { email: string; firstName: string; lastName: string; companyName: string } = req.body
 
       const newsletterRecipient = {
@@ -62,27 +63,8 @@ export default class NewsletterController {
     })
   }
 
-  public getAllPaginate = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, newsletterRecipientSearchableFields)
-
-      const [newsletterRecipients, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where,
-      })
-
-      return res.status(200).json({
-        data: newsletterRecipients,
-        currentPage: page,
-        limit: take,
-        total,
-      })
-    })
-  }
-
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       const recipient = await this.repository.findOne({ where: { id } })
       if (recipient) {

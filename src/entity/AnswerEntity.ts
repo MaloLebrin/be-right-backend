@@ -5,7 +5,7 @@ import EventEntity from './EventEntity'
 import { MailEntity } from './MailEntity'
 
 @Entity()
-@Index(['event', 'employee'], { unique: true })
+@Index('UNIQ_EVENT_EMPLOYEE_TWOFACTORCODE', ['event', 'employee', 'twoFactorCode'], { unique: true })
 export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   hasSigned: boolean | null
@@ -19,7 +19,7 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ unique: true })
   token: string
 
-  @Column({ unique: true, nullable: true, select: false })
+  @Column({ unique: true, select: false })
   twoFactorCode: string | null
 
   @Column({
@@ -32,6 +32,9 @@ export default class AnswerEntity extends BaseEntity {
 
   @Column({ nullable: true, default: null })
   mailSendAt: Date
+
+  @Column({ nullable: true, default: null })
+  signature: string
 
   @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
   @JoinColumn({ name: 'employeeId' })

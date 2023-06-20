@@ -6,6 +6,8 @@ import AnswerEntity from '../entity/AnswerEntity'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EventEntity from '../entity/EventEntity'
 import { useEnv } from '../env'
+import { ApiError } from '../middlewares/ApiError'
+import { answerResponse } from '../utils/answerHelper'
 
 export default class AnswerService {
   getManager: EntityManager
@@ -38,6 +40,12 @@ export default class AnswerService {
     )
   }
 
+  public filterSecretAnswersKeys(answers: AnswerEntity[]) {
+    return answers?.length > 0
+      ? answers.map(answer => answerResponse(answer))
+      : []
+  }
+
   public createOne = async (eventId: number, employeeId: number) => {
     const event = await this.eventRepository.findOne({
       where: {
@@ -51,6 +59,10 @@ export default class AnswerService {
       },
     })
 
+    if (!event || !employee) {
+      throw new ApiError(422, 'Missing parameters')
+    }
+
     const newAnswer = this.repository.create({
       event,
       employee: { id: employeeId },
@@ -59,7 +71,10 @@ export default class AnswerService {
     })
     newAnswer.token = this.generateAnswerToken(employee, newAnswer.id, eventId)
     await this.repository.save(newAnswer)
-    return newAnswer
+    return {
+      ...newAnswer,
+      employee,
+    }
   }
 
   public createMany = async (eventId: number, employeeIds: number[]) => {
@@ -153,16 +168,12 @@ export default class AnswerService {
     })
   }
 
-  public signOneAnswer = async (id: number, answer: AnswerEntity) => {
-    const answerToUpdate = await this.getOne(id)
-    const updatedAnswer = {
-      ...answerToUpdate,
+  public signOneAnswer = async (id: number, { hasSigned, reason }: { hasSigned: boolean; reason?: string }) => {
+    await this.repository.update(id, {
       signedAt: new Date(),
-      hasSigned: answer.hasSigned,
-      reason: answer.reason,
-    }
-    await this.repository.save(updatedAnswer)
-    return updatedAnswer
+      hasSigned,
+      reason: reason || null,
+    })
   }
 
   public updateOneAnswer = async (id: number, answer: Partial<AnswerEntity>) => {

@@ -1,9 +1,9 @@
-import type { Request, Response } from 'express'
-import type { EntityManager, Repository } from 'typeorm'
+import type { NextFunction, Request, Response } from 'express'
+import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import Context from '../../context'
-import { EmployeeEntity, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
-import { paginator, wrapperRequest } from '../../utils'
+import { EmployeeEntity, employeeRelationFields, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
+import { wrapperRequest } from '../../utils'
 import EmployeeService from '../../services/employee/EmployeeService'
 import AnswerService from '../../services/AnswerService'
 import EventService from '../../services/EventService'
@@ -18,6 +18,8 @@ import RedisService from '../../services/RedisService'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
+import { newPaginator } from '../../utils/paginatorHelper'
+import type { CompanyEntity } from '../../entity/Company.entity'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -53,8 +55,8 @@ export default class EmployeeController {
    * @param employee employee: Partial<employeeEntity>
    * @returns return employee just created
    */
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
 
       const ctx = Context.get(req)
@@ -64,11 +66,7 @@ export default class EmployeeController {
         throw new ApiError(401, 'Vous n\'êtes pas authentifié')
       }
 
-      if (isUserAdmin(ctx.user)) {
-        userId = parseInt(req.params.id)
-      } else {
-        userId = ctx.user.id
-      }
+      userId = ctx.user.id
 
       const isEmployeeAlreadyExist = await this.employeeRepository.exist({
         where: {
@@ -109,19 +107,15 @@ export default class EmployeeController {
     })
   }
 
-  public createMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
       if (employees.length > 0) {
         const ctx = Context.get(req)
         let userId = null
 
-        if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
-          userId = parseInt(req.params.id)
-        } else {
-          userId = ctx.user.id
-        }
+        userId = ctx.user.id
 
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
           const isEmployeeAlreadyExist = await this.EmployeeService.isEmployeeAlreadyExist(employee.email)
@@ -152,8 +146,8 @@ export default class EmployeeController {
     })
   }
 
-  public createManyEmployeeByEventId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createManyEmployeeByEventId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.eventId)
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
@@ -204,8 +198,8 @@ export default class EmployeeController {
    * @param Id number
    * @returns entity form given id
    */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -223,8 +217,8 @@ export default class EmployeeController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
 
       if (ids) {
@@ -252,8 +246,8 @@ export default class EmployeeController {
    * @param id user id
    * @returns all employees from user Id
    */
-  public getManyByUserId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByUserId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
         const employees = await this.EmployeeService.getAllForUser(userId)
@@ -269,8 +263,8 @@ export default class EmployeeController {
    * @param id event id
    * @returns all employees from event Id
    */
-  public getManyByEventId = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyByEventId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const answers = await this.AnswerService.getAllAnswersForEvent(eventId, true)
@@ -285,21 +279,50 @@ export default class EmployeeController {
    * paginate function
    * @returns paginate response
    */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, employeeSearchablefields)
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const ctx = Context.get(req)
+
+      const { where, page, take, skip, order } = newPaginator<EmployeeEntity>({
+        req,
+        searchableFields: employeeSearchablefields,
+        relationFields: employeeRelationFields,
+      })
+
+      let whereFields = where
+
+      if (!isUserAdmin(ctx.user)) {
+        if (where.length > 0) {
+          whereFields = where.map(obj => {
+            obj.company = {
+              ...obj.company as FindOptionsWhere<CompanyEntity>,
+              id: ctx.user.companyId,
+            }
+            return obj
+          })
+        } else {
+          whereFields.push({
+            company: {
+              id: ctx.user.companyId,
+            },
+          })
+        }
+      }
 
       const [employees, total] = await this.employeeRepository.findAndCount({
         take,
         skip,
-        where,
+        where: whereFields,
+        order,
       })
 
       return res.status(200).json({
         data: employees,
         currentPage: page,
         limit: take,
+        totalPages: Math.ceil(total / take),
         total,
+        order,
       })
     })
   }
@@ -308,8 +331,8 @@ export default class EmployeeController {
    * @param employee employee: Partial<EmployeeEntity>
    * @returns return employee just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee }: { employee: Partial<EmployeeEntity> } = req.body
       const id = parseInt(req.params.id)
 
@@ -323,8 +346,8 @@ export default class EmployeeController {
     })
   }
 
-  public patchOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public patchOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const event = await this.EventService.getNumberSignatureNeededForEvent(id)
@@ -335,8 +358,8 @@ export default class EmployeeController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -368,8 +391,8 @@ export default class EmployeeController {
     })
   }
 
-  public uploadFormCSV = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public uploadFormCSV = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const fileRecieved = req.file
       const ctx = Context.get(req)
       const userId = ctx.user?.id

@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [16.x, 18.x]
+        node: [18.x, 20.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -32,7 +32,7 @@ jobs:
         run: npm i -g @antfu/ni
 
       - name: 🔧 Install
-        run: nci
+        run: pnpm install --no-frozen-lockfile
 
       - name: 📖 Lint
         run: nr lint
@@ -42,6 +42,6 @@ jobs:
 
       - name: 🏗 Build
         run: nr tsc
-      
+
       - name: ✅ Tests
         run: nr test:ci

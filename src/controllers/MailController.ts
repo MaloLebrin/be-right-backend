@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { Logger } from 'pino'
 import { logger } from '../middlewares/loggerService'
 import { MailjetService } from '../services'
@@ -29,8 +29,8 @@ export class MailController {
     this.logger = logger
   }
 
-  public sendMailToEmployee = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public sendMailToEmployee = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const answerId = parseInt(req.params.id)
       const ctx = Context.get(req)
       if (answerId) {
@@ -50,7 +50,7 @@ export class MailController {
         const employee = answer.employee as EmployeeEntity
 
         if (employee) {
-          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee })
+          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, event, creator: currentUser })
           return res.status(200).json({ status, message, body })
         }
       }

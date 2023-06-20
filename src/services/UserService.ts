@@ -96,15 +96,21 @@ export default class UserService {
       subscription,
       loggedAt,
       companyId,
+      signature,
     } = payload
 
     const salt = uid2(128)
+    const twoFactorSecret = uid2(128)
+    const twoFactorRecoveryCode = generateHash(twoFactorSecret, email)
+
     const newUser = this.repository.create({
       email,
       firstName,
       lastName,
       salt,
       roles: role,
+      twoFactorRecoveryCode,
+      twoFactorSecret,
       token: createJwtToken({
         email,
         firstName,
@@ -113,6 +119,7 @@ export default class UserService {
         subscription,
       }),
       password: generateHash(salt, password),
+      signature,
       loggedAt: loggedAt || null,
       company: {
         id: companyId,

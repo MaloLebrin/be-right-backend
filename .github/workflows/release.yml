@@ -5,11 +5,11 @@ on:
     tags:
       - '*'
 
-jobs: 
-  new-release: 
-    runs-on: ubuntu-latest 
-    steps: 
-      - uses: actions/checkout@v3 # Checkout our working repository 
+jobs:
+  new-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 # Checkout our working repository
 
       - name: 📚 Changelog
         uses: scottbrenner/generate-changelog-action@master

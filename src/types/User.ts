@@ -27,4 +27,5 @@ export interface CreateUserPayload {
   subscriptionId?: number
   loggedAt?: null | Date
   badges?: number[]
+  signature?: string
 }

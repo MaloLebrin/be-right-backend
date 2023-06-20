@@ -1,27 +1,39 @@
 import dayjs from 'dayjs'
 import type { DataSource } from 'typeorm'
+import { IsNull, LessThan } from 'typeorm'
 import { UserEntity } from '../../entity/UserEntity'
 import { logger } from '../../middlewares/loggerService'
-import UserService from '../../services/UserService'
 
 export default async function deleteUnusedUsersJob(APP_SOURCE: DataSource) {
   try {
     const now = dayjs().locale('fr')
-    const yearAgoDate = now.subtract(1, 'year')
     const dateStart = now.format('YYYY-MM-DD-HH-mm')
     logger.info(`Sarting delete Users status at ${dateStart}`)
 
-    const userService = new UserService(APP_SOURCE)
+    const twoYearAgo = now.subtract(2, 'year').toDate()
 
-    const users = await APP_SOURCE.manager.find(UserEntity)
+    const UserRepository = APP_SOURCE.getRepository(UserEntity)
+    const users = await UserRepository.find({
+      where: [
+        {
+          loggedAt: IsNull(),
+          createdAt: LessThan(twoYearAgo),
+        },
+        {
+          loggedAt: LessThan(twoYearAgo),
+          createdAt: LessThan(twoYearAgo),
+        },
+      ],
+    })
 
-    const usersToDelete = users.filter(user =>
-      (user.loggedAt === null || dayjs(user.loggedAt).isBefore(yearAgoDate)) && dayjs(user.createdAt).isBefore(yearAgoDate))
-      .map(user => user.id)
+    if (users.length > 0) {
+      const usersToDelete = users
+        .map(user => user.id)
 
-    await userService.deleteMany(usersToDelete)
+      await UserRepository.softDelete(usersToDelete)
+    }
 
-    logger.info(usersToDelete.length, 'usersToDelete')
+    logger.info(users.length, 'usersToDelete')
   } catch (error) {
     logger.error(error, 'error')
   } finally {

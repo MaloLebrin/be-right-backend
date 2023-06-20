@@ -1,7 +1,8 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
+import type { DataSource } from 'typeorm'
 import { AddressService } from '../services'
 import { wrapperRequest } from '../utils'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
@@ -12,17 +13,19 @@ export class AddresController {
   AddressService: AddressService
   redisCache: RedisCache
 
-  constructor() {
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.redisCache = REDIS_CACHE
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
+    }
   }
 
   private saveAddressInCache = async (address: AddressEntity) => {
     await this.redisCache.save(`address-id-${address.id}`, address)
   }
 
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -41,8 +44,8 @@ export class AddresController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       const addressIds = ids.split(',').map(id => parseInt(id))
 
@@ -56,8 +59,8 @@ export class AddresController {
     })
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const {
         address,
         eventId,
@@ -86,8 +89,8 @@ export class AddresController {
     })
   }
 
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {
@@ -107,8 +110,8 @@ export class AddresController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
       if (id) {

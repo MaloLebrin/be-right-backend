@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { ObjectSchema } from 'yup'
-import { array, boolean, date, number, object, string } from 'yup'
+import { array, date, number, object, string } from 'yup'
 import type { ObjectShape } from 'yup/lib/object'
 import { NotificationTypeEnumArray, Role } from '../../types'
 import { logger } from '../loggerService'
@@ -112,33 +112,6 @@ export function useValidation() {
       postalCode: string().required('Le code postal est requis'),
       city: string().required('La ville est requise'),
       country: string().required('Le pays est requis'),
-    }),
-  })
-
-  const createManyAnswersSchema = object({
-    body: object({
-      eventId: number().required('L\'adresse est requise'),
-      employeeIds: array().of(number()).min(1, 'Sélectionnez au moins un destinataire')
-        .required('Les destinataires sont obligatoire'),
-    }),
-  })
-
-  const createOneAnswerSchema = object({
-    body: object({
-      eventId: number().required('L\'adresse est requise'),
-      employeeId: number()
-        .required('Les destinataires sont obligatoire'),
-    }),
-  })
-
-  const updateAnswerStatusSchema = object({
-    body: object({
-      eventId: number().required('L\'adresse est requise'),
-      employeeId: number()
-        .required('Les destinataires sont obligatoire'),
-    }),
-    query: object({
-      isSigned: boolean().required(),
     }),
   })
 
@@ -260,10 +233,8 @@ export function useValidation() {
     createEmployeeSchema,
     createGroupSchema,
     createGroupCSVSchema,
-    createManyAnswersSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
-    createOneAnswerSchema,
     createOneEventSchema,
     createPhotographerSchema,
     emailAlreadyExistSchema,
@@ -276,7 +247,6 @@ export function useValidation() {
     resetPasswordSchema,
     subscribeNotification,
     tokenSchema,
-    updateAnswerStatusSchema,
     validate,
   }
 }

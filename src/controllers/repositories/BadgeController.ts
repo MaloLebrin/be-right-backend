@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { APP_SOURCE } from '../..'
@@ -14,15 +14,15 @@ export class BadgeController {
     this.repository = APP_SOURCE.getRepository(BadgeEntity)
   }
 
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const badges = await this.repository.find()
       return res.status(200).json(badges)
     })
   }
 
-  public getAllForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAllForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       if (ctx.user) {

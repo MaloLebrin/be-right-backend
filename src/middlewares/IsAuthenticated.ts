@@ -15,9 +15,10 @@ export default async function isAuthenticated(req: Request, res: Response, next:
     if (req.headers.authorization) {
       const token = req.headers.authorization.replace('Bearer ', '')
 
-      if (!token) {
+      if (!token || token === 'Bearer') {
         throw new ApiError(401, 'action non autorisée')
       }
+
       const { JWT_SECRET } = useEnv()
       verify(token, JWT_SECRET)
 
@@ -29,7 +30,6 @@ export default async function isAuthenticated(req: Request, res: Response, next:
             relations: {
               company: true,
             },
-            loadRelationIds: true,
           }))
 
         if (user && isUserEntity(user)) {

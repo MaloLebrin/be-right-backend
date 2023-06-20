@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { Role, SubscriptionEnum } from '../../types'
+import { signatureAlbus } from './signatureFixture'
 
 export const userCompanyFixturePremium = {
   companyName: 'Poudlard',
@@ -9,6 +10,7 @@ export const userCompanyFixturePremium = {
   password: 'password',
   role: Role.OWNER,
   subscription: SubscriptionEnum.PREMIUM,
+  signature: signatureAlbus,
 }
 
 export const subscriptionUserCompanyFixturePremium = {
@@ -30,6 +32,7 @@ export const employeesFixtureCompanyPremium = [
       firstName: 'Minerva',
       lastName: 'McGonagall',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Tour de Gryfondor Poudlard',
@@ -45,6 +48,7 @@ export const employeesFixtureCompanyPremium = [
       firstName: 'Severus',
       lastName: 'Rogue',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Cachos salle commune serpentard',
@@ -61,6 +65,7 @@ export const employeesFixtureCompanyPremium = [
       firstName: 'Rubeus',
       lastName: 'Hagrid',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Maison de Hagrid',
@@ -76,6 +81,7 @@ export const employeesFixtureCompanyPremium = [
       firstName: 'Horace',
       lastName: 'Slughorn',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Bureau du maître des potions',
@@ -180,6 +186,7 @@ export const employeesFixtureCompanyMedium = [
       firstName: 'Bellatrix',
       lastName: 'Lestrange',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'prison \'Azkaban',
@@ -195,6 +202,7 @@ export const employeesFixtureCompanyMedium = [
       firstName: 'Severus',
       lastName: 'Rogue',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Cachos salle commune serpentard',
@@ -211,6 +219,7 @@ export const employeesFixtureCompanyMedium = [
       firstName: 'Lucius',
       lastName: 'Malfoy',
       phone: '0987654321',
+      bornAt: dayjs().subtract(36, 'year').toDate(),
     },
     address: {
       addressLine: 'Manoir des Malfoy',

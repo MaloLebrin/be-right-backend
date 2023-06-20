@@ -8,11 +8,11 @@ import { ApiError } from '../middlewares/ApiError'
 import { logger } from '../middlewares/loggerService'
 import type { FromMailObj, MailjetResponse, SendMailPayload } from '../types'
 import type { UserEntity } from '../entity/UserEntity'
-import { PasswordRecoveryTemplate } from '../utils/mailJetTemplates/PasswordRecoveryTemplate'
-import { RaiseAnswerTemplate } from '../utils/mailJetTemplates/RaiseAnswerTemplate'
-import { EventCompletedTemplate } from '../utils/mailJetTemplates/eventTemplate/EventCompletedTemplate'
 import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
+import { isProduction } from '../utils/envHelper'
+import { MailjetTemplateId } from '../utils/mailJetHelpers'
+import type { CompanyEntity } from '../entity/Company.entity'
 
 export class MailjetService {
   SecretKey: string
@@ -60,7 +60,7 @@ export class MailjetService {
   }
 
   private buildMailsCreationAnswer = (payload: SendMailPayload[]) => {
-    return payload.map(({ employee, template }) => ({
+    return payload.map(({ employee, creator, event, answer }) => ({
       From: this.FromObj,
       To: [
         {
@@ -70,9 +70,17 @@ export class MailjetService {
       ],
       Subject: 'Vous avez un document à signer',
       TemplateLanguage: true,
+      TemplateID: MailjetTemplateId.EVENT_CREATED,
       TextPart: `Cher ${this.getFullName(employee)}, vous avez un document à signer!`,
-      HTMLPart: template || '<h3>Cher Malo Lebrin,</h3><br />Vous avez un document à signer',
-      data: { prénom: employee.firstName },
+      Variables: {
+        recipientFirstName: employee.firstName,
+        recipientLastName: employee.lastName,
+        recipientEmail: employee.email,
+        eventName: event.name,
+        eventDescription: event.description,
+        creator: this.getFullName(creator),
+        link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.token}`,
+      },
     }))
   }
 
@@ -146,11 +154,6 @@ export class MailjetService {
       }
 
       const fullName = this.getFullName(user)
-      const template = PasswordRecoveryTemplate({
-        token: user.twoFactorRecoveryCode,
-        fullName,
-        email: user.email,
-      })
 
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
@@ -165,9 +168,12 @@ export class MailjetService {
                 },
               ],
               TextPart: 'Be Right - Réinitialisez votre mot de passe',
-              HTMLPart: template,
+              TemplateID: MailjetTemplateId.RECOVERY_PASSWORD,
               TemplateLanguage: true,
               Subject: 'Be Right - Réinitialisez votre mot de passe',
+              Variables: {
+                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${user.email}&token=${user.twoFactorRecoveryCode}`,
+              },
             },
           ],
         })
@@ -191,10 +197,12 @@ export class MailjetService {
     owner,
     event,
     employee,
+    answer,
   }: {
     owner: UserEntity
     event: EventEntity
     employee: EmployeeEntity
+    answer: AnswerEntity
   }) => {
     try {
       if (!this.mailJetClient) {
@@ -203,10 +211,6 @@ export class MailjetService {
       }
 
       const fullName = this.getFullName(employee)
-      const template = RaiseAnswerTemplate({
-        owner,
-        event,
-      })
 
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
@@ -221,9 +225,17 @@ export class MailjetService {
                 },
               ],
               TextPart: 'Be Right - Vous avez un document à signer',
-              HTMLPart: template,
               TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.RAISE_ANSWER,
               Subject: 'Be Right - Vous avez un document à signer',
+              Variables: {
+                recipientFirstName: employee.firstName,
+                eventName: event.name,
+                creator: this.getFullName(owner),
+                link: `${isProduction()
+                  ? process.env.FRONT_URL
+                  : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.token}`,
+              },
             },
           ],
         })
@@ -256,8 +268,6 @@ export class MailjetService {
         throw new ApiError(422, 'Service d\'envoie de mails non disponible')
       }
 
-      const template = EventCompletedTemplate({ event })
-
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
         .request({
@@ -271,9 +281,16 @@ export class MailjetService {
                 })),
               ],
               TextPart: 'Be Right - Tous les destinataires ont signé',
-              HTMLPart: template,
               TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.EVENT_COMPLETED,
               Subject: 'Be Right - Tous les destinataires ont signé',
+              Variables: {
+                eventName: event.name,
+                link: `${isProduction()
+                  ? process.env.FRONT_URL
+                  : 'http://localhost:3000'}/evenement-show-id${event.id}`,
+              },
+
             },
           ],
         })
@@ -287,6 +304,128 @@ export class MailjetService {
       }
 
       throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendEmployeeAnswerWithPDF = async ({
+    creatorFullName,
+    employee,
+    companyName,
+    pdfBase64,
+    fileName,
+  }: {
+    creatorFullName: string
+    employee: EmployeeEntity
+    companyName: string
+    pdfBase64: string
+    fileName: string
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const fullName = this.getFullName(employee)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: employee.email,
+                  Name: fullName,
+                },
+              ],
+              TextPart: 'Be Right - Vous avez répondu',
+              TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.EMPLOYEE_ANSWER,
+              Subject: 'Be Right - Vous avez répondu',
+              Variables: {
+                creator: creatorFullName,
+                company: companyName,
+                recipientFirstName: fullName,
+              },
+              Attachments: [
+                {
+                  ContentType: 'application/pdf',
+                  Filename: fileName,
+                  Base64Content: pdfBase64,
+                },
+              ],
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendMailewUserOnAccount = async ({
+    creator,
+    newUser,
+    company,
+  }: {
+    creator: UserEntity
+    newUser: UserEntity
+    company: CompanyEntity
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const creatorFullName = this.getFullName(creator)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: newUser.email,
+                  Name: this.getFullName(newUser),
+                },
+              ],
+              TextPart: `Be Right - ${creatorFullName} vous a créé un compte`,
+              TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.NEW_USER_ON_ACCOUNT,
+              Subject: `Be Right - ${creatorFullName} vous a créé un compte`,
+              Variables: {
+                creator: this.getFullName(creator),
+                newUserFirstName: newUser.firstName,
+                company: company.name,
+                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${newUser.email}&token=${newUser.twoFactorRecoveryCode}`,
+              },
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
     } catch (error) {
       console.error(error, '<==== error')
       throw new ApiError(422, error)

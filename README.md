@@ -15,3 +15,8 @@ Steps to run this project:
 2. Run container detach mode `docker-composer up -d`
 3. Enter in container `docker exec -it <container-id> bash`
 4. Run scriptSeed.sh
+
+## Delete images 
+`docker rmi -f $(docker images -a -q)`
+`docker rmi $(docker images -a -q)`
+`docker system prune -a`

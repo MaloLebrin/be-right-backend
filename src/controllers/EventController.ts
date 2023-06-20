@@ -1,15 +1,15 @@
-import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { NextFunction, Request, Response } from 'express'
+import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
 import Context from '../context'
-import EventEntity, { eventSearchableFields } from '../entity/EventEntity'
-import { paginator, wrapperRequest } from '../utils'
+import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
+import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
@@ -17,6 +17,8 @@ import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
+import { newPaginator } from '../utils/paginatorHelper'
+import type { CompanyEntity } from '../entity/Company.entity'
 
 export default class EventController {
   AddressService: AddressService
@@ -26,13 +28,15 @@ export default class EventController {
   redisCache: RedisCache
   RediceService: RedisService
 
-  constructor() {
-    this.EventService = new EventService(APP_SOURCE)
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(EventEntity)
-    this.redisCache = REDIS_CACHE
-    this.RediceService = new RedisService(APP_SOURCE)
+  constructor(SOURCE: DataSource) {
+    if (SOURCE) {
+      this.EventService = new EventService(SOURCE)
+      this.AnswerService = new AnswerService(SOURCE)
+      this.AddressService = new AddressService(SOURCE)
+      this.repository = SOURCE.getRepository(EventEntity)
+      this.redisCache = REDIS_CACHE
+      this.RediceService = new RedisService(SOURCE)
+    }
   }
 
   private saveEventRedisCache = async (event: EventEntity) => {
@@ -47,8 +51,8 @@ export default class EventController {
    * @param event event: Partial<EventEntity>
    * @returns return event just created
    */
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
       const ctx = Context.get(req)
       let userId = null
@@ -88,8 +92,8 @@ export default class EventController {
    * @param Id number
    * @returns entity form given id
    */
-  public getOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)
@@ -112,8 +116,8 @@ export default class EventController {
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       const eventsIds = ids.split(',').map(id => parseInt(id))
 
@@ -138,31 +142,34 @@ export default class EventController {
    * @param id userId
    * @returns all event link with user
    */
-  public getAllForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAllForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const eventsIds = ctx.user.company.eventIds
 
-      if (eventsIds && eventsIds.length > 0) {
-        const events = await this.redisCache.getMany<EventEntity>({
-          keys: generateRedisKeysArray({
-            field: 'id',
-            typeofEntity: EntitiesEnum.EVENT,
-            ids: eventsIds,
-          }),
-          typeofEntity: EntitiesEnum.EVENT,
-          fetcher: () => this.EventService.getManyEvents(eventsIds, true),
-        })
+      const currentUser = ctx.user
 
-        return res.status(200).json(events)
+      if (!currentUser || !currentUser.company || !currentUser.company.eventIds || currentUser.company.eventIds?.length < 1) {
+        throw new ApiError(422, 'identifiants des événements manquant')
       }
-      throw new ApiError(422, 'identifiants des événements manquant')
+
+      const events = await this.redisCache.getMany<EventEntity>({
+        keys: generateRedisKeysArray({
+          field: 'id',
+          typeofEntity: EntitiesEnum.EVENT,
+          ids: eventsIds,
+        }),
+        typeofEntity: EntitiesEnum.EVENT,
+        fetcher: () => this.EventService.getManyEvents(eventsIds, true),
+      })
+
+      return res.status(200).json(events)
     })
   }
 
-  public getAllDeletedForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAllDeletedForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       if (ctx.user?.id) {
@@ -185,19 +192,33 @@ export default class EventController {
    * paginate function
    * @returns paginate response
    */
-  public getAll = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getAll = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
-      const { where, page, take, skip } = paginator<EventEntity>(req, eventSearchableFields)
+      const { where, page, take, skip, order } = newPaginator<EventEntity>({
+        req,
+        searchableFields: eventSearchableFields,
+        relationFields: eventRelationFields,
+      })
 
-      const whereFields = {
-        ...where,
-      }
+      let whereFields = where
 
       if (!isUserAdmin(ctx.user)) {
-        whereFields.company = {
-          id: ctx.user.companyId,
+        if (where.length > 0) {
+          whereFields = where.map(obj => {
+            obj.company = {
+              ...obj.company as FindOptionsWhere<CompanyEntity>,
+              id: ctx.user.companyId,
+            }
+            return obj
+          })
+        } else {
+          whereFields.push({
+            company: {
+              id: ctx.user.companyId,
+            },
+          })
         }
       }
 
@@ -205,13 +226,16 @@ export default class EventController {
         take,
         skip,
         where: whereFields,
+        order,
       })
 
       return res.status(200).json({
         data: events,
         currentPage: page,
+        totalPages: Math.ceil(total / take),
         limit: take,
         total,
+        order,
       })
     })
   }
@@ -220,8 +244,8 @@ export default class EventController {
    * @param event event: Partial<EventEntity>
    * @returns return event just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event }: { event: Partial<EventEntity> } = req.body
       const id = parseInt(req.params.id)
       if (id) {
@@ -243,8 +267,8 @@ export default class EventController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const ctx = Context.get(req)

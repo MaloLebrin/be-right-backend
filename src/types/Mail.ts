@@ -1,4 +1,6 @@
 import type AnswerEntity from '../entity/AnswerEntity'
+import type EventEntity from '../entity/EventEntity'
+import type { UserEntity } from '../entity/UserEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 
 export interface MailjetResponse {
@@ -23,5 +25,7 @@ export interface FromMailObj {
 export interface SendMailPayload {
   employee: EmployeeEntity
   answer: AnswerEntity
+  event: EventEntity
+  creator: UserEntity
   template?: string
 }

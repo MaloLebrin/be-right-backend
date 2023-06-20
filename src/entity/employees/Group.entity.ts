@@ -24,3 +24,15 @@ export class GroupEntity extends BaseEntity {
   @RelationId((group: GroupEntity) => group.employees)
   employeeIds: number[]
 }
+
+export const groupSearchablefields = [
+  'name',
+]
+
+export const groupRelationFields = [
+  'company.name',
+  // 'company.users.firstName',
+  // 'company.users.lastName',
+  'employees.firstName',
+  'employees.lastName',
+]
