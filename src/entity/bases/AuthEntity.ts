@@ -7,10 +7,10 @@ export abstract class BaseAuthEntity extends BasePersonEntity {
   @Column({ nullable: true, select: false })
   password: string
 
-  @Column({ unique: true, update: false, select: false })
+  @Column({ unique: true, select: false })
   salt: string
 
-  @Column({ unique: true, update: false })
+  @Column({ unique: true })
   token: string
 
   @Column({ unique: true, nullable: true, select: false })
