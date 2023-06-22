@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type Stripe from 'stripe'
-import { StripeService } from '../../services/StripeService'
+import { StripeService } from '../../services/stripe/StripeService'
 import { wrapperRequest } from '../../utils'
 import { ApiError } from '../../middlewares/ApiError'
 import { fromCent } from '../../utils/paymentHelper'

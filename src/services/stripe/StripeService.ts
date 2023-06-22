@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { useEnv } from '../env'
+import { useEnv } from '../../env'
 
 export abstract class StripeService {
   private privateKey: string | null = null
