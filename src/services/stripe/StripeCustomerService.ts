@@ -1,6 +1,5 @@
 import type { Repository } from 'typeorm/repository/Repository'
 import type { DataSource } from 'typeorm/data-source'
-import { AddressEntity } from '../../entity/AddressEntity'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { UserEntity } from '../../entity/UserEntity'
 import { StripeService } from '../../services/stripe/StripeService'
@@ -9,11 +8,9 @@ import { getfullUsername } from '../../utils/userHelper'
 export class StripeCustomerService extends StripeService {
   private UserRepository: Repository<UserEntity>
   private CompanyRepository: Repository<CompanyEntity>
-  private AddressRepository: Repository<AddressEntity>
 
   constructor(APP_SOURCE: DataSource) {
     super()
-    this.AddressRepository = APP_SOURCE.getRepository(AddressEntity)
     this.CompanyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.UserRepository = APP_SOURCE.getRepository(UserEntity)
   }
