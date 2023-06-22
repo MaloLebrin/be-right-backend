@@ -83,8 +83,8 @@ dependencies:
     specifier: 10.9.1
     version: 10.9.1(@types/node@18.16.6)(typescript@5.0.4)
   typeorm:
-    specifier: 0.3.16
-    version: 0.3.16(ioredis@5.3.2)(pg@8.10.0)(redis@4.6.6)(ts-node@10.9.1)
+    specifier: 0.3.17
+    version: 0.3.17(ioredis@5.3.2)(pg@8.10.0)(redis@4.6.6)(ts-node@10.9.1)
   uid2:
     specifier: 1.0.0
     version: 1.0.0
@@ -5416,8 +5416,8 @@ packages:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
     dev: false
 
-  /typeorm@0.3.16(ioredis@5.3.2)(pg@8.10.0)(redis@4.6.6)(ts-node@10.9.1):
-    resolution: {integrity: sha512-wJ4Qy1oqRKNDdZiBTTaVMqwo/XxC52Q7uNPTjltPgLhvIW173bL6Iad0lhptMOsFlpixFPaUu3PNziaRBwX2Zw==}
+  /typeorm@0.3.17(ioredis@5.3.2)(pg@8.10.0)(redis@4.6.6)(ts-node@10.9.1):
+    resolution: {integrity: sha512-UDjUEwIQalO9tWw9O2A4GU+sT3oyoUXheHJy4ft+RFdnRdQctdQ34L9SqE2p7LdwzafHx1maxT+bqXON+Qnmig==}
     engines: {node: '>= 12.9.0'}
     hasBin: true
     peerDependencies:
