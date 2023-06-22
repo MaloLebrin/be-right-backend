@@ -1,37 +1,35 @@
 import type { NextFunction, Request, Response } from 'express'
-import type Stripe from 'stripe'
-import { StripeService } from '../../services/StripeService'
 import { wrapperRequest } from '../../utils'
 import { ApiError } from '../../middlewares/ApiError'
-import { fromCent } from '../../utils/paymentHelper'
+import { StripeProductService } from '../../services/stripe/StripeProductService'
 
-export class StripeProductController extends StripeService {
-  constructor() { super() }
+export class StripeProductController {
+  private StripeProductService: StripeProductService
+  constructor() {
+    this.StripeProductService = new StripeProductService()
+  }
 
   public getProducts = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
-      const products = await this.stripe.products.list({ expand: ['data.default_price'] })
+      const products = await this.StripeProductService.getProducts()
       return res.status(200).json(products.data)
     })
   }
 
   public getAmountForProduct = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
-      const { productId, quantity }: { productId: string; quantity: number } = req.body
+      const { productId, quantity }: { productId: string; quantity?: number } = req.body
 
       if (!productId) {
-        throw new ApiError(422, 'Identifiant du produit manquand')
+        throw new ApiError(422, 'Identifiant ou quantité du produit manquant(e)')
       }
 
-      const product = await this.stripe.products.retrieve(productId, { expand: ['default_price'] })
-      const price = product.default_price as Stripe.Price
-
-      return res.status(200).json({
-        id: productId,
-        unitAmout: fromCent(price.unit_amount),
-        totalAmount: fromCent(price.unit_amount * quantity),
+      const response = await this.StripeProductService.getAmountForProduct({
+        productId,
         quantity,
       })
+
+      return res.status(200).json(response)
     })
   }
 }

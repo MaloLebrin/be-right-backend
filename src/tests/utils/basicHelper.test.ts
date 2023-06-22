@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
 import {
   getType,
+  isFalsy,
   isNumber,
+  isTruthy,
   parseBoolean,
   parseQueryIds,
 } from '../../utils/basicHelper'
@@ -39,4 +41,24 @@ test('ParseBoolan send right bool value', () => {
 
 test('parseQueryIds parse correctly ids queries', () => {
   expect(parseQueryIds('1,2,3,4,5')).toEqual([1, 2, 3, 4, 5])
+})
+
+test('isTruthy send correct value', () => {
+  expect(isTruthy(undefined)).toBeFalsy()
+  expect(isTruthy(null)).toBeFalsy()
+  expect(isTruthy('')).toBeFalsy()
+  expect(isTruthy(0)).toBeTruthy()
+  expect(isTruthy({})).toBeTruthy()
+  expect(isTruthy('test')).toBeTruthy()
+  expect(isTruthy([])).toBeTruthy()
+})
+
+test('isFalsy send correct value', () => {
+  expect(isFalsy(undefined)).toBeTruthy()
+  expect(isFalsy(null)).toBeTruthy()
+  expect(isFalsy('')).toBeTruthy()
+  expect(isFalsy(0)).toBeTruthy()
+  expect(isFalsy({})).toBeFalsy()
+  expect(isFalsy('test')).toBeFalsy()
+  expect(isFalsy([])).toBeFalsy()
 })
