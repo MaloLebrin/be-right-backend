@@ -2,6 +2,7 @@ import type { DataSource } from 'typeorm'
 import { StripeProductController } from '../controllers/stripe/StripeProductController'
 import { useValidation } from '../middlewares'
 import { productIdParamsValidation } from '../middlewares/validation/stripe/productValidation'
+import { StripeSubscriptionController } from '../controllers/stripe/StripeSubscriptionController'
 import type { BaseInterfaceRouter } from './BaseRouter'
 import { BaseRouter } from './BaseRouter'
 
@@ -13,6 +14,7 @@ export class PaymentsRoutes extends BaseRouter implements BaseInterfaceRouter {
   public intializeRoutes = () => {
     this.router.get('/products', new StripeProductController().getProducts)
     this.router.post('/productAmount', [validate(productIdParamsValidation)], new StripeProductController().getAmountForProduct)
+    this.router.get('/subscription', new StripeSubscriptionController().getSubscriptions)
 
     return this.router
   }
