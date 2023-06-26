@@ -15,7 +15,6 @@ export class SubscriptionEntity extends BaseEntity {
   @JoinColumn()
   payment: PaymentEntity
   // FIXME can subscripiton have multiple payments ? YES!!!!!!!!!
-  // REMOVE this use Stripe payments
 
   @RelationId((subscription: SubscriptionEntity) => subscription.payment)
   paymentId: number
