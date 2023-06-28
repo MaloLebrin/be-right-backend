@@ -6,7 +6,6 @@ import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
 import { NewsletterRecipient } from './NewsletterRecipientEntity'
-import { PaymentEntity } from './PaymentEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
 import { SessionEntity } from './SessionEntity'
@@ -34,7 +33,6 @@ export default {
   NewsletterRecipient,
   NotificationEntity,
   NotificationSubcriptionEntity,
-  PaymentEntity,
   SessionEntity,
   SubscriptionEntity,
   UserEntity,
@@ -56,7 +54,6 @@ export const entities = [
   NewsletterRecipient,
   NotificationEntity,
   NotificationSubcriptionEntity,
-  PaymentEntity,
   SessionEntity,
   UserEntity,
 ]

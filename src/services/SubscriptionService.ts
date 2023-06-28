@@ -23,7 +23,6 @@ export class SubscriptionService {
   public createBasicSubscription = async () => {
     const subscription = this.repository.create({
       type: SubscriptionEnum.BASIC,
-      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
     })
     await this.repository.save(subscription)
     return subscription
@@ -32,7 +31,6 @@ export class SubscriptionService {
   public getOne = async (id: number) => {
     return this.repository.findOne({
       where: { id },
-      relations: ['user', 'payment'],
     })
   }
 
@@ -41,7 +39,6 @@ export class SubscriptionService {
       where: {
         id: In(ids),
       },
-      relations: ['user', 'payment'],
     })
   }
 
