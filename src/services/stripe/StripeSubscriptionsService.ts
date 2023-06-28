@@ -1,3 +1,5 @@
+import type { CancelReasonEnum, StripeProductForSession } from '../../types/Stripe/Index'
+import { StripeCurrency } from '../../types/Stripe/Payment'
 import { StripeService } from './StripeService'
 
 export class StripeSubscriptionService extends StripeService {
@@ -9,15 +11,34 @@ export class StripeSubscriptionService extends StripeService {
     return this.stripe.subscriptions.list()
   }
 
-  // WIP
   public createStripeSubscription = async ({
     stripeCustomerId,
+    products,
   }: {
     stripeCustomerId: string
+    products: StripeProductForSession[]
   }) => {
     return this.stripe.subscriptions.create({
-      // customer: stripeCustomerId,
-      // currency: StripeCurrency.EUR,
+      customer: stripeCustomerId,
+      currency: StripeCurrency.EUR,
+      items: products,
+    })
+  }
+
+  public cancelStripeSubscription = async ({
+    stripeSubscriptionId,
+    reason,
+    comment,
+  }: {
+    stripeSubscriptionId: string
+    reason?: CancelReasonEnum
+    comment?: string
+  }) => {
+    return this.stripe.subscriptions.cancel(stripeSubscriptionId, {
+      cancellation_details: {
+        feedback: reason,
+        comment,
+      },
     })
   }
 }

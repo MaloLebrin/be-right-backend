@@ -14,7 +14,9 @@ export class PaymentsRoutes extends BaseRouter implements BaseInterfaceRouter {
   public intializeRoutes = () => {
     this.router.get('/products', new StripeProductController().getProducts)
     this.router.post('/productAmount', [validate(productIdParamsValidation)], new StripeProductController().getAmountForProduct)
+
     this.router.get('/subscription', new StripeSubscriptionController().getSubscriptions)
+    // this.router.post('/subscription', new StripeSubscriptionController().)
 
     return this.router
   }
