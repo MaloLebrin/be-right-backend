@@ -9,9 +9,6 @@ import { BadgeEntity } from './repositories/Badge.entity'
 
 @Entity()
 export class UserEntity extends BaseAuthEntity {
-  @Column({ nullable: true, default: null, unique: true })
-  stripeCustomerId: string
-
   @Column({ nullable: true, default: null })
   signature: string
 

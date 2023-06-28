@@ -20,17 +20,6 @@ export function isNumber(value: any): value is number {
   return getType(value) === 'Number'
 }
 
-export function isTruthy<T>(v: T) {
-  return v !== undefined && v !== null && v !== ''
-}
-
-export function isFalsy<T>(v: T) {
-  return v === undefined
-    || v === null
-    || v === ''
-    || v === 0
-}
-
 export function parseBoolean(v: string) {
   switch (v) {
     case 'false':

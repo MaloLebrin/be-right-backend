@@ -47,7 +47,6 @@ import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 import { CompanyRoutes } from './routes/CompanyRoutes'
 import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
-import { PaymentsRoutes } from './routes/PaymentRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -205,9 +204,6 @@ async function StartApp() {
   app.get('/notificationSubscription', [isAuthenticated], new NotificationSubscriptionController().GetForUser)
   app.patch('/notificationSubscription/unsuscbribe/:id', [validate(idParamsSchema), isAuthenticated], new NotificationSubscriptionController().unsuscbribe)
   app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
-
-  // Payments
-  app.use('/stripe', new PaymentsRoutes(APP_SOURCE).intializeRoutes())
 
   // User
   app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
