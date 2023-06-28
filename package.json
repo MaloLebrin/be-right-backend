@@ -47,6 +47,7 @@
     "puppeteer": "20.7.2",
     "redis": "^4.6.5",
     "reflect-metadata": "^0.1.13",
+    "stripe": "^12.9.0",
     "ts-node": "10.9.1",
     "typeorm": "0.3.17",
     "uid2": "1.0.0",

@@ -13,3 +13,10 @@ export class NotFoundError extends ApiError {
     super(404, `The requested path ${path} not found!`)
   }
 }
+
+export class PaymentError extends Error {
+  constructor(message: string) {
+    super(message)
+    Error.captureStackTrace(this, this.constructor)
+  }
+}

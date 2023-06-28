@@ -32,5 +32,7 @@ export function useEnv() {
     REDIS_PORT: process.env.REDIS_PORT,
 
     GEO_CODING_API_URL: process.env.GEO_CODING_API_URL,
+
+    STRIPE_PRIVATE_KEY: process.env.STRIPE_PRIVATE_KEY,
   }
 }

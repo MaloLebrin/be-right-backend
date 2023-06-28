@@ -45,7 +45,7 @@ export class SubscriptionService {
     })
   }
 
-  public updateOne = async (id: number, subscription: SubscriptionEntity) => {
+  public updateOne = async (id: number, subscription: Partial<SubscriptionEntity>) => {
     return this.repository.update(id, subscription)
   }
 
