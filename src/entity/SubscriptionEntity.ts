@@ -5,9 +5,6 @@ import { PaymentEntity } from './PaymentEntity'
 
 @Entity()
 export class SubscriptionEntity extends BaseEntity {
-  @Column({ nullable: true, unique: true })
-  stripeSubscriptionId: string
-
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC })
   type: SubscriptionEnum
 
@@ -18,7 +15,6 @@ export class SubscriptionEntity extends BaseEntity {
   @JoinColumn()
   payment: PaymentEntity
   // FIXME can subscripiton have multiple payments ? YES!!!!!!!!!
-  // REMOVE this use Stripe payments
 
   @RelationId((subscription: SubscriptionEntity) => subscription.payment)
   paymentId: number
