@@ -3,6 +3,7 @@ import { StripeProductController } from '../controllers/stripe/StripeProductCont
 import { useValidation } from '../middlewares'
 import { productIdParamsValidation } from '../middlewares/validation/stripe/productValidation'
 import { StripeSubscriptionController } from '../controllers/stripe/StripeSubscriptionController'
+import { StripeInvoiceController } from '../controllers/stripe/StripeInvoiceController'
 import type { BaseInterfaceRouter } from './BaseRouter'
 import { BaseRouter } from './BaseRouter'
 
@@ -18,6 +19,7 @@ export class StripeRoutes extends BaseRouter implements BaseInterfaceRouter {
     this.router.get('/subscription', new StripeSubscriptionController(this.DATA_SOURCE).getSubscriptions)
     // this.router.post('/subscription', new StripeSubscriptionController().)
 
+    this.router.get('/invoice/:customerId', new StripeInvoiceController().getInvoiceForCustomer)
     return this.router
   }
 }
