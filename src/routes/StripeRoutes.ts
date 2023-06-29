@@ -8,7 +8,7 @@ import { BaseRouter } from './BaseRouter'
 
 const { validate } = useValidation()
 
-export class PaymentsRoutes extends BaseRouter implements BaseInterfaceRouter {
+export class StripeRoutes extends BaseRouter implements BaseInterfaceRouter {
   constructor(SOURCE: DataSource) { super(SOURCE) }
 
   public intializeRoutes = () => {

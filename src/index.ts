@@ -47,7 +47,7 @@ import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 import { CompanyRoutes } from './routes/CompanyRoutes'
 import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
-import { PaymentsRoutes } from './routes/PaymentRoutes'
+import { StripeRoutes } from './routes/StripeRoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -207,7 +207,7 @@ async function StartApp() {
   app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
 
   // Payments
-  app.use('/stripe', new PaymentsRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/stripe', new StripeRoutes(APP_SOURCE).intializeRoutes())
 
   // User
   app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
