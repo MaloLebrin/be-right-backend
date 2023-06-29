@@ -12,7 +12,7 @@ export class StripeCheckoutSessionService extends StripeService {
   private buildSuccessUrl = () => {
     return `${isProduction()
       ? process.env.FRONT_URL
-      : 'http://localhost:3000'}/order/success?session_id={CHECKOUT_SESSION_ID}`
+      : 'http://localhost:3000'}/commande/success?session_id={CHECKOUT_SESSION_ID}`
   }
 
   public getStripeCheckoutSession = async (stripeCheckoutSessionId: string) => {
