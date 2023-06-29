@@ -32,7 +32,6 @@ import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
 import { cronJobsStart } from './jobs'
 import { StatsRouter } from './routes/Admin/StatsRoutes'
-import { NewsletterRoutes } from './routes/NewsletterRoutes'
 import { AddressRoutes } from './routes/AddressRoutes'
 import { AnswerRoutes } from './routes/AnswerRoutes'
 import { AuthRoutes } from './routes/AuthRoutes'
@@ -123,9 +122,6 @@ async function StartApp() {
     subscribeNotification,
     validate,
   } = useValidation()
-
-  // Newsletter
-  app.use('/newsletter', new NewsletterRoutes(APP_SOURCE).intializeRoutes())
 
   // Admin
   app.use('/admin/answer', new AdminAnswerRoutes(APP_SOURCE).intializeRoutes())
