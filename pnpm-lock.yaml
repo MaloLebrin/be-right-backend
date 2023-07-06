@@ -72,8 +72,8 @@ dependencies:
     specifier: 10.0.1
     version: 10.0.1
   puppeteer:
-    specifier: 20.7.4
-    version: 20.7.4(typescript@5.0.4)
+    specifier: 20.8.0
+    version: 20.8.0(typescript@5.0.4)
   redis:
     specifier: ^4.6.5
     version: 4.6.6
@@ -1702,10 +1702,10 @@ packages:
       luxon: 3.3.0
     dev: false
 
-  /cross-fetch@3.1.6:
-    resolution: {integrity: sha512-riRvo06crlE8HiqOwIpQhxwdOk4fOeR7FVM/wXoxchFEqMNUjvbs3bfo4OTgMEMHzppd4DxFBDbyySj8Cv781g==}
+  /cross-fetch@4.0.0:
+    resolution: {integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==}
     dependencies:
-      node-fetch: 2.6.11
+      node-fetch: 2.6.12
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -3955,6 +3955,18 @@ packages:
       whatwg-url: 5.0.0
     dev: false
 
+  /node-fetch@2.6.12:
+    resolution: {integrity: sha512-C/fGU2E8ToujUivIO0H+tpQ6HWo4eEmchoPIoXtxCrVghxdKq+QOHqEZW7tuP3KlV3bC8FRMO5nMCC7Zm1VP6g==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+    dependencies:
+      whatwg-url: 5.0.0
+    dev: false
+
   /node-gyp-build-optional-packages@5.0.7:
     resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
     hasBin: true
@@ -4562,8 +4574,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /puppeteer-core@20.7.4(typescript@5.0.4):
-    resolution: {integrity: sha512-7YZ1LmTo+5yM9uBNFTMJpE+lJjcIoNjKVarsYIk7o5WhgQNI9o5XgiQK5f71y1vWwr7sT/eGG75HXAehjnTBTg==}
+  /puppeteer-core@20.8.0(typescript@5.0.4):
+    resolution: {integrity: sha512-sQcuH6nv9jnFiaaePk53+C0O9BaJP6OaPmYKqJ3sWhziThv6uaaosK49Kg3g1HUUEP9KYhbOhedPIUCXJSQUxw==}
     engines: {node: '>=16.3.0'}
     peerDependencies:
       typescript: '>= 4.7.4'
@@ -4573,7 +4585,7 @@ packages:
     dependencies:
       '@puppeteer/browsers': 1.4.3(typescript@5.0.4)
       chromium-bidi: 0.4.16(devtools-protocol@0.0.1135028)
-      cross-fetch: 3.1.6
+      cross-fetch: 4.0.0
       debug: 4.3.4
       devtools-protocol: 0.0.1135028
       typescript: 5.0.4
@@ -4585,14 +4597,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /puppeteer@20.7.4(typescript@5.0.4):
-    resolution: {integrity: sha512-4JLZeRLXQAjQwWa6yv8cpjEgVapgrvDjBBcI/UCJ+EM6na6aR7hQFnQV4ffjFlUKPpvB2Y1vztVqOEhjfC+yUQ==}
+  /puppeteer@20.8.0(typescript@5.0.4):
+    resolution: {integrity: sha512-DnTwtQMUzWGkJYN3rvUW8y2LciFMnM0YR9cgwWmYmMLhUnYQw1XX+Q+5cAO8+AADglVuJCz0kaopd0lMI5j04g==}
     engines: {node: '>=16.3.0'}
     requiresBuild: true
     dependencies:
       '@puppeteer/browsers': 1.4.3(typescript@5.0.4)
       cosmiconfig: 8.2.0
-      puppeteer-core: 20.7.4(typescript@5.0.4)
+      puppeteer-core: 20.8.0(typescript@5.0.4)
     transitivePeerDependencies:
       - bufferutil
       - encoding
