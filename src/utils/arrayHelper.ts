@@ -33,5 +33,5 @@ export function uniq<T>(array: readonly T[]): T[] {
 
 export function uniqByKey<T, K extends keyof T>(array: readonly T[], key: K): T[] {
   // eslint-disable-next-line security/detect-object-injection
-  return [...new Map(array.map(item => [item[key], item])).values()]
+  return [...new Map(array.filter(i => i).map(item => [item[key], item])).values()]
 }

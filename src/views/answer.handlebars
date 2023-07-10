@@ -46,6 +46,11 @@ p {
   font-size: 14px;
 }
 
+.signature-image {
+  width: 250px;
+  object-fit: contain;
+  max-height: 500px;
+}
 </style>
 
 {{#each data}}
@@ -110,18 +115,27 @@ p {
           <p class="field-bold">
             {{ employeeFirstName }} {{ employeeLastName }}
           </p>
-          <p class="field-bold signature">
-            {{ employeeFirstName }} {{ employeeLastName }}
-          </p>
+          {{#if recipientSignature}}
+            <img class="signature-image" src="{{{recipientSignature}}}" alt="signature du représentant"/>
+          {{else}}
+            <p class="field-bold signature">
+              {{ employeeFirstName }} {{ employeeLastName }}
+            </p>
+          {{/if}}
         </div>
         <div>
           <p>Nom et prénom du représentant {{ companyName }} :</p>
           <p class="field-bold">
             {{ userFirstName }} {{ userLastName }}
           </p>
-          <p class="field-bold signature">
-            {{ userFirstName }} {{ userLastName }}
-          </p>
+         
+          {{#if ownerSignature}}
+            <img class="signature-image" src="{{{ownerSignature}}}" alt="signature du représentant"/>
+          {{else}}
+            <p class="field-bold signature">
+              {{ userFirstName }} {{ userLastName }}
+            </p>
+          {{/if}}
         </div>
       </div>
     </div>

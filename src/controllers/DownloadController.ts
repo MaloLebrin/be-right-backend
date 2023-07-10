@@ -1,10 +1,8 @@
 import { unlink } from 'node:fs'
-import type { Request, Response } from 'express'
-import puppeteer from 'puppeteer'
+import type { NextFunction, Request, Response } from 'express'
 import type { Logger } from 'pino'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
-import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
@@ -19,8 +17,9 @@ import { CompanyService } from '../services/CompanyService'
 import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
 import Context from '../context'
+import { launchPuppeteer } from '../utils/puppeteerHelper'
 
-export default class DownloadController {
+export class DownloadController {
   AnswerService: AnswerService
   repository: Repository<AnswerEntity>
   AddressService: AddressService
@@ -36,14 +35,16 @@ export default class DownloadController {
     }
   }>
 
-  constructor() {
-    this.repository = APP_SOURCE.getRepository(AnswerEntity)
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.UserService = new UserService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.CompanyService = new CompanyService(APP_SOURCE)
-    this.logger = logger
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.repository = DATA_SOURCE.getRepository(AnswerEntity)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.UserService = new UserService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.CompanyService = new CompanyService(DATA_SOURCE)
+      this.logger = logger
+    }
   }
 
   private mapAnswersToDownload = (answers: AnswerEntity[]) => {
@@ -54,7 +55,7 @@ export default class DownloadController {
       const partner = event.partner
       const company = event.company
       const employeeAddress = answer.employee.address
-      const user = company.users.find(user => isUserOwner(user))
+      const owner = company.users.find(user => isUserOwner(user))
 
       return {
         todayDate: answer.signedAt.toISOString(),
@@ -71,9 +72,12 @@ export default class DownloadController {
         partnerLastName: partner.lastName,
 
         userCity: company.address?.city,
-        userFirstName: user?.firstName,
-        userLastName: user?.lastName,
+        userFirstName: owner?.firstName,
+        userLastName: owner?.lastName,
         isAccepted: answer.hasSigned,
+
+        recipientSignature: answer.signature,
+        ownerSignature: owner?.signature,
       }
     })
   }
@@ -81,8 +85,8 @@ export default class DownloadController {
   // eslint-disable-next-line promise/param-names
   private delay = async (ms: number) => new Promise(res => setTimeout(res, ms))
 
-  public ViewAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public ViewAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const currentUser = ctx.user
 
@@ -129,8 +133,8 @@ export default class DownloadController {
     })
   }
 
-  public downLoadAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const currentUser = ctx.user
@@ -176,14 +180,7 @@ export default class DownloadController {
       }
 
       try {
-        const browser = await puppeteer.launch({
-          headless: true,
-          executablePath: '/usr/bin/chromium-browser',
-          args: [
-            '--no-sandbox',
-            '--disable-gpu',
-          ],
-        })
+        const browser = await launchPuppeteer()
 
         const page = await browser.newPage()
 
@@ -194,7 +191,7 @@ export default class DownloadController {
           })
         }
 
-        await page.goto(url)
+        await page.goto(url, { waitUntil: 'networkidle0' })
         const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
         await browser.close()
 

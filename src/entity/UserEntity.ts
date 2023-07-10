@@ -9,6 +9,9 @@ import { BadgeEntity } from './repositories/Badge.entity'
 
 @Entity()
 export class UserEntity extends BaseAuthEntity {
+  @Column({ nullable: true, default: null })
+  signature: string
+
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
@@ -46,4 +49,8 @@ export const userSearchableFields = [
   'email',
   'firstName',
   'lastName',
+]
+
+export const userRelationFields = [
+  'company.name',
 ]

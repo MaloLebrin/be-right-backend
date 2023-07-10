@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { Repository } from 'typeorm'
 import { verify } from 'jsonwebtoken'
 import { APP_SOURCE } from '..'
@@ -43,8 +43,8 @@ export default class NotificationController {
     return notificationSubscriptions.reduce((acc, subscriber) => [...acc, ...subscriber.notifications], [])
   }
 
-  public GetForUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
       const user = ctx?.user
 
@@ -56,8 +56,8 @@ export default class NotificationController {
     })
   }
 
-  public readMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public readMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       const ctx = Context.get(req)
       const user = ctx?.user
@@ -79,8 +79,8 @@ export default class NotificationController {
     })
   }
 
-  public streamNotifications = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public streamNotifications = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const token = req.query.token as string
       const { JWT_SECRET } = useEnv()
 

@@ -12,6 +12,7 @@ import type EventEntity from '../entity/EventEntity'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { isProduction } from '../utils/envHelper'
 import { MailjetTemplateId } from '../utils/mailJetHelpers'
+import type { CompanyEntity } from '../entity/Company.entity'
 
 export class MailjetService {
   SecretKey: string
@@ -358,6 +359,62 @@ export class MailjetService {
                   Base64Content: pdfBase64,
                 },
               ],
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
+
+  public sendMailewUserOnAccount = async ({
+    creator,
+    newUser,
+    company,
+  }: {
+    creator: UserEntity
+    newUser: UserEntity
+    company: CompanyEntity
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const creatorFullName = this.getFullName(creator)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: newUser.email,
+                  Name: this.getFullName(newUser),
+                },
+              ],
+              TextPart: `Be Right - ${creatorFullName} vous a créé un compte`,
+              TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.NEW_USER_ON_ACCOUNT,
+              Subject: `Be Right - ${creatorFullName} vous a créé un compte`,
+              Variables: {
+                creator: this.getFullName(creator),
+                newUserFirstName: newUser.firstName,
+                company: company.name,
+                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${newUser.email}&token=${newUser.twoFactorRecoveryCode}`,
+              },
             },
           ],
         })

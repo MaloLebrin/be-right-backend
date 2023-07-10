@@ -1,10 +1,10 @@
-import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { NextFunction, Request, Response } from 'express'
+import type { DataSource, Repository } from 'typeorm'
 import { wrapperRequest } from '../utils'
 import AnswerEntity from '../entity/AnswerEntity'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
@@ -16,11 +16,11 @@ import { defaultQueue } from '../jobs/queue/queue'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 import { isUserOwner } from '../utils/userHelper'
-import { answerResponse, canAnswerBeRaise, isAnswerSigned } from '../utils/answerHelper'
+import { answerResponse, isAnswerSigned } from '../utils/answerHelper'
 import { CompanyEntity } from '../entity/Company.entity'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 
-export default class AnswerController {
+export class AnswerController {
   AnswerService: AnswerService
   EventService: EventService
   mailJetService: MailjetService
@@ -29,34 +29,32 @@ export default class AnswerController {
   companyRepository: Repository<CompanyEntity>
   repository: Repository<AnswerEntity>
 
-  constructor() {
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.mailJetService = new MailjetService(APP_SOURCE)
-    this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
-    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
-    this.redisCache = REDIS_CACHE
-    this.repository = APP_SOURCE.getRepository(AnswerEntity)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.mailJetService = new MailjetService(DATA_SOURCE)
+      this.employeeRepository = DATA_SOURCE.getRepository(EmployeeEntity)
+      this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
+      this.redisCache = REDIS_CACHE
+      this.repository = DATA_SOURCE.getRepository(AnswerEntity)
+    }
   }
 
   private saveAnswerInCache = async (answer: AnswerEntity) => {
     await this.redisCache.save(`answer-id-${answer.id}`, answerResponse(answer))
   }
 
-  private filterSecretAnswersKeys(answers: AnswerEntity[]) {
-    return answers.map(answer => answerResponse(answer))
-  }
-
   private saveManyAnswerInCache = async (answers: AnswerEntity[]) => {
     await this.redisCache.multiSave({
-      payload: this.filterSecretAnswersKeys(answers),
+      payload: this.AnswerService.filterSecretAnswersKeys(answers),
       typeofEntity: EntitiesEnum.ANSWER,
       objKey: 'id',
     })
   }
 
-  public createOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
       const eventId = parseInt(req.query.eventId.toString())
@@ -101,8 +99,8 @@ export default class AnswerController {
     })
   }
 
-  public createMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
       const ctx = Context.get(req)
@@ -131,26 +129,26 @@ export default class AnswerController {
       )
 
       if (answers && answers.length > 0) {
-        return res.status(200).json(this.filterSecretAnswersKeys(answers))
+        return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
       }
       throw new ApiError(422, 'Destinataires non liés avec l\'événement')
     })
   }
 
-  public getManyForEvent = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyForEvent = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const answers = await this.AnswerService.getAllAnswersForEvent(id)
-        return res.status(200).json(this.filterSecretAnswersKeys(answers))
+        return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
       }
 
       throw new ApiError(422, 'Identifiant de l\'événement manquant')
     })
   }
 
-  public getMany = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const answerIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -166,15 +164,15 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getMany(answerIds),
           })
 
-          return res.status(200).json(this.filterSecretAnswersKeys(answers))
+          return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants manquants')
     })
   }
 
-  public getManyForManyEvents = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getManyForManyEvents = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const ids = req.query.ids as string
       if (ids) {
         const eventIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
@@ -190,15 +188,15 @@ export default class AnswerController {
             fetcher: () => this.AnswerService.getAnswersForManyEvents(eventIds),
           })
 
-          return res.status(200).json(this.filterSecretAnswersKeys(answers))
+          return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
         }
       }
       throw new ApiError(422, 'Identifiants des événements manquant')
     })
   }
 
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
       const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
@@ -210,76 +208,80 @@ export default class AnswerController {
     })
   }
 
-  public deleteOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
-      if (id) {
-        const answerToDelete = await this.AnswerService.getOne(id)
-        const answer = await this.AnswerService.deleteOne(id)
 
-        await this.redisCache.invalidate(generateRedisKey({
-          field: 'id',
-          typeofEntity: EntitiesEnum.ANSWER,
-          id,
-        }))
-
-        await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
-        return res.status(200).json(answer)
+      if (!id) {
+        throw new ApiError(422, 'Identifiant de l\'événement manquant')
       }
-      throw new ApiError(422, 'Identifiant de l\'événement manquant')
+
+      const answerToDelete = await this.AnswerService.getOne(id)
+      const answer = await this.AnswerService.deleteOne(id)
+
+      await this.redisCache.invalidate(generateRedisKey({
+        field: 'id',
+        typeofEntity: EntitiesEnum.ANSWER,
+        id,
+      }))
+
+      await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
+      return res.status(200).json(answer)
     })
   }
 
-  public raiseAnswer = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public raiseAnswer = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
-      if (id) {
-        const answer = await this.AnswerService.getOne(id, true)
 
-        if (!answer || !answer.employee || !answer.event) {
-          throw new ApiError(422, 'Le destinataire ne participe pas à cet événement')
-        }
+      if (!id) {
+        throw new ApiError(422, 'Identifiant de l\'événement manquant')
+      }
 
-        if (!isAnswerSigned(answer) && canAnswerBeRaise(answer)) {
-          const company = await this.companyRepository.findOne({
-            where: {
-              id: answer.event.companyId,
-            },
-            relations: {
-              users: true,
-            },
-          })
+      const answer = await this.AnswerService.getOne(id, true)
 
-          if (!company) {
-            throw new ApiError(422, 'Un problème est survenu')
-          }
-          const owner = company.users?.find(user => isUserOwner(user))
+      if (!answer || !answer.employee || !answer.event) {
+        throw new ApiError(422, 'Le destinataire ne participe pas à cet événement')
+      }
 
-          if (!owner) {
-            throw new ApiError(422, 'Un problème est survenu')
-          }
-
-          await this.mailJetService.sendRaiseAnswerEmail({
-            event: answer.event,
-            employee: answer.employee,
-            owner,
-            answer,
-          })
-
-          answer.mailSendAt = new Date()
-          await this.AnswerService.updateOneAnswer(id, answer)
-
-          const answerToSend = await this.AnswerService.getOne(id)
-
-          return res.status(200).json({
-            message: 'Le destinataire a été relancé',
-            isSuccess: true,
-            answer: answerResponse(answerToSend),
-          })
-        }
+      if (isAnswerSigned(answer)) {
         throw new ApiError(422, 'Le destinataire à déja répondu')
       }
-      throw new ApiError(422, 'Identifiant de l\'événement manquant')
+
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: answer.event.companyId,
+        },
+        relations: {
+          users: true,
+        },
+      })
+
+      if (!company) {
+        throw new ApiError(422, 'Un problème est survenu')
+      }
+      const owner = company.users?.find(user => isUserOwner(user))
+
+      if (!owner) {
+        throw new ApiError(422, 'Un problème est survenu')
+      }
+
+      await this.mailJetService.sendRaiseAnswerEmail({
+        event: answer.event,
+        employee: answer.employee,
+        owner,
+        answer,
+      })
+
+      await this.repository.update(answer.id, { mailSendAt: new Date() })
+
+      const answerToSend = await this.AnswerService.getOne(id)
+
+      return res.status(200).json({
+        message: 'Le destinataire a été relancé',
+        isSuccess: true,
+        answer: answerResponse(answerToSend),
+      })
     })
   }
 }

@@ -1,10 +1,9 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
 import { logger } from '../middlewares/loggerService'
-import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
 import { CompanyEntity } from '../entity/Company.entity'
@@ -30,17 +29,19 @@ export default class AuthController {
   SubscriptionService: SubscriptionService
   UserService: UserService
 
-  constructor() {
-    this.MailjetService = new MailjetService(APP_SOURCE)
-    this.logger = logger
-    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
-    this.userRepository = APP_SOURCE.getRepository(UserEntity)
-    this.SubscriptionService = new SubscriptionService(APP_SOURCE)
-    this.UserService = new UserService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.MailjetService = new MailjetService(DATA_SOURCE)
+      this.logger = logger
+      this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
+      this.userRepository = DATA_SOURCE.getRepository(UserEntity)
+      this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
+      this.UserService = new UserService(DATA_SOURCE)
+    }
   }
 
-  public forgotPassword = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email }: { email: string } = req.body
 
       if (!email) {
@@ -78,8 +79,8 @@ export default class AuthController {
     })
   }
 
-  public resetPassword = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       if (!email || !twoFactorRecoveryCode || !password) {
@@ -121,8 +122,8 @@ export default class AuthController {
     })
   }
 
-  public signUp = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public signUp = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const {
         email,
         firstName,

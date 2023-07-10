@@ -1,7 +1,7 @@
-import type { Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { NextFunction, Request, Response } from 'express'
+import type { DataSource, Repository } from 'typeorm'
 import type RedisCache from '../RedisCache'
-import { APP_SOURCE, REDIS_CACHE } from '..'
+import { REDIS_CACHE } from '..'
 import EventEntity from '../entity/EventEntity'
 import EventService from '../services/EventService'
 import { AddressService } from '../services'
@@ -32,15 +32,16 @@ export default class EventSpecificController {
   AnswerService: AnswerService
   RediceService: RedisService
 
-  constructor() {
-    // this.getManager = APP_SOURCE.manager
-    this.EmployeeService = new EmployeeService(APP_SOURCE)
-    this.EventService = new EventService(APP_SOURCE)
-    this.AnswerService = new AnswerService(APP_SOURCE)
-    this.AddressService = new AddressService(APP_SOURCE)
-    this.repository = APP_SOURCE.getRepository(EventEntity)
-    this.redisCache = REDIS_CACHE
-    this.RediceService = new RedisService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.EmployeeService = new EmployeeService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.repository = DATA_SOURCE.getRepository(EventEntity)
+      this.redisCache = REDIS_CACHE
+      this.RediceService = new RedisService(DATA_SOURCE)
+    }
   }
 
   private saveEventRedisCache = async (event: EventEntity) => {
@@ -51,8 +52,8 @@ export default class EventSpecificController {
     }), event)
   }
 
-  public fetchOneEventWithRelations = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public fetchOneEventWithRelations = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.id)
       const ctx = Context.get(req)
 
@@ -107,8 +108,8 @@ export default class EventSpecificController {
     })
   }
 
-  public posteOneWithRelations = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public posteOneWithRelations = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
       const ctx = Context.get(req)

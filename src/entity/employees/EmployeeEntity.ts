@@ -14,6 +14,9 @@ export class EmployeeEntity extends BasePersonEntity {
   @Column({ unique: true, nullable: true })
   slug: string
 
+  @Column({ nullable: true, default: null })
+  signature: string
+
   @OneToOne(() => AddressEntity, { cascade: true })
   @JoinColumn()
   address: AddressEntity
@@ -52,4 +55,8 @@ export const employeeSearchablefields = [
   'phone',
   'firstName',
   'lastName',
+]
+
+export const employeeRelationFields = [
+  'company.name',
 ]

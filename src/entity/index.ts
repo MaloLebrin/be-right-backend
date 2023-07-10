@@ -5,8 +5,6 @@ import { BugReportEntity } from './BugReportEntity'
 import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
-import { ImageRightConditionEntity } from './ImageRightConditionEntity'
-import { NewsletterRecipient } from './NewsletterRecipientEntity'
 import { PaymentEntity } from './PaymentEntity'
 import { SubscriptionEntity } from './SubscriptionEntity'
 import { UserEntity } from './UserEntity'
@@ -31,9 +29,7 @@ export default {
   EventNotificationEntity,
   FileEntity,
   GroupEntity,
-  ImageRightConditionEntity,
   MailEntity,
-  NewsletterRecipient,
   NotificationEntity,
   NotificationSubcriptionEntity,
   PaymentEntity,
@@ -54,9 +50,7 @@ export const entities = [
   EventNotificationEntity,
   FileEntity,
   GroupEntity,
-  ImageRightConditionEntity,
   MailEntity,
-  NewsletterRecipient,
   NotificationEntity,
   NotificationSubcriptionEntity,
   PaymentEntity,

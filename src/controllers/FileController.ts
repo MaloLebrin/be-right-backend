@@ -1,9 +1,9 @@
 import cloudinary from 'cloudinary'
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import { In } from 'typeorm'
-import { FileEntity, filesSearchableFields } from '../entity/FileEntity'
-import { paginator, wrapperRequest } from '../utils'
+import { FileEntity } from '../entity/FileEntity'
+import { wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
 import { FileTypeEnum } from '../types/File'
 import Context from '../context'
@@ -24,10 +24,10 @@ export default class FileController {
     this.repository = APP_SOURCE.getRepository(FileEntity)
   }
 
-  public newFile = async (req: Request, res: Response) => {
+  public newFile = async (req: Request, res: Response, next: NextFunction) => {
     const { NODE_ENV } = useEnv()
 
-    await wrapperRequest(req, res, async () => {
+    await wrapperRequest(req, res, next, async () => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
       { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
@@ -80,8 +80,8 @@ export default class FileController {
     })
   }
 
-  public createProfilePicture = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createProfilePicture = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const fileRecieved = req.file
 
       if (fileRecieved) {
@@ -94,8 +94,8 @@ export default class FileController {
     })
   }
 
-  public createLogo = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public createLogo = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const fileRecieved = req.file
       if (fileRecieved) {
         const ctx = Context.get(req)
@@ -110,8 +110,8 @@ export default class FileController {
    * @param file file: Partial<FileEntity>
    * @returns return file just updated
    */
-  public updateOne = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public updateOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
 
@@ -124,8 +124,8 @@ export default class FileController {
     })
   }
 
-  public getFile = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFile = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const file = await this.FileService.getFile(id)
@@ -139,16 +139,16 @@ export default class FileController {
     })
   }
 
-  public getFiles = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFiles = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const { ids }: { ids: number[] } = req.body
       const files = await Promise.all(ids.map(id => this.FileService.getFile(id)))
       return res.status(200).json(files)
     })
   }
 
-  public getFilesByUser = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFilesByUser = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const userId = parseInt(req.params.id)
       if (userId) {
         const files = await this.FileService.getFilesByUser(userId)
@@ -159,8 +159,8 @@ export default class FileController {
     })
   }
 
-  public getFilesByEvent = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFilesByEvent = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const files = await this.FileService.getFilesByEvent(eventId)
@@ -171,8 +171,8 @@ export default class FileController {
     })
   }
 
-  public getFilesByEmployee = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFilesByEmployee = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const employeeId = parseInt(req.params.id)
       if (employeeId) {
         const files = await this.repository.find({ where: { employeeId } })
@@ -183,8 +183,8 @@ export default class FileController {
     })
   }
 
-  public getFilesByUserAndEvent = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getFilesByUserAndEvent = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const eventId = parseInt(req.params.eventId)
       const ctx = Context.get(req)
 
@@ -198,27 +198,8 @@ export default class FileController {
     })
   }
 
-  public getAllPaginate = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
-      const { where, page, take, skip } = paginator(req, filesSearchableFields)
-
-      const [data, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where,
-      })
-
-      return res.status(200).json({
-        data,
-        currentPage: page,
-        limit: take,
-        total,
-      })
-    })
-  }
-
-  public getProfilePictures = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public getProfilePictures = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const urls = req.body.urls
 
       if (urls && urls.length > 0) {
@@ -236,8 +217,8 @@ export default class FileController {
     })
   }
 
-  public deleteFile = async (req: Request, res: Response) => {
-    await wrapperRequest(req, res, async () => {
+  public deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
         const file = await this.FileService.getFile(id)
