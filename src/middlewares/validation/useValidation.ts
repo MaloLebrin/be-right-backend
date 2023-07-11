@@ -107,11 +107,13 @@ export function useValidation() {
 
   const createAddressSchema = object({
     body: object({
-      addressLine: string().required('L\'adresse est requise'),
-      addressLine2: string().nullable(),
-      postalCode: string().required('Le code postal est requis'),
-      city: string().required('La ville est requise'),
-      country: string().required('Le pays est requis'),
+      address: object({
+        addressLine: string().required('L\'adresse est requise'),
+        addressLine2: string().nullable(),
+        postalCode: string().required('Le code postal est requis'),
+        city: string().required('La ville est requise'),
+        country: string().required('Le pays est requis'),
+      }).required('l\'addresse est requise'),
     }),
   })
 
