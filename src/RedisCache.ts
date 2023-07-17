@@ -15,7 +15,9 @@ export default class RedisCache {
   constructor() {
     this.logger = logger
 
-    if (!this.connected) {
+    if (!this.connected
+      && process.env.REDIS_PORT
+      && process.env.REDIS_HOST) {
       this.client = new Redis(
         parseInt(process.env.REDIS_PORT),
         process.env.REDIS_HOST,
