@@ -32,9 +32,9 @@ import {
 import { tomJedusorSignature } from './signatureFixture'
 
 export class UserSeedClass extends BaseSeedClass {
-  GroupService: GroupService
-  CompanyRepository: Repository<CompanyEntity>
-  NotificationService: NotificationService
+  private GroupService: GroupService
+  private CompanyRepository: Repository<CompanyEntity>
+  private NotificationService: NotificationService
 
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
@@ -175,7 +175,17 @@ export class UserSeedClass extends BaseSeedClass {
     )
   }
 
-  private async seedUserPremium() {
+  public async seedUserPremium() {
+    const isExisting = await this.UserService.repository.exist({
+      where: {
+        email: userCompanyFixturePremium.email,
+      },
+    })
+
+    if (isExisting) {
+      return
+    }
+
     const subscription = this.getManager.create(SubscriptionEntity, {
       type: SubscriptionEnum.PREMIUM,
       expireAt: dayjs().add(1, 'year'),
