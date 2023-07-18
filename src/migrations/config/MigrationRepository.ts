@@ -1,4 +1,4 @@
-import { DataSource, In, QueryRunner, Repository } from "typeorm"
+import { DataSource, In, Repository } from "typeorm"
 import { MigrationEntity } from "../../entity/repositories/Migration.entity"
 import { MigrationScript } from "../../types/Migrations"
 
