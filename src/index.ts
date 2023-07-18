@@ -63,12 +63,12 @@ export const REDIS_CACHE = new RedisCache()
 
 async function StartApp() {
   await APP_SOURCE.initialize()
-    .then(async () => {
-      logger.info('Data Source has been initialized!')
-    })
-    .catch(err => {
-      logger.error('Error during Data Source initialization:', err)
-    })
+
+  if (APP_SOURCE.isInitialized) {
+    logger.info('Data Source has been initialized!')
+  } else {
+    logger.error('Error during Data Source initialization:')
+  }
 
   await MigrationRunner({
     APP_SOURCE,

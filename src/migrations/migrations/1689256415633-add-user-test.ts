@@ -11,9 +11,9 @@ export async function addUserTest1689256415633({
     const SeedClass = new UserSeedClass(SOURCE)
 
     await SeedClass.seedUserPremium()
-    logger.info(`Migration ${name} ended`)
   } catch (error) {
-    logger.error(`An error occurred for migration 'tata' ${name}`, error)
-
+    logger.error(`An error occurred for migration ${name}`, error)
+  } finally {
+    logger.info(`Migration ${name} ended`)
   }
 }

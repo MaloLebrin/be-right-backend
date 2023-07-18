@@ -22,6 +22,8 @@ export async function MigrationRunner({
       promises.push(migrationRepository.create(script.name))
     })
 
-    await Promise.all(promises)
+    if (APP_SOURCE.isInitialized) {
+      await Promise.all(promises)
+    }
   }
 }
