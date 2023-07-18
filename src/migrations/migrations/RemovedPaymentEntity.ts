@@ -3,7 +3,6 @@ import { logger } from "../../middlewares/loggerService"
 
 export async function RemovedPaymentEntityMigrations({
   name,
-  SOURCE,
   QueryRunner,
 }: MigrationCustomInterface) {
   try {
