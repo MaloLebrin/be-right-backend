@@ -1,11 +1,19 @@
-import type { DataSource, QueryRunner, Repository } from 'typeorm'
-import type { MigrationEntity } from '../entity/repositories/Migration.entity'
+import type { DataSource, QueryRunner } from 'typeorm'
+import type { MigrationRepository } from '../migrations/config/MigrationRepository'
 
 export interface MigrationCustomInterface {
   name: string
   SOURCE: DataSource
-  MigrationRepository: Repository<MigrationEntity>
   QueryRunner: QueryRunner
-  create(): Promise<void>
-  delete(name: string): Promise<void>
+}
+
+export interface MigrationScript {
+  version: number
+  name: string
+  script: ({ name, SOURCE, QueryRunner }: MigrationCustomInterface) => Promise<void>
+}
+
+export interface MigrationRunnerPayload {
+  APP_SOURCE: DataSource
+  MigrationRepository: typeof MigrationRepository
 }

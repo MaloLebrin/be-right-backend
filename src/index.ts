@@ -46,6 +46,8 @@ import { AdminEmployeeRoutes } from './routes/Admin/AdminEmployeeRoutes'
 import { CompanyRoutes } from './routes/CompanyRoutes'
 import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
+import { MigrationRunner } from './migrations/config/MigrationRunner'
+import { MigrationRepository } from './migrations/config/MigrationRepository'
 
 const {
   CLOUDINARY_API_KEY,
@@ -67,6 +69,11 @@ async function StartApp() {
     .catch(err => {
       logger.error('Error during Data Source initialization:', err)
     })
+
+  await MigrationRunner({
+    APP_SOURCE,
+    MigrationRepository,
+  })
 
   if (NODE_ENV === 'test') {
     logger.info('seeders started')

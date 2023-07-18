@@ -176,6 +176,16 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   public async seedUserPremium() {
+    const isExisting = await this.UserService.repository.exist({
+      where: {
+        email: userCompanyFixturePremium.email,
+      },
+    })
+
+    if (isExisting) {
+      return
+    }
+
     const subscription = this.getManager.create(SubscriptionEntity, {
       type: SubscriptionEnum.PREMIUM,
       expireAt: dayjs().add(1, 'year'),
