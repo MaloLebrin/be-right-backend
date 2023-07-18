@@ -19,7 +19,7 @@ export async function MigrationRunner({
         QueryRunner: APP_SOURCE.createQueryRunner()
       }))
 
-      promises.push(migrationRepository.create(script.name, script.version))
+      promises.push(migrationRepository.create(script.name))
     })
 
     await Promise.all(promises)

@@ -1,4 +1,4 @@
-import { DataSource, In, Repository } from "typeorm"
+import { DataSource, In, MoreThan, Repository } from "typeorm"
 import { MigrationEntity } from "../../entity/repositories/Migration.entity"
 import { MigrationScript } from "../../types/Migrations"
 
@@ -26,10 +26,22 @@ export class MigrationRepository {
       !existingVersions.includes(script.version) && !existingNames.includes(script.name))
   }
 
-  create = async (name: string, version: number): Promise<void> => {
+  private findLastCreated = async (): Promise<MigrationEntity> => {
+    return this.MigrationRepository.findOne({
+      where: {
+        id: MoreThan(0),
+      },
+      order: {
+        id: 'DESC'
+      }
+    })
+  }
+
+  create = async (name: string): Promise<void> => {
+    const lastestMigration = await this.findLastCreated()
     const newMigration = this.MigrationRepository.create({
       name,
-      version,
+      version: lastestMigration ? lastestMigration.version + 1 : 0,
     })
     await this.MigrationRepository.save(newMigration)
   }
