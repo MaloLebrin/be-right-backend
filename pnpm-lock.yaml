@@ -69,8 +69,8 @@ dependencies:
     specifier: 8.14.2
     version: 8.14.2
   pino-pretty:
-    specifier: 10.2.0
-    version: 10.2.0
+    specifier: 10.2.2
+    version: 10.2.2
   puppeteer:
     specifier: 21.1.0
     version: 21.1.0
@@ -4180,8 +4180,8 @@ packages:
       pino-std-serializers: 5.6.0
     dev: false
 
-  /pino-pretty@10.2.0:
-    resolution: {integrity: sha512-tRvpyEmGtc2D+Lr3FulIZ+R1baggQ4S3xD2Ar93KixFEDx6SEAUP3W5aYuEw1C73d6ROrNcB2IXLteW8itlwhA==}
+  /pino-pretty@10.2.2:
+    resolution: {integrity: sha512-RvAdCQAU51MdVsJdvXX4Bipb52wwldXtOzlva1NT8q2d7tmgYWFIMLhoSnfx2Sr+Hi7BLGpR/n8wgrcq5G/ykA==}
     hasBin: true
     dependencies:
       colorette: 2.0.20
