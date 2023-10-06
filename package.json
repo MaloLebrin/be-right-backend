@@ -44,7 +44,7 @@
     "pg": "^8.10.0",
     "pino": "8.15.4",
     "pino-pretty": "10.2.2",
-    "puppeteer": "21.1.0",
+    "puppeteer": "21.3.8",
     "redis": "^4.6.5",
     "reflect-metadata": "^0.1.13",
     "ts-node": "10.9.1",
