@@ -1,7 +1,7 @@
 {
   "name": "be-right-backend",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.6.11",
+  "packageManager": "pnpm@8.9.0",
   "description": "Awesome project developed with TypeORM.",
   "author": {
     "name": "Malo Lebrin",
