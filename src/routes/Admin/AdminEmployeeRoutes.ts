@@ -12,6 +12,7 @@ import { adminCreateEmployeeSchema } from '../../middlewares/validation/employee
 
 const {
   validate,
+  idParamsSchema,
 } = useValidation()
 
 export class AdminEmployeeRoutes extends BaseRouter implements BaseInterfaceRouter {
@@ -23,6 +24,8 @@ export class AdminEmployeeRoutes extends BaseRouter implements BaseInterfaceRout
       [validate(adminCreateEmployeeSchema), isAuthenticated, checkUserRole(Role.ADMIN)],
       new AdminEmployeeController(this.DATA_SOURCE).createOne,
     )
+
+    this.router.delete('/deleteForEver/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new AdminEmployeeController(this.DATA_SOURCE).deleteForEver)
 
     return this.router
   }
