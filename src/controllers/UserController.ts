@@ -436,8 +436,6 @@ export default class UserController {
         ],
       })
 
-      await this.saveUserInCache(userToSend)
-
       return res.status(200).json({
         user: userToSend,
         company: user.company,

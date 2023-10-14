@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
+import Context from '../context'
 import { generateHash, wrapperRequest } from '../utils'
 import { logger } from '../middlewares/loggerService'
 import { UserEntity } from '../entity/UserEntity'
@@ -12,6 +13,8 @@ import { SubscriptionService } from '../services/SubscriptionService'
 import UserService from '../services/UserService'
 import { userResponse } from '../utils/userHelper'
 import { MailjetService } from '../services'
+import type RedisCache from '../RedisCache'
+import { REDIS_CACHE } from '..'
 
 export default class AuthController {
   logger: Logger<{
@@ -28,6 +31,7 @@ export default class AuthController {
   userRepository: Repository<UserEntity>
   SubscriptionService: SubscriptionService
   UserService: UserService
+  private redisCache: RedisCache
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -37,6 +41,7 @@ export default class AuthController {
       this.userRepository = DATA_SOURCE.getRepository(UserEntity)
       this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
       this.UserService = new UserService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
     }
   }
 
@@ -182,6 +187,20 @@ export default class AuthController {
         user: userResponse(newUser),
         company: newCompany,
       })
+    })
+  }
+
+  public logOut = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const ctx = Context.get(req)
+
+      const user = ctx.user
+      if (user?.token) {
+        await this.redisCache.invalidate(`user-id-${user.id}`)
+        await this.redisCache.invalidate(`user-token-${user.token}`)
+        return res.status(203).json({ success: true, error: 'Utilisateur déconnecté' })
+      }
+      throw new ApiError(404, 'Utilisateur non trouvé')
     })
   }
 }
