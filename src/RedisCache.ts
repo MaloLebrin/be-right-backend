@@ -29,13 +29,15 @@ export default class RedisCache {
       this.connected = true
     }
 
-    this.client.on('error', (err: Error) => {
-      this.logger.error(err.message)
-    })
+    if (this.client) {
+      this.client.on('error', (err: Error) => {
+        this.logger.error(err.message)
+      })
 
-    this.client.on('connect', () => {
-      this.logger.info('Connected successfully to redis')
-    })
+      this.client.on('connect', () => {
+        this.logger.info('Connected successfully to redis')
+      })
+    }
   }
 
   async save<T>(key: RedisKeys, value: T, expireTime?: number): Promise<void> {
