@@ -314,6 +314,7 @@ export default class EmployeeController {
         skip,
         where: whereFields,
         order,
+        withDeleted: isUserAdmin(ctx.user),
       })
 
       return res.status(200).json({

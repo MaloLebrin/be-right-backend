@@ -21,13 +21,13 @@ export class NotificationEntity extends BaseEntity {
   @Column({ default: null, nullable: true })
   readAt: Date
 
-  @ManyToOne(() => NotificationSubcriptionEntity, subscriber => subscriber.notifications)
+  @ManyToOne(() => NotificationSubcriptionEntity, subscriber => subscriber.notifications, { orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   subscriber: NotificationSubcriptionEntity
 
   @RelationId((eventNotif: NotificationEntity) => eventNotif.subscriber)
   subscriberId: number
 
-  @ManyToOne(() => EventNotificationEntity, eventNotif => eventNotif.notifications)
+  @ManyToOne(() => EventNotificationEntity, eventNotif => eventNotif.notifications, { orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   eventNotification: EventNotificationEntity
 
   @RelationId((eventNotif: NotificationEntity) => eventNotif.eventNotification)

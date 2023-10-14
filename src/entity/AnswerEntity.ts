@@ -36,14 +36,14 @@ export default class AnswerEntity extends BaseEntity {
   @Column({ nullable: true, default: null })
   signature: string
 
-  @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'soft-delete' })
+  @ManyToOne(() => EmployeeEntity, employee => employee.id, { orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employeeId' })
   employee: EmployeeEntity
 
   @RelationId((answer: AnswerEntity) => answer.employee)
   employeeId: number
 
-  @ManyToOne(() => EventEntity, event => event.id, { orphanedRowAction: 'soft-delete' })
+  @ManyToOne(() => EventEntity, event => event.id, { orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventId' })
   event: EventEntity
 

@@ -23,21 +23,21 @@ export class EventNotificationEntity extends BaseEntity {
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.notifications)
   notificationIds: number[]
 
-  @ManyToOne(() => EventEntity, { nullable: true })
+  @ManyToOne(() => EventEntity, { nullable: true, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   @JoinColumn()
   event: EventEntity
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.event)
   eventId: number
 
-  @ManyToOne(() => AnswerEntity, { nullable: true })
+  @ManyToOne(() => AnswerEntity, { nullable: true, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   @JoinColumn()
   answer: AnswerEntity
 
   @RelationId((eventNotif: EventNotificationEntity) => eventNotif.answer)
   answerId: number
 
-  @ManyToOne(() => EmployeeEntity, { nullable: true })
+  @ManyToOne(() => EmployeeEntity, { nullable: true, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
   @JoinColumn()
   employee: EmployeeEntity
 

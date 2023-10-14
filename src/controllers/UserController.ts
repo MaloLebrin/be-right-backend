@@ -170,6 +170,7 @@ export default class UserController {
         skip,
         where: whereFields,
         order,
+        withDeleted: isUserAdmin(ctx.user),
       })
 
       return res.status(200).json({
@@ -529,6 +530,19 @@ export default class UserController {
       return res.status(200).json({
         user,
       })
+    })
+  }
+
+  public restoreOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const id = parseInt(req.params.id)
+      if (!id) {
+        throw new ApiError(422, 'Paramètre manquant')
+      }
+
+      await this.repository.restore(id)
+      const user = await this.UserService.getOne(id)
+      return res.status(200).json(userResponse(user))
     })
   }
 }

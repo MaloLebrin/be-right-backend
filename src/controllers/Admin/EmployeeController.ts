@@ -86,4 +86,16 @@ export class AdminEmployeeController extends BaseAdminController {
       return res.status(200).json(employeeToSend)
     })
   }
+
+  public deleteForEver = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const id = parseInt(req.params.id)
+      if (!id) {
+        throw new ApiError(422, 'Paramètre manquant')
+      }
+
+      await this.employeeRepository.delete(id)
+      return res.status(204).json('destinataire supprimé')
+    })
+  }
 }
