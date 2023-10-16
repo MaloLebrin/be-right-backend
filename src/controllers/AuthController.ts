@@ -195,12 +195,14 @@ export default class AuthController {
       const ctx = Context.get(req)
 
       const user = ctx.user
-      if (user?.token) {
-        await this.redisCache.invalidate(`user-id-${user.id}`)
-        await this.redisCache.invalidate(`user-token-${user.token}`)
-        return res.status(203).json({ success: true, error: 'Utilisateur déconnecté' })
+
+      if (!user?.token) {
+        throw new ApiError(404, 'Utilisateur non trouvé')
       }
-      throw new ApiError(404, 'Utilisateur non trouvé')
+
+      await this.redisCache.invalidate(`user-id-${user.id}`)
+      await this.redisCache.invalidate(`user-token-${user.token}`)
+      return res.status(203).json({ success: true, error: 'Utilisateur déconnecté' })
     })
   }
 }
