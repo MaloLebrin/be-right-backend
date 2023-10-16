@@ -8,9 +8,12 @@ import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { defaultQueue } from '../../jobs/queue/queue'
 import { ApiError } from '../../middlewares/ApiError'
 import type { EmployeeCreateOneRequest } from '../../types'
-import { NotificationTypeEnum } from '../../types'
+import { EntitiesEnum, NotificationTypeEnum } from '../../types'
 import { wrapperRequest } from '../../utils'
 import { CompanyEntity } from '../../entity/Company.entity'
+import { generateRedisKey } from '../../utils/redisHelper'
+import { REDIS_CACHE } from '../..'
+import type RedisCache from '../../RedisCache'
 import { BaseAdminController } from './BaseAdminController'
 
 export class AdminEmployeeController extends BaseAdminController {
@@ -18,6 +21,7 @@ export class AdminEmployeeController extends BaseAdminController {
   private AddressService: AddressService
   private employeeRepository: Repository<EmployeeEntity>
   private CompanyRepository: Repository<CompanyEntity>
+  private redisCache: RedisCache
 
   constructor(SOURCE: DataSource) {
     super(SOURCE)
@@ -25,6 +29,7 @@ export class AdminEmployeeController extends BaseAdminController {
     this.AddressService = new AddressService(SOURCE)
     this.employeeRepository = SOURCE.getRepository(EmployeeEntity)
     this.CompanyRepository = SOURCE.getRepository(CompanyEntity)
+    this.redisCache = REDIS_CACHE
   }
 
   /**
@@ -95,6 +100,13 @@ export class AdminEmployeeController extends BaseAdminController {
       }
 
       await this.employeeRepository.delete(id)
+
+      await this.redisCache.invalidate(generateRedisKey({
+        typeofEntity: EntitiesEnum.EMPLOYEE,
+        field: 'id',
+        id,
+      }))
+
       return res.status(204).json('destinataire supprimé')
     })
   }

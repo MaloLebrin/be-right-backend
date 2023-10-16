@@ -50,6 +50,15 @@ export default class EmployeeController {
     }), employee)
   }
 
+  private deleteEmployeeRedisCache = async (employee: EmployeeEntity) => {
+    await this.redisCache.invalidate(generateRedisKey({
+      typeofEntity: EntitiesEnum.EMPLOYEE,
+      field: 'id',
+      id: employee.id,
+    }),
+    )
+  }
+
   /**
    * employee must have event id
    * @param employee employee: Partial<employeeEntity>
