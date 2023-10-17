@@ -12,7 +12,7 @@ export async function RemovedPaymentEntityMigrations({
     await QueryRunner.query(`
       ALTER TABLE
         subscription_entity
-      DROP COLUMN 
+      DROP COLUMN IF EXISTS
         "paymentId"
       CASCADE;
     `)
