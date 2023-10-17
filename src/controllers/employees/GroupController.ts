@@ -21,21 +21,23 @@ import type RedisCache from '../../RedisCache'
 import { generateRedisKey } from '../../utils/redisHelper'
 import type { UserEntity } from '../../entity/UserEntity'
 import { newPaginator } from '../../utils/paginatorHelper'
-import type { CompanyEntity } from '../../entity/Company.entity'
+import { CompanyEntity } from '../../entity/Company.entity'
 
 export class GroupController {
-  AddressService: AddressService
-  EmployeeService: EmployeeService
-  groupService: GroupService
-  EmployeeRepository: Repository<EmployeeEntity>
-  GroupRepository: Repository<GroupEntity>
-  redisCache: RedisCache
+  private AddressService: AddressService
+  private EmployeeService: EmployeeService
+  private groupService: GroupService
+  private EmployeeRepository: Repository<EmployeeEntity>
+  private GroupRepository: Repository<GroupEntity>
+  private redisCache: RedisCache
+  private CompanyRepository: Repository<CompanyEntity>
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.groupService = new GroupService(DATA_SOURCE)
       this.EmployeeRepository = DATA_SOURCE.getRepository(EmployeeEntity)
       this.GroupRepository = DATA_SOURCE.getRepository(GroupEntity)
+      this.CompanyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.EmployeeService = new EmployeeService(DATA_SOURCE)
       this.AddressService = new AddressService(DATA_SOURCE)
       this.redisCache = REDIS_CACHE
@@ -352,17 +354,33 @@ export class GroupController {
         companyId = user.companyId
       }
 
-      if (id && companyId) {
-        const getGroupe = await this.groupService.getOne(id, companyId)
-
-        if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
-          await this.groupService.deleteOne(id)
-
-          return res.status(204).json(getGroupe)
-        }
-        throw new ApiError(401, 'Action non autorisée')
+      if (!id || !companyId) {
+        throw new ApiError(422, 'identifiant du destinataire manquant')
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant')
+      const getGroupe = await this.groupService.getOne(id, companyId)
+
+      if (getGroupe.companyId === user.companyId || isUserAdmin(user)) {
+        await this.groupService.deleteOne(id)
+
+        const company = await this.CompanyRepository.findOne({
+          where: {
+            id: getGroupe.companyId,
+          },
+          relations: {
+            employees: true,
+          },
+        })
+
+        const employees = company.employees
+        delete company.employees
+
+        return res.status(200).json({
+          employees,
+          company,
+          group: getGroupe,
+        })
+      }
+      throw new ApiError(401, 'Action non autorisée')
     })
   }
 }
