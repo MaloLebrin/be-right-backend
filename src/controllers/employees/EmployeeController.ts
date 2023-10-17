@@ -404,7 +404,7 @@ export default class EmployeeController {
       const groups = company.groups
       delete company.groups
 
-      return res.status(204).json({
+      return res.status(200).json({
         employee: getEmployee,
         company,
         groups,

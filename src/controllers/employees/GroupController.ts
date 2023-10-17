@@ -374,7 +374,7 @@ export class GroupController {
         const employees = company.employees
         delete company.employees
 
-        return res.status(204).json({
+        return res.status(200).json({
           employees,
           company,
           group: getGroupe,
