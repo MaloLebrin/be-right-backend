@@ -14,6 +14,7 @@ import { CompanyEntity } from '../../entity/Company.entity'
 import { generateRedisKey } from '../../utils/redisHelper'
 import { REDIS_CACHE } from '../..'
 import type RedisCache from '../../RedisCache'
+import { GroupService } from '../../services/employee/GroupService'
 import { BaseAdminController } from './BaseAdminController'
 
 export class AdminEmployeeController extends BaseAdminController {
@@ -22,6 +23,7 @@ export class AdminEmployeeController extends BaseAdminController {
   private employeeRepository: Repository<EmployeeEntity>
   private CompanyRepository: Repository<CompanyEntity>
   private redisCache: RedisCache
+  private GroupService: GroupService
 
   constructor(SOURCE: DataSource) {
     super(SOURCE)
@@ -30,6 +32,7 @@ export class AdminEmployeeController extends BaseAdminController {
     this.employeeRepository = SOURCE.getRepository(EmployeeEntity)
     this.CompanyRepository = SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
+    this.GroupService = new GroupService(SOURCE)
   }
 
   /**
@@ -107,6 +110,8 @@ export class AdminEmployeeController extends BaseAdminController {
         field: 'id',
         id,
       }))
+
+      await this.GroupService.removeEmployeesOnGroup([employee])
 
       const company = await this.CompanyRepository.findOne({
         where: {

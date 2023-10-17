@@ -20,6 +20,7 @@ import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
 import { newPaginator } from '../../utils/paginatorHelper'
 import { CompanyEntity } from '../../entity/Company.entity'
+import { GroupService } from '../../services/employee/GroupService'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -27,6 +28,7 @@ export default class EmployeeController {
   AddressService: AddressService
   AnswerService: AnswerService
   EventService: EventService
+  GroupService: GroupService
   employeeRepository: Repository<EmployeeEntity>
   companyRepository: Repository<CompanyEntity>
   redisCache: RedisCache
@@ -38,6 +40,7 @@ export default class EmployeeController {
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
+    this.GroupService = new GroupService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
@@ -383,6 +386,7 @@ export default class EmployeeController {
         throw new ApiError(401, 'Action non autorisée')
       }
 
+      await this.GroupService.removeEmployeesOnGroup([getEmployee])
       await this.EmployeeService.deleteOne(id)
 
       await this.redisCache.invalidate(generateRedisKey({

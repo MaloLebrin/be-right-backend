@@ -2,13 +2,14 @@ import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { GroupEntity } from '../../entity/employees/Group.entity'
 import { ApiError } from '../../middlewares/ApiError'
+import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import EmployeeService from './EmployeeService'
 
 export type GroupCreationPayload = Pick<GroupEntity, 'name' | 'description' | 'employeeIds'>
 
 export class GroupService {
-  repository: Repository<GroupEntity>
-  employeeService: EmployeeService
+  private repository: Repository<GroupEntity>
+  private employeeService: EmployeeService
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(GroupEntity)
@@ -118,5 +119,27 @@ export class GroupService {
 
   async deleteOne(id: number) {
     return this.repository.softDelete(id)
+  }
+
+  async removeEmployeesOnGroup(employeesToRemove: EmployeeEntity[]) {
+    const groupIds = employeesToRemove.reduce((acc, emp) => [...acc, ...emp.groupIds], [] as number[])
+    const existingGroups = await this.repository.find({
+      where: {
+        id: In(groupIds),
+      },
+      relations: { employees: true },
+    })
+
+    const employeeIdsToRemove = employeesToRemove.map(emp => emp.id)
+
+    if (existingGroups?.length === 0) {
+      throw new ApiError(422, 'le groupe n\'éxiste pas')
+    }
+
+    await this.repository.save(existingGroups.map(group => ({
+      ...group,
+      employees: group.employees.filter(emp => !employeeIdsToRemove.includes(emp.id)),
+      employeeIdsToRemove: group.employeeIds.filter(id => !employeeIdsToRemove.includes(id)),
+    })))
   }
 }
