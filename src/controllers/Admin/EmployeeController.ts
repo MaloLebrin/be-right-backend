@@ -99,6 +99,7 @@ export class AdminEmployeeController extends BaseAdminController {
         throw new ApiError(422, 'Paramètre manquant')
       }
 
+      const employee = await this.employeeRepository.findOneBy({ id })
       await this.employeeRepository.delete(id)
 
       await this.redisCache.invalidate(generateRedisKey({
@@ -107,7 +108,23 @@ export class AdminEmployeeController extends BaseAdminController {
         id,
       }))
 
-      return res.status(204).json('destinataire supprimé')
+      const company = await this.CompanyRepository.findOne({
+        where: {
+          id: employee.companyId,
+        },
+        relations: {
+          groups: true,
+        },
+      })
+
+      const groups = company.groups
+      delete company.groups
+
+      return res.status(204).json({
+        employee,
+        company,
+        groups,
+      })
     })
   }
 }
