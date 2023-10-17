@@ -19,7 +19,7 @@ import { defaultQueue } from '../../jobs/queue/queue'
 import { generateQueueName } from '../../jobs/queue/jobs/provider'
 import { CreateEmployeeNotificationsJob } from '../../jobs/queue/jobs/createEmployeeNotifications.job'
 import { newPaginator } from '../../utils/paginatorHelper'
-import type { CompanyEntity } from '../../entity/Company.entity'
+import { CompanyEntity } from '../../entity/Company.entity'
 
 export default class EmployeeController {
   getManager: EntityManager
@@ -28,6 +28,7 @@ export default class EmployeeController {
   AnswerService: AnswerService
   EventService: EventService
   employeeRepository: Repository<EmployeeEntity>
+  companyRepository: Repository<CompanyEntity>
   redisCache: RedisCache
   RediceService: RedisService
 
@@ -38,6 +39,7 @@ export default class EmployeeController {
     this.AnswerService = new AnswerService(APP_SOURCE)
     this.AddressService = new AddressService(APP_SOURCE)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
+    this.companyRepository = APP_SOURCE.getRepository(CompanyEntity)
     this.redisCache = REDIS_CACHE
     this.RediceService = new RedisService(APP_SOURCE)
   }
@@ -363,32 +365,50 @@ export default class EmployeeController {
     await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
 
-      if (id) {
-        const ctx = Context.get(req)
+      if (!id) {
+        throw new ApiError(422, 'identifiant du destinataire manquant')
+      }
 
-        if (!ctx?.user) {
-          throw new ApiError(401, 'Action non autorisée')
-        }
+      const ctx = Context.get(req)
 
-        const userId = ctx.user.id
+      if (!ctx?.user) {
+        throw new ApiError(401, 'Action non autorisée vous n\'êtes pas authentifié')
+      }
 
-        const getEmployee = await this.EmployeeService.getOne(id)
+      const userId = ctx.user.id
 
-        if (getEmployee.companyId === ctx.user.companyId || isUserAdmin(ctx.user)) {
-          await this.EmployeeService.deleteOne(id)
+      const getEmployee = await this.EmployeeService.getOne(id)
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.EMPLOYEE,
-            field: 'id',
-            id,
-          }))
-
-          await this.RediceService.updateCurrentUserInCache({ userId })
-          return res.status(204).json(getEmployee)
-        }
+      if (getEmployee.companyId !== ctx.user.companyId && !isUserAdmin(ctx.user)) {
         throw new ApiError(401, 'Action non autorisée')
       }
-      throw new ApiError(422, 'identifiant du destinataire manquant')
+
+      await this.EmployeeService.deleteOne(id)
+
+      await this.redisCache.invalidate(generateRedisKey({
+        typeofEntity: EntitiesEnum.EMPLOYEE,
+        field: 'id',
+        id,
+      }))
+      await this.RediceService.updateCurrentUserInCache({ userId })
+
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: getEmployee.companyId,
+        },
+        relations: {
+          groups: true,
+        },
+      })
+
+      const groups = company.groups
+      delete company.groups
+
+      return res.status(204).json({
+        employee: getEmployee,
+        company,
+        groups,
+      })
     })
   }
 
