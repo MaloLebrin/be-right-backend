@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { EntityManager, FindOptionsWhere, Repository } from 'typeorm'
+import type { FindOptionsWhere, Repository } from 'typeorm'
 import csv from 'csvtojson'
 import Context from '../../context'
 import { EmployeeEntity, employeeRelationFields, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
@@ -23,19 +23,17 @@ import { CompanyEntity } from '../../entity/Company.entity'
 import { GroupService } from '../../services/employee/GroupService'
 
 export default class EmployeeController {
-  getManager: EntityManager
-  EmployeeService: EmployeeService
-  AddressService: AddressService
-  AnswerService: AnswerService
-  EventService: EventService
-  GroupService: GroupService
-  employeeRepository: Repository<EmployeeEntity>
-  companyRepository: Repository<CompanyEntity>
-  redisCache: RedisCache
-  RediceService: RedisService
+  private EmployeeService: EmployeeService
+  private AddressService: AddressService
+  private AnswerService: AnswerService
+  private EventService: EventService
+  private GroupService: GroupService
+  private employeeRepository: Repository<EmployeeEntity>
+  private companyRepository: Repository<CompanyEntity>
+  private redisCache: RedisCache
+  private RediceService: RedisService
 
   constructor() {
-    this.getManager = APP_SOURCE.manager
     this.EmployeeService = new EmployeeService(APP_SOURCE)
     this.EventService = new EventService(APP_SOURCE)
     this.AnswerService = new AnswerService(APP_SOURCE)
@@ -382,6 +380,10 @@ export default class EmployeeController {
 
       const getEmployee = await this.EmployeeService.getOne(id)
 
+      if (!getEmployee) {
+        throw new ApiError(422, 'destinataire manquant')
+      }
+
       if (getEmployee.companyId !== ctx.user.companyId && !isUserAdmin(ctx.user)) {
         throw new ApiError(401, 'Action non autorisée')
       }
@@ -465,6 +467,37 @@ export default class EmployeeController {
         return res.status(200).json(newEmployees)
       }
       throw new ApiError(422, 'Destinataires manquant')
+    })
+  }
+
+  public restoreOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const id = parseInt(req.params.id)
+      if (!id) {
+        throw new ApiError(422, 'Paramètre manquant')
+      }
+
+      const ctx = Context.get(req)
+
+      const deletedEmployee = await this.employeeRepository.findOne({
+        where: {
+          id,
+        },
+        withDeleted: true,
+      })
+
+      const currentUser = ctx.user
+      if (!currentUser || (currentUser.companyId !== deletedEmployee.companyId && !isUserAdmin(currentUser))) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
+
+      await this.employeeRepository.restore(id)
+      const employee = await this.employeeRepository.findOne({
+        where: {
+          id,
+        },
+      })
+      return res.status(200).json(employee)
     })
   }
 }

@@ -169,6 +169,7 @@ async function StartApp() {
   app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
   app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
   app.get('/employee/event/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByEventId)
+  app.get('/employee/restore/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().restoreOne)
   app.post('/employee', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
   app.post('/employee/many', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
   app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId)
