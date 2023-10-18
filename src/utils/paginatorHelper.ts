@@ -16,6 +16,7 @@ interface PaginatorReturnType<T extends BaseEntity> {
   skip: number
   where: FindOptionsWhere<T>[]
   order: FindOptionsOrder<T>
+  withDeleted?: boolean
 }
 
 interface ParseQueriesReturnType<T> {
@@ -23,9 +24,10 @@ interface ParseQueriesReturnType<T> {
   limit: number
   search: FindOperator<string>
   filters: FindOptionsWhere<T> | null
+  withDeleted?: boolean
 }
 
-function parsePathRelation(path: string, search: FindOperator<string>) {
+export function parsePathRelation(path: string, search: FindOperator<string>) {
   const dir = {}
 
   const paths = path.split('.')
@@ -40,12 +42,13 @@ function parsePathRelation(path: string, search: FindOperator<string>) {
   return dir
 }
 
-function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
+export function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
   return {
     page: req.query.page ? parseInt(req.query.page.toLocaleString()) : 1,
     limit: req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 20,
     search: req.query.search ? ILike(`%${req.query.search.toLocaleString()}%`) : null,
     filters: req.query.filters as FindOptionsWhere<T> || null,
+    withDeleted: req.query.withDeleted?.toString() === 'true',
   }
 }
 
@@ -54,7 +57,9 @@ export function newPaginator<T extends BaseEntity>({
   searchableFields = [],
   relationFields = [],
 }: Paginator): PaginatorReturnType<T> {
-  const { page, limit, search, filters } = parseQueries(req)
+  const { page, limit, search, filters, withDeleted } = parseQueries(req)
+
+  // TODO add orderBy queries filters
 
   const where = []
 
@@ -89,5 +94,6 @@ export function newPaginator<T extends BaseEntity>({
     skip: (page - 1) * limit,
     where,
     order,
+    withDeleted,
   }
 }
