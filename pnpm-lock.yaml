@@ -125,8 +125,8 @@ devDependencies:
     specifier: ^6.4.7
     version: 6.4.8
   '@types/uid2':
-    specifier: 0.0.0
-    version: 0.0.0
+    specifier: 0.0.1
+    version: 0.0.1
   '@vitest/ui':
     specifier: ^0.34.0
     version: 0.34.0(vitest@0.34.0)
@@ -881,8 +881,8 @@ packages:
       '@types/node': 18.16.19
     dev: true
 
-  /@types/uid2@0.0.0:
-    resolution: {integrity: sha512-ZozX4JtkwJM+Vs3WO8O75DfKuqWx22binIwKCExO7Mu9kz/4bpEGBd2zk4M7rMSs+i20SgUI5ezYru4C0PZZqg==}
+  /@types/uid2@0.0.1:
+    resolution: {integrity: sha512-rne3r4Px71BkjAfNZWQ4vBM/00gCn5N+ih+UNUC6YCdQSD+iuHbQWilkJcmgGjQg0nvhPJQSs9+sII95znoGiQ==}
     dev: true
 
   /@types/unist@2.0.7:
