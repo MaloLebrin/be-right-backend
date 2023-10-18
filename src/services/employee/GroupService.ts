@@ -130,16 +130,14 @@ export class GroupService {
       relations: { employees: true },
     })
 
-    const employeeIdsToRemove = employeesToRemove.map(emp => emp.id)
+    if (existingGroups?.length > 0) {
+      const employeeIdsToRemove = employeesToRemove.map(emp => emp.id)
 
-    if (existingGroups?.length === 0) {
-      throw new ApiError(422, 'le groupe n\'éxiste pas')
+      await this.repository.save(existingGroups.map(group => ({
+        ...group,
+        employees: group.employees.filter(emp => !employeeIdsToRemove.includes(emp.id)),
+        employeeIdsToRemove: group.employeeIds.filter(id => !employeeIdsToRemove.includes(id)),
+      })))
     }
-
-    await this.repository.save(existingGroups.map(group => ({
-      ...group,
-      employees: group.employees.filter(emp => !employeeIdsToRemove.includes(emp.id)),
-      employeeIdsToRemove: group.employeeIds.filter(id => !employeeIdsToRemove.includes(id)),
-    })))
   }
 }
