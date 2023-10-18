@@ -288,7 +288,7 @@ export default class EmployeeController {
     await wrapperRequest(req, res, next, async () => {
       const ctx = Context.get(req)
 
-      const { where, page, take, skip, order } = newPaginator<EmployeeEntity>({
+      const { where, page, take, skip, order, withDeleted } = newPaginator<EmployeeEntity>({
         req,
         searchableFields: employeeSearchablefields,
         relationFields: employeeRelationFields,
@@ -319,7 +319,7 @@ export default class EmployeeController {
         skip,
         where: whereFields,
         order,
-        withDeleted: isUserAdmin(ctx.user),
+        withDeleted: withDeleted || isUserAdmin(ctx.user),
       })
 
       return res.status(200).json({
