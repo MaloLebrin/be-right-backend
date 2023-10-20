@@ -10,6 +10,10 @@ export default function checkUserRole(roles: Role | Role[]) {
     logger.info(`${req.url} checkRole started`)
     const ctx = Context.get(req)
 
+    if (!ctx) {
+      throw new ApiError(401, 'Une erreur s\‘est produite')
+    }
+
     const user = ctx.user
     if (user && user.roles) {
       if (isArray(roles)) {
