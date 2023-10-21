@@ -563,7 +563,21 @@ export default class UserController {
       }
 
       if (isUserOwner(user)) {
-        await this.companyRepository.delete(user.companyId)
+        const company = await this.companyRepository.findOne({
+          where: {
+            id: user.companyId,
+          },
+          relations: {
+            users: true,
+          },
+        })
+
+        if (company) {
+          const owners = company.users?.filter(user => isUserOwner(user))
+          if (owners?.length < 2) {
+            await this.companyRepository.delete(user.companyId)
+          }
+        }
       }
 
       await this.deleteUserInCache(user)
