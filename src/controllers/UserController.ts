@@ -562,26 +562,24 @@ export default class UserController {
         throw new ApiError(422, 'L\'utilisateur n\'existe pas')
       }
 
-      if (isUserOwner(user)) {
-        const company = await this.companyRepository.findOne({
-          where: {
-            id: user.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        })
-
-        if (company) {
-          const owners = company.users?.filter(user => isUserOwner(user))
-          if (owners?.length < 2) {
-            await this.companyRepository.delete(user.companyId)
-          }
-        }
-      }
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: user.companyId,
+        },
+        relations: {
+          users: true,
+        },
+      })
 
       await this.deleteUserInCache(user)
       await this.repository.delete(id)
+
+      if (company && isUserOwner(user)) {
+        const owners = company.users?.filter(user => isUserOwner(user))
+        if (owners?.length < 2) {
+          await this.companyRepository.delete(user.companyId)
+        }
+      }
 
       return res.status(201).json({
         isSuccess: true,
