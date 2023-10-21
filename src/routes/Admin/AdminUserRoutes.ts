@@ -16,13 +16,8 @@ export class AdminUserRoutes extends BaseRouter implements BaseInterfaceRouter {
 
   public intializeRoutes = () => {
     this.router.get('/', [isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).getAll)
-
     this.router.get('/restore/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).restoreOne)
-
     this.router.delete('/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).deleteOne)
-
-    this.router.delete('/deleteForEver/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).deleteForEver)
-
     this.router.patch('/:id', [validate(patchUserSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).updateOne)
 
     return this.router
