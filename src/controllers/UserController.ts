@@ -7,7 +7,7 @@ import { UserEntity, userRelationFields, userSearchableFields } from '../entity/
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, isUserOwner, uniqByKey, userResponse } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { REDIS_CACHE } from '..'
@@ -50,6 +50,11 @@ export default class UserController {
   private saveUserInCache = async (user: UserEntity) => {
     await this.redisCache.save(`user-id-${user.id}`, user)
     await this.redisCache.save(`user-token-${user.token}`, user)
+  }
+
+  private deleteUserInCache = async (user: UserEntity) => {
+    await this.redisCache.invalidate(`user-id-${user.id}`)
+    await this.redisCache.invalidate(`user-token-${user.token}`)
   }
 
   /**
@@ -541,6 +546,33 @@ export default class UserController {
       await this.repository.restore(id)
       const user = await this.UserService.getOne(id)
       return res.status(200).json(userResponse(user))
+    })
+  }
+
+  public deleteForEver = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const id = parseInt(req.params.id)
+      if (!id) {
+        throw new ApiError(422, 'Paramètre manquant')
+      }
+
+      const user = await this.repository.findOneBy({ id })
+
+      if (!user) {
+        throw new ApiError(422, 'L\'utilisateur n\'existe pas')
+      }
+
+      if (isUserOwner(user)) {
+        await this.companyRepository.delete(user.companyId)
+      }
+
+      await this.deleteUserInCache(user)
+      await this.repository.delete(id)
+
+      return res.status(201).json({
+        isSuccess: true,
+        message: 'L\'utilisateur a bien été supprimé',
+      })
     })
   }
 }
