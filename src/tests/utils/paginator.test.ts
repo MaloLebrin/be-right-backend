@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from '@jest/globals'
 import type { FindOperator } from 'typeorm'
 import { ILike } from 'typeorm'
 import {

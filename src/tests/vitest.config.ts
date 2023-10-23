@@ -1,9 +1,9 @@
-import { defineConfig } from 'vitest/config'
+// import { defineConfig } from 'vitest/config'
 
-export default defineConfig({
-  test: {
-    typecheck: {
-      tsconfig: './tsconfig.json',
-    },
-  },
-})
+// export default defineConfig({
+//   test: {
+//     typecheck: {
+//       tsconfig: './tsconfig.json',
+//     },
+//   },
+// })

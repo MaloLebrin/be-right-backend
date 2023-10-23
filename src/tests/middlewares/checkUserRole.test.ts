@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, jest, test } from '@jest/globals'
 import type { Request } from 'express'
 import checkUserRole from '../../middlewares/checkUserRole'
 import { Role } from '../../types/Role'
@@ -8,7 +8,7 @@ import type { UserEntity } from '../../entity/UserEntity'
 describe('Without Context', () => {
   test('checkUserRole throw error when context does not exist', () => {
     expect(() =>
-      checkUserRole(Role.ADMIN)({} as any, undefined as any, vi.fn() as any))
+      checkUserRole(Role.ADMIN)({} as any, undefined as any, jest.fn() as any))
       .toThrowError('Une erreur s\‘est produite')
   })
 })
@@ -25,37 +25,37 @@ describe('checkUserRole throw errors when role is wrong', () => {
 
   test('checkUserRole throw error when user has USER role', () => {
     expect(() =>
-      checkUserRole(Role.ADMIN)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.ADMIN)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('checkUserRole throw error when user has OWNER role', () => {
     expect(() =>
-      checkUserRole(Role.OWNER)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.OWNER)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('checkUserRole throw error when user has DEVELOPER role', () => {
     expect(() =>
-      checkUserRole(Role.DEVELOPER)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.DEVELOPER)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('checkUserRole throw error when user has EMPLOYEE role', () => {
     expect(() =>
-      checkUserRole(Role.EMPLOYEE)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.EMPLOYEE)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('checkUserRole throw error when user has PHOTOGRAPHER role', () => {
     expect(() =>
-      checkUserRole(Role.PHOTOGRAPHER)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.PHOTOGRAPHER)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('checkUserRole throw error when user has SUPER_USER role', () => {
     expect(() =>
-      checkUserRole(Role.SUPER_USER)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.SUPER_USER)(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
@@ -68,13 +68,13 @@ describe('checkUserRole throw errors when role is wrong', () => {
         Role.ADMIN,
         Role.DEVELOPER,
         Role.OWNER,
-      ])(req, vi.fn() as any, vi.fn() as any))
+      ])(req, jest.fn() as any, jest.fn() as any))
       .toThrowError('Action non autorisée')
   })
 
   test('Check user role send void by use next function when role is alloawed', () => {
     expect(() =>
-      checkUserRole(Role.USER)(req, vi.fn() as any, vi.fn() as any))
+      checkUserRole(Role.USER)(req, jest.fn() as any, jest.fn() as any))
       .not.toThrowError('Action non autorisée')
   })
 })

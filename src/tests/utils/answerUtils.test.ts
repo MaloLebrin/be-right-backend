@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from '@jest/globals'
 import answersJSON from '../fixtures/premium/answers.json'
 import {
   answerResponse,
