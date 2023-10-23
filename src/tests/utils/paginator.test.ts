@@ -22,30 +22,55 @@ test('parsePathRelation should return object with params for path as firstParame
 })
 
 test('parse Queries should return default page, limit', () => {
-  const result = parseQueries({ query: {} } as any)
-  expect(result.page).toStrictEqual(1)
-  expect(result.limit).toStrictEqual(20)
-  expect(result.search).toBeNull()
-  expect(result.filters).toBeNull()
-  expect(result.withDeleted).toBeFalsy()
+  const {
+    page,
+    limit,
+    search,
+    filters,
+    withDeleted,
+    orderBy,
+  } = parseQueries({ query: {} } as any)
+
+  expect(page).toStrictEqual(1)
+  expect(limit).toStrictEqual(20)
+  expect(search).toBeNull()
+  expect(filters).toBeNull()
+  expect(withDeleted).toBeFalsy()
+  expect(orderBy).toBeNull()
 })
 
 test('parse Queries should return params passed by request page, limit', () => {
-  const result = parseQueries({
+  const {
+    page,
+    limit,
+    search,
+    filters,
+    withDeleted,
+    orderBy,
+  } = parseQueries({
+
     query: {
       page: '2',
       limit: '200',
     },
   } as any)
-  expect(result.page).toStrictEqual(2)
-  expect(result.limit).toStrictEqual(200)
-  expect(result.search).toBeNull()
-  expect(result.filters).toBeNull()
-  expect(result.withDeleted).toBeFalsy()
+  expect(page).toStrictEqual(2)
+  expect(limit).toStrictEqual(200)
+  expect(search).toBeNull()
+  expect(filters).toBeNull()
+  expect(withDeleted).toBeFalsy()
+  expect(orderBy).toBeNull()
 })
 
 test('parse Queries should return params passed by request page, limit, search, filters, withDeleted', () => {
-  const result = parseQueries({
+  const {
+    page,
+    limit,
+    search,
+    filters,
+    withDeleted,
+    orderBy,
+  } = parseQueries({
     query: {
       page: '2',
       limit: '200',
@@ -54,15 +79,21 @@ test('parse Queries should return params passed by request page, limit, search, 
       filters: {
         firstName: 'test',
       },
+      orderBy: {
+        firstName: 'ASC',
+      },
     },
   } as any)
-  expect(result.page).toStrictEqual(2)
-  expect(result.limit).toStrictEqual(200)
-  expect(result.search).toStrictEqual(ILike('%name%'))
-  expect(result.filters).toStrictEqual({
+  expect(page).toStrictEqual(2)
+  expect(limit).toStrictEqual(200)
+  expect(search).toStrictEqual(ILike('%name%'))
+  expect(filters).toStrictEqual({
     firstName: 'test',
   })
-  expect(result.withDeleted).toBeTruthy()
+  expect(withDeleted).toBeTruthy()
+  expect(orderBy).toStrictEqual({
+    firstName: 'ASC',
+  })
 })
 
 test('Pagniator send defaults filter', () => {

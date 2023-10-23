@@ -24,6 +24,7 @@ interface ParseQueriesReturnType<T> {
   limit: number
   search: FindOperator<string>
   filters: FindOptionsWhere<T> | null
+  orderBy: FindOptionsOrder<T>
   withDeleted?: boolean
 }
 
@@ -49,6 +50,7 @@ export function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
     search: req.query.search ? ILike(`%${req.query.search.toLocaleString()}%`) : null,
     filters: req.query.filters as FindOptionsWhere<T> || null,
     withDeleted: req.query.withDeleted?.toString() === 'true',
+    orderBy: req.query.orderBy as FindOptionsOrder<T> || null,
   }
 }
 
