@@ -114,7 +114,7 @@ test('Pagniator send defaults filter', () => {
   expect(withDeleted).toBeFalsy()
 })
 
-test('Pagniator format correctly filters', () => {
+test('Pagniator format correctly filters with filters', () => {
   const { page, take, skip, where, order, withDeleted } = newPaginator({
     req: {
       query: {
@@ -124,6 +124,9 @@ test('Pagniator format correctly filters', () => {
         withDeleted: true,
         filters: {
           firstName: 'test',
+        },
+        orderBy: {
+          lastName: 'ASC',
         },
       },
     } as any,
@@ -148,9 +151,8 @@ test('Pagniator format correctly filters', () => {
     },
   ])
   expect(order).toStrictEqual({
-    createdAt: 'DESC',
     firstName: 'ASC',
-    id: 'DESC',
+    lastName: 'ASC',
   })
   expect(withDeleted).toBeTruthy()
 })

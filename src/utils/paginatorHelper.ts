@@ -59,16 +59,20 @@ export function newPaginator<T extends BaseEntity>({
   searchableFields = [],
   relationFields = [],
 }: Paginator): PaginatorReturnType<T> {
-  const { page, limit, search, filters, withDeleted } = parseQueries(req)
-
-  // TODO add orderBy queries filters
+  const { page, limit, search, filters, withDeleted, orderBy } = parseQueries(req)
 
   const where = []
 
-  const order = {
-    id: 'DESC',
-    createdAt: 'DESC',
-  } as FindOptionsOrder<T>
+  let order: FindOptionsOrder<T> | null = null
+
+  if (!orderBy) {
+    order = {
+      id: 'DESC',
+      createdAt: 'DESC',
+    } as FindOptionsOrder<T>
+  } else {
+    order = orderBy
+  }
 
   if (filters) {
     where.push(filters)
