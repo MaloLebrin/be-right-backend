@@ -71,5 +71,15 @@ export function createAppSource() {
   })
 }
 
+export function createTestAppSource() {
+  return new DataSource({
+    name: 'default',
+    type: 'better-sqlite3',
+    database: ':memory:',
+    entities: ['src/entity/**/*.ts'],
+    synchronize: true,
+  })
+}
+
 // eslint-disable-next-line promise/param-names
 export const delay = (ms: number) => new Promise(res => setTimeout(res, ms))

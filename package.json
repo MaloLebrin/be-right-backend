@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.37.0",
+    "@types/better-sqlite3": "^7.6.6",
     "@types/cors": "^2.8.13",
     "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.17",
@@ -65,8 +66,10 @@
     "@types/nodemailer": "^6.4.7",
     "@types/uid2": "0.0.1",
     "@vitest/ui": "^0.34.0",
+    "better-sqlite3": "^9.0.0",
     "eslint": "^8.39.0",
     "eslint-plugin-security": "^1.7.1",
+    "supertest": "^6.3.3",
     "typescript": "^5.0.4",
     "vitest": "^0.34.0"
   }
