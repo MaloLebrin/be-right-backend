@@ -11,17 +11,6 @@ jest.mock('typeorm', () => {
   }
 })
 
-// Env
-const mockEnv = {
-  get: jest.fn(),
-  DATABASE_URL: jest.fn(() => 'DATABASE_URL'),
-}
-jest.mock('../../.env', () => {
-  return {
-    Environment: mockEnv,
-  }
-})
-
 afterEach(() => {
   jest.clearAllMocks()
 })
