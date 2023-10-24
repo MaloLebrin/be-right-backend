@@ -41,7 +41,7 @@ jobs:
         run: nr type:check
 
       - name: ✅ Tests
-        run: nr test:ci
+        run: nr test
 
   Build:
     runs-on: ${{ matrix.os }}
