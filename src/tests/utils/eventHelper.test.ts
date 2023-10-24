@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from '@jest/globals'
 import eventJSON from '../fixtures/premium/events.json'
 import {
   hasNotEventStartedYet,

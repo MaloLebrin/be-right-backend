@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from '@jest/globals'
 import usersJSON from '../fixtures/premium/users.json'
 import type { UserEntity } from '../../entity/UserEntity'
 import {
