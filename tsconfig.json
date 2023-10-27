@@ -16,8 +16,9 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["@jest/globals"]
+    "types": ["@jest/globals", "jest"]
   },
+  "compileOnSave": true,
   "exclude": [
     "*/tests/*"
   ]
