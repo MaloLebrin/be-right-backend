@@ -38,10 +38,10 @@ export function parseQueryIds(ids: string) {
 }
 
 export function getCookies(req: Request) {
-  return req.headers?.cookie.split('; ')
+  return req.headers?.cookie?.split('; ')
 }
 
 export function getCookie(req: Request, name: string) {
   const cookies = getCookies(req)
-  return cookies.find(str => str.startsWith(name)).split('=')[1]
+  return cookies?.find(str => str.startsWith(name))?.split('=')[1]
 }
