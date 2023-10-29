@@ -74,7 +74,7 @@ async function StartApp() {
     MigrationRepository,
   })
 
-  if (NODE_ENV !== 'test') {
+  if (NODE_ENV === 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
