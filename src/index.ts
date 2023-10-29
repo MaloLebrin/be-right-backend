@@ -26,7 +26,6 @@ import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
 import NotificationController from './controllers/Notifications.controller'
 import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
-import { SSEManager } from './serverSendEvent/SSEManager'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
@@ -201,7 +200,6 @@ async function StartApp() {
 
   // Notification
   app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
-  app.get('/notifications/sse', new NotificationController().streamNotifications)
   app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
 
   // Notification Subscriptions
