@@ -74,7 +74,7 @@ async function StartApp() {
     MigrationRepository,
   })
 
-  if (NODE_ENV === 'test') {
+  if (NODE_ENV !== 'test') {
     logger.info('seeders started')
     await seedersFunction(APP_SOURCE)
     logger.info('seeders ended')
@@ -100,8 +100,6 @@ async function StartApp() {
     Context.bind(req)
     next()
   })
-
-  app.set('sseManager', new SSEManager())
 
   app.engine('handlebars', hbs.engine)
   app.set('view engine', 'handlebars')

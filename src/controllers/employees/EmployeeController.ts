@@ -59,8 +59,9 @@ export default class EmployeeController {
    * @returns return employee just created
    */
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async ctx => {
+    await wrapperRequest(req, res, next, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
+      const ctx = Context.get(req)
 
       let userId = null
 
