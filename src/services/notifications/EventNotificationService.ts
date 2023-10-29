@@ -7,7 +7,7 @@ import type { NotificationTypeEnum } from '../../types'
 import type { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 
 export class EventNotificationService {
-  repository: Repository<EventNotificationEntity>
+  private repository: Repository<EventNotificationEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EventNotificationEntity)

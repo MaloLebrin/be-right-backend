@@ -8,9 +8,9 @@ import AnswerEntity from '../../entity/AnswerEntity'
 import { getfullUsername } from '../../utils/userHelper'
 
 export class NotificationService {
-  repository: Repository<NotificationEntity>
-  eventNotifRepository: Repository<EventNotificationEntity>
-  AnswerRepository: Repository<AnswerEntity>
+  private repository: Repository<NotificationEntity>
+  private eventNotifRepository: Repository<EventNotificationEntity>
+  private AnswerRepository: Repository<AnswerEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(NotificationEntity)

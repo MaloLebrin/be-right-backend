@@ -61,8 +61,8 @@ export default class EmployeeController {
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
-
       const ctx = Context.get(req)
+
       let userId = null
 
       if (!ctx && !ctx.user) {
@@ -81,7 +81,7 @@ export default class EmployeeController {
         throw new ApiError(423, 'cet email existe déjà')
       }
 
-      const newEmployee = await this.EmployeeService.createOne(employee, userId)
+      const newEmployee = await this.EmployeeService.createOne(employee, ctx.user.companyId)
 
       if (newEmployee) {
         await defaultQueue.add(
