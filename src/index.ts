@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
+import { createSession } from 'better-sse'
 import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
@@ -47,6 +48,7 @@ import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
 import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
+import { NotificationSSEService } from './services/notifications/notificationSSEService'
 
 const {
   CLOUDINARY_API_KEY,
@@ -101,6 +103,26 @@ async function StartApp() {
     next()
   })
 
+  app.get('/sse/:token', async (req, res) => {
+    const token = req.params.token
+
+    if (token) {
+      const session = await createSession(req, res)
+      const notificationSSEService = new NotificationSSEService(APP_SOURCE)
+
+      setInterval(async () => {
+        const notifications = await notificationSSEService.getAllUser({
+          notificationToken: token,
+        })
+
+        if (notifications?.length > 0) {
+          session.push(notifications)
+        }
+        // 5 secondes
+      }, 5000)
+    }
+  })
+
   app.engine('handlebars', hbs.engine)
   app.set('view engine', 'handlebars')
   app.set('views', '/app/src/views')
@@ -150,7 +172,6 @@ async function StartApp() {
   app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
 
   // Bug
-  // app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
   app.get('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().getOne)
   app.post('/bugreport/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
   app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
