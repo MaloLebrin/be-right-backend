@@ -6,7 +6,7 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
-import { createSession } from 'better-sse'
+import { createChannel, createSession } from 'better-sse'
 import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
@@ -103,11 +103,13 @@ async function StartApp() {
     next()
   })
 
+  const channel = createChannel()
   app.get('/sse/:token', async (req, res) => {
     const token = req.params.token
 
     if (token) {
       const session = await createSession(req, res)
+      channel.register(session)
       const notificationSSEService = new NotificationSSEService(APP_SOURCE)
 
       setInterval(async () => {
@@ -116,7 +118,7 @@ async function StartApp() {
         })
 
         if (notifications?.length > 0) {
-          session.push(notifications)
+          channel.broadcast(notifications, 'message')
         }
         // 5 secondes
       }, 5000)
