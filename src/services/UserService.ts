@@ -4,7 +4,7 @@ import { UserEntity } from '../entity/UserEntity'
 import { generateHash } from '../utils'
 import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
 import { Role } from '../types'
-import { createJwtToken, userResponse } from '../utils/'
+import { createJwtToken, createNotificationToken, userResponse } from '../utils/'
 
 export default class UserService {
   repository: Repository<UserEntity>
@@ -82,8 +82,11 @@ export default class UserService {
       }),
       roles: Role.PHOTOGRAPHER,
     })
-    await this.repository.save(newUser)
-    return userResponse(newUser)
+    const userToSend = await this.repository.save({
+      ...newUser,
+      notificationToken: createNotificationToken(newUser.id),
+    })
+    return userResponse(userToSend)
   }
 
   async createOneUser(payload: CreateUserPayload) {
@@ -125,8 +128,13 @@ export default class UserService {
         id: companyId,
       },
     })
-    await this.repository.save(newUser)
-    return newUser
+
+    const userToSend = await this.repository.save({
+      ...newUser,
+      notificationToken: createNotificationToken(newUser.id),
+    })
+
+    return userToSend
   }
 
   async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
