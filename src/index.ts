@@ -7,6 +7,7 @@ import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
 import { createChannel, createSession } from 'better-sse'
+import { verify } from 'jsonwebtoken'
 import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
@@ -106,6 +107,9 @@ async function StartApp() {
   const channel = createChannel()
   app.get('/sse/:token', async (req, res) => {
     const token = req.params.token
+
+    const { JWT_SECRET } = useEnv()
+    verify(token, JWT_SECRET)
 
     if (token) {
       const session = await createSession(req, res)
