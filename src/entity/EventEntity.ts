@@ -64,4 +64,5 @@ export const eventRelationFields = [
   'company.name',
   'company.users.firstName',
   'company.users.lastName',
+  'company.id',
 ]
