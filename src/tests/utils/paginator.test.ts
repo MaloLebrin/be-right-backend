@@ -41,6 +41,7 @@ test('parse Queries should return default page, limit', () => {
 
 test('parse Queries should return params passed by request page, limit', () => {
   const {
+    andFilters,
     page,
     limit,
     search,
@@ -60,10 +61,12 @@ test('parse Queries should return params passed by request page, limit', () => {
   expect(filters).toBeNull()
   expect(withDeleted).toBeFalsy()
   expect(orderBy).toBeNull()
+  expect(andFilters).toBeNull()
 })
 
 test('parse Queries should return params passed by request page, limit, search, filters, withDeleted', () => {
   const {
+    andFilters,
     page,
     limit,
     search,
@@ -82,6 +85,11 @@ test('parse Queries should return params passed by request page, limit, search, 
       orderBy: {
         firstName: 'ASC',
       },
+      andFilters: {
+        company: {
+          id: 2,
+        },
+      },
     },
   } as any)
   expect(page).toStrictEqual(2)
@@ -94,10 +102,22 @@ test('parse Queries should return params passed by request page, limit, search, 
   expect(orderBy).toStrictEqual({
     firstName: 'ASC',
   })
+  expect(andFilters).toStrictEqual({
+    company: {
+      id: 2,
+    },
+  })
 })
 
 test('Pagniator send defaults filter', () => {
-  const { page, take, skip, where, order, withDeleted } = newPaginator({
+  const {
+    order,
+    page,
+    skip,
+    take,
+    where,
+    withDeleted,
+  } = newPaginator({
     req: { query: {} } as any,
     searchableFields: [],
     relationFields: [],
@@ -115,7 +135,14 @@ test('Pagniator send defaults filter', () => {
 })
 
 test('Pagniator format correctly filters with filters', () => {
-  const { page, take, skip, where, order, withDeleted } = newPaginator({
+  const {
+    order,
+    page,
+    skip,
+    take,
+    where,
+    withDeleted,
+  } = newPaginator({
     req: {
       query: {
         page: '2',
@@ -127,6 +154,11 @@ test('Pagniator format correctly filters with filters', () => {
         },
         orderBy: {
           lastName: 'ASC',
+        },
+        andFilters: {
+          company: {
+            id: 2,
+          },
         },
       },
     } as any,
@@ -140,14 +172,175 @@ test('Pagniator format correctly filters with filters', () => {
   expect(where).toStrictEqual([
     {
       firstName: 'test',
+      company: {
+        id: 2,
+      },
     },
     {
       company: {
         name: ILike('%name%'),
+        id: 2,
       },
     },
     {
       firstName: ILike('%name%'),
+      company: {
+        id: 2,
+      },
+    },
+  ])
+  expect(order).toStrictEqual({
+    firstName: 'ASC',
+    lastName: 'ASC',
+  })
+  expect(withDeleted).toBeTruthy()
+})
+
+test('Pagniator send andFilters only with no relationField and searchable fields', () => {
+  const {
+    order,
+    page,
+    skip,
+    take,
+    where,
+    withDeleted,
+  } = newPaginator({
+    req: {
+      query: {
+        page: '1',
+        limit: '20',
+        search: 'name',
+        andFilters: {
+          company: {
+            id: 2,
+          },
+        },
+      },
+    } as any,
+    searchableFields: [],
+    relationFields: [],
+  })
+
+  expect(page).toStrictEqual(1)
+  expect(take).toStrictEqual(20)
+  expect(skip).toStrictEqual(0)
+  expect(where).toStrictEqual([
+    {
+      company: {
+        id: 2,
+      },
+    },
+  ])
+  expect(order).toStrictEqual({
+    id: 'DESC',
+    createdAt: 'DESC',
+  })
+  expect(withDeleted).toBeFalsy()
+})
+
+test('Pagniator send andFilters only', () => {
+  const {
+    order,
+    page,
+    skip,
+    take,
+    where,
+    withDeleted,
+  } = newPaginator({
+    req: {
+      query: {
+        page: '1',
+        limit: '20',
+        search: 'name',
+        andFilters: {
+          company: {
+            id: 2,
+          },
+        },
+      },
+    } as any,
+    searchableFields: ['firstName'],
+    relationFields: ['company.name'],
+  })
+
+  expect(page).toStrictEqual(1)
+  expect(take).toStrictEqual(20)
+  expect(skip).toStrictEqual(0)
+  expect(where).toStrictEqual([
+    {
+      company: {
+        name: ILike('%name%'),
+        id: 2,
+      },
+    },
+    {
+      firstName: ILike('%name%'),
+      company: {
+        id: 2,
+      },
+    },
+  ])
+  expect(order).toStrictEqual({
+    id: 'DESC',
+    firstName: 'ASC',
+    createdAt: 'DESC',
+  })
+  expect(withDeleted).toBeFalsy()
+})
+
+test('Pagniator format correctly filters with filters', () => {
+  const {
+    order,
+    page,
+    skip,
+    take,
+    where,
+    withDeleted,
+  } = newPaginator({
+    req: {
+      query: {
+        page: '2',
+        limit: '200',
+        search: 'name',
+        withDeleted: true,
+        filters: {
+          firstName: 'test',
+        },
+        orderBy: {
+          lastName: 'ASC',
+        },
+        andFilters: {
+          company: {
+            id: 2,
+          },
+        },
+      },
+    } as any,
+    searchableFields: ['firstName'],
+    relationFields: ['company.name'],
+  })
+
+  expect(page).toStrictEqual(2)
+  expect(take).toStrictEqual(200)
+  expect(skip).toStrictEqual(200)
+  expect(where).toStrictEqual([
+    {
+      firstName: 'test',
+      company: {
+        id: 2,
+      },
+    },
+    {
+      company: {
+        name: ILike('%name%'),
+        id: 2,
+      },
+    },
+    {
+      firstName: ILike('%name%'),
+      company: {
+        id: 2,
+      },
     },
   ])
   expect(order).toStrictEqual({
