@@ -54,7 +54,10 @@ export class AdminStatsController {
         },
       })
 
-      const uniqCompanies = uniqByKey(users.map(user => user.company), 'id')
+      const uniqCompanies = uniqByKey(users
+        .map(user => user.company)
+        .filter(company => company),
+      'id')
 
       return res.status(200).json({
         answers: {

@@ -59,4 +59,5 @@ export const userSearchableFields = [
 
 export const userRelationFields = [
   'company.name',
+  'company.id',
 ]
