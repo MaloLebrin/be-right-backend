@@ -50,6 +50,16 @@ export function createJwtToken(user: JWTTokenPayload) {
     JWT_SECRET,
   )
 }
+export function createNotificationToken(userId: number) {
+  const { JWT_SECRET } = useEnv()
+  return sign(
+    {
+      userId,
+      uniJWT: uid2(48),
+    },
+    JWT_SECRET,
+  )
+}
 
 export const secretUserKeys = [
   'password',

@@ -12,6 +12,9 @@ export class UserEntity extends BaseAuthEntity {
   @Column({ nullable: true, default: null, unique: true })
   stripeCustomerId: string
 
+  @Column({ unique: true, nullable: true })
+  notificationToken: string
+
   @Column({ nullable: true, default: null })
   signature: string
 

@@ -2,6 +2,7 @@
 import type { FindOperator, FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import { ILike } from 'typeorm'
 import type { Request } from 'express'
+import { deepMerge } from '@antfu/utils'
 import type { BaseEntity } from '../entity/bases/BaseEntity'
 
 interface Paginator {
@@ -24,6 +25,7 @@ interface ParseQueriesReturnType<T> {
   limit: number
   search: FindOperator<string>
   filters: FindOptionsWhere<T> | null
+  andFilters: FindOptionsWhere<T> | null
   orderBy: FindOptionsOrder<T>
   withDeleted?: boolean
 }
@@ -49,6 +51,7 @@ export function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
     limit: req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 20,
     search: req.query.search ? ILike(`%${req.query.search.toLocaleString()}%`) : null,
     filters: req.query.filters as FindOptionsWhere<T> || null,
+    andFilters: req.query.andFilters as FindOptionsWhere<T> || null,
     withDeleted: req.query.withDeleted?.toString() === 'true',
     orderBy: req.query.orderBy as FindOptionsOrder<T> || null,
   }
@@ -59,9 +62,17 @@ export function newPaginator<T extends BaseEntity>({
   searchableFields = [],
   relationFields = [],
 }: Paginator): PaginatorReturnType<T> {
-  const { page, limit, search, filters, withDeleted, orderBy } = parseQueries(req)
+  const {
+    andFilters,
+    filters,
+    limit,
+    orderBy,
+    page,
+    search,
+    withDeleted,
+  } = parseQueries(req)
 
-  const where = []
+  let where = []
 
   let order: FindOptionsOrder<T> | null = null
 
@@ -91,6 +102,15 @@ export function newPaginator<T extends BaseEntity>({
         order[item] = 'ASC'
         where.push({ [item]: search })
       })
+    }
+  }
+
+  if (andFilters) {
+    const whereFilters = [...where]
+    if (whereFilters.length > 0) {
+      where = whereFilters.map(filter => deepMerge(filter, andFilters))
+    } else {
+      where.push(andFilters)
     }
   }
 

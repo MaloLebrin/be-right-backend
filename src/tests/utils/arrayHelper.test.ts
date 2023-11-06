@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
 import {
   isArray,
   isArrayOfNumbers,
@@ -38,9 +38,16 @@ test('uniq filters duplicate elements well', () => {
   expect(uniq([1, 1, 2, 4, 5, 8])).toEqual([1, 2, 4, 5, 8])
 })
 
-test('uniqByKey filters duplicate elements well', () => {
-  expect(uniqByKey(arrayData, 'id')).toEqual([
-    { id: 1 },
-    { id: 2 },
-  ])
+describe('uniqByKey', () => {
+  test('uniqByKey filters duplicate elements well', () => {
+    expect(uniqByKey([], 'id')).toStrictEqual([])
+    expect(uniqByKey(arrayData, 'id')).toEqual([
+      { id: 1 },
+      { id: 2 },
+    ])
+  })
+
+  test('uniqByKey should filter item have not key', () => {
+    expect(uniqByKey(arrayData, 'test' as any)).toStrictEqual([])
+  })
 })

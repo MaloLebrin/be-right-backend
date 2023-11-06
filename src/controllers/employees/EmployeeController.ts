@@ -317,7 +317,7 @@ export default class EmployeeController {
         skip,
         where: whereFields,
         order,
-        withDeleted: withDeleted || isUserAdmin(ctx.user),
+        withDeleted: withDeleted || isUserAdmin(ctx.user), // TODO remove This by default front should send what's he want to see
       })
 
       return res.status(200).json({
