@@ -59,5 +59,4 @@ export const employeeSearchablefields = [
 
 export const employeeRelationFields = [
   'company.name',
-  'company.id',
 ]
