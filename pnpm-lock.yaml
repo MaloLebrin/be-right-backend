@@ -134,8 +134,8 @@ devDependencies:
     specifier: ^6.4.7
     version: 6.4.8
   '@types/uid2':
-    specifier: 0.0.1
-    version: 0.0.1
+    specifier: 0.0.2
+    version: 0.0.2
   eslint:
     specifier: ^8.39.0
     version: 8.44.0
@@ -1310,8 +1310,8 @@ packages:
     resolution: {integrity: sha512-g7CK9nHdwjK2n0ymT2CW698FuWJRIx+RP6embAzZ2Qi8/ilIrA1Imt2LVSeHUzKvpoi7BhmmQcXz95eS0f2JXw==}
     dev: true
 
-  /@types/uid2@0.0.1:
-    resolution: {integrity: sha512-rne3r4Px71BkjAfNZWQ4vBM/00gCn5N+ih+UNUC6YCdQSD+iuHbQWilkJcmgGjQg0nvhPJQSs9+sII95znoGiQ==}
+  /@types/uid2@0.0.2:
+    resolution: {integrity: sha512-HkZfTM3zwusLJP37ISdDQw44A4u4anjfKRY6yW83Xk2Aa5AaM2xyB9WnVHMONuU1Zi84QEUsBOmaeIGXVCgioA==}
     dev: true
 
   /@types/unist@2.0.7:
