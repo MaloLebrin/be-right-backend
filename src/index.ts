@@ -6,8 +6,7 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
-import { createChannel, createSession } from 'better-sse'
-import { verify } from 'jsonwebtoken'
+import { createChannel } from 'better-sse'
 import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
@@ -47,8 +46,8 @@ import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
 import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
-import { NotificationSSEService } from './services/notifications/notificationSSEService'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
+import { SSERoutes } from './routes/SSERoutes'
 
 const {
   CLOUDINARY_API_KEY,
@@ -101,31 +100,6 @@ async function StartApp() {
   app.use((req: Request, res: Response, next: NextFunction) => {
     Context.bind(req)
     next()
-  })
-
-  const channel = createChannel()
-  app.get('/sse/:token', async (req, res) => {
-    const token = req.params.token
-
-    const { JWT_SECRET } = useEnv()
-    verify(token, JWT_SECRET)
-
-    if (token) {
-      const session = await createSession(req, res)
-      channel.register(session)
-      const notificationSSEService = new NotificationSSEService(APP_SOURCE)
-
-      setInterval(async () => {
-        const notifications = await notificationSSEService.getAllUser({
-          notificationToken: token,
-        })
-
-        if (notifications?.length > 0) {
-          channel.broadcast(notifications, 'message')
-        }
-        // 5 secondes
-      }, 5000)
-    }
   })
 
   app.engine('handlebars', hbs.engine)
@@ -220,6 +194,12 @@ async function StartApp() {
 
   // Mail
   app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
+
+  const notificationChannel = createChannel()
+
+  app.use('/sse', new SSERoutes(APP_SOURCE, {
+    notificationChannel,
+  }).intializeRoutes())
 
   // Notification
   app.use('/notifications', new NotificationRoutes(APP_SOURCE).intializeRoutes())
