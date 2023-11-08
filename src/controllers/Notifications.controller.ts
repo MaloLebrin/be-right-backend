@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { Repository } from 'typeorm'
-import { APP_SOURCE } from '..'
+import type { DataSource, Repository } from 'typeorm'
 import Context from '../context'
 import { NotificationEntity } from '../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../entity/notifications/NotificationSubscription.entity'
@@ -16,11 +15,13 @@ export default class NotificationController {
   UserRepository: Repository<UserEntity>
   NotificationService: NotificationService
 
-  constructor() {
-    this.NotificationRepository = APP_SOURCE.getRepository(NotificationEntity)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
-    this.NotificationSubscriptionRepository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
-    this.NotificationService = new NotificationService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.NotificationRepository = DATA_SOURCE.getRepository(NotificationEntity)
+      this.UserRepository = DATA_SOURCE.getRepository(UserEntity)
+      this.NotificationSubscriptionRepository = DATA_SOURCE.getRepository(NotificationSubcriptionEntity)
+      this.NotificationService = new NotificationService(DATA_SOURCE)
+    }
   }
 
   private getNotificationByUserForClient = async (user: UserEntity) => {

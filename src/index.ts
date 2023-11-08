@@ -25,8 +25,6 @@ import RedisCache from './RedisCache'
 import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
-import NotificationController from './controllers/Notifications.controller'
-import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
@@ -48,6 +46,7 @@ import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
 import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
+import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
 
 const {
@@ -125,7 +124,6 @@ async function StartApp() {
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
     idParamsSchema,
-    subscribeNotification,
     validate,
   } = useValidation()
 
@@ -204,13 +202,10 @@ async function StartApp() {
   }).intializeRoutes())
 
   // Notification
-  app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
-  app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
+  app.use('/notifications', new NotificationRoutes(APP_SOURCE).intializeRoutes())
 
   // Notification Subscriptions
-  app.get('/notificationSubscription', [isAuthenticated], new NotificationSubscriptionController().GetForUser)
-  app.patch('/notificationSubscription/unsuscbribe/:id', [validate(idParamsSchema), isAuthenticated], new NotificationSubscriptionController().unsuscbribe)
-  app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
+  app.use('/notificationSubscription', new NotificationSubscriptionRoutes(APP_SOURCE).intializeRoutes())
 
   // User
   app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
