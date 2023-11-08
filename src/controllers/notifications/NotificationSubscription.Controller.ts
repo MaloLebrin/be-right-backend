@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { NotificationSubscriptionService } from '../../services/notifications/NotificationSubscriptionService'
-import { APP_SOURCE } from '../..'
 import { wrapperRequest } from '../../utils'
 import Context from '../../context'
 import { ApiError } from '../../middlewares/ApiError'
@@ -12,9 +11,11 @@ export class NotificationSubscriptionController {
   NotificationSubscriptionService: NotificationSubscriptionService
   NotificationSubscriptionRepository: Repository<NotificationSubcriptionEntity>
 
-  constructor() {
-    this.NotificationSubscriptionRepository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
-    this.NotificationSubscriptionService = new NotificationSubscriptionService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.NotificationSubscriptionRepository = DATA_SOURCE.getRepository(NotificationSubcriptionEntity)
+      this.NotificationSubscriptionService = new NotificationSubscriptionService(DATA_SOURCE)
+    }
   }
 
   public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
