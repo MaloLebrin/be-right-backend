@@ -7,6 +7,7 @@ import { dataBaseConfig } from '../ormconfig'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { isProduction } from './utils/envHelper'
+import Context from './context'
 
 /**
  * create hash password
@@ -19,10 +20,11 @@ export const generateHash = (salt: string, password: string) => {
   return hash
 }
 
-export async function wrapperRequest<T>(req: Request, res: Response, next: NextFunction, request: () => Promise<T>) {
+export async function wrapperRequest<T>(req: Request, res: Response, next: NextFunction, request: (ctx: Context) => Promise<T>) {
   try {
     logger.info(`${req.url} route accessed`)
-    await request()
+    const ctx = Context.get(req)
+    await request(ctx)
   } catch (error) {
     if (!isProduction()) {
       logger.debug(error.message)

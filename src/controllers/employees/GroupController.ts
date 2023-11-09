@@ -3,7 +3,6 @@ import csv from 'csvtojson'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { REDIS_CACHE } from '../..'
-import Context from '../../context'
 import { GroupEntity, groupRelationFields, groupSearchablefields } from '../../entity/employees/Group.entity'
 import { ApiError } from '../../middlewares/ApiError'
 import type { GroupCreationPayload } from '../../services/employee/GroupService'
@@ -60,10 +59,13 @@ export class GroupController {
   }
 
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { group }: { group: GroupCreationPayload } = req.body
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const currentUser = ctx.user
 
       if (!group || !currentUser) {
@@ -81,12 +83,15 @@ export class GroupController {
   }
 
   public createOneWithCSV = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { name, description }: { name: string; description: string } = req.body
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const fileRecieved = req.file
 
-      const ctx = Context.get(req)
       const currentUser = ctx.user
 
       if (!name || !fileRecieved || !currentUser) {
@@ -150,10 +155,13 @@ export class GroupController {
   }
 
   public getOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const currentUser = ctx.user
 
       if (id && currentUser.id) {
@@ -166,8 +174,12 @@ export class GroupController {
   }
 
   public getMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const ids = req.query.ids as string
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ids) {
         const groupIds = parseQueryIds(ids)
@@ -176,7 +188,6 @@ export class GroupController {
           throw new ApiError(422, 'identifiants des destinataires manquants')
         }
 
-        const ctx = Context.get(req)
         const currentUser = ctx.user
 
         if (isUserAdmin(currentUser)) {
@@ -202,8 +213,11 @@ export class GroupController {
    * @returns all groups from userId
    */
   public getManyByUserId = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const currentUser = ctx.user
 
       if (currentUser.companyId) {
@@ -217,8 +231,11 @@ export class GroupController {
   }
 
   public getManyByEmployeeId = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const currentUser = ctx.user
       const id = parseInt(req.params.id)
 
@@ -252,8 +269,10 @@ export class GroupController {
    * @returns paginate response
    */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const { where, page, take, skip, order } = newPaginator<GroupEntity>({
         req,
@@ -304,12 +323,15 @@ export class GroupController {
    * @return return group just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { group }: { group: Partial<GroupEntity> } = req.body
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const id = parseInt(req.params.id)
 
-      const ctx = Context.get(req)
       const currentUser = ctx.user
 
       let companyId: null | number = null
@@ -335,10 +357,13 @@ export class GroupController {
   }
 
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx.user
 
       let companyId: null | number = null

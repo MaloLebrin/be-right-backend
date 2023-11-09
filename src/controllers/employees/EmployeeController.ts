@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { FindOptionsWhere, Repository } from 'typeorm'
 import csv from 'csvtojson'
-import Context from '../../context'
 import { EmployeeEntity, employeeRelationFields, employeeSearchablefields } from '../../entity/employees/EmployeeEntity'
 import { wrapperRequest } from '../../utils'
 import EmployeeService from '../../services/employee/EmployeeService'
@@ -59,9 +58,8 @@ export default class EmployeeController {
    * @returns return employee just created
    */
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { employee, address }: EmployeeCreateOneRequest = req.body
-      const ctx = Context.get(req)
 
       let userId = null
 
@@ -111,13 +109,15 @@ export default class EmployeeController {
   }
 
   public createMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
       if (employees.length > 0) {
-        const ctx = Context.get(req)
         let userId = null
 
+        if (!ctx) {
+          throw new ApiError(500, 'Une erreur s\'est produite')
+        }
         userId = ctx.user.id
 
         const newEmployees = await Promise.all(employees.map(async ({ employee, address }) => {
@@ -150,12 +150,15 @@ export default class EmployeeController {
   }
 
   public createManyEmployeeByEventId = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const eventId = parseInt(req.params.eventId)
       const { employees }: { employees: EmployeeCreateOneRequest[] } = req.body
 
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       if (employees.length > 0) {
-        const ctx = Context.get(req)
         let userId = null
 
         if (isUserEntity(ctx.user) && isUserAdmin(ctx.user)) {
@@ -202,8 +205,12 @@ export default class EmployeeController {
    * @returns entity form given id
    */
   public getOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (id) {
         const employee = await this.redisCache.get<EmployeeEntity>(
@@ -221,8 +228,12 @@ export default class EmployeeController {
   }
 
   public getMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const ids = req.query.ids as string
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ids) {
         const employeeIds = parseQueryIds(ids)
@@ -250,7 +261,11 @@ export default class EmployeeController {
    * @returns all employees from user Id
    */
   public getManyByUserId = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const userId = parseInt(req.params.id)
       if (userId) {
         const employees = await this.EmployeeService.getAllForUser(userId)
@@ -267,7 +282,11 @@ export default class EmployeeController {
    * @returns all employees from event Id
    */
   public getManyByEventId = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const eventId = parseInt(req.params.id)
       if (eventId) {
         const answers = await this.AnswerService.getAllAnswersForEvent(eventId, true)
@@ -283,8 +302,10 @@ export default class EmployeeController {
    * @returns paginate response
    */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const { where, page, take, skip, order, withDeleted } = newPaginator<EmployeeEntity>({
         req,
@@ -363,14 +384,16 @@ export default class EmployeeController {
   }
 
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (!id) {
         throw new ApiError(422, 'identifiant du destinataire manquant')
       }
-
-      const ctx = Context.get(req)
 
       if (!ctx?.user) {
         throw new ApiError(401, 'Action non autorisée vous n\'êtes pas authentifié')
@@ -419,9 +442,13 @@ export default class EmployeeController {
   }
 
   public uploadFormCSV = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const fileRecieved = req.file
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const userId = ctx.user?.id
 
       if (fileRecieved && userId) {
@@ -471,13 +498,15 @@ export default class EmployeeController {
   }
 
   public restoreOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const id = parseInt(req.params.id)
       if (!id) {
         throw new ApiError(422, 'Paramètre manquant')
       }
-
-      const ctx = Context.get(req)
 
       const deletedEmployee = await this.employeeRepository.findOne({
         where: {
