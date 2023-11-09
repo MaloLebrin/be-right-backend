@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express'
 import type { EntityManager, Repository } from 'typeorm'
 import { BugReportEntity } from '../entity/BugReportEntity'
 import BugReportService from '../services/BugReportService'
-import Context from '../context'
 import { wrapperRequest } from '../utils'
 import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
@@ -19,9 +18,11 @@ export default class BugReportController {
   }
 
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { bugReport }: { bugReport: BugReportEntity } = req.body
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const userId = ctx.user.id
       const bugReportToCreate = {

@@ -2,7 +2,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import Context from '../context'
 import { UserEntity, userRelationFields, userSearchableFields } from '../entity/UserEntity'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
@@ -62,8 +61,10 @@ export default class UserController {
    * @returns return user just created
    */
   public newUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const {
         email,
@@ -141,8 +142,10 @@ export default class UserController {
   * @returns paginate response
   */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const { where, page, take, skip, order } = newPaginator<UserEntity>({
         req,
@@ -271,12 +274,15 @@ export default class UserController {
    * @returns return event just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
-      if (id) {
-        const ctx = Context.get(req)
 
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      if (id) {
         if (id === ctx.user.id || isUserAdmin(ctx.user)) {
           const userFinded = await this.UserService.getOne(id)
 
@@ -312,9 +318,11 @@ export default class UserController {
   }
 
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (id === ctx.user.id || isUserAdmin(ctx.user)) {
         const userToDelete = await this.UserService.getOne(id, true)
@@ -463,8 +471,10 @@ export default class UserController {
   }
 
   public getPhotographerAlreadyWorkWith = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ctx.user.companyId) {
         const company = await this.companyRepository.findOne({
@@ -506,9 +516,11 @@ export default class UserController {
   }
 
   public addSignatureToUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { signature }: { signature: string } = req.body
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (!signature) {
         throw new ApiError(422, 'Signature non reçu')

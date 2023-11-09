@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
 import { NotificationSubscriptionService } from '../../services/notifications/NotificationSubscriptionService'
 import { wrapperRequest } from '../../utils'
-import Context from '../../context'
 import { ApiError } from '../../middlewares/ApiError'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import type { NotificationTypeEnum } from '../../types'
@@ -19,8 +18,11 @@ export class NotificationSubscriptionController {
   }
 
   public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       if (user) {
@@ -32,9 +34,13 @@ export class NotificationSubscriptionController {
   }
 
   public unsuscbribe = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       if (id && user) {
@@ -54,10 +60,13 @@ export class NotificationSubscriptionController {
   }
 
   public subscribe = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const type = req.body.type as NotificationTypeEnum
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       if (!type || !user) {

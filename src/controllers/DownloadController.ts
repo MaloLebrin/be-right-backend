@@ -16,7 +16,6 @@ import { logger } from '../middlewares/loggerService'
 import { CompanyService } from '../services/CompanyService'
 import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
-import Context from '../context'
 import { launchPuppeteer } from '../utils/puppeteerHelper'
 
 export class DownloadController {
@@ -86,8 +85,11 @@ export class DownloadController {
   private delay = async (ms: number) => new Promise(res => setTimeout(res, ms))
 
   public ViewAnswer = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const currentUser = ctx.user
 
       if (!currentUser?.companyId) {
@@ -134,8 +136,10 @@ export class DownloadController {
   }
 
   public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const currentUser = ctx.user
 

@@ -10,7 +10,6 @@ import { wrapperRequest } from '../utils'
 import type { EventWithRelationsCreationPayload } from '../types'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
-import Context from '../context'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -53,9 +52,11 @@ export default class EventSpecificController {
   }
 
   public fetchOneEventWithRelations = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const eventId = parseInt(req.params.id)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (eventId && ctx.user.companyId) {
         const event = await this.redisCache.get<EventEntity>(
@@ -109,10 +110,13 @@ export default class EventSpecificController {
   }
 
   public posteOneWithRelations = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const companyId = ctx.user.companyId
       const userId = ctx.user.id
 

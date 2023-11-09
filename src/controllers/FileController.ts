@@ -6,7 +6,6 @@ import { FileEntity } from '../entity/FileEntity'
 import { wrapperRequest } from '../utils'
 import FileService from '../services/FileService'
 import { FileTypeEnum } from '../types/File'
-import Context from '../context'
 import { Role } from '../types/Role'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
@@ -27,12 +26,14 @@ export default class FileController {
   public newFile = async (req: Request, res: Response, next: NextFunction) => {
     const { NODE_ENV } = useEnv()
 
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const fileRecieved = req.file
       const { name, description, event, employee, type }:
       { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       let userId = null
 
@@ -81,11 +82,14 @@ export default class FileController {
   }
 
   public createProfilePicture = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const fileRecieved = req.file
 
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       if (fileRecieved) {
-        const ctx = Context.get(req)
         const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
         return res.status(200).json(profilePicture)
       }
@@ -95,10 +99,14 @@ export default class FileController {
   }
 
   public createLogo = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const fileRecieved = req.file
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       if (fileRecieved) {
-        const ctx = Context.get(req)
         const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
         return res.status(200).json(logo)
       }
@@ -111,9 +119,13 @@ export default class FileController {
    * @returns return file just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { file }: { file: Partial<FileEntity> } = req.body
       const id = parseInt(req.params.id)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (id) {
         const fileUpdated = await this.FileService.updateFile(id, file as FileEntity)
@@ -184,9 +196,11 @@ export default class FileController {
   }
 
   public getFilesByUserAndEvent = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const eventId = parseInt(req.params.eventId)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ctx.user.companyId && eventId) {
         const files = await this.repository.find({ where: { company: { id: ctx.user.companyId }, eventId } })

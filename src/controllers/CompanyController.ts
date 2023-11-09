@@ -5,7 +5,6 @@ import { CompanyEntity } from '../entity/Company.entity'
 import { UserEntity } from '../entity/UserEntity'
 import { CompanyService } from '../services/CompanyService'
 import { ApiError } from '../middlewares/ApiError'
-import Context from '../context'
 import { Role } from '../types'
 import { isUserAdmin, isUserOwner } from '../utils/userHelper'
 import { parseQueryIds } from '../utils/basicHelper'
@@ -55,10 +54,12 @@ export class CompanyController {
   }
 
   public addOrRemoveOwner = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const companyId = ctx.user.companyId
 
@@ -110,11 +111,13 @@ export class CompanyController {
   }
 
   public patchOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
       const { company }: { company: Partial<CompanyEntity> } = req.body
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const companyId = ctx.user.companyId
 

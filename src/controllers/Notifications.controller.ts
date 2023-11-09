@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, Repository } from 'typeorm'
-import Context from '../context'
 import { NotificationEntity } from '../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../entity/notifications/NotificationSubscription.entity'
 import { UserEntity } from '../entity/UserEntity'
@@ -42,8 +41,11 @@ export default class NotificationController {
   }
 
   public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       if (user) {
@@ -55,9 +57,13 @@ export default class NotificationController {
   }
 
   public readMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const ids = req.query.ids as string
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       const notifIds = uniq(ids?.split(','))
