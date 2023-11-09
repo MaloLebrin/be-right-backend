@@ -61,7 +61,7 @@ const {
 export const APP_SOURCE = createAppSource()
 export const REDIS_CACHE = new RedisCache()
 
-async function StartApp() {
+async function StartAPI() {
   await APP_SOURCE.initialize()
 
   if (APP_SOURCE.isInitialized) {
@@ -225,5 +225,9 @@ async function StartApp() {
   })
 }
 
-StartApp()
-cronJobsStart()
+async function startApp() {
+  await StartAPI()
+  await cronJobsStart()
+}
+
+startApp()
