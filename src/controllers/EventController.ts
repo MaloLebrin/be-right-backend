@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { IsNull, Not } from 'typeorm'
 import EventService from '../services/EventService'
-import Context from '../context'
 import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
@@ -52,9 +51,13 @@ export default class EventController {
    * @returns return event just created
    */
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       let userId = null
       if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
@@ -93,10 +96,12 @@ export default class EventController {
    * @returns entity form given id
    */
   public getOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
+        if (!ctx) {
+          throw new ApiError(500, 'Une erreur s\'est produite')
+        }
 
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
@@ -143,8 +148,10 @@ export default class EventController {
    * @returns all event link with user
    */
   public getAllForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const eventsIds = ctx.user.company.eventIds
 
@@ -169,8 +176,10 @@ export default class EventController {
   }
 
   public getAllDeletedForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ctx.user?.id) {
         const events = await this.repository.find({
@@ -193,8 +202,10 @@ export default class EventController {
    * @returns paginate response
    */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const { where, page, take, skip, order } = newPaginator<EventEntity>({
         req,
@@ -245,12 +256,15 @@ export default class EventController {
    * @returns return event just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event }: { event: Partial<EventEntity> } = req.body
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
-
         const eventFinded = await this.EventService.getOneEvent(id)
 
         if (isUserAdmin(ctx.user) || eventFinded.companyId === ctx.user.companyId) {
@@ -268,10 +282,13 @@ export default class EventController {
   }
 
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
         const user = ctx.user
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 
