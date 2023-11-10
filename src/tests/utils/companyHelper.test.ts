@@ -6,6 +6,7 @@ import {
   isPremiumCie,
 } from '../../utils/companyHelper'
 import type { CompanyEntity } from '../../entity/Company.entity'
+import { SubscriptionEnum } from '../../types/Subscription'
 
 const company = companyJSON as unknown as CompanyEntity
 
@@ -19,4 +20,16 @@ test('isBasicCie, isMediumCie, isPremiumCie, send right bool', () => {
   expect(isPremiumCie(undefined as unknown as CompanyEntity)).toBeFalsy()
   expect(isMediumCie(undefined as unknown as CompanyEntity)).toBeFalsy()
   expect(isBasicCie(undefined as unknown as CompanyEntity)).toBeFalsy()
+
+  expect(isPremiumCie({ subscriptionLabel: SubscriptionEnum.BASIC } as CompanyEntity)).toBeFalsy()
+  expect(isMediumCie({ subscriptionLabel: SubscriptionEnum.BASIC } as CompanyEntity)).toBeFalsy()
+  expect(isBasicCie({ subscriptionLabel: SubscriptionEnum.BASIC } as CompanyEntity)).toBeTruthy()
+
+  expect(isPremiumCie({ subscriptionLabel: SubscriptionEnum.MEDIUM } as CompanyEntity)).toBeFalsy()
+  expect(isMediumCie({ subscriptionLabel: SubscriptionEnum.MEDIUM } as CompanyEntity)).toBeTruthy()
+  expect(isBasicCie({ subscriptionLabel: SubscriptionEnum.MEDIUM } as CompanyEntity)).toBeFalsy()
+
+  expect(isPremiumCie({ subscriptionLabel: SubscriptionEnum.PREMIUM } as CompanyEntity)).toBeTruthy()
+  expect(isMediumCie({ subscriptionLabel: SubscriptionEnum.PREMIUM } as CompanyEntity)).toBeFalsy()
+  expect(isBasicCie({ subscriptionLabel: SubscriptionEnum.PREMIUM } as CompanyEntity)).toBeFalsy()
 })
