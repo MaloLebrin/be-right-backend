@@ -8,7 +8,7 @@ import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { hasOwnProperty } from '../utils/objectHelper'
 import { wrapperRequest } from '../utils'
-import { getCookie, parseQueryIds } from '../utils/basicHelper'
+import { parseQueryIds } from '../utils/basicHelper'
 import UserService from '../services/UserService'
 import { AddressService } from '../services'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
@@ -136,105 +136,6 @@ export class DownloadController {
   }
 
   public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async ctx => {
-      if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
-      }
-
-      const currentUser = ctx.user
-
-      if (!currentUser?.companyId) {
-        throw new ApiError(401, 'Action non authorisée')
-      }
-
-      const answerIds = parseQueryIds(req.query.ids as string)
-
-      if (!answerIds || answerIds.length < 1) {
-        throw new ApiError(422, 'L\'identifiant de la réponse est requis')
-      }
-
-      const answers = await this.repository.find({
-        where: {
-          id: In(answerIds),
-          signedAt: Not(IsNull()),
-          hasSigned: true,
-          event: {
-            company: {
-              id: currentUser?.companyId,
-            },
-          },
-        },
-        relations: {
-          employee: true,
-        },
-      })
-
-      if (answers.length < 1) {
-        throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')
-      }
-
-      const baseUrl = `${req.protocol}://${req.get('host')}`
-      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
-
-      let filePath = `/app/src/uploads/droit-image-${answers[0].employee.slug}.pdf`
-
-      if (answers.length > 1) {
-        const event = await this.EventService.getOneWithoutRelations(answers[0].eventId)
-        filePath = `/app/src/uploads/droit-image-${event.name}.pdf`
-      }
-
-      try {
-        const browser = await launchPuppeteer()
-
-        const page = await browser.newPage()
-
-        const cookie = getCookie(req, 'userToken')
-        if (cookie) {
-          await page.setExtraHTTPHeaders({
-            authorization: `Bearer ${cookie}`,
-          })
-        }
-
-        await page.goto(url, { waitUntil: 'networkidle0' })
-        const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-        await browser.close()
-
-        return res
-          .set({ 'Content-Type': 'application/pdf', 'Content-Length': pdf.length })
-          .download(filePath)
-      } catch (error) {
-        this.logger.error(error)
-
-        return res
-          .status(error.status || 500)
-          .send({
-            success: false,
-            message: error.message,
-            stack: error.stack,
-            description: error.cause,
-          })
-      } finally {
-        await this.delay(1000)
-
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        unlink(filePath, err => {
-          if (err) {
-            this.logger.error(err)
-            return res.status(422).send({
-              success: false,
-              message: err.message,
-              stack: err.stack,
-              description: err.cause,
-            })
-          } else {
-            this.logger.info(`${filePath} was deleted`)
-          }
-        })
-      }
-    })
-  }
-
-  public downLoadAnswerTest = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
