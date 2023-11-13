@@ -431,4 +431,62 @@ export class MailjetService {
       throw new ApiError(422, error)
     }
   }
+
+  public sendTwoFactorAuth = async ({
+    twoFactorCode,
+    creator,
+    eventName,
+    employee,
+  }: {
+    twoFactorCode: string
+    creator: UserEntity
+    eventName: string
+    employee: EmployeeEntity
+  }) => {
+    try {
+      if (!this.mailJetClient) {
+        logger.warn('Send email feature in not enabled')
+        throw new ApiError(422, 'Service d\'envoie de mails non disponible')
+      }
+
+      const creatorFullName = this.getFullName(creator)
+
+      const { response, body } = await this.mailJetClient
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: this.FromObj,
+              To: [
+                {
+                  Email: employee.email,
+                  Name: this.getFullName(employee),
+                },
+              ],
+              TextPart: `Be Right - ${creatorFullName} Votre code temporaire`,
+              TemplateLanguage: true,
+              TemplateID: MailjetTemplateId.TWO_FACTOR_AUTH_EMPLOYEE,
+              Subject: `Be Right - ${creatorFullName} Votre code temporaire`,
+              Variables: {
+                creator: this.getFullName(creator),
+                recipientFirstName: employee.firstName,
+                eventName,
+                twoFactorCode,
+              },
+            },
+          ],
+        })
+
+      if (response.status === 200) {
+        return {
+          status: response.status,
+          message: response.statusText,
+          body,
+        }
+      }
+    } catch (error) {
+      console.error(error, '<==== error')
+      throw new ApiError(422, error)
+    }
+  }
 }

@@ -50,7 +50,7 @@ export class AnswerSpecificController {
     return false
   }
 
-  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+  public getOneAndSendCode = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
       const { token, email }: { token: string; email: string } = req.body
 
@@ -73,6 +73,16 @@ export class AnswerSpecificController {
         ],
       })
 
+      const answerWithToken = await this.AnswerRepository.findOne({
+        where: {
+          token,
+        },
+        select: {
+          id: true,
+          token: true,
+          twoFactorCode: true,
+        },
+      })
       if (!answer) {
         throw new ApiError(422, 'Élément introuvable')
       }
@@ -90,6 +100,13 @@ export class AnswerSpecificController {
           422,
           `${!event ? 'Événement' : ''} ${(!event && !employee) ? 'et' : ''} ${!employee ? 'Destinataire' : ''} introuvable `)
       }
+
+      await this.MailJetService.sendTwoFactorAuth({
+        twoFactorCode: answerWithToken.twoFactorCode,
+        employee: answer.employee,
+        creator: answer.event.company.users.find(user => isUserOwner(user)),
+        eventName: answer.event.name,
+      })
 
       return res.status(200).json({
         answer: answerResponse(answer),
