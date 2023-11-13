@@ -26,6 +26,7 @@ export class AnswerRoutes extends BaseRouter implements BaseInterfaceRouter {
   public intializeRoutes = () => {
     this.router.get('/view', [isAuthenticated], new DownloadController(this.DATA_SOURCE).ViewAnswer)
     this.router.get('/download', [downloadAuth], new DownloadController(this.DATA_SOURCE).downLoadAnswer)
+    this.router.get('/downloadTest', [isAuthenticated], new DownloadController(this.DATA_SOURCE).downLoadAnswerTest)
 
     this.router.get('/manyByIds', [isAuthenticated], new AnswerController(this.DATA_SOURCE).getMany)
     this.router.get('/event/manyByIds', [isAuthenticated], new AnswerController(this.DATA_SOURCE).getManyForManyEvents)
