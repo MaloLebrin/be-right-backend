@@ -11,7 +11,6 @@ import {
 import { DownloadController } from '../controllers/DownloadController'
 import { AnswerController } from '../controllers/AnswerController'
 import { AnswerSpecificController } from '../controllers/employees/AnswerSpecificController'
-import downloadAuth from '../middlewares/downloadAuth'
 import type { BaseInterfaceRouter } from './BaseRouter'
 import { BaseRouter } from './BaseRouter'
 
@@ -25,7 +24,7 @@ export class AnswerRoutes extends BaseRouter implements BaseInterfaceRouter {
 
   public intializeRoutes = () => {
     this.router.get('/view', [isAuthenticated], new DownloadController(this.DATA_SOURCE).ViewAnswer)
-    this.router.get('/download', [downloadAuth], new DownloadController(this.DATA_SOURCE).downLoadAnswer)
+    this.router.get('/download', [isAuthenticated], new DownloadController(this.DATA_SOURCE).downLoadAnswer)
 
     this.router.get('/manyByIds', [isAuthenticated], new AnswerController(this.DATA_SOURCE).getMany)
     this.router.get('/event/manyByIds', [isAuthenticated], new AnswerController(this.DATA_SOURCE).getManyForManyEvents)

@@ -8,7 +8,7 @@ import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
 import { hasOwnProperty } from '../utils/objectHelper'
 import { wrapperRequest } from '../utils'
-import { getCookie, parseQueryIds } from '../utils/basicHelper'
+import { parseQueryIds } from '../utils/basicHelper'
 import UserService from '../services/UserService'
 import { AddressService } from '../services'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
@@ -180,7 +180,7 @@ export class DownloadController {
 
       if (answers.length > 1) {
         const event = await this.EventService.getOneWithoutRelations(answers[0].eventId)
-        filePath = `/app/src/uploads/droit-image-${event.name}.pdf`
+        filePath = `/app/src/uploads/droits-images-${event.name}.pdf`
       }
 
       try {
@@ -188,20 +188,23 @@ export class DownloadController {
 
         const page = await browser.newPage()
 
-        const cookie = getCookie(req, 'userToken')
-        if (cookie) {
-          await page.setExtraHTTPHeaders({
-            authorization: `Bearer ${cookie}`,
-          })
-        }
+        await page.setExtraHTTPHeaders({
+          authorization: `Bearer ${currentUser.token}`,
+        })
 
         await page.goto(url, { waitUntil: 'networkidle0' })
         const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
+
         await browser.close()
 
+        const base64string = pdf.toString('base64')
         return res
-          .set({ 'Content-Type': 'application/pdf', 'Content-Length': pdf.length })
-          .download(filePath)
+          .status(200)
+          .json({
+            fileName: `droit-image-${answers[0].employee.slug}.pdf`,
+            content: base64string,
+            mimeType: 'application/pdf',
+          })
       } catch (error) {
         this.logger.error(error)
 
