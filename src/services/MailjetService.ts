@@ -449,8 +449,6 @@ export class MailjetService {
         throw new ApiError(422, 'Service d\'envoie de mails non disponible')
       }
 
-      const creatorFullName = this.getFullName(creator)
-
       const { response, body } = await this.mailJetClient
         .post('send', { version: 'v3.1' })
         .request({
@@ -463,10 +461,10 @@ export class MailjetService {
                   Name: this.getFullName(employee),
                 },
               ],
-              TextPart: `Be Right - ${creatorFullName} Votre code temporaire`,
+              TextPart: `Be Right - ${employee.firstName} Votre code temporaire`,
               TemplateLanguage: true,
               TemplateID: MailjetTemplateId.TWO_FACTOR_AUTH_EMPLOYEE,
-              Subject: `Be Right - ${creatorFullName} Votre code temporaire`,
+              Subject: `Be Right - ${employee.firstName} Votre code temporaire`,
               Variables: {
                 creator: this.getFullName(creator),
                 recipientFirstName: employee.firstName,
