@@ -1,12 +1,11 @@
 import { unlink } from 'node:fs'
 import type { NextFunction, Request, Response } from 'express'
 import type { Logger } from 'pino'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import EventService from '../services/EventService'
-import { hasOwnProperty } from '../utils/objectHelper'
 import { wrapperRequest } from '../utils'
 import { parseQueryIds } from '../utils/basicHelper'
 import UserService from '../services/UserService'
@@ -16,7 +15,7 @@ import { logger } from '../middlewares/loggerService'
 import { CompanyService } from '../services/CompanyService'
 import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
-import { launchPuppeteer } from '../utils/puppeteerHelper'
+import { generateAnswerPdf } from '../utils/puppeteerHelper'
 
 export class DownloadController {
   AnswerService: AnswerService
@@ -34,6 +33,8 @@ export class DownloadController {
     }
   }>
 
+  queryRunner: QueryRunner
+
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.repository = DATA_SOURCE.getRepository(AnswerEntity)
@@ -43,6 +44,7 @@ export class DownloadController {
       this.EventService = new EventService(DATA_SOURCE)
       this.CompanyService = new CompanyService(DATA_SOURCE)
       this.logger = logger
+      this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
   }
 
@@ -86,6 +88,7 @@ export class DownloadController {
 
   public ViewAnswer = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
+      console.time('ViewAnswer')
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
@@ -102,41 +105,72 @@ export class DownloadController {
         throw new ApiError(422, 'L\'identifiant de la réponse est requis')
       }
 
-      const answers = await this.repository.find({
-        where: {
-          id: In(answerIds),
-          signedAt: Not(IsNull()),
-          hasSigned: true,
-          event: {
-            company: {
-              id: currentUser?.companyId,
-            },
-          },
-        },
-        relations: [
-          'event.company',
-          'event.company.address',
-          'event.company.users',
-          'event.partner',
-          'employee',
-          'employee.address',
-        ],
-      })
+      const answers = await this.queryRunner.query(`
+      SELECT
+        answer_entity."id" as "answerId",
+        answer_entity."signedAt",
+        answer_entity."hasSigned" as "isAccepted",
+        answer_entity.signature as "recipientSignature",
+    
+        event_entity."name" as "eventName",
+        
+        employee_entity."firstName" as "employeeFirstName",
+        employee_entity."lastName" as "employeeLastName",
+        
+        address_entity."addressLine" as "employeeStreet",
+        address_entity."postalCode" as "employeePostalCode",
+        address_entity.city as "employeeCity",
+        address_entity.country as "employeeCountry",
+        
+        partner."firstName" as "partnerFirstName",
+        partner."lastName" as "partnerLastName",
+        
+        company_entity."name" as "companyName",
+        
+        user_entity."firstName" as "userFirstName",
+        user_entity."lastName" as "userLastName",
+        user_entity.signature as "ownerSignature",
+        
+        "companyAddress".city as "userCity"
+        
+      FROM answer_entity
+      JOIN event_entity ON answer_entity."eventId" = event_entity.id
+      JOIN employee_entity ON answer_entity."employeeId" = employee_entity.id
+      JOIN address_entity ON employee_entity."addressId" = address_entity.id
+    
+      JOIN user_entity as partner ON event_entity."partnerId" = partner.id
+      JOIN company_entity ON event_entity."companyId" = company_entity.id
+      JOIN user_entity ON company_entity."id" = user_entity."companyId"
+      JOIN address_entity AS "companyAddress" ON company_entity."addressId" = "companyAddress".id
+      WHERE
+        answer_entity."signedAt" IS NOT NULL
+        AND
+        answer_entity."hasSigned" = TRUE
+        AND
+        answer_entity."id" IN(${answerIds})
+        AND
+        user_entity.roles = 'OWNER'
+      `)
 
       if (!answers && answers.length < 1) {
         throw new ApiError(422, 'le destinataire n\'a pas répondu')
       }
 
-      if (answers.every(answer => hasOwnProperty(answer, 'event') && hasOwnProperty(answer, 'employee'))) {
-        return res.render('answer', {
-          data: this.mapAnswersToDownload(answers),
-        })
-      }
+      console.timeEnd('ViewAnswer')
+
+      return res.render('answer', {
+        data: answers.map(answer => ({
+          ...answer,
+          todayDate: answer.signedAt.toISOString(),
+        })),
+      })
     })
   }
 
   public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
+      console.time('downLoadAnswer')
+
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
@@ -166,6 +200,7 @@ export class DownloadController {
         },
         relations: {
           employee: true,
+          event: true,
         },
       })
 
@@ -176,33 +211,24 @@ export class DownloadController {
       const baseUrl = `${req.protocol}://${req.get('host')}`
       const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
 
-      let filePath = `/app/src/uploads/droit-image-${answers[0].employee.slug}.pdf`
+      let fileName = `droit-image-${answers[0].employee.slug}.pdf`
 
       if (answers.length > 1) {
-        const event = await this.EventService.getOneWithoutRelations(answers[0].eventId)
-        filePath = `/app/src/uploads/droits-images-${event.name}.pdf`
+        const event = answers[0].event
+        fileName = `droits-images-${event.name}.pdf`
       }
 
+      const { content, filePath } = await generateAnswerPdf({
+        url,
+        fileName,
+        token: currentUser.token,
+      })
       try {
-        const browser = await launchPuppeteer()
-
-        const page = await browser.newPage()
-
-        await page.setExtraHTTPHeaders({
-          authorization: `Bearer ${currentUser.token}`,
-        })
-
-        await page.goto(url, { waitUntil: 'networkidle0' })
-        const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-
-        await browser.close()
-
-        const base64string = pdf.toString('base64')
         return res
           .status(200)
           .json({
-            fileName: `droit-image-${answers[0].employee.slug}.pdf`,
-            content: base64string,
+            fileName,
+            content,
             mimeType: 'application/pdf',
           })
       } catch (error) {
@@ -218,6 +244,7 @@ export class DownloadController {
           })
       } finally {
         await this.delay(1000)
+        console.timeEnd('downLoadAnswer')
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         unlink(filePath, err => {

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
 import { wrapperRequest } from '../../utils'
@@ -25,6 +25,7 @@ export class AnswerSpecificController {
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
   MailJetService: MailjetService
+  queryRunner: QueryRunner
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -33,6 +34,7 @@ export class AnswerSpecificController {
       this.AnswerService = new AnswerService(DATA_SOURCE)
       this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
       this.MailJetService = new MailjetService(DATA_SOURCE)
+      this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
   }
 
@@ -104,7 +106,7 @@ export class AnswerSpecificController {
       await this.MailJetService.sendTwoFactorAuth({
         twoFactorCode: answerWithToken.twoFactorCode,
         employee: answer.employee,
-        creator: answer.event.company.users.find(user => isUserOwner(user)),
+        creator: event.company.users.find(user => isUserOwner(user)),
         eventName: answer.event.name,
       })
 
@@ -173,28 +175,6 @@ export class AnswerSpecificController {
 
       await this.isValidToken(token, email)
 
-      const isAnswerExist = await this.AnswerRepository.exist({
-        where: {
-          token,
-          id: answerId,
-          employee: {
-            email,
-          },
-          signedAt: IsNull(),
-        },
-      })
-
-      if (!isAnswerExist) {
-        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
-      }
-
-      await this.AnswerRepository.update(answerId, {
-        signedAt: new Date(),
-        hasSigned,
-        signature,
-        reason: reason || null,
-      })
-
       const answer = await this.AnswerRepository.findOne({
         where: {
           token,
@@ -204,6 +184,17 @@ export class AnswerSpecificController {
           },
         },
         relations: ['employee', 'event.company.users'],
+      })
+
+      if (!answer) {
+        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
+      }
+
+      await this.AnswerRepository.update(answerId, {
+        signedAt: new Date(),
+        hasSigned,
+        signature,
+        reason: reason || null,
       })
 
       if (!answer) {
