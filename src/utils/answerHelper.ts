@@ -24,3 +24,5 @@ export function answerResponse(answer: AnswerEntity) {
   }
   return entityReturned as AnswerEntity
 }
+
+export const fiveDigit = /^([a-zA-Z0-9!@#$%^&=*-])/
