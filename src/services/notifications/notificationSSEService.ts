@@ -19,7 +19,7 @@ export class NotificationSSEService {
   }: {
     notificationToken: string
   }): Promise<NotificationEntity[]> => {
-    const { id: userId } = await this.UserRepository.findOne({
+    const user = await this.UserRepository.findOne({
       where: {
         notificationToken,
       },
@@ -28,14 +28,14 @@ export class NotificationSSEService {
       },
     })
 
-    if (!userId) {
+    if (!user) {
       throw new ApiError(422, 'L\'utilisateur n\'existe pas')
     }
 
     const notificationSubscriptions = await this.NotificationSubscriptionRepository.find({
       where: {
         createdByUser: {
-          id: userId,
+          id: user.id,
         },
         notifications: {
           readAt: IsNull(),

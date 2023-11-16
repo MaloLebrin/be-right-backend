@@ -410,7 +410,7 @@ export class MailjetService {
               TemplateID: MailjetTemplateId.NEW_USER_ON_ACCOUNT,
               Subject: `Be Right - ${creatorFullName} vous a créé un compte`,
               Variables: {
-                creator: this.getFullName(creator),
+                creator: creatorFullName,
                 newUserFirstName: newUser.firstName,
                 company: company.name,
                 link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${newUser.email}&token=${newUser.twoFactorRecoveryCode}`,
@@ -439,7 +439,10 @@ export class MailjetService {
     employee,
   }: {
     twoFactorCode: string
-    creator: UserEntity
+    creator: {
+      firstName: string
+      lastName: string
+    }
     eventName: string
     employee: EmployeeEntity
   }) => {

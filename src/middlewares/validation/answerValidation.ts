@@ -5,6 +5,7 @@ import {
   object,
   string,
 } from 'yup'
+import { fiveDigit } from '../../utils/answerHelper'
 
 export const signeAnswerValidation = object({
   body: object({
@@ -56,7 +57,7 @@ export const doubleAuthSchema = object({
     email: string().email('vous devez entrer in email valide').required('L\'adresse email est requise'),
     token: string().min(128).required('Le token est requis'),
     twoFactorCode: string()
-      .matches(/^[a-zA-Z0-9]+$/)
+      .matches(fiveDigit)
       .min(5, 'Veuillez remplir les 5 cases')
       .max(5, 'Vous devez remplir 5 cases')
       .required('Le code vérification est obligatoire'),
