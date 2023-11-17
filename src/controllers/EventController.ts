@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
-import { IsNull, Not } from 'typeorm'
+import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm'
+import dayjs from 'dayjs'
 import EventService from '../services/EventService'
 import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
 import { wrapperRequest } from '../utils'
@@ -247,6 +248,55 @@ export default class EventController {
         limit: take,
         total,
         order,
+      })
+    })
+  }
+
+  /**
+   * paginate function
+   * @returns paginate response
+   */
+  public getAllPeriod = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+      const { start } = req.query
+
+      const now = dayjs()
+
+      const startDate = start ? dayjs(start.toLocaleString()).toDate() : now.toDate()
+
+      const endDate = start ? dayjs(start.toLocaleString()).endOf('month').toDate() : now.endOf('month').toDate()
+
+      let whereFields: FindOptionsWhere<EventEntity>[] = [
+        { start: Between(startDate, endDate) },
+        { end: Between(startDate, endDate) },
+        {
+          start: LessThanOrEqual(startDate),
+          end: Between(startDate, endDate),
+        },
+        {
+          start: LessThanOrEqual(startDate),
+          end: MoreThanOrEqual(endDate),
+        },
+      ]
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields = [...whereFields].map(obj => ({
+          ...obj,
+          company: {
+            id: ctx.user.companyId,
+          },
+        }))
+      }
+      const [events, total] = await this.repository.findAndCount({
+        where: whereFields,
+      })
+
+      return res.status(200).json({
+        data: events,
+        total,
       })
     })
   }
