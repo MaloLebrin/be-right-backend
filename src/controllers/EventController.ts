@@ -295,7 +295,7 @@ export default class EventController {
       })
 
       return res.status(200).json({
-        data: events,
+        events,
         calendarData: composeEventForPeriod({
           events,
           period: {
