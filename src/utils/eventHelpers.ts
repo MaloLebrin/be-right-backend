@@ -1,6 +1,13 @@
 import dayjs from 'dayjs'
+import fr from 'dayjs/locale/fr'
+import isBetween from 'dayjs/plugin/isBetween'
 import type EventEntity from '../entity/EventEntity'
+import type { CalendarDay, Period } from '../types/Event'
 import { EventStatusEnum } from '../types/Event'
+import { addADay, isBefore, isDateBetween, isSameDay, toFormat } from './dateHelper'
+
+dayjs.locale(fr)
+dayjs.extend(isBetween)
 
 export function isEventOver(event: EventEntity): boolean {
   const now = dayjs()
@@ -45,4 +52,45 @@ export function removeUnecessaryFieldsEvent(event: EventEntity) {
   delete event.partnerId
   delete event.addressId
   return event
+}
+
+export function isEventPeriodInDay(period: Period, date: Date) {
+  if (!date || !period?.end || !period.start) {
+    return false
+  }
+  return isDateBetween(date, period)
+}
+
+export function composeEventForPeriod({
+  events,
+  period,
+}: {
+  events: EventEntity[]
+  period: Period
+}): CalendarDay[] {
+  const { start, end } = period
+
+  const arrayOfDay: CalendarDay[] = []
+
+  let currentDate: Date = start
+  while (isBefore(currentDate, end) || isSameDay(currentDate, end)) {
+    const day: CalendarDay = {
+      label: toFormat(currentDate, 'DD MMMM YYYY'),
+      date: currentDate,
+      eventIds: [],
+    }
+    events.forEach(event => {
+      if (isEventPeriodInDay({
+        start: event.start,
+        end: event.end,
+      }, currentDate)) {
+        day.eventIds.push(event.id)
+      }
+    })
+
+    arrayOfDay.push(day)
+
+    currentDate = addADay(currentDate)
+  }
+  return arrayOfDay
 }

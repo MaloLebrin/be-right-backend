@@ -25,3 +25,14 @@ export interface EventWithRelationsCreationPayload {
   }
   photographerId: number
 }
+
+export interface Period {
+  start: Date
+  end: Date
+}
+
+export interface CalendarDay {
+  label: string
+  eventIds: number[]
+  date: Date
+}
