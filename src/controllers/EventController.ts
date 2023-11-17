@@ -7,7 +7,7 @@ import EventEntity, { eventRelationFields, eventSearchableFields } from '../enti
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
+import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -263,7 +263,7 @@ export default class EventController {
       }
       const { start } = req.query
 
-      const now = dayjs()
+      const now = dayjs().startOf('month')
 
       const startDate = start ? dayjs(start.toLocaleString()).toDate() : now.toDate()
 
@@ -296,6 +296,13 @@ export default class EventController {
 
       return res.status(200).json({
         data: events,
+        calendarData: composeEventForPeriod({
+          events,
+          period: {
+            start: startDate,
+            end: endDate,
+          },
+        }),
         total,
       })
     })
