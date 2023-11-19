@@ -1,5 +1,4 @@
 import type { Job } from 'bullmq'
-import type { Request } from 'express'
 import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
 import { APP_SOURCE } from '../../..'
@@ -10,9 +9,10 @@ import { BaseJob } from './job.definition'
 
 export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
   constructor(public payoad: {
-    req: Request
+    url: string
     answer: AnswerEntity
     creatorFullName: string
+    creatorToken: string
     companyName: string
   }) {
     super()
@@ -20,23 +20,24 @@ export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
 
   handle = async () => {
     const {
-      req,
+      url,
       answer,
       creatorFullName,
+      creatorToken,
       companyName,
     } = this.payoad
 
     const mailJetService = new MailjetService(APP_SOURCE)
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`
-    const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
     const fileName = `droit-image-${answer.employee.slug}.pdf`
     const filePath = `/app/src/uploads/${fileName}`
 
     const browser = await launchPuppeteer()
 
     const page = await browser.newPage()
-
+    await page.setExtraHTTPHeaders({
+      authorization: `Bearer ${creatorToken}`,
+    })
     await page.goto(url)
     const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
     await browser.close()
