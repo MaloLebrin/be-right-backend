@@ -23,7 +23,6 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
     const event = await eventService.getOneEvent(eventId)
 
     if (event) {
-      logger.info(event, 'event')
       await eventService.getNumberSignatureNeededForEvent(event.id)
       await eventService.updateStatusEventWhenCompleted(event)
       await eventService.updateStatusForEventArray([event])

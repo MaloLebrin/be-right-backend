@@ -11,13 +11,12 @@ import type { DecodedJWTToken } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
-// import { defaultQueue } from '../../jobs/queue/queue'
-// import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
-// import { generateQueueName } from '../../jobs/queue/jobs/provider'
-// import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
+import { defaultQueue } from '../../jobs/queue/queue'
+import { generateQueueName } from '../../jobs/queue/jobs/provider'
+import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 import { MailjetService } from '../../services'
-import { launchPuppeteer } from '../../utils/puppeteerHelper'
+import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -207,40 +206,22 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Créateur introuvable')
       }
 
-      // await defaultQueue.add(
-      //   generateQueueName('SendSubmitAnswerConfirmationJob'),
-      //   new SendSubmitAnswerConfirmationJob({
-      //     req,
-      //     answer,
-      //     creatorFullName: getfullUsername(creator),
-      //     companyName: answer.event.company.name,
-      //   }),
-      // )
-
-      // await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
-      //   eventId: answer.eventId,
-      // }))
-
       const baseUrl = `${req.protocol}://${req.get('host')}`
       const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
-      const fileName = `droit-image-${answer.employee.slug}.pdf`
-      const filePath = `/app/src/uploads/${fileName}`
+      await defaultQueue.add(
+        generateQueueName('SendSubmitAnswerConfirmationJob'),
+        new SendSubmitAnswerConfirmationJob({
+          url,
+          answer,
+          creatorFullName: getfullUsername(creator),
+          creatorToken: creator.token,
+          companyName: answer.event.company.name,
+        }),
+      )
 
-      const browser = await launchPuppeteer()
-
-      const page = await browser.newPage()
-
-      await page.goto(url)
-      const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-      await browser.close()
-
-      await this.MailJetService.sendEmployeeAnswerWithPDF({
-        creatorFullName: getfullUsername(creator),
-        employee: answer.employee,
-        companyName: answer.event.company.name,
-        pdfBase64: pdf.toString('base64'),
-        fileName,
-      })
+      await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
+        eventId: answer.eventId,
+      }))
 
       const employee = answer.employee
 
