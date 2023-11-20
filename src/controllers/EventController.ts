@@ -294,7 +294,10 @@ export default class EventController {
         where: whereFields,
       })
 
+      const answers = await this.AnswerService.getAnswersForManyEvents(events.map(event => event.id))
+
       return res.status(200).json({
+        answers,
         events,
         calendarData: composeEventForPeriod({
           events,
