@@ -261,13 +261,13 @@ export default class EventController {
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
-      const { start } = req.query
+      const { start, end } = req.query
 
       const now = dayjs().startOf('month')
 
       const startDate = start ? dayjs(start.toLocaleString()).toDate() : now.toDate()
 
-      const endDate = start ? dayjs(start.toLocaleString()).endOf('month').toDate() : now.endOf('month').toDate()
+      const endDate = start ? dayjs(end.toLocaleString()).toDate() : now.endOf('month').toDate()
 
       let whereFields: FindOptionsWhere<EventEntity>[] = [
         { start: Between(startDate, endDate) },
