@@ -3,7 +3,8 @@ import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
 import { APP_SOURCE } from '../../..'
 import type AnswerEntity from '../../../entity/AnswerEntity'
-import { launchPuppeteer } from '../../../utils/puppeteerHelper'
+import { generateAnswerPdf } from '../../../utils/puppeteerHelper'
+import { isProduction } from '../../../utils/envHelper'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
@@ -29,24 +30,18 @@ export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
 
     const mailJetService = new MailjetService(APP_SOURCE)
 
-    const fileName = `droit-image-${answer.employee.slug}.pdf`
-    const filePath = `/app/src/uploads/${fileName}`
-
-    const browser = await launchPuppeteer()
-
-    const page = await browser.newPage()
-    await page.setExtraHTTPHeaders({
-      authorization: `Bearer ${creatorToken}`,
+    const { content, fileName } = await generateAnswerPdf({
+      url,
+      fileName: `droit-image-${answer.employee.slug}.pdf`,
+      token: creatorToken,
+      isMadeByBrowserless: isProduction(),
     })
-    await page.goto(url)
-    const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-    await browser.close()
 
     await mailJetService.sendEmployeeAnswerWithPDF({
       creatorFullName,
       employee: answer.employee,
       companyName,
-      pdfBase64: pdf.toString('base64'),
+      pdfBase64: content,
       fileName,
     })
   }

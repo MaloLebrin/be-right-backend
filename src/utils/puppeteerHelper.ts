@@ -1,6 +1,13 @@
 import puppeteer from 'puppeteer'
 
-export async function launchPuppeteer() {
+export async function launchPuppeteer(isMadeByBrowserless?: boolean) {
+  const BROWSERLESS_API_KEY = process.env.BROWSERLESS_API_KEY
+
+  if (isMadeByBrowserless && BROWSERLESS_API_KEY) {
+    return puppeteer.connect({
+      browserWSEndpoint: `https://chrome.browserless.io/pdf?token=${BROWSERLESS_API_KEY}`,
+    })
+  }
   return puppeteer.launch({
     userDataDir: './tmp',
     headless: 'new',
@@ -53,15 +60,17 @@ export async function generateAnswerPdf({
   url,
   fileName,
   token,
+  isMadeByBrowserless,
 }: {
   url: string
   fileName: string
   token: string
+  isMadeByBrowserless?: boolean
 }) {
-  console.time('pdf')
+  console.time('pdf generate in')
 
   const filePath = `/app/src/uploads/${fileName}`
-  const browser = await launchPuppeteer()
+  const browser = await launchPuppeteer(isMadeByBrowserless)
   const page = await browser.newPage()
 
   await page.setExtraHTTPHeaders({
@@ -70,10 +79,10 @@ export async function generateAnswerPdf({
 
   await page.goto(url, { waitUntil: 'networkidle0' })
 
-  const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
+  const pdf = await page.pdf({ format: 'A4', printBackground: true })
   await browser.close()
 
-  console.timeEnd('pdf')
+  console.timeEnd('pdf generate in')
 
   return {
     filePath,
