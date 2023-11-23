@@ -1,4 +1,3 @@
-import { unlink } from 'node:fs'
 import type { NextFunction, Request, Response } from 'express'
 import type { Logger } from 'pino'
 import type { DataSource, QueryRunner, Repository } from 'typeorm'
@@ -10,12 +9,11 @@ import { wrapperRequest } from '../utils'
 import { parseQueryIds } from '../utils/basicHelper'
 import UserService from '../services/UserService'
 import { AddressService } from '../services'
-import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { logger } from '../middlewares/loggerService'
 import { CompanyService } from '../services/CompanyService'
-import { isUserOwner } from '../utils/userHelper'
 import AnswerEntity from '../entity/AnswerEntity'
 import { generateAnswerPdf } from '../utils/puppeteerHelper'
+import { isProduction } from '../utils/envHelper'
 
 export class DownloadController {
   AnswerService: AnswerService
@@ -46,41 +44,6 @@ export class DownloadController {
       this.logger = logger
       this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
-  }
-
-  private mapAnswersToDownload = (answers: AnswerEntity[]) => {
-    return answers.map(answer => {
-      const event = answer.event
-      const employee = answer.employee as EmployeeEntity
-
-      const partner = event.partner
-      const company = event.company
-      const employeeAddress = answer.employee.address
-      const owner = company.users.find(user => isUserOwner(user))
-
-      return {
-        todayDate: answer.signedAt.toISOString(),
-        companyName: company.name,
-
-        employeeFirstName: employee.firstName,
-        employeeLastName: employee.lastName,
-        employeeStreet: employeeAddress.addressLine,
-        employeePostalCode: employeeAddress.postalCode,
-        employeeCity: employeeAddress.city,
-        employeeCountry: employeeAddress.country,
-
-        partnerFirstName: partner.firstName,
-        partnerLastName: partner.lastName,
-
-        userCity: company.address?.city,
-        userFirstName: owner?.firstName,
-        userLastName: owner?.lastName,
-        isAccepted: answer.hasSigned,
-
-        recipientSignature: answer.signature,
-        ownerSignature: owner?.signature,
-      }
-    })
   }
 
   // eslint-disable-next-line promise/param-names
@@ -169,7 +132,7 @@ export class DownloadController {
 
   public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      console.time('downLoadAnswer')
+      console.time('downLoadAnswer in')
 
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
@@ -218,10 +181,11 @@ export class DownloadController {
         fileName = `droits-images-${event.name}.pdf`
       }
 
-      const { content, filePath } = await generateAnswerPdf({
+      const { content } = await generateAnswerPdf({
         url,
         fileName,
         token: currentUser.token,
+        isMadeByBrowserless: isProduction(),
       })
       try {
         return res
@@ -243,23 +207,7 @@ export class DownloadController {
             description: error.cause,
           })
       } finally {
-        await this.delay(1000)
-        console.timeEnd('downLoadAnswer')
-
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        unlink(filePath, err => {
-          if (err) {
-            this.logger.error(err)
-            return res.status(422).send({
-              success: false,
-              message: err.message,
-              stack: err.stack,
-              description: err.cause,
-            })
-          } else {
-            this.logger.info(`${filePath} was deleted`)
-          }
-        })
+        console.timeEnd('downLoadAnswer in')
       }
     })
   }

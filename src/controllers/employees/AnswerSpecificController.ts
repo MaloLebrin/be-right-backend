@@ -207,7 +207,7 @@ export class AnswerSpecificController {
       }
 
       const baseUrl = `${req.protocol}://${req.get('host')}`
-      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
+      const url = `${baseUrl}/answer/view/?ids=${answer.id}`
       await defaultQueue.add(
         generateQueueName('SendSubmitAnswerConfirmationJob'),
         new SendSubmitAnswerConfirmationJob({
