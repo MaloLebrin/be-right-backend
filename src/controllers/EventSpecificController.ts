@@ -140,9 +140,10 @@ export default class EventSpecificController {
               eventId: newEvent.id,
             }),
             this.AnswerService.createMany(newEvent.id, event.employeeIds),
-            this.saveEventRedisCache(newEvent),
             this.RediceService.updateCurrentUserInCache({ userId }),
           ])
+
+          await this.saveEventRedisCache(newEvent)
 
           if (answers.length > 0) {
             await defaultQueue.add(

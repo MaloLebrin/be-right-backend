@@ -581,18 +581,19 @@ export default class UserController {
         throw new ApiError(422, 'L\'utilisateur n\'existe pas')
       }
 
-      const [company] = await Promise.all([
-        this.companyRepository.findOne({
-          where: {
-            id: user.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        }),
+      await Promise.all([
         this.deleteUserInCache(user),
         this.repository.delete(id),
       ])
+
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: user.companyId,
+        },
+        relations: {
+          users: true,
+        },
+      })
 
       if (company && isUserOwner(user)) {
         const owners = company.users?.filter(user => isUserOwner(user))

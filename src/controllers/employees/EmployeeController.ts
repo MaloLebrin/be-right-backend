@@ -193,10 +193,9 @@ export default class EmployeeController {
           }))
 
         const newEmployeesIds = newEmployees.map(employee => employee.id)
-        await Promise.all([
-          this.AnswerService.createMany(eventId, newEmployeesIds),
-          this.EventService.getNumberSignatureNeededForEvent(eventId),
-        ])
+
+        await this.AnswerService.createMany(eventId, newEmployeesIds)
+        await this.EventService.getNumberSignatureNeededForEvent(eventId)
 
         return res.status(200).json(newEmployees)
       }
