@@ -17,7 +17,6 @@ import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.jo
 import { BaseAdminController } from './BaseAdminController'
 
 export class AdminEventController extends BaseAdminController {
-  // private EventRepository: Repository<EventEntity>
   private UserRepository: Repository<UserEntity>
   private EventService: EventService
   private AddressService: AddressService
@@ -25,7 +24,6 @@ export class AdminEventController extends BaseAdminController {
 
   constructor(SOURCE: DataSource) {
     super(SOURCE)
-    // this.EventRepository = SOURCE.getRepository(EventEntity)
     this.UserRepository = SOURCE.getRepository(UserEntity)
     this.EventService = new EventService(SOURCE)
     this.AddressService = new AddressService(SOURCE)
@@ -94,6 +92,7 @@ export class AdminEventController extends BaseAdminController {
         }),
       )
 
+      // FIXME Update this job with multiple userIds
       await Promise.all(users.map(user => defaultQueue.add(
         generateQueueName(NotificationTypeEnum.EVENT_CREATED),
         new CreateEventNotificationsJob({

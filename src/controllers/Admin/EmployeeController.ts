@@ -48,23 +48,25 @@ export class AdminEmployeeController extends BaseAdminController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      const company = await this.CompanyRepository.findOne({
-        where: {
-          users: {
-            id: userId,
+      const [company, isEmployeeAlreadyExist] = await Promise.all([
+        this.CompanyRepository.findOne({
+          where: {
+            users: {
+              id: userId,
+            },
           },
-        },
-      })
+        }),
+
+        this.employeeRepository.exist({
+          where: {
+            email: employee.email,
+          },
+        }),
+      ])
 
       if (!company) {
-        throw new ApiError(422, 'Entreprise non trounée')
+        throw new ApiError(422, 'Entreprise non trouvée')
       }
-
-      const isEmployeeAlreadyExist = await this.employeeRepository.exist({
-        where: {
-          email: employee.email,
-        },
-      })
 
       if (isEmployeeAlreadyExist) {
         throw new ApiError(423, 'cet email existe déjà')
@@ -103,13 +105,15 @@ export class AdminEmployeeController extends BaseAdminController {
       }
 
       const employee = await this.employeeRepository.findOneBy({ id })
-      await this.employeeRepository.delete(id)
 
-      await this.redisCache.invalidate(generateRedisKey({
-        typeofEntity: EntitiesEnum.EMPLOYEE,
-        field: 'id',
-        id,
-      }))
+      await Promise.all([
+        this.employeeRepository.delete(id),
+        this.redisCache.invalidate(generateRedisKey({
+          typeofEntity: EntitiesEnum.EMPLOYEE,
+          field: 'id',
+          id,
+        })),
+      ])
 
       await this.GroupService.removeEmployeesOnGroup([employee])
 

@@ -47,13 +47,17 @@ export default class UserController {
   }
 
   private saveUserInCache = async (user: UserEntity) => {
-    await this.redisCache.save(`user-id-${user.id}`, user)
-    await this.redisCache.save(`user-token-${user.token}`, user)
+    await Promise.all([
+      this.redisCache.save(`user-id-${user.id}`, user),
+      this.redisCache.save(`user-token-${user.token}`, user),
+    ])
   }
 
   private deleteUserInCache = async (user: UserEntity) => {
-    await this.redisCache.invalidate(`user-id-${user.id}`)
-    await this.redisCache.invalidate(`user-token-${user.token}`)
+    await Promise.all([
+      this.redisCache.invalidate(`user-id-${user.id}`),
+      this.redisCache.invalidate(`user-token-${user.token}`),
+    ])
   }
 
   /**
@@ -332,13 +336,15 @@ export default class UserController {
         }
 
         if (userToDelete.company.addressId) {
-          await this.AddressService.softDelete(userToDelete.company.addressId)
+          await Promise.all([
+            this.AddressService.softDelete(userToDelete.company.addressId),
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.ADDRESS,
-            field: 'id',
-            id: userToDelete.company.addressId,
-          }))
+            this.redisCache.invalidate(generateRedisKey({
+              typeofEntity: EntitiesEnum.ADDRESS,
+              field: 'id',
+              id: userToDelete.company.addressId,
+            })),
+          ])
         }
 
         if (userToDelete.company.employeeIds?.length > 0) {
@@ -363,9 +369,10 @@ export default class UserController {
           await this.FileService.deleteManyfiles(userToDelete.company.filesIds)
         }
 
-        const userDeleted = await this.repository.softDelete(id)
-
-        await this.redisCache.invalidate(`user-id-${id}`)
+        const [userDeleted] = await Promise.all([
+          this.repository.softDelete(id),
+          this.redisCache.invalidate(`user-id-${id}`),
+        ])
 
         if (userDeleted) {
           return res.status(204).json(userDeleted)
@@ -574,17 +581,18 @@ export default class UserController {
         throw new ApiError(422, 'L\'utilisateur n\'existe pas')
       }
 
-      const company = await this.companyRepository.findOne({
-        where: {
-          id: user.companyId,
-        },
-        relations: {
-          users: true,
-        },
-      })
-
-      await this.deleteUserInCache(user)
-      await this.repository.delete(id)
+      const [company] = await Promise.all([
+        this.companyRepository.findOne({
+          where: {
+            id: user.companyId,
+          },
+          relations: {
+            users: true,
+          },
+        }),
+        this.deleteUserInCache(user),
+        this.repository.delete(id),
+      ])
 
       if (company && isUserOwner(user)) {
         const owners = company.users?.filter(user => isUserOwner(user))

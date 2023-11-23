@@ -97,11 +97,12 @@ export default class EmployeeController {
           })
         }
 
-        await this.RediceService.updateCurrentUserInCache({ userId })
-
         const employeeToSend = await this.EmployeeService.getOne(newEmployee.id)
 
-        await this.saveEmployeeRedisCache(employeeToSend)
+        await Promise.all([
+          this.RediceService.updateCurrentUserInCache({ userId }),
+          this.saveEmployeeRedisCache(employeeToSend),
+        ])
 
         return res.status(200).json(employeeToSend)
       }
@@ -192,8 +193,10 @@ export default class EmployeeController {
           }))
 
         const newEmployeesIds = newEmployees.map(employee => employee.id)
-        await this.AnswerService.createMany(eventId, newEmployeesIds)
-        await this.EventService.getNumberSignatureNeededForEvent(eventId)
+        await Promise.all([
+          this.AnswerService.createMany(eventId, newEmployeesIds),
+          this.EventService.getNumberSignatureNeededForEvent(eventId),
+        ])
 
         return res.status(200).json(newEmployees)
       }
@@ -414,21 +417,22 @@ export default class EmployeeController {
       await this.GroupService.removeEmployeesOnGroup([getEmployee])
       await this.EmployeeService.deleteOne(id)
 
-      await this.redisCache.invalidate(generateRedisKey({
-        typeofEntity: EntitiesEnum.EMPLOYEE,
-        field: 'id',
-        id,
-      }))
-      await this.RediceService.updateCurrentUserInCache({ userId })
-
-      const company = await this.companyRepository.findOne({
-        where: {
-          id: getEmployee.companyId,
-        },
-        relations: {
-          groups: true,
-        },
-      })
+      const [company] = await Promise.all([
+        this.companyRepository.findOne({
+          where: {
+            id: getEmployee.companyId,
+          },
+          relations: {
+            groups: true,
+          },
+        }),
+        this.redisCache.invalidate(generateRedisKey({
+          typeofEntity: EntitiesEnum.EMPLOYEE,
+          field: 'id',
+          id,
+        })),
+        this.RediceService.updateCurrentUserInCache({ userId }),
+      ])
 
       const groups = company.groups
       delete company.groups

@@ -70,15 +70,17 @@ export default class EventSpecificController {
         if (event && (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId)) {
           let employees = []
 
-          const address = await this.redisCache.get<AddressEntity>(
-            generateRedisKey({
-              field: 'id',
-              typeofEntity: EntitiesEnum.ADDRESS,
-              id: event.addressId,
-            }),
-            () => this.AddressService.getOne(event.addressId))
+          const [address, answers] = await Promise.all([
+            this.redisCache.get<AddressEntity>(
+              generateRedisKey({
+                field: 'id',
+                typeofEntity: EntitiesEnum.ADDRESS,
+                id: event.addressId,
+              }),
+              () => this.AddressService.getOne(event.addressId)),
 
-          const answers = await this.AnswerService.getAllAnswersForEvent(eventId)
+            this.AnswerService.getAllAnswersForEvent(eventId),
+          ])
 
           if (answers && answers.length > 0) {
             const employeesIds = answers.map(an => an.employeeId)
@@ -132,12 +134,15 @@ export default class EventSpecificController {
               userId,
             }))
 
-          const addressCreated = await this.AddressService.createOne({
-            address,
-            eventId: newEvent.id,
-          })
-
-          const answers = await this.AnswerService.createMany(newEvent.id, event.employeeIds)
+          const [addressCreated, answers] = await Promise.all([
+            this.AddressService.createOne({
+              address,
+              eventId: newEvent.id,
+            }),
+            this.AnswerService.createMany(newEvent.id, event.employeeIds),
+            this.saveEventRedisCache(newEvent),
+            this.RediceService.updateCurrentUserInCache({ userId }),
+          ])
 
           if (answers.length > 0) {
             await defaultQueue.add(
@@ -156,10 +161,6 @@ export default class EventSpecificController {
               eventId: newEvent.id,
             }),
           )
-
-          await this.RediceService.updateCurrentUserInCache({ userId })
-
-          await this.saveEventRedisCache(newEvent)
 
           return res.status(200).json({
             event: newEvent,
