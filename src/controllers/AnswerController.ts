@@ -220,7 +220,7 @@ export class AnswerController {
       const id = parseInt(req.params.id)
 
       if (!id) {
-        throw new ApiError(422, 'Identifiant de la réposnse manquant')
+        throw new ApiError(422, 'Identifiant de la réponse manquant')
       }
 
       const answerToDelete = await this.AnswerService.getOne(id)
