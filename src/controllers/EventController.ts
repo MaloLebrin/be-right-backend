@@ -82,9 +82,11 @@ export default class EventController {
             eventId: newEvent.id,
           })
         }
-        await this.RediceService.updateCurrentUserInCache({ userId })
+        await Promise.all([
+          this.RediceService.updateCurrentUserInCache({ userId }),
+          this.saveEventRedisCache(newEvent),
+        ])
 
-        await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
 

@@ -32,21 +32,15 @@ export default class RedisService {
     }
 
     if (user) {
-      await this.redisCache.save(generateRedisKey({
-        typeofEntity: EntitiesEnum.USER,
-        field: 'id',
-        id: user.id,
-      }), user)
+      await Promise.all([
+        this.redisCache.save(generateRedisKey({
+          typeofEntity: EntitiesEnum.USER,
+          field: 'id',
+          id: user.id,
+        }), user),
 
-      await this.redisCache.save(`user-token-${user.token}`, user)
+        this.redisCache.save(`user-token-${user.token}`, user),
+      ])
     }
   }
-
-  // public saveEmployeeRedisCache = async (employee: EmployeeEntity) => {
-  //   await this.redisCache.save(generateRedisKey({
-  //     typeofEntity: EntitiesEnum.EMPLOYEE,
-  //     field: 'id',
-  //     id: employee.id,
-  //   }), employee)
-  // }
 }

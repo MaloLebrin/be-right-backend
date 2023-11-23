@@ -72,10 +72,12 @@ export class GroupController {
         throw new ApiError(422, 'Parmètres manquants')
       }
 
-      const newGroup = await this.groupService.createOne(group, currentUser.companyId)
+      const newGroup = await Promise.all([
+        this.groupService.createOne(group, currentUser.companyId),
+        this.invalidateUserInRedis(currentUser),
+      ])
 
       if (newGroup) {
-        await this.invalidateUserInRedis(currentUser)
         return res.status(200).json(newGroup)
       }
       throw new ApiError(422, 'Le groupe n\'a pu être créé')
@@ -138,14 +140,16 @@ export class GroupController {
       }
 
       if (arrayOfEmployeeIdsInGroup.length > 0) {
-        const newGroup = await this.groupService.createOne({
-          name,
-          description,
-          employeeIds: uniq(arrayOfEmployeeIdsInGroup),
-        }, currentUser.companyId)
+        const newGroup = await Promise.all([
+          this.groupService.createOne({
+            name,
+            description,
+            employeeIds: uniq(arrayOfEmployeeIdsInGroup),
+          }, currentUser.companyId),
+          this.invalidateUserInRedis(currentUser),
+        ])
 
         if (newGroup) {
-          await this.invalidateUserInRedis(currentUser)
           return res.status(200).json(newGroup)
         }
       }

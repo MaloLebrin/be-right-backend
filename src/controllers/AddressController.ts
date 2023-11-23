@@ -115,13 +115,15 @@ export class AddresController {
       const id = parseInt(req.params.id)
 
       if (id) {
-        await this.redisCache.invalidate(generateRedisKey({
-          typeofEntity: EntitiesEnum.ADDRESS,
-          field: 'id',
-          id,
-        }))
+        await Promise.all([
+          this.redisCache.invalidate(generateRedisKey({
+            typeofEntity: EntitiesEnum.ADDRESS,
+            field: 'id',
+            id,
+          })),
+          this.AddressService.deleteOne(id),
+        ])
 
-        await this.AddressService.deleteOne(id)
         return res.status(203).json({ success: true, error: 'Adresse supprimée' })
       }
 

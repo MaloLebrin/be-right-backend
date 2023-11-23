@@ -37,7 +37,7 @@ export class AnswerSpecificController {
     }
   }
 
-  private async isValidToken(token: string, email: string) {
+  private isValidToken(token: string, email: string) {
     const { JWT_SECRET } = useEnv()
 
     const decodedToken = verify(token, JWT_SECRET) as DecodedJWTToken | string
@@ -59,31 +59,34 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'identifiant du destinataire manquant')
       }
 
-      await this.isValidToken(token, email)
+      this.isValidToken(token, email)
 
-      const answer = await this.AnswerRepository.findOne({
-        where: {
-          token,
-        },
-        relations: [
-          'employee.address',
-          'event.address',
-          'event.company.address',
-          'event.company.users',
-          'event.partner',
-        ],
-      })
+      const [answer, answerWithToken] = await Promise.all([
+        this.AnswerRepository.findOne({
+          where: {
+            token,
+          },
+          relations: [
+            'employee.address',
+            'event.address',
+            'event.company.address',
+            'event.company.users',
+            'event.partner',
+          ],
+        }),
 
-      const answerWithToken = await this.AnswerRepository.findOne({
-        where: {
-          token,
-        },
-        select: {
-          id: true,
-          token: true,
-          twoFactorCode: true,
-        },
-      })
+        this.AnswerRepository.findOne({
+          where: {
+            token,
+          },
+          select: {
+            id: true,
+            token: true,
+            twoFactorCode: true,
+          },
+        }),
+      ])
+
       if (!answer) {
         throw new ApiError(422, 'Élément introuvable')
       }
@@ -125,7 +128,7 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      await this.isValidToken(token, email)
+      this.isValidToken(token, email)
 
       const isExist = await this.AnswerRepository.exist({
         where: {
@@ -172,7 +175,7 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      await this.isValidToken(token, email)
+      this.isValidToken(token, email)
 
       const answer = await this.AnswerRepository.findOne({
         where: {

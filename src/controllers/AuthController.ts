@@ -200,9 +200,11 @@ export default class AuthController {
       if (!user?.token) {
         throw new ApiError(404, 'Utilisateur non trouvé')
       }
+      await Promise.all([
+        this.redisCache.invalidate(`user-id-${user.id}`),
+        this.redisCache.invalidate(`user-token-${user.token}`),
+      ])
 
-      await this.redisCache.invalidate(`user-id-${user.id}`)
-      await this.redisCache.invalidate(`user-token-${user.token}`)
       return res.status(203).json({ success: true, error: 'Utilisateur déconnecté' })
     })
   }

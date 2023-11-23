@@ -64,7 +64,14 @@ export class AnswerController {
       const answer = await this.AnswerService.createOne(eventId, employeeId)
       await this.saveAnswerInCache(answer)
 
-      const event = await this.EventService.getOneEvent(eventId)
+      const [event, employee] = await Promise.all([
+        this.EventService.getOneEvent(eventId),
+        this.employeeRepository.findOne({
+          where: {
+            id: employeeId,
+          },
+        }),
+      ])
 
       await defaultQueue.add(
         generateQueueName('UpdateEventStatusJob'),
@@ -72,12 +79,6 @@ export class AnswerController {
           eventId,
         }),
       )
-
-      const employee = await this.employeeRepository.findOne({
-        where: {
-          id: employeeId,
-        },
-      })
 
       if (employee && event) {
         await defaultQueue.add(
@@ -205,9 +206,11 @@ export class AnswerController {
       const id = answer.id
       const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
 
-      await this.saveAnswerInCache(answerUpdated)
+      await Promise.all([
+        this.saveAnswerInCache(answerUpdated),
+        this.EventService.multipleUpdateForEvent(answerUpdated.eventId),
+      ])
 
-      await this.EventService.multipleUpdateForEvent(answerUpdated.eventId)
       return res.status(200).json(answerResponse(answerUpdated))
     })
   }
@@ -217,17 +220,22 @@ export class AnswerController {
       const id = parseInt(req.params.id)
 
       if (!id) {
-        throw new ApiError(422, 'Identifiant de l\'événement manquant')
+        throw new ApiError(422, 'Identifiant de la réponse manquant')
       }
 
       const answerToDelete = await this.AnswerService.getOne(id)
-      const answer = await this.AnswerService.deleteOne(id)
 
-      await this.redisCache.invalidate(generateRedisKey({
-        field: 'id',
-        typeofEntity: EntitiesEnum.ANSWER,
-        id,
-      }))
+      if (!answerToDelete) {
+        throw new ApiError(422, 'Identifiant de la réposnse manquant')
+      }
+      const [answer] = await Promise.all([
+        this.AnswerService.deleteOne(id),
+        this.redisCache.invalidate(generateRedisKey({
+          field: 'id',
+          typeofEntity: EntitiesEnum.ANSWER,
+          id,
+        })),
+      ])
 
       await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
       return res.status(200).json(answer)
@@ -270,14 +278,15 @@ export class AnswerController {
         throw new ApiError(422, 'Un problème est survenu')
       }
 
-      await this.mailJetService.sendRaiseAnswerEmail({
-        event: answer.event,
-        employee: answer.employee,
-        owner,
-        answer,
-      })
-
-      await this.repository.update(answer.id, { mailSendAt: new Date() })
+      await Promise.all([
+        this.mailJetService.sendRaiseAnswerEmail({
+          event: answer.event,
+          employee: answer.employee,
+          owner,
+          answer,
+        }),
+        this.repository.update(answer.id, { mailSendAt: new Date() }),
+      ])
 
       const answerToSend = await this.AnswerService.getOne(id)
 

@@ -36,23 +36,29 @@ export class AdminStatsController {
 
       const yearAgoDate = dayjs().locale('fr').subtract(1, 'year')
 
-      const [answers, total] = await this.AnswerRepository.findAndCount({
-        where: {
-          createdAt: MoreThan(yearAgoDate.toDate()),
-        },
-      })
+      const [
+        [answers, total],
+        [events, eventTotal],
+        [users, usersTotal],
+      ] = await Promise.all([
+        this.AnswerRepository.findAndCount({
+          where: {
+            createdAt: MoreThan(yearAgoDate.toDate()),
+          },
+        }),
 
-      const [events, eventTotal] = await this.EventRepository.findAndCount({
-        where: {
-          createdAt: MoreThan(yearAgoDate.toDate()),
-        },
-      })
+        this.EventRepository.findAndCount({
+          where: {
+            createdAt: MoreThan(yearAgoDate.toDate()),
+          },
+        }),
 
-      const [users, usersTotal] = await this.UserRepository.findAndCount({
-        relations: {
-          company: true,
-        },
-      })
+        this.UserRepository.findAndCount({
+          relations: {
+            company: true,
+          },
+        }),
+      ])
 
       const uniqCompanies = uniqByKey(users
         .map(user => user.company)
