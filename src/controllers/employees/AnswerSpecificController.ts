@@ -7,7 +7,7 @@ import AnswerService from '../../services/AnswerService'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { useEnv } from '../../env'
 import { ApiError } from '../../middlewares/ApiError'
-import type { DecodedJWTToken } from '../../types'
+import { type DecodedJWTToken, EntitiesEnum } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
@@ -17,6 +17,9 @@ import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmi
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 import { MailjetService } from '../../services'
 import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
+import { REDIS_CACHE } from '../..'
+import type RedisCache from '../../RedisCache'
+import { generateRedisKey } from '../../utils/redisHelper'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -24,6 +27,7 @@ export class AnswerSpecificController {
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
   MailJetService: MailjetService
+  redisCache: RedisCache
   queryRunner: QueryRunner
 
   constructor(DATA_SOURCE: DataSource) {
@@ -33,8 +37,17 @@ export class AnswerSpecificController {
       this.AnswerService = new AnswerService(DATA_SOURCE)
       this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
       this.MailJetService = new MailjetService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
       this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
+  }
+
+  private invalidateAnswerInCache = async (answerId: number) => {
+    await this.redisCache.invalidate(generateRedisKey({
+      field: 'id',
+      typeofEntity: EntitiesEnum.ANSWER,
+      id: answerId,
+    }))
   }
 
   private isValidToken(token: string, email: string) {
@@ -235,6 +248,8 @@ export class AnswerSpecificController {
           })
         }
       }
+
+      await this.invalidateAnswerInCache(answerId)
 
       return res.status(200).json(answer)
     })
