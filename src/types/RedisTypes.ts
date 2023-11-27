@@ -4,7 +4,8 @@ export type RedisKeys =
   `event-id-${number}` |
   `employee-id-${number}` |
   `answer-id-${number}` |
-  `address-id-${number}`
+  `address-id-${number}` |
+  `user-notification-${string}`
 
 export type MultiSavePaylod<T> = Record<RedisKeys, T>[]
 
