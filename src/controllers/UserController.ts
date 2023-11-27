@@ -456,6 +456,11 @@ export default class UserController {
         ],
       })
 
+      this.redisCache.save(`user-notification-${user.notificationToken}`, {
+        id: user.id,
+        notificationToken: user.notificationToken,
+      })
+
       return res.status(200).json({
         user: userToSend,
         company: user.company,
