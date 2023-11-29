@@ -20,14 +20,13 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
   handle = async () => {
     const eventService = new EventService(APP_SOURCE)
     const { eventId } = this.payoad
-    const event = await eventService.getOneEvent(eventId)
 
-    if (event) {
-      const { initialStatus, newStatus } = await eventService.updateEventStatus(eventId)
+    const { initialStatus, newStatus } = await eventService.updateEventStatus(eventId)
 
-      const eventUpdated = await eventService.getOneWithoutRelations(event.id)
+    if (initialStatus !== newStatus) {
+      const event = await eventService.getOneWithoutRelations(eventId)
 
-      if (newStatus === EventStatusEnum.COMPLETED && initialStatus !== newStatus) {
+      if (newStatus === EventStatusEnum.COMPLETED) {
         const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
           where: {
             id: event.companyId,
@@ -46,7 +45,7 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
         }
       }
 
-      if (eventUpdated && eventUpdated.status !== event.status) {
+      if (event) {
         const eventNotificationService = new EventNotificationService(APP_SOURCE)
 
         const [eventNotif, company] = await Promise.all([
