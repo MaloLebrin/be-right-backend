@@ -208,7 +208,7 @@ export class AnswerController {
 
       await Promise.all([
         this.saveAnswerInCache(answerUpdated),
-        this.EventService.multipleUpdateForEvent(answerUpdated.eventId),
+        this.EventService.updateEventStatus(answerUpdated.eventId),
       ])
 
       return res.status(200).json(answerResponse(answerUpdated))
@@ -237,7 +237,7 @@ export class AnswerController {
         })),
       ])
 
-      await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
+      await this.EventService.updateEventStatus(answerToDelete.eventId)
       return res.status(200).json(answer)
     })
   }

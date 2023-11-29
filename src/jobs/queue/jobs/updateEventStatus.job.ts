@@ -23,13 +23,11 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
     const event = await eventService.getOneEvent(eventId)
 
     if (event) {
-      await eventService.getNumberSignatureNeededForEvent(event.id)
-      await eventService.updateStatusEventWhenCompleted(event)
-      await eventService.updateStatusForEventArray([event])
+      const { initialStatus, newStatus } = await eventService.updateEventStatus(eventId)
 
       const eventUpdated = await eventService.getOneWithoutRelations(event.id)
 
-      if (event.status === EventStatusEnum.COMPLETED) {
+      if (newStatus === EventStatusEnum.COMPLETED && initialStatus !== newStatus) {
         const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
           where: {
             id: event.companyId,
@@ -51,19 +49,21 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
       if (eventUpdated && eventUpdated.status !== event.status) {
         const eventNotificationService = new EventNotificationService(APP_SOURCE)
 
-        const eventNotif = await eventNotificationService.createOne({
-          name: getNotificationTypeByEventStatus(event),
-          event,
-        })
+        const [eventNotif, company] = await Promise.all([
+          eventNotificationService.createOne({
+            name: getNotificationTypeByEventStatus(event),
+            event,
+          }),
 
-        const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
-          where: {
-            id: event.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        })
+          APP_SOURCE.getRepository(CompanyEntity).findOne({
+            where: {
+              id: event.companyId,
+            },
+            relations: {
+              users: true,
+            },
+          }),
+        ])
 
         if (company && company.userIds.length > 0) {
           const notificationSubscriptionService = new NotificationSubscriptionService(APP_SOURCE)

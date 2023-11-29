@@ -195,7 +195,7 @@ export default class EmployeeController {
         const newEmployeesIds = newEmployees.map(employee => employee.id)
 
         await this.AnswerService.createMany(eventId, newEmployeesIds)
-        await this.EventService.getNumberSignatureNeededForEvent(eventId)
+        await this.EventService.updateEventStatus(eventId)
 
         return res.status(200).json(newEmployees)
       }
@@ -377,7 +377,9 @@ export default class EmployeeController {
     await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        const event = await this.EventService.getNumberSignatureNeededForEvent(id)
+        await this.EventService.updateEventStatus(id)
+
+        const event = await this.EventService.getOneWithoutRelations(id)
 
         return res.status(200).json(event)
       }
