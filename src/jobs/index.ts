@@ -7,7 +7,6 @@ import deleteUnusedUsersJob from './crons/deleteUnusedUsers'
 import { deleteReadOldNotifications } from './crons/deleteReadOldNotifications'
 import { deleteOldEventsJob } from './crons/deleteOldEventsJob'
 import { sendMailBeforeStartEvent } from './crons/sendMailBeforeStartEvent.cron'
-import udpateEventStatusJob from './crons/updateEventsStatusJob'
 
 export async function cronJobsStart() {
   dotenv.config()
@@ -26,7 +25,6 @@ export async function cronJobsStart() {
     CronJobInterval.EVERY_DAY_4_AM,
     async () => {
       await sendMailBeforeStartEvent(JOB_APP_SOURCE)
-      await udpateEventStatusJob(JOB_APP_SOURCE)
     },
   )
 
