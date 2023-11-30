@@ -19,7 +19,6 @@ import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import RedisService from '../services/RedisService'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
-import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { isUserAdmin } from '../utils/userHelper'
 
 export default class EventSpecificController {
@@ -143,7 +142,10 @@ export default class EventSpecificController {
             this.RediceService.updateCurrentUserInCache({ userId }),
           ])
 
-          await this.saveEventRedisCache(newEvent)
+          await Promise.all([
+            this.saveEventRedisCache(newEvent),
+            this.EventService.updateEventStatus(newEvent.id),
+          ])
 
           if (answers.length > 0) {
             await defaultQueue.add(
@@ -155,13 +157,6 @@ export default class EventSpecificController {
               }),
             )
           }
-
-          await defaultQueue.add(
-            generateQueueName('UpdateEventStatusJob'),
-            new UpdateEventStatusJob({
-              eventId: newEvent.id,
-            }),
-          )
 
           return res.status(200).json({
             event: newEvent,

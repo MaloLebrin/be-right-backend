@@ -24,7 +24,7 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
       event,
     } = await eventService.updateEventStatus(eventId)
 
-    if (initialStatus !== newStatus) {
+    if (initialStatus !== newStatus && event) {
       if (newStatus === EventStatusEnum.COMPLETED) {
         const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
           where: {
