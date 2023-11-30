@@ -377,9 +377,7 @@ export default class EmployeeController {
     await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
       if (id) {
-        await this.EventService.updateEventStatus(id)
-
-        const event = await this.EventService.getOneWithoutRelations(id)
+        const { event } = await this.EventService.updateEventStatus(id)
 
         return res.status(200).json(event)
       }

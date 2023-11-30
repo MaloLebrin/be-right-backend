@@ -132,12 +132,6 @@ export default class EventService {
     return newEvent
   }
 
-  async updateStatusForEventArray(events: EventEntity[]) {
-    if (events.length > 0) {
-      events.forEach(event => this.updateEventStatus(event.id))
-    }
-  }
-
   /**
    * @description update event status in Database based on his answers and his dates (start, end)
    * @param eventId
@@ -145,12 +139,7 @@ export default class EventService {
    */
   public async updateEventStatus(eventId: number) {
     const [event, answers] = await Promise.all([
-      this.repository.findOne({
-        where: {
-          id: eventId,
-        },
-
-      }),
+      this.getOneWithoutRelations(eventId),
       this.AnswerRepository.find({
         where: {
           eventId,
@@ -166,6 +155,8 @@ export default class EventService {
 
     const isEventCompleted = answers.every(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt))
 
+    let newStatus: EventStatusEnum | null = null
+
     if (isEventCompleted) {
       await this.repository.update(eventId, {
         totalSignatureNeeded: answers.length,
@@ -173,22 +164,24 @@ export default class EventService {
         status: EventStatusEnum.COMPLETED,
       })
 
-      return {
-        initialStatus,
-        newStatus: EventStatusEnum.COMPLETED,
-      }
+      newStatus = EventStatusEnum.COMPLETED
     } else {
-      const newStatus = updateStatusEventBasedOnStartEndTodayDate(event)
+      newStatus = updateStatusEventBasedOnStartEndTodayDate(event)
       await this.repository.update(eventId, {
         totalSignatureNeeded: answers.length,
         signatureCount: answers.filter(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt)).length,
         status: newStatus,
       })
+    }
 
-      return {
-        initialStatus,
-        newStatus,
-      }
+    const eventUpdated = await this.getOneWithoutRelations(eventId)
+
+    await this.saveEventRedisCache(eventUpdated)
+
+    return {
+      initialStatus,
+      newStatus,
+      event: eventUpdated,
     }
   }
 }
