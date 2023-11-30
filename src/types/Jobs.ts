@@ -4,6 +4,5 @@ export type QueueJobName =
   NotificationTypeEnum |
   'UpdateEventStatusJob' |
   'SendMailAnswerCreationjob' |
-  'SendMailEventCompletedJob' |
   'SendSubmitAnswerConfirmationJob' |
   'SendMailUserOnAccountJob'
