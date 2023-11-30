@@ -23,26 +23,26 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
     if (initialStatus !== newStatus) {
       const event = await eventService.getOneWithoutRelations(eventId)
 
-      if (newStatus === EventStatusEnum.COMPLETED) {
-        const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
-          where: {
-            id: event.companyId,
-          },
-          relations: {
-            users: true,
-          },
-        })
-
-        if (company && company.users.length > 0) {
-          const mailjetService = new MailjetService(APP_SOURCE)
-          await mailjetService.sendEventCompletedEmail({
-            event,
-            users: company.users,
-          })
-        }
-      }
-
       if (event) {
+        if (newStatus === EventStatusEnum.COMPLETED) {
+          const company = await APP_SOURCE.getRepository(CompanyEntity).findOne({
+            where: {
+              id: event.companyId,
+            },
+            relations: {
+              users: true,
+            },
+          })
+
+          if (company && company.users.length > 0) {
+            const mailjetService = new MailjetService(APP_SOURCE)
+            await mailjetService.sendEventCompletedEmail({
+              event,
+              users: company.users,
+            })
+          }
+        }
+
         const eventAndNotificationService = new EventAndNotificationService(APP_SOURCE)
         await eventAndNotificationService.sendNotificationEventSatatusChanged(event)
       }
