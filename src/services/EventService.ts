@@ -142,7 +142,9 @@ export default class EventService {
       this.getOneWithoutRelations(eventId),
       this.AnswerRepository.find({
         where: {
-          eventId,
+          event: {
+            id: eventId,
+          },
         },
       }),
     ])
