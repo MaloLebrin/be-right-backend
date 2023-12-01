@@ -19,6 +19,7 @@ import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotificati
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { newPaginator } from '../utils/paginatorHelper'
 import type { CompanyEntity } from '../entity/Company.entity'
+import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 
 export default class EventController {
   AddressService: AddressService
@@ -340,6 +341,29 @@ export default class EventController {
         }
       }
       throw new ApiError(422, 'identifiant de l\'événement manquant')
+    })
+  }
+
+  public synchroniseOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      const id = parseInt(req.params.id)
+
+      if (!id) {
+        throw new ApiError(422, 'identifiant de l\'événement manquant')
+      }
+
+      const { event } = await this.EventService.updateEventStatus(id)
+      await defaultQueue.add(
+        generateQueueName('UpdateEventStatusJob'),
+        new UpdateEventStatusJob({
+          eventId: id,
+        }),
+      )
+      return res.status(200).json(event)
     })
   }
 
