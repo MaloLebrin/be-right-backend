@@ -1,7 +1,6 @@
 export * from './Address'
 export * from './Answer'
 export * from './Badge'
-export * from './BugReport'
 export * from './Employee'
 export * from './Entities'
 export * from './Event'

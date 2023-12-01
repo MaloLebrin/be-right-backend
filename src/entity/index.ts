@@ -1,7 +1,6 @@
 import AnswerEntity from './AnswerEntity'
 import { AddressEntity } from './AddressEntity'
 import { BaseEntity } from './bases/BaseEntity'
-import { BugReportEntity } from './BugReportEntity'
 import { EmployeeEntity } from './employees/EmployeeEntity'
 import EventEntity from './EventEntity'
 import { FileEntity } from './FileEntity'
@@ -22,7 +21,6 @@ export default {
   AnswerEntity,
   BaseEntity,
   BadgeEntity,
-  BugReportEntity,
   CompanyEntity,
   EmployeeEntity,
   EventEntity,
@@ -42,7 +40,6 @@ export const entities = [
   AnswerEntity,
   SubscriptionEntity,
   BadgeEntity,
-  BugReportEntity,
   CompanyEntity,
   EmployeeEntity,
   EventEntity,

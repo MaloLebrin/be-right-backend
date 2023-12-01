@@ -12,12 +12,9 @@ import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 import {
-  checkUserRole,
   isAuthenticated,
   useValidation,
 } from './middlewares'
-import { Role } from './types'
-import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
 import FileController from './controllers/FileController'
 import { seedersFunction } from './seed'
@@ -119,7 +116,6 @@ async function StartAPI() {
   })
 
   const {
-    createbugSchema,
     createEmployeeSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
@@ -148,13 +144,6 @@ async function StartAPI() {
   // Badge
   app.get('/badges', [isAuthenticated], new BadgeController().getAll)
   app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
-
-  // Bug
-  app.get('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().getOne)
-  app.post('/bugreport/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
-  app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
-  app.patch('/bugreport/status/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateStatus)
-  app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
   // Company
   app.use('/company', new CompanyRoutes(APP_SOURCE).intializeRoutes())

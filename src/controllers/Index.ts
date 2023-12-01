@@ -1,6 +1,5 @@
 import { AddresController } from './AddressController'
 import AuthController from './AuthController'
-import BugReportController from './BugReportController'
 import EmployeeController from './employees/EmployeeController'
 import EventController from './EventController'
 import FileController from './FileController'
@@ -9,7 +8,6 @@ import UserController from './UserController'
 export default {
   AddresController,
   AuthController,
-  BugReportController,
   EmployeeController,
   EventController,
   FileController,

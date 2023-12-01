@@ -125,14 +125,6 @@ export function useValidation() {
     }),
   })
 
-  const createbugSchema = object({
-    body: object({
-      name: string().required('Le nom est obligatoire'),
-      url: string().url('L\'url est invalide'),
-      description: string().required('La description est obligatoire'),
-    }),
-  })
-
   const createEmployeeSchema = object({
     body: object({
       address: object({
@@ -231,7 +223,6 @@ export function useValidation() {
 
   return {
     createAddressSchema,
-    createbugSchema,
     createEmployeeSchema,
     createGroupSchema,
     createGroupCSVSchema,
