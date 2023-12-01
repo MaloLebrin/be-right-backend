@@ -24,6 +24,7 @@ export class EventRoutes extends BaseRouter implements BaseInterfaceRouter {
     this.router.get('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).getOne)
     this.router.post('', [validate(createOneEventSchema), isAuthenticated], new EventSpecificController(this.DATA_SOURCE).posteOneWithRelations)
     this.router.patch('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).updateOne)
+    this.router.patch('/synchronise/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).synchroniseOne)
     this.router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).deleteOne)
 
     return this.router
