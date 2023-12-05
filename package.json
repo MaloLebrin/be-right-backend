@@ -62,7 +62,6 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^18.16.0",
     "@types/node-cron": "^3.0.7",
-    "@types/nodemailer": "^6.4.7",
     "@types/uid2": "0.0.2",
     "eslint": "^8.39.0",
     "eslint-plugin-security": "^1.7.1",
