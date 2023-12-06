@@ -45,7 +45,7 @@ export class UpdateEventStatusJob extends BaseJob implements JobImp {
       }
 
       const eventAndNotificationService = new EventAndNotificationService(APP_SOURCE)
-      await eventAndNotificationService.sendNotificationEventSatatusChanged(event)
+      await eventAndNotificationService.sendNotificationEventStatusChanged(event)
     }
   }
 

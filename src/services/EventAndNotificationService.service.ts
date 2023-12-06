@@ -21,7 +21,7 @@ export class EventAndNotificationService {
     }
   }
 
-  public sendNotificationEventSatatusChanged = async (event: EventEntity) => {
+  public sendNotificationEventStatusChanged = async (event: EventEntity) => {
     const [eventNotif, company] = await Promise.all([
       this.EventNotificationService.createOne({
         name: getNotificationTypeByEventStatus(event),
