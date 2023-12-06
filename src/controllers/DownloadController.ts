@@ -3,25 +3,15 @@ import type { Logger } from 'pino'
 import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
 import { ApiError } from '../middlewares/ApiError'
-import AnswerService from '../services/AnswerService'
-import EventService from '../services/EventService'
 import { wrapperRequest } from '../utils'
 import { parseQueryIds } from '../utils/basicHelper'
-import UserService from '../services/UserService'
-import { AddressService } from '../services'
 import { logger } from '../middlewares/loggerService'
-import { CompanyService } from '../services/CompanyService'
 import AnswerEntity from '../entity/AnswerEntity'
 import { generateAnswerPdf } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
 
 export class DownloadController {
-  AnswerService: AnswerService
   repository: Repository<AnswerEntity>
-  AddressService: AddressService
-  EventService: EventService
-  UserService: UserService
-  CompanyService: CompanyService
   logger: Logger<{
     transport: {
       target: string
@@ -36,11 +26,6 @@ export class DownloadController {
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.repository = DATA_SOURCE.getRepository(AnswerEntity)
-      this.AnswerService = new AnswerService(DATA_SOURCE)
-      this.AddressService = new AddressService(DATA_SOURCE)
-      this.UserService = new UserService(DATA_SOURCE)
-      this.EventService = new EventService(DATA_SOURCE)
-      this.CompanyService = new CompanyService(DATA_SOURCE)
       this.logger = logger
       this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
