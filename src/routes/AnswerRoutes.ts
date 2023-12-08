@@ -32,6 +32,8 @@ export class AnswerRoutes extends BaseRouter implements BaseInterfaceRouter {
     this.router.get('/raise/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController(this.DATA_SOURCE).raiseAnswer)
 
     // Answer For Employee
+    this.router.get('/manyByEmployeeId/:id', [validate(idParamsSchema), isAuthenticated], new AnswerController(this.DATA_SOURCE).getManyByEmployeeId)
+
     this.router.patch('/signed/:id', [validate(signeAnswerValidation)], new AnswerSpecificController(this.DATA_SOURCE).updateAnswerByEmployee)
     this.router.post('/forSignature', [validate(getAnswerForEmployee)], new AnswerSpecificController(this.DATA_SOURCE).getOneAndSendCode)
     this.router.post('/checkDoubleAuth', [validate(doubleAuthSchema)], new AnswerSpecificController(this.DATA_SOURCE).checkTwoAuth)

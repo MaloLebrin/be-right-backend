@@ -20,13 +20,13 @@ import { CompanyEntity } from '../entity/Company.entity'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export class AnswerController {
-  AnswerService: AnswerService
-  EventService: EventService
-  mailJetService: MailjetService
-  redisCache: RedisCache
-  employeeRepository: Repository<EmployeeEntity>
-  companyRepository: Repository<CompanyEntity>
-  repository: Repository<AnswerEntity>
+  private AnswerService: AnswerService
+  private EventService: EventService
+  private mailJetService: MailjetService
+  private redisCache: RedisCache
+  private employeeRepository: Repository<EmployeeEntity>
+  private companyRepository: Repository<CompanyEntity>
+  private repository: Repository<AnswerEntity>
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -197,6 +197,19 @@ export class AnswerController {
         }
       }
       throw new ApiError(422, 'Identifiants des événements manquant')
+    })
+  }
+
+  public getManyByEmployeeId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const employeeId = parseInt(req.params.id)
+
+      if (!employeeId) {
+        throw new ApiError(422, 'Identifiant de la réponse manquant')
+      }
+
+      const answers = await this.AnswerService.getAllAnswersForEmployee(employeeId)
+      return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
     })
   }
 
