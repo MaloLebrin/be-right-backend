@@ -41,7 +41,7 @@
     "node-cron": "^3.0.2",
     "node-mailjet": "^6.0.2",
     "pg": "^8.10.0",
-    "pino": "8.16.2",
+    "pino": "8.17.1",
     "pino-pretty": "10.3.0",
     "puppeteer": "21.6.1",
     "redis": "^4.6.5",
