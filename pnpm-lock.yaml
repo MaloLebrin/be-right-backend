@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.10.0
     version: 0.10.0
   bullmq:
-    specifier: ^3.12.0
-    version: 3.15.8
+    specifier: ^5.0.0
+    version: 5.0.0
   class-transformer:
     specifier: ^0.5.1
     version: 0.5.1
@@ -1875,14 +1875,15 @@ packages:
       semver: 7.5.4
     dev: true
 
-  /bullmq@3.15.8:
-    resolution: {integrity: sha512-k3uimHGhl5svqD7SEak+iI6c5DxeLOaOXzCufI9Ic0ST3nJr69v71TGR4cXCTXdgCff3tLec5HgoBnfyWjgn5A==}
+  /bullmq@5.0.0:
+    resolution: {integrity: sha512-/GhvAB/nUKJMy2NzPCBKvq6yic6wlgaWW1gRCcFpjxP2LWB5TiCOSpsAx2i/9fUuMMa53/ZIKNK+vLO2DT+ZVQ==}
     dependencies:
       cron-parser: 4.8.1
       glob: 8.1.0
       ioredis: 5.3.2
       lodash: 4.17.21
       msgpackr: 1.9.5
+      node-abort-controller: 3.1.1
       semver: 7.5.4
       tslib: 2.6.0
       uuid: 9.0.0
@@ -4756,6 +4757,10 @@ packages:
   /netmask@2.0.2:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
+    dev: false
+
+  /node-abort-controller@3.1.1:
+    resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
     dev: false
 
   /node-cron@3.0.2:
