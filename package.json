@@ -1,7 +1,7 @@
 {
   "name": "be-right-backend",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.6.11",
+  "packageManager": "pnpm@8.12.1",
   "description": "Awesome project developed with TypeORM.",
   "author": {
     "name": "Malo Lebrin",
@@ -42,9 +42,9 @@
     "node-mailjet": "^6.0.5",
     "pg": "^8.10.0",
     "pino": "8.16.2",
-    "pino-pretty": "10.2.2",
-    "puppeteer": "21.5.2",
     "redis": "^4.6.11",
+    "pino-pretty": "10.3.0",
+    "puppeteer": "21.6.1",
     "reflect-metadata": "^0.1.13",
     "ts-node": "10.9.2",
     "typeorm": "0.3.17",
