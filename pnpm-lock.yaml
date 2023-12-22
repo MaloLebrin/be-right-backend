@@ -81,8 +81,8 @@ dependencies:
     specifier: ^4.6.12
     version: 4.6.12
   reflect-metadata:
-    specifier: ^0.1.14
-    version: 0.1.14
+    specifier: ^0.2.0
+    version: 0.2.1
   ts-node:
     specifier: 10.9.2
     version: 10.9.2(@types/node@18.19.3)(typescript@5.3.3)
@@ -5579,6 +5579,10 @@ packages:
 
   /reflect-metadata@0.1.14:
     resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
+    dev: false
+
+  /reflect-metadata@0.2.1:
+    resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
     dev: false
 
   /regenerator-runtime@0.13.11:
