@@ -87,8 +87,8 @@ dependencies:
     specifier: 10.9.2
     version: 10.9.2(@types/node@18.19.3)(typescript@5.3.3)
   typeorm:
-    specifier: 0.3.17
-    version: 0.3.17(ioredis@5.3.2)(pg@8.11.3)(redis@4.6.12)(ts-node@10.9.2)
+    specifier: 0.3.20
+    version: 0.3.20(ioredis@5.3.2)(pg@8.11.3)(redis@4.6.12)(ts-node@10.9.2)
   uid2:
     specifier: 1.0.0
     version: 1.0.0
@@ -2229,13 +2229,6 @@ packages:
     engines: {node: '>= 14'}
     dev: false
 
-  /date-fns@2.30.0:
-    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
-    engines: {node: '>=0.11'}
-    dependencies:
-      '@babel/runtime': 7.22.6
-    dev: false
-
   /dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
     dev: false
@@ -3401,6 +3394,18 @@ packages:
       is-glob: 4.0.3
     dev: true
 
+  /glob@10.3.10:
+    resolution: {integrity: sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==}
+    engines: {node: '>=16 || 14 >=14.17'}
+    hasBin: true
+    dependencies:
+      foreground-child: 3.1.1
+      jackspeak: 2.3.6
+      minimatch: 9.0.3
+      minipass: 7.0.2
+      path-scurry: 1.10.1
+    dev: false
+
   /glob@10.3.3:
     resolution: {integrity: sha512-92vPiMb/iqpmEgsOoIDvTjc50wf9CCCvMzsi6W0JLPeUKE8TWP1a73PgqSrqy7iAZxaSD1YdzU7QZR5LF51MJw==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -3930,6 +3935,15 @@ packages:
 
   /jackspeak@2.2.1:
     resolution: {integrity: sha512-MXbxovZ/Pm42f6cDIDkl3xpwv1AGwObKwfmjs2nQePiy85tP3fatofl3FC1aBsOtP/6fq5SbtgHwWcMsLP+bDw==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@isaacs/cliui': 8.0.2
+    optionalDependencies:
+      '@pkgjs/parseargs': 0.11.0
+    dev: false
+
+  /jackspeak@2.3.6:
+    resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
     engines: {node: '>=14'}
     dependencies:
       '@isaacs/cliui': 8.0.2
@@ -5581,6 +5595,10 @@ packages:
     resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
     dev: false
 
+  /reflect-metadata@0.2.1:
+    resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
+    dev: false
+
   /regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
     dev: false
@@ -6310,20 +6328,20 @@ packages:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
     dev: false
 
-  /typeorm@0.3.17(ioredis@5.3.2)(pg@8.11.3)(redis@4.6.12)(ts-node@10.9.2):
-    resolution: {integrity: sha512-UDjUEwIQalO9tWw9O2A4GU+sT3oyoUXheHJy4ft+RFdnRdQctdQ34L9SqE2p7LdwzafHx1maxT+bqXON+Qnmig==}
-    engines: {node: '>= 12.9.0'}
+  /typeorm@0.3.20(ioredis@5.3.2)(pg@8.11.3)(redis@4.6.12)(ts-node@10.9.2):
+    resolution: {integrity: sha512-sJ0T08dV5eoZroaq9uPKBoNcGslHBR4E4y+EBHs//SiGbblGe7IeduP/IH4ddCcj0qp3PHwDwGnuvqEAnKlq/Q==}
+    engines: {node: '>=16.13.0'}
     hasBin: true
     peerDependencies:
       '@google-cloud/spanner': ^5.18.0
       '@sap/hana-client': ^2.12.25
-      better-sqlite3: ^7.1.2 || ^8.0.0
+      better-sqlite3: ^7.1.2 || ^8.0.0 || ^9.0.0
       hdb-pool: ^0.1.6
       ioredis: ^5.0.4
-      mongodb: ^5.2.0
-      mssql: ^9.1.1
+      mongodb: ^5.8.0
+      mssql: ^9.1.1 || ^10.0.1
       mysql2: ^2.2.5 || ^3.0.1
-      oracledb: ^5.1.0
+      oracledb: ^6.3.0
       pg: ^8.5.1
       pg-native: ^3.0.0
       pg-query-stream: ^4.0.0
@@ -6373,15 +6391,15 @@ packages:
       buffer: 6.0.3
       chalk: 4.1.2
       cli-highlight: 2.1.11
-      date-fns: 2.30.0
+      dayjs: 1.11.10
       debug: 4.3.4
       dotenv: 16.3.1
-      glob: 8.1.0
+      glob: 10.3.10
       ioredis: 5.3.2
       mkdirp: 2.1.6
       pg: 8.11.3
       redis: 4.6.12
-      reflect-metadata: 0.1.14
+      reflect-metadata: 0.2.1
       sha.js: 2.4.11
       ts-node: 10.9.2(@types/node@18.19.3)(typescript@5.3.3)
       tslib: 2.6.0
