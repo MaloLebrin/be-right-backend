@@ -3,7 +3,7 @@ import fr from 'dayjs/locale/fr'
 import isBetween from 'dayjs/plugin/isBetween'
 import type EventEntity from '../entity/EventEntity'
 import type { CalendarDay, Period } from '../types/Event'
-import { EventStatusEnum } from '../types/Event'
+import { EventStatusEnum, EventStatusOrder } from '../types/Event'
 import { addADay, isBefore, isDateBetween, isSameDay, toFormat } from './dateHelper'
 
 dayjs.locale(fr)
@@ -93,4 +93,18 @@ export function composeEventForPeriod({
     currentDate = addADay(currentDate)
   }
   return arrayOfDay
+}
+
+export function orderingEventsByStatusAndDate(events: EventEntity[]): EventEntity[] {
+  if (!events || events.length === 0) {
+    return []
+  }
+  return events.sort((a, b) => {
+    const scoreA = EventStatusOrder[a.status]
+    const scoreB = EventStatusOrder[b.status]
+    if (scoreA === scoreB) {
+      return isBefore(a.end, b.end) ? -1 : 1
+    }
+    return scoreA - scoreB
+  })
 }
