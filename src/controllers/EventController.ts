@@ -7,7 +7,7 @@ import EventEntity, { eventRelationFields, eventSearchableFields } from '../enti
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
+import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin, orderingEventsByStatusAndDate } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -211,7 +211,7 @@ export default class EventController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const { where, page, take, skip, order } = newPaginator<EventEntity>({
+      const { where, page, take, skip } = newPaginator<EventEntity>({
         req,
         searchableFields: eventSearchableFields,
         relationFields: eventRelationFields,
@@ -241,16 +241,14 @@ export default class EventController {
         take,
         skip,
         where: whereFields,
-        order,
       })
 
       return res.status(200).json({
-        data: events,
+        data: orderingEventsByStatusAndDate(events),
         currentPage: page,
         totalPages: Math.ceil(total / take),
         limit: take,
         total,
-        order,
       })
     })
   }
