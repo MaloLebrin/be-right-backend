@@ -114,12 +114,11 @@ export function orderingEventsByStatusAndDate(events: EventEntity[]): EventEntit
  * @example orderBy(composeOrderFieldForEventStatus())
  */
 export function composeOrderFieldForEventStatus() {
-  const eventStatusField = 'event_entity.status'
-  return `(case
-    when ${eventStatusField} is ${EventStatusEnum.PENDING} then ${EventStatusOrder[EventStatusEnum.PENDING]}
-    when ${eventStatusField} is ${EventStatusEnum.CREATE} then ${EventStatusOrder[EventStatusEnum.CREATE]}
-    when ${eventStatusField} is ${EventStatusEnum.COMPLETED} then ${EventStatusOrder[EventStatusEnum.COMPLETED]}
-    when ${eventStatusField} is ${EventStatusEnum.CLOSED} then ${EventStatusOrder[EventStatusEnum.CLOSED]}
-    else null
-  end)`
+  const eventStatusField = 'event.status'
+  return `CASE
+      WHEN ${eventStatusField} = '${EventStatusEnum.PENDING}' THEN ${EventStatusOrder[EventStatusEnum.PENDING]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CREATE}' THEN ${EventStatusOrder[EventStatusEnum.CREATE]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.COMPLETED}' THEN ${EventStatusOrder[EventStatusEnum.COMPLETED]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CLOSED}' THEN ${EventStatusOrder[EventStatusEnum.CLOSED]}
+    END`
 }

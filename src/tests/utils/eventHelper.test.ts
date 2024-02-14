@@ -130,10 +130,10 @@ describe('orderingEventsByStatusAndDate', () => {
   describe('composeOrderFieldForEventStatus', () => {
     test('should return a string with the right order', () => {
       expect(composeOrderFieldForEventStatus()).toStrictEqual(`(case
-    when event_entity.status is PENDING then 1
-    when event_entity.status is CREATE then 2
-    when event_entity.status is COMPLETED then 3
-    when event_entity.status is CLOSED then 4
+    when event.status is PENDING then 1
+    when event.status is CREATE then 2
+    when event.status is COMPLETED then 3
+    when event.status is CLOSED then 4
     else null
   end)`)
     })

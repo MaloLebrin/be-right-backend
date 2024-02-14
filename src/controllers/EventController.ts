@@ -7,7 +7,7 @@ import EventEntity, { eventRelationFields, eventSearchableFields } from '../enti
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
+import { composeEventForPeriod, composeOrderFieldForEventStatus, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -221,16 +221,15 @@ export default class EventController {
         .leftJoin('event.company', 'company')
         .take(take)
         .skip(skip)
-        .addSelect(`CASE
-        WHEN event.status = 'PENDING' THEN 1
-        WHEN event.status = 'CREATE' THEN 2
-        WHEN event.status = 'COMPLETED' THEN 3
-        WHEN event.status = 'CLOSED' THEN 4
-      END`, '_rank')
+        .addSelect(composeOrderFieldForEventStatus(), '_rank')
         .orderBy('_rank')
 
       if (!isUserAdmin(ctx.user)) {
         eventPagniateQuery.andWhere('company.id = :companyId', { companyId: ctx.user.companyId })
+      }
+
+      if (req.query.search && req.query.search !== '') {
+        eventPagniateQuery.andWhere('event.name ILIKE :search', { search: `%${req.query.search}%` })
       }
 
       const [events, total] = await eventPagniateQuery.getManyAndCount()
