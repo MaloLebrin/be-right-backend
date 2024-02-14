@@ -7,7 +7,7 @@ import EventEntity, { eventRelationFields, eventSearchableFields } from '../enti
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin, orderingEventsByStatusAndDate } from '../utils/'
+import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -18,7 +18,6 @@ import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { newPaginator } from '../utils/paginatorHelper'
-import type { CompanyEntity } from '../entity/Company.entity'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 
 export default class EventController {
@@ -211,40 +210,33 @@ export default class EventController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const { where, page, take, skip } = newPaginator<EventEntity>({
+      const { page, take, skip } = newPaginator<EventEntity>({
         req,
         searchableFields: eventSearchableFields,
         relationFields: eventRelationFields,
       })
 
-      let whereFields = where
+      const eventPagniateQuery = this.repository
+        .createQueryBuilder('event')
+        .leftJoin('event.company', 'company')
+        .take(take)
+        .skip(skip)
+        .addSelect(`CASE
+        WHEN event.status = 'PENDING' THEN 1
+        WHEN event.status = 'CREATE' THEN 2
+        WHEN event.status = 'COMPLETED' THEN 3
+        WHEN event.status = 'CLOSED' THEN 4
+      END`, '_rank')
+        .orderBy('_rank')
 
       if (!isUserAdmin(ctx.user)) {
-        if (where.length > 0) {
-          whereFields = where.map(obj => {
-            obj.company = {
-              ...obj.company as FindOptionsWhere<CompanyEntity>,
-              id: ctx.user.companyId,
-            }
-            return obj
-          })
-        } else {
-          whereFields.push({
-            company: {
-              id: ctx.user.companyId,
-            },
-          })
-        }
+        eventPagniateQuery.andWhere('company.id = :companyId', { companyId: ctx.user.companyId })
       }
 
-      const [events, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where: whereFields,
-      })
+      const [events, total] = await eventPagniateQuery.getManyAndCount()
 
       return res.status(200).json({
-        data: orderingEventsByStatusAndDate(events),
+        data: events,
         currentPage: page,
         totalPages: Math.ceil(total / take),
         limit: take,
