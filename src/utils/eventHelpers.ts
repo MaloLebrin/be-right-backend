@@ -108,3 +108,17 @@ export function orderingEventsByStatusAndDate(events: EventEntity[]): EventEntit
     return scoreA - scoreB
   })
 }
+
+/**
+ * @description compose order field for event status when using query builder
+ * @example orderBy(composeOrderFieldForEventStatus())
+ */
+export function composeOrderFieldForEventStatus() {
+  const eventStatusField = 'event.status'
+  return `CASE
+      WHEN ${eventStatusField} = '${EventStatusEnum.PENDING}' THEN ${EventStatusOrder[EventStatusEnum.PENDING]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CREATE}' THEN ${EventStatusOrder[EventStatusEnum.CREATE]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.COMPLETED}' THEN ${EventStatusOrder[EventStatusEnum.COMPLETED]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CLOSED}' THEN ${EventStatusOrder[EventStatusEnum.CLOSED]}
+    END`
+}

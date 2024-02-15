@@ -1,7 +1,8 @@
-import { expect, test } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
 import type { FindOperator } from 'typeorm'
 import { ILike } from 'typeorm'
 import {
+  composeWhereFieldForQueryBuilder,
   newPaginator,
   parsePathRelation,
   parseQueries,
@@ -348,4 +349,63 @@ test('Pagniator format correctly filters with filters', () => {
     lastName: 'ASC',
   })
   expect(withDeleted).toBeTruthy()
+})
+
+describe('composeWhereFieldForQueryBuilder', () => {
+  test('should throw new error when alias is falsy', () => {
+    expect(() => {
+      composeWhereFieldForQueryBuilder({
+        alias: null as unknown as string,
+        filters: null as unknown as Record<string, unknown>,
+        andFilters: null as unknown as Record<string, unknown>,
+      })
+    }).toThrowError('Alias is required')
+  })
+
+  test('should return empty andWhere and orWhere when filters and andFilters are falsy', () => {
+    const { orWhere, andWhere } = composeWhereFieldForQueryBuilder({
+      alias: 'user',
+      filters: null,
+      andFilters: null,
+    })
+
+    expect(orWhere).toStrictEqual([])
+    expect(andWhere).toStrictEqual([])
+    expect(orWhere).toHaveLength(0)
+    expect(andWhere).toHaveLength(0)
+  })
+
+  test('should return orWhere array with filters not empty', () => {
+    const { orWhere } = composeWhereFieldForQueryBuilder({
+      alias: 'user',
+      filters: {
+        id: 1,
+      },
+      andFilters: null,
+    })
+
+    expect(orWhere[0]).toStrictEqual({ key: 'user.id = :id', params: { id: 1 } })
+    expect(orWhere).toHaveLength(1)
+  })
+
+  test('should return andWhere array with andFilters not empty', () => {
+    const { andWhere } = composeWhereFieldForQueryBuilder({
+      alias: 'user',
+      filters: null,
+      andFilters: {
+        id: 1,
+        firstName: 'test',
+      },
+    })
+
+    expect(andWhere[0]).toStrictEqual({
+      key: 'user.id = :id',
+      params: { id: 1 },
+    })
+    expect(andWhere[1]).toStrictEqual({
+      key: 'user.firstName = :firstName',
+      params: { firstName: 'test' },
+    })
+    expect(andWhere).toHaveLength(2)
+  })
 })

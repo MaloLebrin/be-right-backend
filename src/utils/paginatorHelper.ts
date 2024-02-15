@@ -123,3 +123,43 @@ export function newPaginator<T extends BaseEntity>({
     withDeleted,
   }
 }
+
+export function composeWhereFieldForQueryBuilder({
+  alias,
+  andFilters,
+  filters,
+}: {
+  alias: string
+  andFilters: FindOptionsWhere<any> | null
+  filters: FindOptionsWhere<any> | null
+}) {
+  if (!alias) {
+    throw new Error('Alias is required')
+  }
+
+  const andWhere: { key: string; params: Record<string, string | number> }[] = []
+  const orWhere: { key: string; params: Record<string, string | number> }[] = []
+
+  if (filters) {
+    for (const [key, value] of Object.entries(filters)) {
+      orWhere.push({
+        key: `${alias}.${key} = :${key}`,
+        params: { [key]: value },
+      })
+    }
+  }
+
+  if (andFilters) {
+    for (const [key, value] of Object.entries(andFilters)) {
+      andWhere.push({
+        key: `${alias}.${key} = :${key}`,
+        params: { [key]: value },
+      })
+    }
+  }
+
+  return {
+    andWhere,
+    orWhere,
+  }
+}

@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals'
 import dayjs from 'dayjs'
 import eventJSON from '../fixtures/premium/events.json'
 import {
+  composeOrderFieldForEventStatus,
   hasNotEventStartedYet,
   isEventInProgress,
   isEventOver,
@@ -124,5 +125,16 @@ describe('orderingEventsByStatusAndDate', () => {
       expect.objectContaining({ id: 4 }),
       expect.objectContaining({ id: 1 }),
     ])
+  })
+
+  describe('composeOrderFieldForEventStatus', () => {
+    test('should return a string with the right order', () => {
+      expect(composeOrderFieldForEventStatus()).toStrictEqual(`CASE
+      WHEN event.status = 'PENDING' THEN 1
+      WHEN event.status = 'CREATE' THEN 2
+      WHEN event.status = 'COMPLETED' THEN 3
+      WHEN event.status = 'CLOSED' THEN 4
+    END`)
+    })
   })
 })

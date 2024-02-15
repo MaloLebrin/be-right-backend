@@ -3,11 +3,11 @@ import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm'
 import dayjs from 'dayjs'
 import EventService from '../services/EventService'
-import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
+import EventEntity from '../entity/EventEntity'
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { composeEventForPeriod, generateRedisKey, generateRedisKeysArray, isUserAdmin, orderingEventsByStatusAndDate } from '../utils/'
+import { composeEventForPeriod, composeOrderFieldForEventStatus, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -17,9 +17,8 @@ import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
-import { newPaginator } from '../utils/paginatorHelper'
-import type { CompanyEntity } from '../entity/Company.entity'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { composeWhereFieldForQueryBuilder, parseQueries } from '../utils/paginatorHelper'
 
 export default class EventController {
   AddressService: AddressService
@@ -211,43 +210,55 @@ export default class EventController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const { where, page, take, skip } = newPaginator<EventEntity>({
-        req,
-        searchableFields: eventSearchableFields,
-        relationFields: eventRelationFields,
-      })
+      const {
+        andFilters,
+        filters,
+        limit,
+        page,
+        search,
+        withDeleted,
+      } = parseQueries(req)
+      const { andWhere, orWhere } = composeWhereFieldForQueryBuilder({ alias: 'event', andFilters, filters })
 
-      let whereFields = where
+      const eventPagniateQuery = this.repository
+        .createQueryBuilder('event')
+        .leftJoin('event.company', 'company')
+        .take(limit)
+        .skip((page - 1) * limit)
+        .addSelect(composeOrderFieldForEventStatus(), '_rank')
+        .orderBy('_rank')
 
       if (!isUserAdmin(ctx.user)) {
-        if (where.length > 0) {
-          whereFields = where.map(obj => {
-            obj.company = {
-              ...obj.company as FindOptionsWhere<CompanyEntity>,
-              id: ctx.user.companyId,
-            }
-            return obj
-          })
-        } else {
-          whereFields.push({
-            company: {
-              id: ctx.user.companyId,
-            },
-          })
+        eventPagniateQuery.andWhere('company.id = :companyId', { companyId: ctx.user.companyId })
+      }
+
+      if (req.query.search && req.query.search !== '') {
+        eventPagniateQuery.andWhere('event.name ILIKE :search', { search: `%${search}%` })
+      }
+
+      if (withDeleted) {
+        eventPagniateQuery.withDeleted()
+      }
+
+      if (andWhere.length > 0) {
+        for (const { key, params } of andWhere) {
+          eventPagniateQuery.andWhere(key, params)
         }
       }
 
-      const [events, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where: whereFields,
-      })
+      if (orWhere.length > 0) {
+        for (const { key, params } of orWhere) {
+          eventPagniateQuery.andWhere(key, params)
+        }
+      }
+
+      const [events, total] = await eventPagniateQuery.getManyAndCount()
 
       return res.status(200).json({
-        data: orderingEventsByStatusAndDate(events),
+        data: events,
         currentPage: page,
-        totalPages: Math.ceil(total / take),
-        limit: take,
+        totalPages: Math.ceil(total / limit),
+        limit,
         total,
       })
     })
