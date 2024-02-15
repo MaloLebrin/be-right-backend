@@ -15,6 +15,10 @@ export class StripeCustomerService extends StripeService {
     this.UserRepository = APP_SOURCE.getRepository(UserEntity)
   }
 
+  /**
+   * @description create new stripeCustomer and update user with stripeCustomerId
+   * @returns Stripe.Customer
+   */
   public createStripeCustomer = async (user: UserEntity) => {
     const company = await this.CompanyRepository.findOne({
       where: { id: user?.companyId },
@@ -41,7 +45,7 @@ export class StripeCustomerService extends StripeService {
   }
 
   /**
-   * Return curstomer by user, or create new stripeCustomer
+   * @description Return curstomer by user, or create new stripeCustomer
    * @returns Stripe.Customer
    */
   public getStripeCustomerForUser = async (user: UserEntity) => {
