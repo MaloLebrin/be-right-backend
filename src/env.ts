@@ -45,5 +45,6 @@ export function useEnv() {
     GEO_CODING_API_URL: process.env.GEO_CODING_API_URL,
 
     BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
+    STRIPE_PRIVATE_KEY: process.env.STRIPE_PRIVATE_KEY,
   }
 }
