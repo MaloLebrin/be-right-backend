@@ -3,7 +3,7 @@ import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm'
 import dayjs from 'dayjs'
 import EventService from '../services/EventService'
-import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
+import EventEntity from '../entity/EventEntity'
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
@@ -17,8 +17,8 @@ import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
-import { newPaginator } from '../utils/paginatorHelper'
 import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { composeWhereFieldForQueryBuilder, parseQueries } from '../utils/paginatorHelper'
 
 export default class EventController {
   AddressService: AddressService
@@ -210,17 +210,21 @@ export default class EventController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const { page, take, skip } = newPaginator<EventEntity>({
-        req,
-        searchableFields: eventSearchableFields,
-        relationFields: eventRelationFields,
-      })
+      const {
+        andFilters,
+        filters,
+        limit,
+        page,
+        search,
+        withDeleted,
+      } = parseQueries(req)
+      const { andWhere, orWhere } = composeWhereFieldForQueryBuilder({ alias: 'event', andFilters, filters })
 
       const eventPagniateQuery = this.repository
         .createQueryBuilder('event')
         .leftJoin('event.company', 'company')
-        .take(take)
-        .skip(skip)
+        .take(limit)
+        .skip((page - 1) * limit)
         .addSelect(composeOrderFieldForEventStatus(), '_rank')
         .orderBy('_rank')
 
@@ -229,7 +233,23 @@ export default class EventController {
       }
 
       if (req.query.search && req.query.search !== '') {
-        eventPagniateQuery.andWhere('event.name ILIKE :search', { search: `%${req.query.search}%` })
+        eventPagniateQuery.andWhere('event.name ILIKE :search', { search: `%${search}%` })
+      }
+
+      if (withDeleted) {
+        eventPagniateQuery.withDeleted()
+      }
+
+      if (andWhere.length > 0) {
+        for (const { key, params } of andWhere) {
+          eventPagniateQuery.andWhere(key, params)
+        }
+      }
+
+      if (orWhere.length > 0) {
+        for (const { key, params } of orWhere) {
+          eventPagniateQuery.andWhere(key, params)
+        }
       }
 
       const [events, total] = await eventPagniateQuery.getManyAndCount()
@@ -237,8 +257,8 @@ export default class EventController {
       return res.status(200).json({
         data: events,
         currentPage: page,
-        totalPages: Math.ceil(total / take),
-        limit: take,
+        totalPages: Math.ceil(total / limit),
+        limit,
         total,
       })
     })
