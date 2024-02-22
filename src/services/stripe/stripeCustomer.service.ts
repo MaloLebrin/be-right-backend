@@ -4,6 +4,7 @@ import { CompanyEntity } from '../../entity/Company.entity'
 import { UserEntity } from '../../entity/UserEntity'
 import { StripeService } from '../../services/stripe/stripe.service'
 import { getfullUsername } from '../../utils/userHelper'
+import { ApiError } from '../../middlewares/ApiError'
 
 export class StripeCustomerService extends StripeService {
   private UserRepository: Repository<UserEntity>
@@ -24,6 +25,10 @@ export class StripeCustomerService extends StripeService {
       where: { id: user?.companyId },
       relations: { address: true },
     })
+
+    if (!company) {
+      throw new ApiError(500, 'Une erreur est survenue')
+    }
 
     const companyAddress = company.address
 
