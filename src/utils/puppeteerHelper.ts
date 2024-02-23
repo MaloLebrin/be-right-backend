@@ -1,7 +1,9 @@
 import puppeteer from 'puppeteer'
+import { useEnv } from '../env'
+import { isProduction } from './envHelper'
 
 export async function launchPuppeteer(isMadeByBrowserless?: boolean) {
-  const BROWSERLESS_API_KEY = process.env.BROWSERLESS_API_KEY
+  const { BROWSERLESS_API_KEY } = useEnv()
 
   if (isMadeByBrowserless && BROWSERLESS_API_KEY) {
     return puppeteer.connect({
@@ -11,7 +13,7 @@ export async function launchPuppeteer(isMadeByBrowserless?: boolean) {
   return puppeteer.launch({
     userDataDir: './tmp',
     headless: 'new',
-    executablePath: '/usr/bin/chromium-browser',
+    executablePath: isProduction() ? '/usr/bin/chromium-browser' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     args: [
       '--no-sandbox',
       '--disable-gpu',

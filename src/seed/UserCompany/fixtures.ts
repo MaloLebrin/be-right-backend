@@ -11,6 +11,7 @@ export const userCompanyFixturePremium = {
   role: Role.OWNER,
   subscription: SubscriptionEnum.PREMIUM,
   signature: signatureAlbus,
+  stripeCustomerId: 'cus_NbTnJgi9yr4qFM',
 }
 
 export const subscriptionUserCompanyFixturePremium = {

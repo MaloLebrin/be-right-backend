@@ -1,8 +1,8 @@
 import { MigrationScript } from "../../types/Migrations"
 import {
   addUserTest1689256415633,
-  RemovedPaymentEntityMigrations,
   addNotificationTokenToUser,
+  SeedTestAdminUser1708691709145,
 } from "../migrations"
 
 export const migrationScripts: MigrationScript[] = [
@@ -13,12 +13,12 @@ export const migrationScripts: MigrationScript[] = [
   },
   {
     version: 1,
-    name: 'RemovedPaymentEntity',
-    script: RemovedPaymentEntityMigrations,
+    name: 'addNotificationTokenToUser',
+    script: addNotificationTokenToUser,
   },
   {
     version: 2,
-    name: 'addNotificationTokenToUser',
-    script: addNotificationTokenToUser,
+    name: 'SeedTestAdminUser1708691709145',
+    script: SeedTestAdminUser1708691709145,
   },
 ]

@@ -1,3 +1,4 @@
+import path from 'node:path'
 import dayjs from 'dayjs'
 import type { DataSource, Repository } from 'typeorm'
 import csv from 'csvtojson'
@@ -81,9 +82,9 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   private async seedCSVEmployee(companyId: number) {
-    const pathF = '/app/src/seed/UserCompany/testcsv.csv'
+    const pathFile = path.join(__dirname, '/testcsv.csv')
 
-    const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(pathF)
+    const newEmployeesData: UploadCSVEmployee[] = await csv().fromFile(pathFile)
 
     const employees = await Promise.all(newEmployeesData.map(async ({
       firstName,
@@ -176,7 +177,7 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   public async seedUserPremium() {
-    const isExisting = await this.UserService.repository.exist({
+    const isExisting = await this.UserService.repository.exists({
       where: {
         email: userCompanyFixturePremium.email,
       },
@@ -237,6 +238,7 @@ export class UserSeedClass extends BaseSeedClass {
       },
     ))
 
+    await this.photographersSeeder()
     await this.seedCSVEmployee(newCompany.id)
 
     const employeeIds = employees.map(employee => employee.id)

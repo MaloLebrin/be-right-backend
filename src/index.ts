@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import path from 'node:path'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
@@ -45,6 +46,7 @@ import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
+dotenv.config()
 
 const {
   CLOUDINARY_API_KEY,
@@ -53,10 +55,13 @@ const {
   NODE_ENV,
   PORT,
   FRONT_URL,
+  REDIS_PASSWORD,
+  REDIS_HOST,
+  REDIS_PORT,
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
-export const REDIS_CACHE = new RedisCache()
+export const REDIS_CACHE = new RedisCache({ REDIS_PORT: parseInt(REDIS_PORT), REDIS_HOST, REDIS_PASSWORD })
 
 async function StartAPI() {
   await APP_SOURCE.initialize()
@@ -84,7 +89,6 @@ async function StartAPI() {
   const app = express()
 
   // Middlewares
-  dotenv.config()
   app.use(helmet())
   app.use(cors({
     origin: isProduction() ? FRONT_URL : '*',
@@ -101,7 +105,8 @@ async function StartAPI() {
 
   app.engine('handlebars', hbs.engine)
   app.set('view engine', 'handlebars')
-  app.set('views', '/app/src/views')
+  app.set('views', path.join(__dirname, 'views'))
+  app.use(express.static('public'))
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,

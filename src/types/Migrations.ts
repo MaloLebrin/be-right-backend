@@ -10,7 +10,7 @@ export interface MigrationCustomInterface {
 export interface MigrationScript {
   version: number
   name: string
-  script: ({ name, SOURCE, QueryRunner }: MigrationCustomInterface) => Promise<void>
+  script: ({ name, SOURCE, QueryRunner }: MigrationCustomInterface) => Promise<{ success: boolean; name: string }>
 }
 
 export interface MigrationRunnerPayload {

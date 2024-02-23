@@ -69,7 +69,7 @@ export default class EmployeeController {
 
       userId = ctx.user.id
 
-      const isEmployeeAlreadyExist = await this.employeeRepository.exist({
+      const isEmployeeAlreadyExist = await this.employeeRepository.exists({
         where: {
           email: employee.email,
         },

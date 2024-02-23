@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
+import { isProduction } from '../utils/envHelper'
 import { ApiError } from './ApiError'
 
 export function errorHandler(err: Error, _: Request, res: Response, next: NextFunction) {
@@ -13,7 +14,7 @@ export function errorHandler(err: Error, _: Request, res: Response, next: NextFu
   } else {
     // hide the detailed error message in production
     // for security reasons
-    if (process.env.NODE_ENV !== 'production') {
+    if (isProduction()) {
       // since in JavaScript you can also
       // directly throw strings
       if (typeof err === 'string') {
@@ -28,7 +29,7 @@ export function errorHandler(err: Error, _: Request, res: Response, next: NextFu
 
   // return the stack trace only when
   // developing locally or in stage
-  if (process.env.NODE_ENV !== 'production') {
+  if (isProduction()) {
     stackTrace = err.stack
   }
 
