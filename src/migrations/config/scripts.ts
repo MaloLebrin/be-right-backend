@@ -2,6 +2,7 @@ import { MigrationScript } from "../../types/Migrations"
 import {
   addUserTest1689256415633,
   addNotificationTokenToUser,
+  SeedTestAdminUser1708691709145,
 } from "../migrations"
 
 export const migrationScripts: MigrationScript[] = [
@@ -14,5 +15,10 @@ export const migrationScripts: MigrationScript[] = [
     version: 1,
     name: 'addNotificationTokenToUser',
     script: addNotificationTokenToUser,
+  },
+  {
+    version: 1,
+    name: 'SeedTestAdminUser1708691709145',
+    script: SeedTestAdminUser1708691709145,
   },
 ]
