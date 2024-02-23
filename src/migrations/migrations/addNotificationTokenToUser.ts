@@ -2,6 +2,7 @@ import { MigrationCustomInterface } from "../../types/Migrations"
 import { logger } from "../../middlewares/loggerService"
 import { UserEntity } from "../../entity/UserEntity"
 import { createNotificationToken } from "../../utils/userHelper"
+import { isProduction } from "../../utils/envHelper"
 
 export async function addNotificationTokenToUser({
   name,
@@ -23,8 +24,19 @@ export async function addNotificationTokenToUser({
       ))
     }
 
+    return {
+      success: true,
+      name,
+    }
   } catch (error) {
+    if (!isProduction()) {
+      console.error(error, '<==== error')
+    }
     logger.error(`An error occurred for migration ${name} `, error)
+    return {
+      success: false,
+      name,
+    }
   } finally {
     logger.info(`Migration ${name} ended`)
   }
