@@ -1,7 +1,7 @@
 import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
 import dayjs from 'dayjs'
-import { createJwtToken } from '../../utils/'
+import { createJwtToken, createNotificationToken } from '../../utils/'
 import { UserEntity } from '../../entity/UserEntity'
 import { generateHash } from '../../utils'
 import { Role, SubscriptionEnum } from '../../types'
@@ -11,8 +11,8 @@ import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { useEnv } from '../../env'
 
 export class UserAdminSeed extends BaseSeedClass {
-  UserRepository: Repository<UserEntity>
-  CompanyRepository: Repository<CompanyEntity>
+  private UserRepository: Repository<UserEntity>
+  private CompanyRepository: Repository<CompanyEntity>
 
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
@@ -22,7 +22,7 @@ export class UserAdminSeed extends BaseSeedClass {
 
   async CreateAdminUser() {
     const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
-    if (ADMIN_EMAIL) {
+    if (ADMIN_EMAIL && ADMIN_PASSWORD) {
       const subscription = this.getManager.create(SubscriptionEntity, {
         type: SubscriptionEnum.PREMIUM,
         expireAt: dayjs().add(1, 'year'),
@@ -56,7 +56,7 @@ export class UserAdminSeed extends BaseSeedClass {
         company: newCompany,
       })
 
-      await this.UserRepository.save(newUser)
+      await this.UserRepository.save({ ...newUser, notificationToken: createNotificationToken(newUser.id) })
 
       await this.AddressService.createOne({
         address: {
