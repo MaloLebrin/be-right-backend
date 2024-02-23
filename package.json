@@ -14,7 +14,7 @@
     "dev": "node --watch -r ts-node/register src/index.ts",
     "tsc": "rm -rf build/ && tsc",
     "type:check": "tsc -noEmit",
-    "build": "node build/index.js",
+    "build": "pnpm run tsc && node build/src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest"
