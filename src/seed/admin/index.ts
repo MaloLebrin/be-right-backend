@@ -8,6 +8,7 @@ import { Role, SubscriptionEnum } from '../../types'
 import { BaseSeedClass } from '../Base/BaseSeedClass'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
+import { useEnv } from '../../env'
 
 export class UserAdminSeed extends BaseSeedClass {
   UserRepository: Repository<UserEntity>
@@ -20,7 +21,8 @@ export class UserAdminSeed extends BaseSeedClass {
   }
 
   async CreateAdminUser() {
-    if (process.env.ADMIN_EMAIL) {
+    const { ADMIN_EMAIL, ADMIN_PASSWORD } = useEnv()
+    if (ADMIN_EMAIL) {
       const subscription = this.getManager.create(SubscriptionEntity, {
         type: SubscriptionEnum.PREMIUM,
         expireAt: dayjs().add(1, 'year'),
@@ -38,19 +40,19 @@ export class UserAdminSeed extends BaseSeedClass {
 
       const salt = uid2(128)
       const newUser = this.UserRepository.create({
-        email: process.env.ADMIN_EMAIL,
+        email: ADMIN_EMAIL,
         firstName: 'Malo',
         lastName: 'Lebrin',
         salt,
         roles: Role.ADMIN,
         token: createJwtToken({
-          email: process.env.ADMIN_EMAIL,
+          email: ADMIN_EMAIL,
           firstName: 'Malo',
           lastName: 'Lebrin',
           roles: Role.ADMIN,
           subscription: SubscriptionEnum.PREMIUM,
         }),
-        password: generateHash(salt, process.env.ADMIN_PASSWORD),
+        password: generateHash(salt, ADMIN_PASSWORD),
         company: newCompany,
       })
 

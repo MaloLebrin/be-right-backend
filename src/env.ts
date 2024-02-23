@@ -36,5 +36,7 @@ export function useEnv() {
     CONCURRENT_WORKERS: process.env.CONCURRENT_WORKERS,
 
     GEO_CODING_API_URL: process.env.GEO_CODING_API_URL,
+
+    BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
   }
 }

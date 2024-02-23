@@ -15,12 +15,13 @@ import { MailjetTemplateId } from '../utils/mailJetHelpers'
 import type { CompanyEntity } from '../entity/Company.entity'
 
 export class MailjetService {
-  SecretKey: string
-  PublicKey: string
-  mailJetClient: Client | undefined
-  FromObj: FromMailObj
-  repository: Repository<MailEntity>
-  answerRepository: Repository<AnswerEntity>
+  private SecretKey: string
+  private PublicKey: string
+  private mailJetClient: Client | undefined
+  private FrontUrl: string
+  private FromObj: FromMailObj
+  private repository: Repository<MailEntity>
+  private answerRepository: Repository<AnswerEntity>
 
   constructor(APP_SOURCE: DataSource) {
     const {
@@ -30,9 +31,11 @@ export class MailjetService {
       ADMIN_FIRTNAME,
       ADMIN_LASTNAME,
       IS_FEATURE_MAIL_ENABLED,
+      FRONT_URL,
     } = useEnv()
 
     if (IS_FEATURE_MAIL_ENABLED) {
+      this.FrontUrl = FRONT_URL
       this.PublicKey = MJ_APIKEY_PUBLIC
       this.SecretKey = MJ_APIKEY_PRIVATE
       this.mailJetClient = this.connection()
@@ -79,7 +82,7 @@ export class MailjetService {
         eventName: event.name,
         eventDescription: event.description,
         creator: this.getFullName(creator),
-        link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.token}`,
+        link: `${isProduction() ? this.FrontUrl : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.token}`,
       },
     }))
   }
@@ -172,7 +175,7 @@ export class MailjetService {
               TemplateLanguage: true,
               Subject: 'Be Right - Réinitialisez votre mot de passe',
               Variables: {
-                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${user.email}&token=${user.twoFactorRecoveryCode}`,
+                link: `${isProduction() ? this.FrontUrl : 'http://localhost:3000'}/modifier-mot-de-passe?email=${user.email}&token=${user.twoFactorRecoveryCode}`,
               },
             },
           ],
@@ -233,7 +236,7 @@ export class MailjetService {
                 eventName: event.name,
                 creator: this.getFullName(owner),
                 link: `${isProduction()
-                  ? process.env.FRONT_URL
+                  ? this.FrontUrl
                   : 'http://localhost:3000'}/answer/check-${answer.id}?email=${employee.email}&token=${answer.token}`,
               },
             },
@@ -287,7 +290,7 @@ export class MailjetService {
               Variables: {
                 eventName: event.name,
                 link: `${isProduction()
-                  ? process.env.FRONT_URL
+                  ? this.FrontUrl
                   : 'http://localhost:3000'}/evenement-show-id${event.id}`,
               },
 
@@ -413,7 +416,7 @@ export class MailjetService {
                 creator: creatorFullName,
                 newUserFirstName: newUser.firstName,
                 company: company.name,
-                link: `${isProduction() ? process.env.FRONT_URL : 'http://localhost:3000'}/modifier-mot-de-passe?email=${newUser.email}&token=${newUser.twoFactorRecoveryCode}`,
+                link: `${isProduction() ? this.FrontUrl : 'http://localhost:3000'}/modifier-mot-de-passe?email=${newUser.email}&token=${newUser.twoFactorRecoveryCode}`,
               },
             },
           ],

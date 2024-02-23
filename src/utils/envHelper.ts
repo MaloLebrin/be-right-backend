@@ -1,3 +1,7 @@
+import { useEnv } from '../env'
+
 export function isProduction() {
-  return process.env.NODE_ENV === 'production'
+  const { NODE_ENV } = useEnv()
+
+  return NODE_ENV === 'production'
 }

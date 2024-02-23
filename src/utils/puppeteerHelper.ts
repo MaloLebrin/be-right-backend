@@ -1,7 +1,8 @@
 import puppeteer from 'puppeteer'
+import { useEnv } from '../env'
 
 export async function launchPuppeteer(isMadeByBrowserless?: boolean) {
-  const BROWSERLESS_API_KEY = process.env.BROWSERLESS_API_KEY
+  const { BROWSERLESS_API_KEY } = useEnv()
 
   if (isMadeByBrowserless && BROWSERLESS_API_KEY) {
     return puppeteer.connect({
