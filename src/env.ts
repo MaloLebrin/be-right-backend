@@ -1,6 +1,9 @@
+import dotenv from 'dotenv'
 import { parseBoolean } from './utils/basicHelper'
 
 export function useEnv() {
+  dotenv.config()
+
   return {
     NODE_ENV: process.env.NODE_ENV,
     PORT: parseInt(process.env.PORT!),
@@ -30,6 +33,7 @@ export function useEnv() {
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,
     REDIS_PORT: process.env.REDIS_PORT,
+    CONCURRENT_WORKERS: process.env.CONCURRENT_WORKERS,
 
     GEO_CODING_API_URL: process.env.GEO_CODING_API_URL,
   }

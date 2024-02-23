@@ -13,17 +13,22 @@ export default class RedisCache {
   private connected = false
   private logger: Logger
 
-  constructor() {
+  constructor({ REDIS_PORT, REDIS_HOST, REDIS_PASSWORD }: { REDIS_PORT: number; REDIS_HOST: string; REDIS_PASSWORD: string }) {
     this.logger = logger
 
+    if (!REDIS_PORT || !REDIS_HOST) {
+      this.logger.error('Redis port or host not defined')
+      throw new Error('Redis port or host not defined')
+    }
+
     if (!this.connected
-      && process.env.REDIS_PORT
-      && process.env.REDIS_HOST) {
+        && REDIS_PORT
+        && REDIS_HOST) {
       this.client = new Redis(
-        parseInt(process.env.REDIS_PORT),
-        process.env.REDIS_HOST,
+        REDIS_PORT,
+        REDIS_HOST,
         {
-          password: process.env.REDIS_PASSWORD,
+          password: REDIS_PASSWORD,
           showFriendlyErrorStack: true,
         },
       )

@@ -45,6 +45,7 @@ import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
+dotenv.config()
 
 const {
   CLOUDINARY_API_KEY,
@@ -53,10 +54,13 @@ const {
   NODE_ENV,
   PORT,
   FRONT_URL,
+  REDIS_PASSWORD,
+  REDIS_HOST,
+  REDIS_PORT,
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
-export const REDIS_CACHE = new RedisCache()
+export const REDIS_CACHE = new RedisCache({ REDIS_PORT: parseInt(REDIS_PORT), REDIS_HOST, REDIS_PASSWORD })
 
 async function StartAPI() {
   await APP_SOURCE.initialize()
@@ -84,7 +88,6 @@ async function StartAPI() {
   const app = express()
 
   // Middlewares
-  dotenv.config()
   app.use(helmet())
   app.use(cors({
     origin: isProduction() ? FRONT_URL : '*',

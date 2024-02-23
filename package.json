@@ -11,7 +11,7 @@
   "keywords": [],
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "npx nodemon index.ts",
+    "dev": "node --watch -r ts-node/register src/index.ts",
     "tsc": "rm -rf build/ && tsc",
     "type:check": "tsc -noEmit",
     "build": "node build/index.js",
