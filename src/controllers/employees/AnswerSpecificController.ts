@@ -143,7 +143,7 @@ export class AnswerSpecificController {
 
       this.isValidToken(token, email)
 
-      const isExist = await this.AnswerRepository.exist({
+      const isExist = await this.AnswerRepository.exists({
         where: {
           token,
           twoFactorCode,

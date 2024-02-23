@@ -57,7 +57,7 @@ export class AdminEmployeeController extends BaseAdminController {
           },
         }),
 
-        this.employeeRepository.exist({
+        this.employeeRepository.exists({
           where: {
             email: employee.email,
           },

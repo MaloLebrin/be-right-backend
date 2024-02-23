@@ -21,7 +21,7 @@ export class AdminCompanyController extends BaseAdminController {
         throw new ApiError(422, 'L\'identifiant de l\'entreprise est requis')
       }
 
-      const isExist = await this.CompanyRepository.exist({ where: { id } })
+      const isExist = await this.CompanyRepository.exists({ where: { id } })
 
       if (!isExist) {
         return res.status(201).json({

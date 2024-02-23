@@ -176,7 +176,7 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   public async seedUserPremium() {
-    const isExisting = await this.UserService.repository.exist({
+    const isExisting = await this.UserService.repository.exists({
       where: {
         email: userCompanyFixturePremium.email,
       },

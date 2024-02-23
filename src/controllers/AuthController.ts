@@ -147,7 +147,7 @@ export default class AuthController {
         throw new ApiError(422, 'Imformations manquantes')
       }
 
-      const isUserExist = await this.userRepository.exist({
+      const isUserExist = await this.userRepository.exists({
         where: {
           email,
         },
