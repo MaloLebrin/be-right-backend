@@ -26,7 +26,7 @@ export class StripeCustomerController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      return res.status(200).json(stripeCustomer)
+      return res.status(200).json({ user: { ...user, stripeCustomerId: stripeCustomer.id }, stripeCustomer })
     })
   }
 }
