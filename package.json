@@ -11,7 +11,7 @@
   "keywords": [],
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "node --watch -r ts-node/register src/index.ts",
+    "dev": "docker-compose up -d && node --watch -r ts-node/register src/index.ts",
     "tsc": "rm -rf build/ && tsc",
     "type:check": "tsc -noEmit",
     "build": "pnpm run tsc && node build/src/index.js",

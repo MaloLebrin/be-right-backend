@@ -17,7 +17,7 @@ export const migrationScripts: MigrationScript[] = [
     script: addNotificationTokenToUser,
   },
   {
-    version: 1,
+    version: 2,
     name: 'SeedTestAdminUser1708691709145',
     script: SeedTestAdminUser1708691709145,
   },
