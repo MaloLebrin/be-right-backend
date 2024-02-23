@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import path from 'node:path'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
@@ -104,7 +105,8 @@ async function StartAPI() {
 
   app.engine('handlebars', hbs.engine)
   app.set('view engine', 'handlebars')
-  app.set('views', '/app/src/views')
+  app.set('views', path.join(__dirname, 'views'))
+  app.use(express.static('public'))
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
