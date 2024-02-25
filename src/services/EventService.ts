@@ -149,13 +149,13 @@ export default class EventService {
       }),
     ])
 
-    if (!event || answers.length === 0) {
+    if (!event) {
       throw new ApiError(500, `Événément avec l'identifiant ${eventId} non trouvé`)
     }
 
     const initialStatus = event.status
 
-    const isEventCompleted = answers.every(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt))
+    const isEventCompleted = answers.every(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt)) && answers.length > 0
 
     let newStatus: EventStatusEnum | null = null
 
