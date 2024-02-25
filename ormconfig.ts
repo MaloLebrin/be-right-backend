@@ -37,6 +37,7 @@ export const dataBaseConfig = {
   dev: {
     name: 'dev',
     type: 'postgres',
+    // host: 'postgres',
     host: '127.0.0.1',
     port: 5432,
     username: 'test',
