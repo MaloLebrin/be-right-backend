@@ -26,15 +26,13 @@ ENV NODE_ENV=${NODE_ENV}
 COPY ormconfig.ts /app/ormconfig.ts
 COPY tsconfig.json /app/
 
-COPY scriptSeed.sh /app/
-RUN chmod +x /app/scriptSeed.sh
-
 COPY ./src /app/src
 
 RUN pnpm run tsc && \
   chmod -R 777 /app/src/uploads && \
   chmod 777 /app/build/src/middlewares/
 
+COPY ./src/views /app/build/src/views
 
 USER chrome
 # RUN chmod +x /app/uploads
