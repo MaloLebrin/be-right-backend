@@ -62,7 +62,11 @@ const {
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
-export const REDIS_CACHE = new RedisCache({ REDIS_PORT: parseInt(REDIS_PORT), REDIS_HOST, REDIS_PASSWORD })
+export const REDIS_CACHE = new RedisCache({
+  REDIS_PORT: parseInt(REDIS_PORT),
+  REDIS_HOST,
+  REDIS_PASSWORD,
+})
 
 async function StartAPI() {
   await APP_SOURCE.initialize()

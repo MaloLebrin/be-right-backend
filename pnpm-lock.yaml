@@ -6049,7 +6049,7 @@ packages:
     resolution: {integrity: sha512-1gOr2LzafWV84cPIO5Md/QPh4XVPLKULVuRpBVOV3Plq3seiHmg/eeOktX+hDl8jpNZuORHYaUJGrNqrABLwdg==}
     engines: {node: '>=12.*'}
     dependencies:
-      '@types/node': 18.19.15
+      '@types/node': 18.19.18
       qs: 6.11.0
     dev: false
 
