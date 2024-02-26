@@ -1,6 +1,7 @@
 import { isProduction } from '../../utils/envHelper'
 import { StripeService } from '../../services/stripe/stripe.service'
 import { type ModePaymentEnum, StripeCurrency, type StripeProductForSession } from '../../types/Stripe'
+import { useEnv } from '../../env'
 
 export class StripeCheckoutSessionService extends StripeService {
   constructor() {
@@ -8,8 +9,9 @@ export class StripeCheckoutSessionService extends StripeService {
   }
 
   private buildSuccessUrl = () => {
+    const { FRONT_URL } = useEnv()
     return `${isProduction()
-      ? process.env.FRONT_URL
+      ? FRONT_URL
       : 'http://localhost:3000'}/commande/success?session_id={CHECKOUT_SESSION_ID}`
   }
 
