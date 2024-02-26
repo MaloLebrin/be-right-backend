@@ -12,6 +12,7 @@
     "roles": "USER",
     "profilePicture": null,
     "profilePictureId": null,
+    "notificationToken": "token",
     "notificationSubscriptionIds": [],
     "company": {
       "id": 2,
@@ -77,6 +78,7 @@
     "roles": "OWNER",
     "profilePicture": null,
     "profilePictureId": null,
+    "notificationToken": "token6",
     "notificationSubscriptionIds": [
       1,
       2,
