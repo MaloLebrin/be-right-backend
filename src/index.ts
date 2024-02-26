@@ -46,6 +46,7 @@ import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
+import { StripeCustomerRoutes } from './routes/Stripe/CustomerRoutes'
 dotenv.config()
 
 const {
@@ -61,7 +62,11 @@ const {
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
-export const REDIS_CACHE = new RedisCache({ REDIS_PORT: parseInt(REDIS_PORT), REDIS_HOST, REDIS_PASSWORD })
+export const REDIS_CACHE = new RedisCache({
+  REDIS_PORT: parseInt(REDIS_PORT),
+  REDIS_HOST,
+  REDIS_PASSWORD,
+})
 
 async function StartAPI() {
   await APP_SOURCE.initialize()
@@ -203,6 +208,9 @@ async function StartAPI() {
 
   // User
   app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
+
+  // Stripe Customer
+  app.use('/stripe/customer', new StripeCustomerRoutes(APP_SOURCE).intializeRoutes())
 
   app.all('*', req => {
     throw new NotFoundError(req.path)
