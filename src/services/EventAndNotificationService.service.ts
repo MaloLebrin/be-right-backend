@@ -48,13 +48,12 @@ export class EventAndNotificationService {
         },
       })
 
-      await Promise.all(subscriptions.map(async subscription =>
-        await this.NotificationService.createOne({
-          type: getNotificationTypeByEventStatus(event),
-          subscriber: subscription,
-          eventNotificationId: eventNotif.id,
-        }),
-      ))
+      const notificationPayloads = subscriptions.map(subscription => ({
+        type: getNotificationTypeByEventStatus(event),
+        subscriber: subscription,
+        eventNotificationId: eventNotif.id,
+      }))
+      await this.NotificationService.createMany(notificationPayloads)
     }
   }
 }
