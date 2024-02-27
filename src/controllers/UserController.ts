@@ -2,12 +2,11 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import Context from '../context'
 import { UserEntity, userRelationFields, userSearchableFields } from '../entity/UserEntity'
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, isUserOwner, uniqByKey, userResponse } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { REDIS_CACHE } from '..'
@@ -48,8 +47,17 @@ export default class UserController {
   }
 
   private saveUserInCache = async (user: UserEntity) => {
-    await this.redisCache.save(`user-id-${user.id}`, user)
-    await this.redisCache.save(`user-token-${user.token}`, user)
+    await Promise.all([
+      this.redisCache.save(`user-id-${user.id}`, user),
+      this.redisCache.save(`user-token-${user.token}`, user),
+    ])
+  }
+
+  private deleteUserInCache = async (user: UserEntity) => {
+    await Promise.all([
+      this.redisCache.invalidate(`user-id-${user.id}`),
+      this.redisCache.invalidate(`user-token-${user.token}`),
+    ])
   }
 
   /**
@@ -57,8 +65,10 @@ export default class UserController {
    * @returns return user just created
    */
   public newUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const {
         email,
@@ -136,8 +146,10 @@ export default class UserController {
   * @returns paginate response
   */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const { where, page, take, skip, order } = newPaginator<UserEntity>({
         req,
@@ -266,12 +278,15 @@ export default class UserController {
    * @returns return event just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { user }: { user: Partial<UserEntity> } = req.body
       const id = parseInt(req.params.id)
-      if (id) {
-        const ctx = Context.get(req)
 
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      if (id) {
         if (id === ctx.user.id || isUserAdmin(ctx.user)) {
           const userFinded = await this.UserService.getOne(id)
 
@@ -307,9 +322,11 @@ export default class UserController {
   }
 
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (id === ctx.user.id || isUserAdmin(ctx.user)) {
         const userToDelete = await this.UserService.getOne(id, true)
@@ -319,13 +336,15 @@ export default class UserController {
         }
 
         if (userToDelete.company.addressId) {
-          await this.AddressService.softDelete(userToDelete.company.addressId)
+          await Promise.all([
+            this.AddressService.softDelete(userToDelete.company.addressId),
 
-          await this.redisCache.invalidate(generateRedisKey({
-            typeofEntity: EntitiesEnum.ADDRESS,
-            field: 'id',
-            id: userToDelete.company.addressId,
-          }))
+            this.redisCache.invalidate(generateRedisKey({
+              typeofEntity: EntitiesEnum.ADDRESS,
+              field: 'id',
+              id: userToDelete.company.addressId,
+            })),
+          ])
         }
 
         if (userToDelete.company.employeeIds?.length > 0) {
@@ -350,9 +369,10 @@ export default class UserController {
           await this.FileService.deleteManyfiles(userToDelete.company.filesIds)
         }
 
-        const userDeleted = await this.repository.softDelete(id)
-
-        await this.redisCache.invalidate(`user-id-${id}`)
+        const [userDeleted] = await Promise.all([
+          this.repository.softDelete(id),
+          this.redisCache.invalidate(`user-id-${id}`),
+        ])
 
         if (userDeleted) {
           return res.status(204).json(userDeleted)
@@ -436,6 +456,11 @@ export default class UserController {
         ],
       })
 
+      this.redisCache.save(`user-notification-${user.notificationToken}`, {
+        id: user.id,
+        notificationToken: user.notificationToken,
+      })
+
       return res.status(200).json({
         user: userToSend,
         company: user.company,
@@ -458,8 +483,10 @@ export default class UserController {
   }
 
   public getPhotographerAlreadyWorkWith = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ctx.user.companyId) {
         const company = await this.companyRepository.findOne({
@@ -501,9 +528,11 @@ export default class UserController {
   }
 
   public addSignatureToUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { signature }: { signature: string } = req.body
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (!signature) {
         throw new ApiError(422, 'Signature non reçu')
@@ -541,6 +570,47 @@ export default class UserController {
       await this.repository.restore(id)
       const user = await this.UserService.getOne(id)
       return res.status(200).json(userResponse(user))
+    })
+  }
+
+  public deleteForEver = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const id = parseInt(req.params.id)
+      if (!id) {
+        throw new ApiError(422, 'Paramètre manquant')
+      }
+
+      const user = await this.repository.findOneBy({ id })
+
+      if (!user) {
+        throw new ApiError(422, 'L\'utilisateur n\'existe pas')
+      }
+
+      await Promise.all([
+        this.deleteUserInCache(user),
+        this.repository.delete(id),
+      ])
+
+      const company = await this.companyRepository.findOne({
+        where: {
+          id: user.companyId,
+        },
+        relations: {
+          users: true,
+        },
+      })
+
+      if (company && isUserOwner(user)) {
+        const owners = company.users?.filter(user => isUserOwner(user))
+        if (owners?.length < 2) {
+          await this.companyRepository.delete(user.companyId)
+        }
+      }
+
+      return res.status(201).json({
+        isSuccess: true,
+        message: 'L\'utilisateur a bien été supprimé',
+      })
     })
   }
 }

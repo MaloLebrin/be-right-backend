@@ -1,18 +1,19 @@
 import type { Job } from 'bullmq'
-import type { Request } from 'express'
 import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
 import { APP_SOURCE } from '../../..'
 import type AnswerEntity from '../../../entity/AnswerEntity'
-import { launchPuppeteer } from '../../../utils/puppeteerHelper'
+import { generateAnswerPdf } from '../../../utils/puppeteerHelper'
+import { isProduction } from '../../../utils/envHelper'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
 
 export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
   constructor(public payoad: {
-    req: Request
+    url: string
     answer: AnswerEntity
     creatorFullName: string
+    creatorToken: string
     companyName: string
   }) {
     super()
@@ -20,32 +21,27 @@ export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
 
   handle = async () => {
     const {
-      req,
+      url,
       answer,
       creatorFullName,
+      creatorToken,
       companyName,
     } = this.payoad
 
     const mailJetService = new MailjetService(APP_SOURCE)
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`
-    const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
-    const fileName = `droit-image-${answer.employee.slug}.pdf`
-    const filePath = `/app/src/uploads/${fileName}`
-
-    const browser = await launchPuppeteer()
-
-    const page = await browser.newPage()
-
-    await page.goto(url)
-    const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-    await browser.close()
+    const { content, fileName } = await generateAnswerPdf({
+      url,
+      fileName: `droit-image-${answer.employee.slug}.pdf`,
+      token: creatorToken,
+      isMadeByBrowserless: isProduction(),
+    })
 
     await mailJetService.sendEmployeeAnswerWithPDF({
       creatorFullName,
       employee: answer.employee,
       companyName,
-      pdfBase64: pdf.toString('base64'),
+      pdfBase64: content,
       fileName,
     })
   }

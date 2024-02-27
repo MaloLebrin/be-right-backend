@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import type AnswerEntity from '../entity/AnswerEntity'
 
 export function isAnswerSigned(answer: AnswerEntity): boolean {
@@ -7,14 +6,6 @@ export function isAnswerSigned(answer: AnswerEntity): boolean {
 
 export function isAnswerTruthy(answer: AnswerEntity): boolean {
   return answer.hasSigned
-}
-
-export function canAnswerBeRaise(answer: AnswerEntity): boolean {
-  if (answer.mailSendAt) {
-    const now = dayjs().subtract(5, 'day')
-    return dayjs(answer.mailSendAt).isBefore(now)
-  }
-  return true
 }
 
 export const secretAnswerKeys = [
@@ -33,3 +24,5 @@ export function answerResponse(answer: AnswerEntity) {
   }
   return entityReturned as AnswerEntity
 }
+
+export const fiveDigit = /^([a-zA-Z0-9!@#$%^&=*-])/

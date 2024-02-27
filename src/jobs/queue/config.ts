@@ -1,9 +1,17 @@
 import type { ConnectionOptions } from 'bullmq'
+import { useEnv } from '../../env'
+
+const {
+  CONCURRENT_WORKERS,
+  REDIS_PASSWORD,
+  REDIS_HOST,
+  REDIS_PORT,
+} = useEnv()
 
 export const connection: ConnectionOptions = {
-  host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT),
-  password: process.env.REDIS_PASSWORD,
+  host: REDIS_HOST,
+  port: parseInt(REDIS_PORT),
+  password: REDIS_PASSWORD,
 }
 
-export const concurrency = parseInt(process.env.CONCURRENT_WORKERS)
+export const concurrency = parseInt(CONCURRENT_WORKERS)

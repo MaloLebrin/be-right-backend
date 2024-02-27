@@ -1,10 +1,20 @@
 import { entities } from './src/entity'
+import { useEnv } from './src/env'
+
+const {
+  DATABASE_URL,
+  HOSTNAME_TEST,
+  POSTGRES_PORT_TEST,
+  DB_USERNAME_TEST,
+  DB_PASSWORD_TEST,
+  DATABASE_URL_TEST,
+} = useEnv()
 
 export const dataBaseConfig = {
   production: {
     name: 'production',
     type: 'postgres',
-    url: process.env.DATABASE_URL,
+    url: DATABASE_URL,
     synchronize: true,
     logging: false,
     ssl: true,
@@ -27,7 +37,8 @@ export const dataBaseConfig = {
   dev: {
     name: 'dev',
     type: 'postgres',
-    host: 'postgres',
+    // host: 'postgres',
+    host: '127.0.0.1',
     port: 5432,
     username: 'test',
     password: 'test',
@@ -53,11 +64,11 @@ export const dataBaseConfig = {
   test: {
     name: 'test',
     type: 'postgres',
-    host: process.env.HOSTNAME_TEST,
-    port: process.env.POSTGRES_PORT_TEST,
-    username: process.env.DB_USERNAME_TEST,
-    password: process.env.DB_PASSWORD_TEST,
-    url: process.env.DATABASE_URL_TEST,
+    host: HOSTNAME_TEST,
+    port: POSTGRES_PORT_TEST,
+    username: DB_USERNAME_TEST,
+    password: DB_PASSWORD_TEST,
+    url: DATABASE_URL_TEST,
     database: 'be-right-backend-db',
     synchronize: true,
     logging: false,

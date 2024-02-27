@@ -6,23 +6,29 @@ import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
 import { parseRedisKey } from './utils/redisHelper'
+import { isProduction } from './utils/envHelper'
 
 export default class RedisCache {
   private client: RedisClient
   private connected = false
   private logger: Logger
 
-  constructor() {
+  constructor({ REDIS_PORT, REDIS_HOST, REDIS_PASSWORD }: { REDIS_PORT: number; REDIS_HOST: string; REDIS_PASSWORD: string }) {
     this.logger = logger
 
+    if (!REDIS_PORT || !REDIS_HOST) {
+      this.logger.error('Redis port or host not defined')
+      throw new Error('Redis port or host not defined')
+    }
+
     if (!this.connected
-      && process.env.REDIS_PORT
-      && process.env.REDIS_HOST) {
+        && REDIS_PORT
+        && REDIS_HOST) {
       this.client = new Redis(
-        parseInt(process.env.REDIS_PORT),
-        process.env.REDIS_HOST,
+        REDIS_PORT,
+        REDIS_HOST,
         {
-          password: process.env.REDIS_PASSWORD,
+          password: REDIS_PASSWORD,
           showFriendlyErrorStack: true,
         },
       )
@@ -37,6 +43,12 @@ export default class RedisCache {
       this.client.on('connect', () => {
         this.logger.info('Connected successfully to redis')
       })
+    }
+  }
+
+  private loggerInfo(message: string) {
+    if (!isProduction()) {
+      this.logger.info(message)
     }
   }
 
@@ -81,13 +93,13 @@ export default class RedisCache {
     const value = await this.client.get(key)
 
     if (value) {
-      this.logger.info('redis value retrieved')
+      this.loggerInfo('redis value retrieved')
       await this.client.expire(key, 3600)
       return JSON.parse(value)
     }
 
     if (!value) {
-      this.logger.info('no value in redis cache')
+      this.loggerInfo('no value in redis cache')
       const result = await fetcher()
       await this.save(key, result)
       return result
@@ -115,7 +127,7 @@ export default class RedisCache {
     const value = await this.client.mget(keys)
 
     if (!value || value.filter(str => str).length < 1) {
-      this.logger.info('no value in redis cache')
+      this.loggerInfo('no value in redis cache')
       const result = await fetcher()
       this.multiSave<T>({
         payload: result,
@@ -135,10 +147,10 @@ export default class RedisCache {
       })
 
       if (isEveryDataInCache) {
-        this.logger.info('redis value retrieved')
+        this.loggerInfo('redis value retrieved')
         return array
       } else {
-        this.logger.info('no value in redis cache')
+        this.loggerInfo('no value in redis cache')
 
         const result = await fetcher()
 

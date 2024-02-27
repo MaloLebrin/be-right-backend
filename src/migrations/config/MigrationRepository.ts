@@ -11,7 +11,7 @@ export class MigrationRepository {
     }
   }
 
-  getMisssingScripts = async (scripts: MigrationScript[]): Promise<MigrationScript[]> => {
+  public getMisssingScripts = async (scripts: MigrationScript[]): Promise<MigrationScript[]> => {
     const existingScripts = await this.MigrationRepository.find({
       where: {
         version: In(scripts.map(script => script.version)),

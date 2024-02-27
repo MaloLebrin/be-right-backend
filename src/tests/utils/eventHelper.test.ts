@@ -1,9 +1,12 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from '@jest/globals'
+import dayjs from 'dayjs'
 import eventJSON from '../fixtures/premium/events.json'
 import {
+  composeOrderFieldForEventStatus,
   hasNotEventStartedYet,
   isEventInProgress,
   isEventOver,
+  orderingEventsByStatusAndDate,
   removeUnecessaryFieldsEvent,
   updateStatusEventBasedOnStartEndTodayDate,
 } from '../../utils/eventHelpers'
@@ -31,13 +34,107 @@ test('hasNotEventStartedYet send right bool', () => {
 })
 
 test('updateStatusEventBasedOnStartEndTodayDate send right bool', () => {
-  expect(updateStatusEventBasedOnStartEndTodayDate(events[0])).toEqual(EventStatusEnum.CLOSED)
-  expect(updateStatusEventBasedOnStartEndTodayDate(events[1])).toEqual(EventStatusEnum.CREATE)
-  expect(updateStatusEventBasedOnStartEndTodayDate(events[2])).toEqual(EventStatusEnum.PENDING)
+  expect(updateStatusEventBasedOnStartEndTodayDate(events[0])).toStrictEqual(EventStatusEnum.CLOSED)
+  expect(updateStatusEventBasedOnStartEndTodayDate(events[1])).toStrictEqual(EventStatusEnum.CREATE)
+  expect(updateStatusEventBasedOnStartEndTodayDate(events[2])).toStrictEqual(EventStatusEnum.PENDING)
 })
 
 test('updateStatusEventBasedOnStartEndTodayDate send right bool', () => {
   const event = removeUnecessaryFieldsEvent(events[0])
   expect(event.partnerId).toBeFalsy()
   expect(event.addressId).toBeFalsy()
+})
+
+describe('orderingEventsByStatusAndDate', () => {
+  test('should return an empty array if no events', () => {
+    expect(orderingEventsByStatusAndDate([])).toStrictEqual([])
+  })
+
+  test('should return an array of events ordered by status and date', () => {
+    const orderedEvents = orderingEventsByStatusAndDate([
+      {
+        id: 1,
+        status: EventStatusEnum.CLOSED,
+        start: '2021-10-10T10:00:00.000Z',
+        end: '2021-10-10T11:00:00.000Z',
+      },
+      {
+        id: 2,
+        status: EventStatusEnum.PENDING,
+        start: '2021-10-10T10:00:00.000Z',
+        end: dayjs().add(1, 'month').toISOString(),
+      },
+      {
+        id: 3,
+        status: EventStatusEnum.CREATE,
+        start: '2021-10-10T10:00:00.000Z',
+        end: dayjs().add(1, 'month').toISOString(),
+      },
+      {
+        id: 4,
+        status: EventStatusEnum.COMPLETED,
+        start: '2021-10-10T10:00:00.000Z',
+        end: '2022-10-10T11:00:00.000Z',
+      },
+    ] as unknown as EventEntity[])
+    expect(orderedEvents).toStrictEqual([
+      expect.objectContaining({ id: 2 }),
+      expect.objectContaining({ id: 3 }),
+      expect.objectContaining({ id: 4 }),
+      expect.objectContaining({ id: 1 }),
+    ])
+  })
+
+  test('should sort event by date start and end when status is the same', () => {
+    const orderedEvents = orderingEventsByStatusAndDate([
+      {
+        id: 1,
+        status: EventStatusEnum.CLOSED,
+        start: '2021-10-10T10:00:00.000Z',
+        end: '2021-10-10T11:00:00.000Z',
+      },
+      {
+        id: 2,
+        status: EventStatusEnum.PENDING,
+        start: '2021-10-10T10:00:00.000Z',
+        end: dayjs().add(1, 'month').toISOString(),
+      },
+      {
+        id: 5,
+        status: EventStatusEnum.PENDING,
+        start: '2021-10-10T10:00:00.000Z',
+        end: dayjs().add(1, 'day').toISOString(),
+      },
+      {
+        id: 3,
+        status: EventStatusEnum.CREATE,
+        start: '2021-10-10T10:00:00.000Z',
+        end: dayjs().add(1, 'month').toISOString(),
+      },
+      {
+        id: 4,
+        status: EventStatusEnum.COMPLETED,
+        start: '2021-10-10T10:00:00.000Z',
+        end: '2022-10-10T11:00:00.000Z',
+      },
+    ] as unknown as EventEntity[])
+    expect(orderedEvents).toStrictEqual([
+      expect.objectContaining({ id: 5 }),
+      expect.objectContaining({ id: 2 }),
+      expect.objectContaining({ id: 3 }),
+      expect.objectContaining({ id: 4 }),
+      expect.objectContaining({ id: 1 }),
+    ])
+  })
+
+  describe('composeOrderFieldForEventStatus', () => {
+    test('should return a string with the right order', () => {
+      expect(composeOrderFieldForEventStatus()).toStrictEqual(`CASE
+      WHEN event.status = 'PENDING' THEN 1
+      WHEN event.status = 'CREATE' THEN 2
+      WHEN event.status = 'COMPLETED' THEN 3
+      WHEN event.status = 'CLOSED' THEN 4
+    END`)
+    })
+  })
 })

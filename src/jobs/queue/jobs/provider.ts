@@ -6,7 +6,6 @@ import type { JobImp } from './job.definition'
 import { SendMailAnswerCreationjob } from './sendMailAnswerCreation.job'
 import { UpdateEventStatusJob } from './updateEventStatus.job'
 import { CreateEmployeeNotificationsJob } from './createEmployeeNotifications.job'
-import { SendMailEventCompletedJob } from './sendMailEventCompleted.job'
 import { SendSubmitAnswerConfirmationJob } from './sendSubmitAnswerConfirmation.job'
 import { SendMailUserOnAccountJob } from './sendMailUserOnAccount.job'
 
@@ -15,7 +14,6 @@ export const JobDictonary = new Map([
   [SendMailAnswerCreationjob.name, SendMailAnswerCreationjob],
   [CreateEventNotificationsJob.name, CreateEventNotificationsJob],
   [CreateEmployeeNotificationsJob.name, CreateEmployeeNotificationsJob],
-  [SendMailEventCompletedJob.name, SendMailEventCompletedJob],
   [SendSubmitAnswerConfirmationJob.name, SendSubmitAnswerConfirmationJob],
   [SendMailUserOnAccountJob.name, SendMailUserOnAccountJob],
 ])
@@ -58,9 +56,6 @@ export function generateQueueName(type?: QueueJobName) {
 
     case 'SendMailAnswerCreationjob':
       return `SendMailAnswerCreationjob-${name}`
-
-    case 'SendMailEventCompletedJob':
-      return `SendMailEventCompletedJob-${name}`
 
     case 'SendSubmitAnswerConfirmationJob':
       return `SendSubmitAnswerConfirmationJob-${name}`

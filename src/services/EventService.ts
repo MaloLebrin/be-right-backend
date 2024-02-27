@@ -1,29 +1,27 @@
-import type { DataSource, EntityManager, Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
+import { noNull, notUndefined } from '@antfu/utils'
 import { REDIS_CACHE } from '..'
 import AnswerEntity from '../entity/AnswerEntity'
 import EventEntity from '../entity/EventEntity'
 import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { EventStatusEnum } from '../types/Event'
-import { generateRedisKey, isAnswerSigned, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { generateRedisKey, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
+import { ApiError } from '../middlewares/ApiError'
 import { AddressService } from './AddressService'
 import AnswerService from './AnswerService'
 
 export default class EventService {
-  getManager: EntityManager
-
-  repository: Repository<EventEntity>
-
-  answerService: AnswerService
-
-  addressService: AddressService
-
-  redisCache: RedisCache
+  private repository: Repository<EventEntity>
+  private AnswerRepository: Repository<AnswerEntity>
+  private answerService: AnswerService
+  private addressService: AddressService
+  private redisCache: RedisCache
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(EventEntity)
-    this.getManager = APP_SOURCE.manager
+    this.AnswerRepository = APP_SOURCE.getRepository(AnswerEntity)
     this.answerService = new AnswerService(APP_SOURCE)
     this.addressService = new AddressService(APP_SOURCE)
     this.redisCache = REDIS_CACHE
@@ -73,33 +71,6 @@ export default class EventService {
     }))
   }
 
-  async updateEventSignatureNeeded(eventId: number, signatureNeeded: number) {
-    await this.repository.update(eventId, {
-      updatedAt: new Date(),
-      totalSignatureNeeded: signatureNeeded,
-    })
-    const event = await this.getOneWithoutRelations(eventId)
-    await this.saveEventRedisCache(event)
-    return event
-  }
-
-  async getNumberSignatureNeededForEvent(id: number) {
-    const answers = await this.getManager.find(AnswerEntity, {
-      where: {
-        event: { id },
-      },
-    })
-
-    await this.repository.update(id, {
-      updatedAt: new Date(),
-      totalSignatureNeeded: answers.length,
-    })
-
-    const event = await this.getOneWithoutRelations(id)
-    await this.saveEventRedisCache(event)
-    return event
-  }
-
   async getOneEvent(eventId: number): Promise<EventEntity> {
     return this.repository.findOne({
       where: {
@@ -141,7 +112,6 @@ export default class EventService {
       updatedAt: new Date(),
     }
     await this.repository.update(eventId, removeUnecessaryFieldsEvent(eventToSave))
-    await this.multipleUpdateForEvent(eventId)
     const eventSaved = await this.getOneEvent(eventId)
     await this.saveEventRedisCache(eventSaved)
     return eventSaved
@@ -162,46 +132,58 @@ export default class EventService {
     return newEvent
   }
 
-  async updateStatusForEvent(event: EventEntity) {
+  /**
+   * @description update event status in Database based on his answers and his dates (start, end)
+   * @param eventId
+   * @return previous and new status
+   */
+  public async updateEventStatus(eventId: number) {
+    const [event, answers] = await Promise.all([
+      this.getOneWithoutRelations(eventId),
+      this.AnswerRepository.find({
+        where: {
+          event: {
+            id: eventId,
+          },
+        },
+      }),
+    ])
+
     if (!event) {
-      return null
+      throw new ApiError(500, `Événément avec l'identifiant ${eventId} non trouvé`)
     }
 
-    await this.repository.update(event.id, {
-      status: updateStatusEventBasedOnStartEndTodayDate(event),
-    })
-  }
+    const initialStatus = event.status
 
-  async updateStatusForEventArray(events: EventEntity[]) {
-    if (events.length > 0) {
-      events.forEach(event => this.updateStatusForEvent(event))
+    const isEventCompleted = answers.every(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt)) && answers.length > 0
+
+    let newStatus: EventStatusEnum | null = null
+
+    if (isEventCompleted) {
+      await this.repository.update(eventId, {
+        totalSignatureNeeded: answers.length,
+        signatureCount: answers.length,
+        status: EventStatusEnum.COMPLETED,
+      })
+
+      newStatus = EventStatusEnum.COMPLETED
+    } else {
+      newStatus = updateStatusEventBasedOnStartEndTodayDate(event)
+      await this.repository.update(eventId, {
+        totalSignatureNeeded: answers.length,
+        signatureCount: answers.filter(answer => noNull(answer.signedAt) && notUndefined(answer.signedAt)).length,
+        status: newStatus,
+      })
     }
-  }
 
-  async updateStatusEventWhenCompleted(event: EventEntity) {
-    if (event.totalSignatureNeeded > 0) {
-      const answers = await this.answerService.getAllAnswersForEvent(event.id)
-      if (answers.length > 0) {
-        const signedAnswers = answers.filter(answer => isAnswerSigned(answer))
-        if (signedAnswers.length === event.totalSignatureNeeded) {
-          await this.repository.update(event.id, { status: EventStatusEnum.COMPLETED })
-        }
-      }
-    }
-    const eventSaved = await this.getOneEvent(event.id)
-    await this.saveEventRedisCache(eventSaved)
+    const eventUpdated = await this.getOneWithoutRelations(eventId)
 
-    return eventSaved
-  }
+    await this.saveEventRedisCache(eventUpdated)
 
-  async multipleUpdateForEvent(eventId: number) {
-    if (typeof eventId === 'number') {
-      await this.getNumberSignatureNeededForEvent(eventId)
-      const event = await this.getOneWithoutRelations(eventId)
-      if (event) {
-        await this.updateStatusForEvent(event)
-        await this.updateStatusEventWhenCompleted(event)
-      }
+    return {
+      initialStatus,
+      newStatus,
+      event: eventUpdated,
     }
   }
 }

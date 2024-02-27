@@ -5,7 +5,7 @@ import type { UserEntity } from '../../entity/UserEntity'
 import type { CreateNotificationSubscriptionPayload, NotificationTypeEnum } from '../../types'
 
 export class NotificationSubscriptionService {
-  repository: Repository<NotificationSubcriptionEntity>
+  private repository: Repository<NotificationSubcriptionEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)

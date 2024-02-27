@@ -2,6 +2,7 @@
 import type { FindOperator, FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import { ILike } from 'typeorm'
 import type { Request } from 'express'
+import { deepMerge } from '@antfu/utils'
 import type { BaseEntity } from '../entity/bases/BaseEntity'
 
 interface Paginator {
@@ -24,6 +25,8 @@ interface ParseQueriesReturnType<T> {
   limit: number
   search: FindOperator<string>
   filters: FindOptionsWhere<T> | null
+  andFilters: FindOptionsWhere<T> | null
+  orderBy: FindOptionsOrder<T>
   withDeleted?: boolean
 }
 
@@ -48,7 +51,9 @@ export function parseQueries<T>(req: Request): ParseQueriesReturnType<T> {
     limit: req.query.limit ? Math.abs(parseInt(req.query.limit.toString())) : 20,
     search: req.query.search ? ILike(`%${req.query.search.toLocaleString()}%`) : null,
     filters: req.query.filters as FindOptionsWhere<T> || null,
+    andFilters: req.query.andFilters as FindOptionsWhere<T> || null,
     withDeleted: req.query.withDeleted?.toString() === 'true',
+    orderBy: req.query.orderBy as FindOptionsOrder<T> || null,
   }
 }
 
@@ -57,16 +62,28 @@ export function newPaginator<T extends BaseEntity>({
   searchableFields = [],
   relationFields = [],
 }: Paginator): PaginatorReturnType<T> {
-  const { page, limit, search, filters, withDeleted } = parseQueries(req)
+  const {
+    andFilters,
+    filters,
+    limit,
+    orderBy,
+    page,
+    search,
+    withDeleted,
+  } = parseQueries(req)
 
-  // TODO add orderBy queries filters
+  let where = []
 
-  const where = []
+  let order: FindOptionsOrder<T> | null = null
 
-  const order = {
-    id: 'DESC',
-    createdAt: 'DESC',
-  } as FindOptionsOrder<T>
+  if (!orderBy) {
+    order = {
+      id: 'DESC',
+      createdAt: 'DESC',
+    } as FindOptionsOrder<T>
+  } else {
+    order = orderBy
+  }
 
   if (filters) {
     where.push(filters)
@@ -88,6 +105,15 @@ export function newPaginator<T extends BaseEntity>({
     }
   }
 
+  if (andFilters) {
+    const whereFilters = [...where]
+    if (whereFilters.length > 0) {
+      where = whereFilters.map(filter => deepMerge(filter, andFilters))
+    } else {
+      where.push(andFilters)
+    }
+  }
+
   return {
     page,
     take: limit,
@@ -95,5 +121,45 @@ export function newPaginator<T extends BaseEntity>({
     where,
     order,
     withDeleted,
+  }
+}
+
+export function composeWhereFieldForQueryBuilder({
+  alias,
+  andFilters,
+  filters,
+}: {
+  alias: string
+  andFilters: FindOptionsWhere<any> | null
+  filters: FindOptionsWhere<any> | null
+}) {
+  if (!alias) {
+    throw new Error('Alias is required')
+  }
+
+  const andWhere: { key: string; params: Record<string, string | number> }[] = []
+  const orWhere: { key: string; params: Record<string, string | number> }[] = []
+
+  if (filters) {
+    for (const [key, value] of Object.entries(filters)) {
+      orWhere.push({
+        key: `${alias}.${key} = :${key}`,
+        params: { [key]: value },
+      })
+    }
+  }
+
+  if (andFilters) {
+    for (const [key, value] of Object.entries(andFilters)) {
+      andWhere.push({
+        key: `${alias}.${key} = :${key}`,
+        params: { [key]: value },
+      })
+    }
+  }
+
+  return {
+    andWhere,
+    orWhere,
   }
 }

@@ -10,7 +10,6 @@ import { wrapperRequest } from '../utils'
 import type { EventWithRelationsCreationPayload } from '../types'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
-import Context from '../context'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -20,7 +19,6 @@ import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import RedisService from '../services/RedisService'
 import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
-import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
 import { isUserAdmin } from '../utils/userHelper'
 
 export default class EventSpecificController {
@@ -53,9 +51,11 @@ export default class EventSpecificController {
   }
 
   public fetchOneEventWithRelations = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const eventId = parseInt(req.params.id)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (eventId && ctx.user.companyId) {
         const event = await this.redisCache.get<EventEntity>(
@@ -69,15 +69,17 @@ export default class EventSpecificController {
         if (event && (isUserAdmin(ctx.user) || event.companyId === ctx.user.companyId)) {
           let employees = []
 
-          const address = await this.redisCache.get<AddressEntity>(
-            generateRedisKey({
-              field: 'id',
-              typeofEntity: EntitiesEnum.ADDRESS,
-              id: event.addressId,
-            }),
-            () => this.AddressService.getOne(event.addressId))
+          const [address, answers] = await Promise.all([
+            this.redisCache.get<AddressEntity>(
+              generateRedisKey({
+                field: 'id',
+                typeofEntity: EntitiesEnum.ADDRESS,
+                id: event.addressId,
+              }),
+              () => this.AddressService.getOne(event.addressId)),
 
-          const answers = await this.AnswerService.getAllAnswersForEvent(eventId)
+            this.AnswerService.getAllAnswersForEvent(eventId),
+          ])
 
           if (answers && answers.length > 0) {
             const employeesIds = answers.map(an => an.employeeId)
@@ -109,10 +111,13 @@ export default class EventSpecificController {
   }
 
   public posteOneWithRelations = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
 
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const companyId = ctx.user.companyId
       const userId = ctx.user.id
 
@@ -128,12 +133,19 @@ export default class EventSpecificController {
               userId,
             }))
 
-          const addressCreated = await this.AddressService.createOne({
-            address,
-            eventId: newEvent.id,
-          })
+          const [addressCreated, answers] = await Promise.all([
+            this.AddressService.createOne({
+              address,
+              eventId: newEvent.id,
+            }),
+            this.AnswerService.createMany(newEvent.id, event.employeeIds),
+            this.RediceService.updateCurrentUserInCache({ userId }),
+          ])
 
-          const answers = await this.AnswerService.createMany(newEvent.id, event.employeeIds)
+          await Promise.all([
+            this.saveEventRedisCache(newEvent),
+            this.EventService.updateEventStatus(newEvent.id),
+          ])
 
           if (answers.length > 0) {
             await defaultQueue.add(
@@ -145,17 +157,6 @@ export default class EventSpecificController {
               }),
             )
           }
-
-          await defaultQueue.add(
-            generateQueueName('UpdateEventStatusJob'),
-            new UpdateEventStatusJob({
-              eventId: newEvent.id,
-            }),
-          )
-
-          await this.RediceService.updateCurrentUserInCache({ userId })
-
-          await this.saveEventRedisCache(newEvent)
 
           return res.status(200).json({
             event: newEvent,

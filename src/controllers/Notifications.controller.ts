@@ -1,17 +1,12 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { Repository } from 'typeorm'
-import { verify } from 'jsonwebtoken'
-import { APP_SOURCE } from '..'
-import Context from '../context'
+import type { DataSource, Repository } from 'typeorm'
 import { NotificationEntity } from '../entity/notifications/Notification.entity'
 import { NotificationSubcriptionEntity } from '../entity/notifications/NotificationSubscription.entity'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
-import type { SSEManager } from '../serverSendEvent/SSEManager'
 import { NotificationService } from '../services/notifications/NotificationService'
 import { wrapperRequest } from '../utils'
 import { uniq } from '../utils/arrayHelper'
-import { useEnv } from '../env'
 
 export default class NotificationController {
   NotificationRepository: Repository<NotificationEntity>
@@ -19,11 +14,13 @@ export default class NotificationController {
   UserRepository: Repository<UserEntity>
   NotificationService: NotificationService
 
-  constructor() {
-    this.NotificationRepository = APP_SOURCE.getRepository(NotificationEntity)
-    this.UserRepository = APP_SOURCE.getRepository(UserEntity)
-    this.NotificationSubscriptionRepository = APP_SOURCE.getRepository(NotificationSubcriptionEntity)
-    this.NotificationService = new NotificationService(APP_SOURCE)
+  constructor(DATA_SOURCE: DataSource) {
+    if (DATA_SOURCE) {
+      this.NotificationRepository = DATA_SOURCE.getRepository(NotificationEntity)
+      this.UserRepository = DATA_SOURCE.getRepository(UserEntity)
+      this.NotificationSubscriptionRepository = DATA_SOURCE.getRepository(NotificationSubcriptionEntity)
+      this.NotificationService = new NotificationService(DATA_SOURCE)
+    }
   }
 
   private getNotificationByUserForClient = async (user: UserEntity) => {
@@ -44,8 +41,11 @@ export default class NotificationController {
   }
 
   public GetForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       if (user) {
@@ -57,9 +57,13 @@ export default class NotificationController {
   }
 
   public readMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const ids = req.query.ids as string
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const user = ctx?.user
 
       const notifIds = uniq(ids?.split(','))
@@ -76,50 +80,6 @@ export default class NotificationController {
         return res.status(200).json(updatedNotifications)
       }
       throw new ApiError(422, 'identifiants des notifications manquants')
-    })
-  }
-
-  public streamNotifications = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const token = req.query.token as string
-      const { JWT_SECRET } = useEnv()
-
-      if (!token || !JWT_SECRET) {
-        throw new ApiError(422, 'Vous n\'êtes pas authentifié')
-      }
-
-      verify(token, JWT_SECRET)
-
-      const SSEManager: SSEManager = req.app.get('sseManager')
-
-      if (!SSEManager) {
-        throw new ApiError(422, 'SSE manager not found')
-      }
-
-      const user = await this.UserRepository.findOne({
-        where: {
-          token,
-        },
-      })
-
-      if (!user) {
-        throw new ApiError(401, 'vous n\'êtes pas identifié')
-      }
-
-      const notifications = await this.getNotificationByUserForClient(user)
-
-      SSEManager.open(user.id, res)
-
-      SSEManager.broadcast({
-        id: `${user.id}-${Date.now()}`,
-        type: 'notifications',
-        data: JSON.stringify(notifications),
-      })
-
-      return req.on('close', () => {
-        /* En cas de deconnexion on supprime le client de notre manager */
-        SSEManager.delete(user.id)
-      })
     })
   }
 }

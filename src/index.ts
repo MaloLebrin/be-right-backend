@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import path from 'node:path'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
@@ -6,17 +7,15 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import cloudinary from 'cloudinary'
 import multer from 'multer'
+import { createChannel } from 'better-sse'
 import Context from './context'
 import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 import {
-  checkUserRole,
   isAuthenticated,
   useValidation,
 } from './middlewares'
-import { Role } from './types'
-import BugReportController from './controllers/BugReportController'
 import EmployeeController from './controllers/employees/EmployeeController'
 import FileController from './controllers/FileController'
 import { seedersFunction } from './seed'
@@ -24,9 +23,6 @@ import RedisCache from './RedisCache'
 import { NotFoundError } from './middlewares/ApiError'
 import { MailController } from './controllers/MailController'
 import { setupBullMqProcessor } from './jobs/queue/queue'
-import NotificationController from './controllers/Notifications.controller'
-import { NotificationSubscriptionController } from './controllers/notifications/NotificationSubscription.Controller'
-import { SSEManager } from './serverSendEvent/SSEManager'
 import { BadgeController } from './controllers/repositories/BadgeController'
 import { isProduction } from './utils/envHelper'
 import { hbs } from './utils/handlebarsHelper'
@@ -48,6 +44,10 @@ import { AdminCompanyRoutes } from './routes/Admin/AdminCompanyRoutes'
 import { errorHandler } from './middlewares/ErrorHandler'
 import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
+import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
+import { SSERoutes } from './routes/SSERoutes'
+import { StripeCustomerRoutes } from './routes/Stripe/CustomerRoutes'
+dotenv.config()
 
 const {
   CLOUDINARY_API_KEY,
@@ -56,12 +56,19 @@ const {
   NODE_ENV,
   PORT,
   FRONT_URL,
+  REDIS_PASSWORD,
+  REDIS_HOST,
+  REDIS_PORT,
 } = useEnv()
 
 export const APP_SOURCE = createAppSource()
-export const REDIS_CACHE = new RedisCache()
+export const REDIS_CACHE = new RedisCache({
+  REDIS_PORT: parseInt(REDIS_PORT),
+  REDIS_HOST,
+  REDIS_PASSWORD,
+})
 
-async function StartApp() {
+async function StartAPI() {
   await APP_SOURCE.initialize()
 
   if (APP_SOURCE.isInitialized) {
@@ -87,7 +94,6 @@ async function StartApp() {
   const app = express()
 
   // Middlewares
-  dotenv.config()
   app.use(helmet())
   app.use(cors({
     origin: isProduction() ? FRONT_URL : '*',
@@ -102,11 +108,10 @@ async function StartApp() {
     next()
   })
 
-  app.set('sseManager', new SSEManager())
-
   app.engine('handlebars', hbs.engine)
   app.set('view engine', 'handlebars')
-  app.set('views', '/app/src/views')
+  app.set('views', path.join(__dirname, 'views'))
+  app.use(express.static('public'))
 
   cloudinary.v2.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
@@ -121,12 +126,10 @@ async function StartApp() {
   })
 
   const {
-    createbugSchema,
     createEmployeeSchema,
     createManyEmployeesOnEventSchema,
     createManyEmployeesSchema,
     idParamsSchema,
-    subscribeNotification,
     validate,
   } = useValidation()
 
@@ -151,14 +154,6 @@ async function StartApp() {
   // Badge
   app.get('/badges', [isAuthenticated], new BadgeController().getAll)
   app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
-
-  // Bug
-  // app.get('/bugreport/', [isAuthenticated], new BugReportController().getAll)
-  app.get('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().getOne)
-  app.post('/bugreport/', [validate(createbugSchema), isAuthenticated], new BugReportController().createOne)
-  app.patch('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateOne)
-  app.patch('/bugreport/status/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().updateStatus)
-  app.delete('/bugreport/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new BugReportController().deleteOne)
 
   // Company
   app.use('/company', new CompanyRoutes(APP_SOURCE).intializeRoutes())
@@ -199,18 +194,23 @@ async function StartApp() {
   // Mail
   app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
 
+  const notificationChannel = createChannel()
+
+  app.use('/sse', new SSERoutes(APP_SOURCE, {
+    notificationChannel,
+  }).intializeRoutes())
+
   // Notification
-  app.get('/notifications', [isAuthenticated], new NotificationController().GetForUser)
-  app.get('/notifications/sse', new NotificationController().streamNotifications)
-  app.patch('/notifications/readMany', [isAuthenticated], new NotificationController().readMany)
+  app.use('/notifications', new NotificationRoutes(APP_SOURCE).intializeRoutes())
 
   // Notification Subscriptions
-  app.get('/notificationSubscription', [isAuthenticated], new NotificationSubscriptionController().GetForUser)
-  app.patch('/notificationSubscription/unsuscbribe/:id', [validate(idParamsSchema), isAuthenticated], new NotificationSubscriptionController().unsuscbribe)
-  app.post('/notificationSubscription/suscbribe', [validate(subscribeNotification), isAuthenticated], new NotificationSubscriptionController().subscribe)
+  app.use('/notificationSubscription', new NotificationSubscriptionRoutes(APP_SOURCE).intializeRoutes())
 
   // User
   app.use('/user', new UserRoutes(APP_SOURCE).intializeRoutes())
+
+  // Stripe Customer
+  app.use('/stripe/customer', new StripeCustomerRoutes(APP_SOURCE).intializeRoutes())
 
   app.all('*', req => {
     throw new NotFoundError(req.path)
@@ -227,5 +227,9 @@ async function StartApp() {
   })
 }
 
-StartApp()
-cronJobsStart()
+async function startApp() {
+  await StartAPI()
+  await cronJobsStart()
+}
+
+startApp()

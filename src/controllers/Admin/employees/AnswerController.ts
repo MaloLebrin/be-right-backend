@@ -35,10 +35,15 @@ export class AdminAnswerController extends BaseAdminController {
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
 
-      const answersToSendMail = await this.AnswerService.getMany(answers.map(ans => ans.id), true)
-      const event = await this.EventService.getOneEvent(eventId)
-
-      const user = await this.UserRepository.findOneBy({ id: userId })
+      const [
+        answersToSendMail,
+        event,
+        user,
+      ] = await Promise.all([
+        this.AnswerService.getMany(answers.map(ans => ans.id), true),
+        this.EventService.getOneEvent(eventId),
+        this.UserRepository.findOneBy({ id: userId }),
+      ])
 
       if (!user || answersToSendMail.length < 1 || !event) {
         throw new ApiError(422, 'Une erreur est survenue')

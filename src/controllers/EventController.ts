@@ -1,13 +1,13 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, FindOptionsWhere, Repository } from 'typeorm'
-import { IsNull, Not } from 'typeorm'
+import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm'
+import dayjs from 'dayjs'
 import EventService from '../services/EventService'
-import Context from '../context'
-import EventEntity, { eventRelationFields, eventSearchableFields } from '../entity/EventEntity'
+import EventEntity from '../entity/EventEntity'
 import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
-import { generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
+import { composeEventForPeriod, composeOrderFieldForEventStatus, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
 import { AddressService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
@@ -17,8 +17,8 @@ import RedisService from '../services/RedisService'
 import { defaultQueue } from '../jobs/queue/queue'
 import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
-import { newPaginator } from '../utils/paginatorHelper'
-import type { CompanyEntity } from '../entity/Company.entity'
+import { UpdateEventStatusJob } from '../jobs/queue/jobs/updateEventStatus.job'
+import { composeWhereFieldForQueryBuilder, parseQueries } from '../utils/paginatorHelper'
 
 export default class EventController {
   AddressService: AddressService
@@ -52,9 +52,13 @@ export default class EventController {
    * @returns return event just created
    */
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event, address, photographerId }: { event: Partial<EventEntity>; address?: Partial<AddressEntity>; photographerId: number } = req.body
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       let userId = null
       if (isUserAdmin(ctx.user)) {
         userId = parseInt(req.params.id)
@@ -78,9 +82,11 @@ export default class EventController {
             eventId: newEvent.id,
           })
         }
-        await this.RediceService.updateCurrentUserInCache({ userId })
+        await Promise.all([
+          this.RediceService.updateCurrentUserInCache({ userId }),
+          this.saveEventRedisCache(newEvent),
+        ])
 
-        await this.saveEventRedisCache(newEvent)
         return res.status(200).json(newEvent)
       }
 
@@ -93,10 +99,12 @@ export default class EventController {
    * @returns entity form given id
    */
   public getOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
+        if (!ctx) {
+          throw new ApiError(500, 'Une erreur s\'est produite')
+        }
 
         const event = await this.redisCache.get<EventEntity>(
           generateRedisKey({
@@ -143,8 +151,10 @@ export default class EventController {
    * @returns all event link with user
    */
   public getAllForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const eventsIds = ctx.user.company.eventIds
 
@@ -169,8 +179,10 @@ export default class EventController {
   }
 
   public getAllDeletedForUser = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       if (ctx.user?.id) {
         const events = await this.repository.find({
@@ -193,49 +205,120 @@ export default class EventController {
    * @returns paginate response
    */
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
-      const { where, page, take, skip, order } = newPaginator<EventEntity>({
-        req,
-        searchableFields: eventSearchableFields,
-        relationFields: eventRelationFields,
-      })
+      const {
+        andFilters,
+        filters,
+        limit,
+        page,
+        search,
+        withDeleted,
+      } = parseQueries(req)
+      const { andWhere, orWhere } = composeWhereFieldForQueryBuilder({ alias: 'event', andFilters, filters })
 
-      let whereFields = where
+      const eventPagniateQuery = this.repository
+        .createQueryBuilder('event')
+        .leftJoin('event.company', 'company')
+        .take(limit)
+        .skip((page - 1) * limit)
+        .addSelect(composeOrderFieldForEventStatus(), '_rank')
+        .orderBy('_rank')
 
       if (!isUserAdmin(ctx.user)) {
-        if (where.length > 0) {
-          whereFields = where.map(obj => {
-            obj.company = {
-              ...obj.company as FindOptionsWhere<CompanyEntity>,
-              id: ctx.user.companyId,
-            }
-            return obj
-          })
-        } else {
-          whereFields.push({
-            company: {
-              id: ctx.user.companyId,
-            },
-          })
+        eventPagniateQuery.andWhere('company.id = :companyId', { companyId: ctx.user.companyId })
+      }
+
+      if (req.query.search && req.query.search !== '') {
+        eventPagniateQuery.andWhere('event.name ILIKE :search', { search: `%${search}%` })
+      }
+
+      if (withDeleted) {
+        eventPagniateQuery.withDeleted()
+      }
+
+      if (andWhere.length > 0) {
+        for (const { key, params } of andWhere) {
+          eventPagniateQuery.andWhere(key, params)
         }
       }
 
-      const [events, total] = await this.repository.findAndCount({
-        take,
-        skip,
-        where: whereFields,
-        order,
-      })
+      if (orWhere.length > 0) {
+        for (const { key, params } of orWhere) {
+          eventPagniateQuery.andWhere(key, params)
+        }
+      }
+
+      const [events, total] = await eventPagniateQuery.getManyAndCount()
 
       return res.status(200).json({
         data: events,
         currentPage: page,
-        totalPages: Math.ceil(total / take),
-        limit: take,
+        totalPages: Math.ceil(total / limit),
+        limit,
         total,
-        order,
+      })
+    })
+  }
+
+  /**
+   * paginate function
+   * @returns paginate response
+   */
+  public getAllPeriod = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+      const { start, end } = req.query
+
+      const now = dayjs().startOf('month')
+
+      const startDate = start ? dayjs(start.toLocaleString()).toDate() : now.toDate()
+
+      const endDate = start ? dayjs(end.toLocaleString()).toDate() : now.endOf('month').toDate()
+
+      let whereFields: FindOptionsWhere<EventEntity>[] = [
+        { start: Between(startDate, endDate) },
+        { end: Between(startDate, endDate) },
+        {
+          start: LessThanOrEqual(startDate),
+          end: Between(startDate, endDate),
+        },
+        {
+          start: LessThanOrEqual(startDate),
+          end: MoreThanOrEqual(endDate),
+        },
+      ]
+
+      if (!isUserAdmin(ctx.user)) {
+        whereFields = [...whereFields].map(obj => ({
+          ...obj,
+          company: {
+            id: ctx.user.companyId,
+          },
+        }))
+      }
+      const [events, total] = await this.repository.findAndCount({
+        where: whereFields,
+      })
+
+      const answers = await this.AnswerService.getAnswersForManyEvents(events.map(event => event.id))
+
+      return res.status(200).json({
+        answers,
+        events,
+        calendarData: composeEventForPeriod({
+          events,
+          period: {
+            start: startDate,
+            end: endDate,
+          },
+        }),
+        total,
       })
     })
   }
@@ -245,12 +328,15 @@ export default class EventController {
    * @returns return event just updated
    */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const { event }: { event: Partial<EventEntity> } = req.body
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
-
         const eventFinded = await this.EventService.getOneEvent(id)
 
         if (isUserAdmin(ctx.user) || eventFinded.companyId === ctx.user.companyId) {
@@ -267,11 +353,37 @@ export default class EventController {
     })
   }
 
+  public synchroniseOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      const id = parseInt(req.params.id)
+
+      if (!id) {
+        throw new ApiError(422, 'identifiant de l\'événement manquant')
+      }
+
+      const { event } = await this.EventService.updateEventStatus(id)
+      await defaultQueue.add(
+        generateQueueName('UpdateEventStatusJob'),
+        new UpdateEventStatusJob({
+          eventId: id,
+        }),
+      )
+      return res.status(200).json(event)
+    })
+  }
+
   public deleteOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       const id = parseInt(req.params.id)
       if (id) {
-        const ctx = Context.get(req)
         const user = ctx.user
         const eventToDelete = await this.EventService.getOneWithoutRelations(id)
 

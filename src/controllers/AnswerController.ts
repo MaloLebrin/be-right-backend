@@ -9,7 +9,6 @@ import type RedisCache from '../RedisCache'
 import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import { ApiError } from '../middlewares/ApiError'
-import Context from '../context'
 import { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { MailjetService } from '../services'
 import { defaultQueue } from '../jobs/queue/queue'
@@ -21,13 +20,13 @@ import { CompanyEntity } from '../entity/Company.entity'
 import { generateQueueName } from '../jobs/queue/jobs/provider'
 
 export class AnswerController {
-  AnswerService: AnswerService
-  EventService: EventService
-  mailJetService: MailjetService
-  redisCache: RedisCache
-  employeeRepository: Repository<EmployeeEntity>
-  companyRepository: Repository<CompanyEntity>
-  repository: Repository<AnswerEntity>
+  private AnswerService: AnswerService
+  private EventService: EventService
+  private mailJetService: MailjetService
+  private redisCache: RedisCache
+  private employeeRepository: Repository<EmployeeEntity>
+  private companyRepository: Repository<CompanyEntity>
+  private repository: Repository<AnswerEntity>
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -54,8 +53,10 @@ export class AnswerController {
   }
 
   public createOne = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const eventId = parseInt(req.query.eventId.toString())
       const employeeId = parseInt(req.query.employeeId.toString())
@@ -63,7 +64,14 @@ export class AnswerController {
       const answer = await this.AnswerService.createOne(eventId, employeeId)
       await this.saveAnswerInCache(answer)
 
-      const event = await this.EventService.getOneEvent(eventId)
+      const [event, employee] = await Promise.all([
+        this.EventService.getOneEvent(eventId),
+        this.employeeRepository.findOne({
+          where: {
+            id: employeeId,
+          },
+        }),
+      ])
 
       await defaultQueue.add(
         generateQueueName('UpdateEventStatusJob'),
@@ -71,12 +79,6 @@ export class AnswerController {
           eventId,
         }),
       )
-
-      const employee = await this.employeeRepository.findOne({
-        where: {
-          id: employeeId,
-        },
-      })
 
       if (employee && event) {
         await defaultQueue.add(
@@ -100,10 +102,13 @@ export class AnswerController {
   }
 
   public createMany = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const eventId = parseInt(req.body.eventId)
       const employeeIds = req.body.employeeIds
-      const ctx = Context.get(req)
+
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const answers = await this.AnswerService.createMany(eventId, employeeIds)
       await this.saveManyAnswerInCache(answers)
@@ -195,15 +200,30 @@ export class AnswerController {
     })
   }
 
+  public getManyByEmployeeId = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const employeeId = parseInt(req.params.id)
+
+      if (!employeeId) {
+        throw new ApiError(422, 'Identifiant de la réponse manquant')
+      }
+
+      const answers = await this.AnswerService.getAllAnswersForEmployee(employeeId)
+      return res.status(200).json(this.AnswerService.filterSecretAnswersKeys(answers))
+    })
+  }
+
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
       const answer: AnswerEntity = req.body.answer
       const id = answer.id
       const answerUpdated = await this.AnswerService.updateOneAnswer(id, answer)
 
-      await this.saveAnswerInCache(answerUpdated)
+      await Promise.all([
+        this.saveAnswerInCache(answerUpdated),
+        this.EventService.updateEventStatus(answerUpdated.eventId),
+      ])
 
-      await this.EventService.multipleUpdateForEvent(answerUpdated.eventId)
       return res.status(200).json(answerResponse(answerUpdated))
     })
   }
@@ -213,19 +233,24 @@ export class AnswerController {
       const id = parseInt(req.params.id)
 
       if (!id) {
-        throw new ApiError(422, 'Identifiant de l\'événement manquant')
+        throw new ApiError(422, 'Identifiant de la réponse manquant')
       }
 
       const answerToDelete = await this.AnswerService.getOne(id)
-      const answer = await this.AnswerService.deleteOne(id)
 
-      await this.redisCache.invalidate(generateRedisKey({
-        field: 'id',
-        typeofEntity: EntitiesEnum.ANSWER,
-        id,
-      }))
+      if (!answerToDelete) {
+        throw new ApiError(422, 'Identifiant de la réposnse manquant')
+      }
+      const [answer] = await Promise.all([
+        this.AnswerService.deleteOne(id),
+        this.redisCache.invalidate(generateRedisKey({
+          field: 'id',
+          typeofEntity: EntitiesEnum.ANSWER,
+          id,
+        })),
+      ])
 
-      await this.EventService.multipleUpdateForEvent(answerToDelete.eventId)
+      await this.EventService.updateEventStatus(answerToDelete.eventId)
       return res.status(200).json(answer)
     })
   }
@@ -266,14 +291,15 @@ export class AnswerController {
         throw new ApiError(422, 'Un problème est survenu')
       }
 
-      await this.mailJetService.sendRaiseAnswerEmail({
-        event: answer.event,
-        employee: answer.employee,
-        owner,
-        answer,
-      })
-
-      await this.repository.update(answer.id, { mailSendAt: new Date() })
+      await Promise.all([
+        this.mailJetService.sendRaiseAnswerEmail({
+          event: answer.event,
+          employee: answer.employee,
+          owner,
+          answer,
+        }),
+        this.repository.update(answer.id, { mailSendAt: new Date() }),
+      ])
 
       const answerToSend = await this.AnswerService.getOne(id)
 

@@ -1,6 +1,13 @@
 import dayjs from 'dayjs'
+import fr from 'dayjs/locale/fr'
+import isBetween from 'dayjs/plugin/isBetween'
 import type EventEntity from '../entity/EventEntity'
-import { EventStatusEnum } from '../types/Event'
+import type { CalendarDay, Period } from '../types/Event'
+import { EventStatusEnum, EventStatusOrder } from '../types/Event'
+import { addADay, isBefore, isDateBetween, isSameDay, toFormat } from './dateHelper'
+
+dayjs.locale(fr)
+dayjs.extend(isBetween)
 
 export function isEventOver(event: EventEntity): boolean {
   const now = dayjs()
@@ -45,4 +52,73 @@ export function removeUnecessaryFieldsEvent(event: EventEntity) {
   delete event.partnerId
   delete event.addressId
   return event
+}
+
+export function isEventPeriodInDay(period: Period, date: Date) {
+  if (!date || !period?.end || !period.start) {
+    return false
+  }
+  return isDateBetween(date, period)
+}
+
+export function composeEventForPeriod({
+  events,
+  period,
+}: {
+  events: EventEntity[]
+  period: Period
+}): CalendarDay[] {
+  const { start, end } = period
+
+  const arrayOfDay: CalendarDay[] = []
+
+  let currentDate: Date = start
+  while (isBefore(currentDate, end) || isSameDay(currentDate, end)) {
+    const day: CalendarDay = {
+      label: toFormat(currentDate, 'DD MMMM YYYY'),
+      date: currentDate,
+      eventIds: [],
+    }
+    events.forEach(event => {
+      if (isEventPeriodInDay({
+        start: event.start,
+        end: event.end,
+      }, currentDate)) {
+        day.eventIds.push(event.id)
+      }
+    })
+
+    arrayOfDay.push(day)
+
+    currentDate = addADay(currentDate)
+  }
+  return arrayOfDay
+}
+
+export function orderingEventsByStatusAndDate(events: EventEntity[]): EventEntity[] {
+  if (!events || events.length === 0) {
+    return []
+  }
+  return events.sort((a, b) => {
+    const scoreA = EventStatusOrder[a.status]
+    const scoreB = EventStatusOrder[b.status]
+    if (scoreA === scoreB) {
+      return isBefore(a.end, b.end) ? -1 : 1
+    }
+    return scoreA - scoreB
+  })
+}
+
+/**
+ * @description compose order field for event status when using query builder
+ * @example orderBy(composeOrderFieldForEventStatus())
+ */
+export function composeOrderFieldForEventStatus() {
+  const eventStatusField = 'event.status'
+  return `CASE
+      WHEN ${eventStatusField} = '${EventStatusEnum.PENDING}' THEN ${EventStatusOrder[EventStatusEnum.PENDING]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CREATE}' THEN ${EventStatusOrder[EventStatusEnum.CREATE]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.COMPLETED}' THEN ${EventStatusOrder[EventStatusEnum.COMPLETED]}
+      WHEN ${eventStatusField} = '${EventStatusEnum.CLOSED}' THEN ${EventStatusOrder[EventStatusEnum.CLOSED]}
+    END`
 }

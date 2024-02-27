@@ -2,7 +2,7 @@ version: '3'
 services:
   postgres:
     restart: always
-    image: 'postgres:10'
+    image: 'postgres:15'
     ports:
       - '5432:5432'
     expose:
@@ -21,20 +21,21 @@ services:
     expose:
       - 6379
 
-  app:
-    restart: always
-    image: zenika/alpine-chrome:with-puppeteer
-    links:
-    - redis
-    depends_on:
-      - redis
-      - postgres
-    build:
-      context: .
-    ports:
-      - "${PORT}:${PORT}"
-    env_file:
-      - .env
+  # app:
+  #   restart: always
+  #   image: zenika/alpine-chrome:with-puppeteer
+  #   links:
+  #   - redis
+  #   depends_on:
+  #     - redis
+  #     - postgres
+  #   build:
+  #     context: .
+  #   ports:
+  #     - "${PORT}:${PORT}"
+  #   env_file:
+  #     - .env
+
 
 volumes:
   mysql-storage:

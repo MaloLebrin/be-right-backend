@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { IsNull } from 'typeorm'
 import { verify } from 'jsonwebtoken'
 import { wrapperRequest } from '../../utils'
@@ -7,17 +7,19 @@ import AnswerService from '../../services/AnswerService'
 import AnswerEntity from '../../entity/AnswerEntity'
 import { useEnv } from '../../env'
 import { ApiError } from '../../middlewares/ApiError'
-import type { DecodedJWTToken } from '../../types'
+import { type DecodedJWTToken, EntitiesEnum } from '../../types'
 import { EmployeeEntity } from '../../entity/employees/EmployeeEntity'
 import { answerResponse } from '../../utils/answerHelper'
 import EventEntity from '../../entity/EventEntity'
-// import { defaultQueue } from '../../jobs/queue/queue'
-// import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
-// import { generateQueueName } from '../../jobs/queue/jobs/provider'
-// import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
+import { defaultQueue } from '../../jobs/queue/queue'
+import { generateQueueName } from '../../jobs/queue/jobs/provider'
+import { SendSubmitAnswerConfirmationJob } from '../../jobs/queue/jobs/sendSubmitAnswerConfirmation.job'
 import { getfullUsername, isUserOwner } from '../../utils/userHelper'
 import { MailjetService } from '../../services'
-import { launchPuppeteer } from '../../utils/puppeteerHelper'
+import { UpdateEventStatusJob } from '../../jobs/queue/jobs/updateEventStatus.job'
+import { REDIS_CACHE } from '../..'
+import type RedisCache from '../../RedisCache'
+import { generateRedisKey } from '../../utils/redisHelper'
 
 export class AnswerSpecificController {
   AnswerService: AnswerService
@@ -25,6 +27,8 @@ export class AnswerSpecificController {
   AnswerRepository: Repository<AnswerEntity>
   EmployeeRepository: Repository<EmployeeEntity>
   MailJetService: MailjetService
+  redisCache: RedisCache
+  queryRunner: QueryRunner
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -33,10 +37,20 @@ export class AnswerSpecificController {
       this.AnswerService = new AnswerService(DATA_SOURCE)
       this.AnswerRepository = DATA_SOURCE.getRepository(AnswerEntity)
       this.MailJetService = new MailjetService(DATA_SOURCE)
+      this.redisCache = REDIS_CACHE
+      this.queryRunner = DATA_SOURCE.createQueryRunner()
     }
   }
 
-  private async isValidToken(token: string, email: string) {
+  private invalidateAnswerInCache = async (answerId: number) => {
+    await this.redisCache.invalidate(generateRedisKey({
+      field: 'id',
+      typeofEntity: EntitiesEnum.ANSWER,
+      id: answerId,
+    }))
+  }
+
+  private isValidToken(token: string, email: string) {
     const { JWT_SECRET } = useEnv()
 
     const decodedToken = verify(token, JWT_SECRET) as DecodedJWTToken | string
@@ -50,7 +64,7 @@ export class AnswerSpecificController {
     return false
   }
 
-  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+  public getOneAndSendCode = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
       const { token, email }: { token: string; email: string } = req.body
 
@@ -58,20 +72,33 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'identifiant du destinataire manquant')
       }
 
-      await this.isValidToken(token, email)
+      this.isValidToken(token, email)
 
-      const answer = await this.AnswerRepository.findOne({
-        where: {
-          token,
-        },
-        relations: [
-          'employee.address',
-          'event.address',
-          'event.company.address',
-          'event.company.users',
-          'event.partner',
-        ],
-      })
+      const [answer, answerWithToken] = await Promise.all([
+        this.AnswerRepository.findOne({
+          where: {
+            token,
+          },
+          relations: [
+            'employee.address',
+            'event.address',
+            'event.company.address',
+            'event.company.users',
+            'event.partner',
+          ],
+        }),
+
+        this.AnswerRepository.findOne({
+          where: {
+            token,
+          },
+          select: {
+            id: true,
+            token: true,
+            twoFactorCode: true,
+          },
+        }),
+      ])
 
       if (!answer) {
         throw new ApiError(422, 'Élément introuvable')
@@ -91,6 +118,13 @@ export class AnswerSpecificController {
           `${!event ? 'Événement' : ''} ${(!event && !employee) ? 'et' : ''} ${!employee ? 'Destinataire' : ''} introuvable `)
       }
 
+      await this.MailJetService.sendTwoFactorAuth({
+        twoFactorCode: answerWithToken.twoFactorCode,
+        employee: answer.employee,
+        creator: event.company.users.find(user => isUserOwner(user)),
+        eventName: answer.event.name,
+      })
+
       return res.status(200).json({
         answer: answerResponse(answer),
         event,
@@ -107,9 +141,9 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      await this.isValidToken(token, email)
+      this.isValidToken(token, email)
 
-      const isExist = await this.AnswerRepository.exist({
+      const isExist = await this.AnswerRepository.exists({
         where: {
           token,
           twoFactorCode,
@@ -154,29 +188,7 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Paramètres manquants')
       }
 
-      await this.isValidToken(token, email)
-
-      const isAnswerExist = await this.AnswerRepository.exist({
-        where: {
-          token,
-          id: answerId,
-          employee: {
-            email,
-          },
-          signedAt: IsNull(),
-        },
-      })
-
-      if (!isAnswerExist) {
-        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
-      }
-
-      await this.AnswerRepository.update(answerId, {
-        signedAt: new Date(),
-        hasSigned,
-        signature,
-        reason: reason || null,
-      })
+      this.isValidToken(token, email)
 
       const answer = await this.AnswerRepository.findOne({
         where: {
@@ -190,6 +202,17 @@ export class AnswerSpecificController {
       })
 
       if (!answer) {
+        throw new ApiError(422, 'Élément introuvable ou vous avez déjà répondu')
+      }
+
+      await this.AnswerRepository.update(answerId, {
+        signedAt: new Date(),
+        hasSigned,
+        signature,
+        reason: reason || null,
+      })
+
+      if (!answer) {
         throw new ApiError(422, 'Une erreur est survenue')
       }
 
@@ -199,40 +222,22 @@ export class AnswerSpecificController {
         throw new ApiError(422, 'Créateur introuvable')
       }
 
-      // await defaultQueue.add(
-      //   generateQueueName('SendSubmitAnswerConfirmationJob'),
-      //   new SendSubmitAnswerConfirmationJob({
-      //     req,
-      //     answer,
-      //     creatorFullName: getfullUsername(creator),
-      //     companyName: answer.event.company.name,
-      //   }),
-      // )
-
-      // await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
-      //   eventId: answer.eventId,
-      // }))
-
       const baseUrl = `${req.protocol}://${req.get('host')}`
-      const url = `${baseUrl}/answer/view/?ids=${req.query.ids}`
-      const fileName = `droit-image-${answer.employee.slug}.pdf`
-      const filePath = `/app/src/uploads/${fileName}`
+      const url = `${baseUrl}/answer/view/?ids=${answer.id}`
+      await defaultQueue.add(
+        generateQueueName('SendSubmitAnswerConfirmationJob'),
+        new SendSubmitAnswerConfirmationJob({
+          url,
+          answer,
+          creatorFullName: getfullUsername(creator),
+          creatorToken: creator.token,
+          companyName: answer.event.company.name,
+        }),
+      )
 
-      const browser = await launchPuppeteer()
-
-      const page = await browser.newPage()
-
-      await page.goto(url)
-      const pdf = await page.pdf({ path: filePath, format: 'a4', printBackground: true })
-      await browser.close()
-
-      await this.MailJetService.sendEmployeeAnswerWithPDF({
-        creatorFullName: getfullUsername(creator),
-        employee: answer.employee,
-        companyName: answer.event.company.name,
-        pdfBase64: pdf.toString('base64'),
-        fileName,
-      })
+      await defaultQueue.add(generateQueueName('UpdateEventStatusJob'), new UpdateEventStatusJob({
+        eventId: answer.eventId,
+      }))
 
       const employee = answer.employee
 
@@ -243,6 +248,8 @@ export class AnswerSpecificController {
           })
         }
       }
+
+      await this.invalidateAnswerInCache(answerId)
 
       return res.status(200).json(answer)
     })

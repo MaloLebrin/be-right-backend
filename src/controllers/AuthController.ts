@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express'
 import uid2 from 'uid2'
 import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
-import Context from '../context'
 import { generateHash, wrapperRequest } from '../utils'
 import { logger } from '../middlewares/loggerService'
 import { UserEntity } from '../entity/UserEntity'
@@ -148,7 +147,7 @@ export default class AuthController {
         throw new ApiError(422, 'Imformations manquantes')
       }
 
-      const isUserExist = await this.userRepository.exist({
+      const isUserExist = await this.userRepository.exists({
         where: {
           email,
         },
@@ -191,17 +190,21 @@ export default class AuthController {
   }
 
   public logOut = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const ctx = Context.get(req)
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
 
       const user = ctx.user
 
       if (!user?.token) {
         throw new ApiError(404, 'Utilisateur non trouvé')
       }
+      await Promise.all([
+        this.redisCache.invalidate(`user-id-${user.id}`),
+        this.redisCache.invalidate(`user-token-${user.token}`),
+      ])
 
-      await this.redisCache.invalidate(`user-id-${user.id}`)
-      await this.redisCache.invalidate(`user-token-${user.token}`)
       return res.status(203).json({ success: true, error: 'Utilisateur déconnecté' })
     })
   }

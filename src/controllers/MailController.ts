@@ -7,7 +7,6 @@ import { APP_SOURCE } from '..'
 import { ApiError } from '../middlewares/ApiError'
 import AnswerService from '../services/AnswerService'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
-import Context from '../context'
 import { isUserAdmin } from '../utils/userHelper'
 
 export class MailController {
@@ -30,9 +29,12 @@ export class MailController {
   }
 
   public sendMailToEmployee = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
+    await wrapperRequest(req, res, next, async ctx => {
       const answerId = parseInt(req.params.id)
-      const ctx = Context.get(req)
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
       if (answerId) {
         const answer = await this.AnswerService.getOne(answerId, true)
 

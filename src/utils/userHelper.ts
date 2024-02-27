@@ -12,7 +12,7 @@ export function getfullUsername(user: UserEntity | Pick<UserEntity, 'firstName' 
 }
 
 export function isUserEntity(user: any): user is UserEntity {
-  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'roles') && hasOwnProperty(user, 'profilePictureId')
+  return hasOwnProperty(user, 'token') && hasOwnProperty(user, 'roles') && hasOwnProperty(user, 'notificationToken')
 }
 
 export function isSubscriptionOptionField(field: string): boolean {
@@ -46,6 +46,16 @@ export function createJwtToken(user: JWTTokenPayload) {
       roles: [user.roles],
       subscription: user.subscription ?? SubscriptionEnum.BASIC,
       uniJWT: uid2(128),
+    },
+    JWT_SECRET,
+  )
+}
+export function createNotificationToken(userId: number) {
+  const { JWT_SECRET } = useEnv()
+  return sign(
+    {
+      userId,
+      uniJWT: uid2(48),
     },
     JWT_SECRET,
   )
