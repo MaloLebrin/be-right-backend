@@ -125,6 +125,68 @@ export class NotificationService {
     return notification
   }
 
+  public createMany = async (payload: {
+    type: NotificationTypeEnum
+    subscriber: NotificationSubcriptionEntity
+    eventNotificationId: number
+  }[]) => {
+    const eventNotifications = await this.eventNotifRepository.find({
+      where: {
+        id: In(payload.map(({ eventNotificationId }) => eventNotificationId)),
+      },
+      relations: {
+        answer: true,
+        event: true,
+        employee: true,
+      },
+    })
+
+    const eventWithAnswer = eventNotifications.map(en => en.answer?.id).filter(Boolean)
+
+    const answers = await this.AnswerRepository.find({
+      where: {
+        id: In(eventWithAnswer),
+      },
+      relations: {
+        event: true,
+        employee: true,
+      },
+    })
+
+    const notificationsToCreate = payload.map(({ type, subscriber, eventNotificationId }) => {
+      let title: string | null = null
+      let description: string | null = null
+
+      const eventNotif = eventNotifications.find(en => en.id === eventNotificationId)
+
+      if (eventNotif.employee) {
+        title = `Destinataire ${getfullUsername(eventNotif.employee)} créé`
+      }
+
+      else if (eventNotif.event) {
+        title = `Événement ${eventNotif.event.name} créé`
+      }
+
+      else if (eventNotif.answer) {
+        const answer = answers.find(answer => answer.id === eventNotif.answer.id)
+        description = `Destinataire ${getfullUsername(answer.employee)} a répondu à l'événement ${answer.event.name} en ${answer.hasSigned ? 'acceptant' : 'refusant'}`
+        title = `Réponse ${answer.hasSigned ? 'acceptée' : 'refusée'} ${answer.event.name}`
+      }
+
+      return {
+        type,
+        subscriber,
+        eventNotification: eventNotif,
+        title,
+        description,
+      }
+    })
+
+    const notifications = this.repository.create(notificationsToCreate)
+    await this.repository.save(notifications)
+    return notifications
+  }
+
   public deleteOne = async (id: number) => {
     return this.repository.softDelete(id)
   }
