@@ -15,13 +15,15 @@ import { GroupEntity } from './employees/Group.entity'
 import { CompanyEntity } from './Company.entity'
 import { BadgeEntity } from './repositories/Badge.entity'
 import { MigrationEntity } from './repositories/Migration.entity'
+import { DraftEventEntity } from './event/DraftEvent.entity'
 
 export default {
   AddressEntity,
   AnswerEntity,
-  BaseEntity,
   BadgeEntity,
+  BaseEntity,
   CompanyEntity,
+  DraftEventEntity,
   EmployeeEntity,
   EventEntity,
   EventNotificationEntity,
@@ -38,9 +40,9 @@ export default {
 export const entities = [
   AddressEntity,
   AnswerEntity,
-  SubscriptionEntity,
   BadgeEntity,
   CompanyEntity,
+  DraftEventEntity,
   EmployeeEntity,
   EventEntity,
   EventNotificationEntity,
@@ -51,5 +53,6 @@ export const entities = [
   NotificationEntity,
   NotificationSubcriptionEntity,
   SessionEntity,
+  SubscriptionEntity,
   UserEntity,
 ]
