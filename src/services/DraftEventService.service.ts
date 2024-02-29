@@ -20,7 +20,9 @@ export class DraftEventService {
   }) => {
     const { event, address, photographerId } = data
     return {
-      companyId,
+      company: {
+        id: companyId,
+      },
       checkoutSessionId,
       addressData: address,
       eventData: { ...event, photographerId },
