@@ -1,5 +1,10 @@
 import type { DataSource } from 'typeorm'
-import { isAuthenticated, payEventValidation, useValidation } from '../../middlewares'
+import {
+  isAuthenticated,
+  payEventValidation,
+  successfullPayment,
+  useValidation,
+} from '../../middlewares'
 import { type BaseInterfaceRouter, BaseRouter } from '../BaseRouter'
 import { StripeController } from '../../controllers/stripe/StripeController'
 
@@ -12,6 +17,7 @@ export class StripeSessionRoutes extends BaseRouter implements BaseInterfaceRout
 
   public intializeRoutes = () => {
     this.router.post('/payEvent', [validate(payEventValidation), isAuthenticated], new StripeController(this.DATA_SOURCE).payEvent)
+    this.router.get('/successfull', [validate(successfullPayment), isAuthenticated], new StripeController(this.DATA_SOURCE).successfull)
 
     return this.router
   }

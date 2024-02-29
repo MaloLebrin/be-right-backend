@@ -27,3 +27,9 @@ export const payEventValidation = object({
     photographerId: number().required('L\'identifiant du photographe est requis'),
   }),
 })
+
+export const successfullPayment = object({
+  params: object({
+    sessionId: string().required('L\'identifiant de la session de paiement est requis'),
+  }),
+})
