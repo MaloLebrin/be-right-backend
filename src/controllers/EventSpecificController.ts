@@ -1,34 +1,29 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { DataSource, Repository } from 'typeorm'
+import type { DataSource } from 'typeorm'
 import type RedisCache from '../RedisCache'
 import { REDIS_CACHE } from '..'
-import EventEntity from '../entity/EventEntity'
+import type EventEntity from '../entity/EventEntity'
 import EventService from '../services/EventService'
 import { AddressService } from '../services'
 import AnswerService from '../services/AnswerService'
 import { wrapperRequest } from '../utils'
 import type { EventWithRelationsCreationPayload } from '../types'
-import { EntitiesEnum, NotificationTypeEnum } from '../types'
+import { EntitiesEnum } from '../types'
 import { generateRedisKey, generateRedisKeysArray } from '../utils/redisHelper'
 import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import EmployeeService from '../services/employee/EmployeeService'
 import type { AddressEntity } from '../entity/AddressEntity'
 import { ApiError } from '../middlewares/ApiError'
-import { defaultQueue } from '../jobs/queue/queue'
-import { generateQueueName } from '../jobs/queue/jobs/provider'
-import { CreateEventNotificationsJob } from '../jobs/queue/jobs/createNotifications.job'
-import RedisService from '../services/RedisService'
-import { SendMailAnswerCreationjob } from '../jobs/queue/jobs/sendMailAnswerCreation.job'
 import { isUserAdmin } from '../utils/userHelper'
+import { EventCreateService } from '../services/event/eventCreateService.service'
 
 export default class EventSpecificController {
-  EmployeeService: EmployeeService
-  EventService: EventService
-  repository: Repository<EventEntity>
-  redisCache: RedisCache
-  AddressService: AddressService
-  AnswerService: AnswerService
-  RediceService: RedisService
+  private EmployeeService: EmployeeService
+  private EventService: EventService
+  private redisCache: RedisCache
+  private AddressService: AddressService
+  private AnswerService: AnswerService
+  private EventCreateService: EventCreateService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -36,18 +31,9 @@ export default class EventSpecificController {
       this.EventService = new EventService(DATA_SOURCE)
       this.AnswerService = new AnswerService(DATA_SOURCE)
       this.AddressService = new AddressService(DATA_SOURCE)
-      this.repository = DATA_SOURCE.getRepository(EventEntity)
       this.redisCache = REDIS_CACHE
-      this.RediceService = new RedisService(DATA_SOURCE)
+      this.EventCreateService = new EventCreateService(DATA_SOURCE)
     }
-  }
-
-  private saveEventRedisCache = async (event: EventEntity) => {
-    await this.redisCache.save(generateRedisKey({
-      typeofEntity: EntitiesEnum.EVENT,
-      field: 'id',
-      id: event.id,
-    }), event)
   }
 
   public fetchOneEventWithRelations = async (req: Request, res: Response, next: NextFunction) => {
@@ -112,62 +98,35 @@ export default class EventSpecificController {
 
   public posteOneWithRelations = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const { event, address, photographerId }: EventWithRelationsCreationPayload = req.body
+      const {
+        event: eventPayload,
+        address: addressPayload,
+        photographerId,
+      }: EventWithRelationsCreationPayload = req.body
 
-      if (!ctx) {
+      if (!ctx || !ctx.user || !ctx.user.companyId) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
       const companyId = ctx.user.companyId
-      const userId = ctx.user.id
 
-      if (event && companyId) {
-        const newEvent = await this.EventService.createOneEvent(event, companyId, photographerId)
-
-        if (newEvent && address) {
-          await defaultQueue.add(
-            generateQueueName(NotificationTypeEnum.EVENT_CREATED),
-            new CreateEventNotificationsJob({
-              type: NotificationTypeEnum.EVENT_CREATED,
-              event: newEvent,
-              userId,
-            }))
-
-          const [addressCreated, answers] = await Promise.all([
-            this.AddressService.createOne({
-              address,
-              eventId: newEvent.id,
-            }),
-            this.AnswerService.createMany(newEvent.id, event.employeeIds),
-            this.RediceService.updateCurrentUserInCache({ userId }),
-          ])
-
-          await Promise.all([
-            this.saveEventRedisCache(newEvent),
-            this.EventService.updateEventStatus(newEvent.id),
-          ])
-
-          if (answers.length > 0) {
-            await defaultQueue.add(
-              generateQueueName('SendMailAnswerCreationjob'),
-              new SendMailAnswerCreationjob({
-                answers,
-                user: ctx.user,
-                event: newEvent,
-              }),
-            )
-          }
-
-          return res.status(200).json({
-            event: newEvent,
-            answers,
-            address: addressCreated,
-          })
-        }
-        throw new ApiError(422, 'Événement non créé')
+      if (!eventPayload || !companyId) {
+        throw new ApiError(422, 'Formulaire incomplet')
       }
 
-      throw new ApiError(422, 'Formulaire incomplet')
+      const { event, address, answers } = await this.EventCreateService.createEventWithRelations({
+        event: eventPayload,
+        address: addressPayload,
+        companyId,
+        photographerId,
+        user: ctx.user,
+      })
+
+      return res.status(200).json({
+        event,
+        answers,
+        address,
+      })
     })
   }
 }
