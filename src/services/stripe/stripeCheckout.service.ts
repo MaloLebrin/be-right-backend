@@ -4,23 +4,18 @@ import { type ModePaymentEnum, StripeCurrency, type StripeProductForSession } fr
 import { useEnv } from '../../env'
 
 export class StripeCheckoutSessionService extends StripeService {
-  private FRONT_URL: string
+  private CANCEL_URL: string = null
+  private SUCCESS_URL: string = null
 
   constructor() {
     super()
     const { FRONT_URL } = useEnv()
-    this.FRONT_URL = FRONT_URL
-  }
-
-  private buildSuccessUrl = () => {
-    return `${isProduction()
-      ? this.FRONT_URL
+    this.SUCCESS_URL = `${isProduction()
+      ? FRONT_URL
       : 'http://localhost:3000'}/paiement/success-sessionId={CHECKOUT_SESSION_ID}`
-  }
 
-  private buildCancelUrl = () => {
-    return `${isProduction()
-      ? this.FRONT_URL
+    this.CANCEL_URL = `${isProduction()
+      ? FRONT_URL
       : 'http://localhost:3000'}/paiement/cancel-sessionId={CHECKOUT_SESSION_ID}`
   }
 
@@ -46,8 +41,8 @@ export class StripeCheckoutSessionService extends StripeService {
     return this.stripe.checkout.sessions.create({
       currency: StripeCurrency.EUR,
       client_reference_id: stripeCustomerId,
-      success_url: this.buildSuccessUrl(),
-      cancel_url: this.buildCancelUrl(),
+      success_url: this.SUCCESS_URL,
+      cancel_url: this.CANCEL_URL,
       customer: stripeCustomerId,
       mode: modePayment,
       line_items: products,
