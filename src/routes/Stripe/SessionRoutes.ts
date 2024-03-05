@@ -17,7 +17,7 @@ export class StripeSessionRoutes extends BaseRouter implements BaseInterfaceRout
 
   public intializeRoutes = () => {
     this.router.post('/payEvent', [validate(payEventValidation), isAuthenticated], new StripeController(this.DATA_SOURCE).payEvent)
-    this.router.get('/successfull', [validate(successfullPayment), isAuthenticated], new StripeController(this.DATA_SOURCE).successfull)
+    this.router.get('/successfull/:sessionId', [validate(successfullPayment), isAuthenticated], new StripeController(this.DATA_SOURCE).successfull)
 
     return this.router
   }
