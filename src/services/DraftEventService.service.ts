@@ -55,7 +55,7 @@ export class DraftEventService {
   }
 
   public async deleteDraftEventByCheckoutSessionId(checkoutSessionId: string) {
-    return this.repository.delete({
+    return this.repository.softDelete({
       checkoutSessionId,
     })
   }
