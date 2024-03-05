@@ -4,15 +4,19 @@ import { type ModePaymentEnum, StripeCurrency, type StripeProductForSession } fr
 import { useEnv } from '../../env'
 
 export class StripeCheckoutSessionService extends StripeService {
+  private CANCEL_URL: string = null
+  private SUCCESS_URL: string = null
+
   constructor() {
     super()
-  }
-
-  private buildSuccessUrl = () => {
     const { FRONT_URL } = useEnv()
-    return `${isProduction()
+    this.SUCCESS_URL = `${isProduction()
       ? FRONT_URL
-      : 'http://localhost:3000'}/commande/success?session_id={CHECKOUT_SESSION_ID}`
+      : 'http://localhost:3000'}/paiement/success-sessionId={CHECKOUT_SESSION_ID}`
+
+    this.CANCEL_URL = `${isProduction()
+      ? FRONT_URL
+      : 'http://localhost:3000'}/paiement/cancel-sessionId={CHECKOUT_SESSION_ID}`
   }
 
   public getStripeCheckoutSession = async (stripeCheckoutSessionId: string) => {
@@ -27,21 +31,19 @@ export class StripeCheckoutSessionService extends StripeService {
 
   public createStripeCheckoutSession = async ({
     stripeCustomerId,
-    customerEmail,
     modePayment,
     products,
   }: {
     stripeCustomerId: string
-    customerEmail: string
     modePayment: ModePaymentEnum
     products: StripeProductForSession[]
   }) => {
     return this.stripe.checkout.sessions.create({
       currency: StripeCurrency.EUR,
       client_reference_id: stripeCustomerId,
-      success_url: this.buildSuccessUrl(),
+      success_url: this.SUCCESS_URL,
+      cancel_url: this.CANCEL_URL,
       customer: stripeCustomerId,
-      customer_email: customerEmail,
       mode: modePayment,
       line_items: products,
     })

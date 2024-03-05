@@ -33,7 +33,7 @@ export class AddressService {
     })
   }
 
-  public createOne = async (payload: AddressCreationServicePayload) => {
+  public createOne = async (payload: AddressCreationServicePayload): Promise<AddressEntity> => {
     const { companyId, eventId, employeeId, address } = payload
 
     const coordinates = await this.geoLocalisation(address)
