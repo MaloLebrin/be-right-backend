@@ -22,7 +22,7 @@ dependencies:
     version: 0.5.1
   cloudinary:
     specifier: ^2.0.1
-    version: 2.0.2
+    version: 2.0.3
   cors:
     specifier: ^2.8.5
     version: 2.8.5
@@ -2038,8 +2038,8 @@ packages:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
-  /cloudinary@2.0.2:
-    resolution: {integrity: sha512-PQOaoM5W0jSrI1EIcnKAHenT3IMCCTbLkSWlXkXzQlkLBxsJIerinZVWebQqqpwz4etdhvlkfaXmsE9yhYc0Qw==}
+  /cloudinary@2.0.3:
+    resolution: {integrity: sha512-2JPxAUuV4iHwiW4ATSOZvii6+BhhKI9+9KscgUkxJPKa6V6wOnZJHlYyovBGrrIbIgEdmGSZgqEsLfD0wWBhBg==}
     engines: {node: '>=9'}
     dependencies:
       lodash: 4.17.21
