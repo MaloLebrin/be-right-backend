@@ -59,16 +59,19 @@ export default class EventService {
         }))
       }))
     }
+
     await this.repository.update(event.id, {
       status: EventStatusEnum.CLOSED,
     })
 
-    await this.repository.softDelete(event.id)
-    await this.redisCache.invalidate(generateRedisKey({
-      typeofEntity: EntitiesEnum.EVENT,
-      field: 'id',
-      id: event.id,
-    }))
+    await Promise.all([
+      this.repository.softDelete(event.id),
+      this.redisCache.invalidate(generateRedisKey({
+        typeofEntity: EntitiesEnum.EVENT,
+        field: 'id',
+        id: event.id,
+      }))],
+    )
   }
 
   async getOneEvent(eventId: number): Promise<EventEntity> {
@@ -127,8 +130,10 @@ export default class EventService {
         id: companyId,
       },
     })
-    await this.repository.save(newEvent)
-    await this.saveEventRedisCache(newEvent)
+    await Promise.all([
+      this.repository.save(newEvent),
+      this.saveEventRedisCache(newEvent),
+    ])
     return newEvent
   }
 
