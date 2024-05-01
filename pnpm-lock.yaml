@@ -34,7 +34,7 @@ dependencies:
     version: 2.0.10
   dayjs:
     specifier: ^1.11.10
-    version: 1.11.10
+    version: 1.11.11
   dotenv:
     specifier: ^16.4.2
     version: 16.4.5
@@ -2231,8 +2231,8 @@ packages:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
     dev: false
 
-  /dayjs@1.11.10:
-    resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
+  /dayjs@1.11.11:
+    resolution: {integrity: sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==}
     dev: false
 
   /debug@2.6.9:
@@ -6427,7 +6427,7 @@ packages:
       buffer: 6.0.3
       chalk: 4.1.2
       cli-highlight: 2.1.11
-      dayjs: 1.11.10
+      dayjs: 1.11.11
       debug: 4.3.4
       dotenv: 16.4.5
       glob: 10.3.10
