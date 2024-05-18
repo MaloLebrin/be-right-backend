@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@antfu/utils':
     specifier: ^0.7.7
-    version: 0.7.7
+    version: 0.7.8
   axios:
     specifier: ^1.6.7
     version: 1.6.8
@@ -263,8 +263,8 @@ packages:
       - typescript
     dev: true
 
-  /@antfu/utils@0.7.7:
-    resolution: {integrity: sha512-gFPqTG7otEJ8uP6wrhDv6mqwGWYZKNvAcCq6u9hOj0c+IKCEsY4L1oC9trPq2SaWIzAfHvqfBDxF591JkMf+kg==}
+  /@antfu/utils@0.7.8:
+    resolution: {integrity: sha512-rWQkqXRESdjXtc+7NRfK9lASQjpXJu1ayp7qi1d23zZorY+wBHVLHHoVcMsEnkqEBWTFqbztO7/QdJFzyEcLTg==}
     dev: false
 
   /@babel/code-frame@7.22.13:
