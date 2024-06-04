@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { ObjectSchema } from 'yup'
+import type { ObjectSchema, ObjectShape } from 'yup'
 import { array, date, number, object, string } from 'yup'
-import type { ObjectShape } from 'yup/lib/object'
 import { NotificationTypeEnumArray, Role } from '../../types'
 import { logger } from '../loggerService'
 
