@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { ObjectSchema, ObjectShape } from 'yup'
+import type { AnyObject, ObjectSchema } from 'yup'
 import { array, date, number, object, string } from 'yup'
 import { NotificationTypeEnumArray, Role } from '../../types'
 import { logger } from '../loggerService'
 
 export function useValidation() {
-  const validate = <T extends ObjectShape>(schema: ObjectSchema<T>) => async (req: Request, res: Response, next: NextFunction) => {
+  const validate = <T extends AnyObject>(schema: ObjectSchema<T>) => async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.url} validation started`)
 
     try {
