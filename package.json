@@ -42,7 +42,7 @@
     "node-mailjet": "^6.0.5",
     "pg": "^8.11.5",
     "pino": "8.16.2",
-    "pino-pretty": "11.0.0",
+    "pino-pretty": "11.2.0",
     "puppeteer": "21.11.0",
     "redis": "^4.6.14",
     "reflect-metadata": "^0.2.2",
