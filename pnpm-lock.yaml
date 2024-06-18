@@ -88,7 +88,7 @@ importers:
         version: 0.2.2
       stripe:
         specifier: ^15.9.0
-        version: 15.11.0
+        version: 15.12.0
       ts-node:
         specifier: 10.9.2
         version: 10.9.2(@types/node@18.19.35)(typescript@5.4.5)
@@ -3317,8 +3317,8 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  stripe@15.11.0:
-    resolution: {integrity: sha512-qmZF0PN1jRVpiQrXL8eTb9Jy/6S+aUlcDquKBFT2h3PkaD7RZ444FIojVXUg67FK2zFIUNXgMv02c7csdL5qHg==}
+  stripe@15.12.0:
+    resolution: {integrity: sha512-slTbYS1WhRJXVB8YXU8fgHizkUrM9KJyrw4Dd8pLEwzKHYyQTIE46EePC2MVbSDZdE24o1GdNtzmJV4PrPpmJA==}
     engines: {node: '>=12.*'}
 
   superagent@9.0.2:
@@ -7590,7 +7590,7 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  stripe@15.11.0:
+  stripe@15.12.0:
     dependencies:
       '@types/node': 18.19.35
       qs: 6.12.1
