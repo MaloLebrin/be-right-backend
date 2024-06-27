@@ -12,7 +12,6 @@ import { BadgeEnumName, NotificationTypeEnum, NotificationTypeEnumArray, Subscri
 import { photographerFixture1, photographerFixture2, photographerFixture3, photographerFixture4 } from '../shared/photographerFixtures'
 import { BaseSeedClass } from '../Base/BaseSeedClass'
 import { GroupService } from '../../services/employee/GroupService'
-import { updateStatusEventBasedOnStartEndTodayDate } from '../../utils/eventHelpers'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { BadgeEntity } from '../../entity/repositories/Badge.entity'
 import { NotificationService } from '../../services/notifications'
@@ -238,16 +237,16 @@ export class UserSeedClass extends BaseSeedClass {
       },
     ))
 
-    await this.photographersSeeder()
-    await this.seedCSVEmployee(newCompany.id)
-
+    const [partner] = await Promise.all([
+      this.getManager.findOne(UserEntity, {
+        where: {
+          email: 'lee.jordan@poudlard.com',
+        },
+      }),
+      this.photographersSeeder(),
+      this.seedCSVEmployee(newCompany.id),
+    ])
     const employeeIds = employees.map(employee => employee.id)
-
-    const partner = await this.getManager.findOne(UserEntity, {
-      where: {
-        email: 'lee.jordan@poudlard.com',
-      },
-    })
 
     const event = await this.EventService.createOneEvent(
       {
@@ -275,23 +274,29 @@ export class UserSeedClass extends BaseSeedClass {
       },
     })
 
-    await this.NotificationService.createOne({
-      type: NotificationTypeEnum.EVENT_CREATED,
-      subscriber,
-      eventNotificationId: eventNotif.id,
-    })
+    await Promise.all([
+      this.NotificationService.createOne({
+        type: NotificationTypeEnum.EVENT_CREATED,
+        subscriber,
+        eventNotificationId: eventNotif.id,
+      }),
+      this.AddressService.createOne({
+        address: eventFixtureCompanyPremium.address,
+        eventId: event.id,
+      }),
+      this.AnswerService.createMany(event.id, employeeIds),
+    ])
 
-    await this.AddressService.createOne({
-      address: eventFixtureCompanyPremium.address,
-      eventId: event.id,
-    })
-
-    await this.AnswerService.createMany(event.id, employeeIds)
-
-    const answer = await this.AnswerService.getOneAnswerForEventEmployee({
-      eventId: event.id,
-      employeeId: 2,
-    })
+    const [answer, answer2] = await Promise.all([
+      this.AnswerService.getOneAnswerForEventEmployee({
+        eventId: event.id,
+        employeeId: 2,
+      }),
+      this.AnswerService.getOneAnswerForEventEmployee({
+        eventId: event.id,
+        employeeId: 1,
+      }),
+    ])
 
     if (answer) {
       await this.AnswerService.updateOneAnswer(answer.id, {
@@ -322,11 +327,6 @@ export class UserSeedClass extends BaseSeedClass {
       })
     }
 
-    const answer2 = await this.AnswerService.getOneAnswerForEventEmployee({
-      eventId: event.id,
-      employeeId: 1,
-    })
-
     if (answer2) {
       await this.AnswerService.updateOneAnswer(answer2.id, {
         ...answer2,
@@ -354,6 +354,8 @@ export class UserSeedClass extends BaseSeedClass {
         eventNotificationId: answerEventNotif2.id,
       })
     }
+
+    await this.EventService.updateEventStatus(event.id)
   }
 
   private async seedUserMedium() {
@@ -429,12 +431,13 @@ export class UserSeedClass extends BaseSeedClass {
       1,
     )
 
-    await this.AddressService.createOne({
-      address: eventFixtureCompanyMedium.address,
-      eventId: event.id,
-    })
-
-    await this.AnswerService.createMany(event.id, employeeIds)
+    await Promise.all([
+      this.AddressService.createOne({
+        address: eventFixtureCompanyMedium.address,
+        eventId: event.id,
+      }),
+      this.AnswerService.createMany(event.id, employeeIds),
+    ])
 
     const answer = await this.AnswerService.getOneAnswerForEventEmployee({
       eventId: event.id,
@@ -452,19 +455,23 @@ export class UserSeedClass extends BaseSeedClass {
       eventId: event.id,
       employeeId: employeeIds[1],
     })
-
-    await this.AnswerService.updateOneAnswer(answer2.id, {
-      ...answer2,
-      hasSigned: false,
-      signedAt: new Date(),
-    })
+    await Promise.all([
+      this.AnswerService.updateOneAnswer(answer2.id, {
+        ...answer2,
+        hasSigned: false,
+        signedAt: new Date(),
+      }),
+      this.EventService.updateEventStatus(event.id),
+    ])
   }
 
   public async SeedDataBase() {
     await this.photographersSeeder()
-    await this.seedUserPremium()
-    await this.seedUserMedium()
-    await this.seedUnUsedUser()
+    await Promise.all([
+      this.seedUserPremium(),
+      this.seedUserMedium(),
+      this.seedUnUsedUser(),
+    ])
     await this.UpdateStatusEventSeeded()
   }
 
@@ -473,11 +480,7 @@ export class UserSeedClass extends BaseSeedClass {
       take: 9999,
     })
     await Promise.all(events.map(event => {
-      return this.getManager.update(EventEntity, {
-        id: event.id,
-      }, {
-        status: updateStatusEventBasedOnStartEndTodayDate(event),
-      })
+      return this.EventService.updateEventStatus(event.id)
     }))
   }
 }
