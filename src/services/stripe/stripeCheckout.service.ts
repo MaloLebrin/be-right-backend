@@ -10,6 +10,11 @@ export class StripeCheckoutSessionService extends StripeService {
   constructor() {
     super()
     const { FRONT_URL } = useEnv()
+
+    if (!FRONT_URL) {
+      throw new Error('FRONT_URL is not defined')
+    }
+
     this.SUCCESS_URL = `${isProduction()
       ? FRONT_URL
       : 'http://localhost:3000'}/paiement/success-sessionId={CHECKOUT_SESSION_ID}`
