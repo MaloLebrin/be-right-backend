@@ -1,24 +1,28 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
+import { noNull } from '@antfu/utils'
 import { ApiError } from '../middlewares/ApiError'
 import { wrapperRequest } from '../utils'
 import { parseQueryIds } from '../utils/basicHelper'
 import { logger } from '../middlewares/loggerService'
 import AnswerEntity from '../entity/AnswerEntity'
-import { generateAnswerPdf } from '../utils/puppeteerHelper'
+import { generatePdfFromUrl } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
+import EventService from '../services/EventService'
 
 export class DownloadController {
   private repository: Repository<AnswerEntity>
   private queryRunner: QueryRunner
   private logger: typeof logger
+  private EventService: EventService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.repository = DATA_SOURCE.getRepository(AnswerEntity)
       this.logger = logger
       this.queryRunner = DATA_SOURCE.createQueryRunner()
+      this.EventService = new EventService(DATA_SOURCE)
     }
   }
 
@@ -106,6 +110,70 @@ export class DownloadController {
     })
   }
 
+  public ViewList = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      console.time('ViewList')
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      const currentUser = ctx.user
+
+      if (!currentUser?.companyId) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
+
+      const eventId = parseInt(req.params.id as string)
+
+      if (!noNull(eventId) || isNaN(eventId)) {
+        throw new ApiError(422, 'L\'identifiant de l\'événement est requis')
+      }
+
+      const [answers, event] = await Promise.all([
+        this.repository.find({
+          where: {
+            signedAt: Not(IsNull()),
+            hasSigned: true,
+            event: {
+              id: eventId,
+              company: {
+                id: currentUser.companyId,
+              },
+            },
+          },
+          relations: {
+            employee: true,
+          },
+        }),
+        this.EventService.getOneWithoutRelations(eventId),
+      ])
+
+      if (!event) {
+        throw new ApiError(422, 'L\'événement n\'existe pas')
+      }
+
+      if (answers.length < 1) {
+        throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')
+      }
+      console.timeEnd('ViewList')
+
+      return res.render('sucessList', {
+        data: {
+          eventId,
+          eventName: event.name,
+          eventStart: event.start.toISOString(),
+          eventEnd: event.end.toISOString(),
+          recipients: answers.map(answer => ({
+            firstName: answer.employee.firstName,
+            lastName: answer.employee.lastName,
+            signedAt: answer.signedAt.toISOString(),
+          })),
+          todayDate: new Date().toISOString(),
+        },
+      })
+    })
+  }
+
   public downLoadAnswer = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
       console.time('downLoadAnswer in')
@@ -157,7 +225,7 @@ export class DownloadController {
         fileName = `droits-images-${event.name}.pdf`
       }
 
-      const { content } = await generateAnswerPdf({
+      const { content } = await generatePdfFromUrl({
         url,
         fileName,
         token: currentUser.token,
@@ -184,6 +252,84 @@ export class DownloadController {
           })
       } finally {
         console.timeEnd('downLoadAnswer in')
+      }
+    })
+  }
+
+  public downLoadListRecipientsWhoAccepted = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async ctx => {
+      console.time('downLoadListRecipientsWhoAccepted in')
+      if (!ctx) {
+        throw new ApiError(500, 'Une erreur s\'est produite')
+      }
+
+      const currentUser = ctx.user
+
+      if (!currentUser?.companyId) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
+
+      const eventId = parseInt(req.params.id as string)
+
+      if (!noNull(eventId) || isNaN(eventId)) {
+        throw new ApiError(422, 'L\'identifiant de l\'événement est requis')
+      }
+
+      const [nbAnswers, event] = await Promise.all([
+        this.repository.count({
+          where: {
+            signedAt: Not(IsNull()),
+            hasSigned: true,
+            event: {
+              id: eventId,
+              company: {
+                id: currentUser.companyId,
+              },
+            },
+          },
+        }),
+        this.EventService.getOneWithoutRelations(eventId),
+      ])
+
+      if (!event) {
+        throw new ApiError(422, 'L\'événement n\'existe pas')
+      }
+
+      if (nbAnswers < 1) {
+        throw new ApiError(422, 'Aucun destinataire n\'a pas répondu')
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`
+
+      const fileName = `liste-destinataires -${event.name.trim()}.pdf`
+
+      const { content } = await generatePdfFromUrl({
+        url: `${baseUrl}/event/listOfAccepted/${eventId}`,
+        fileName,
+        token: 'perijgh',
+        isMadeByBrowserless: isProduction(),
+      })
+      try {
+        return res
+          .status(200)
+          .json({
+            fileName,
+            content,
+            mimeType: 'application/pdf',
+          })
+      } catch (error) {
+        this.logger.error(error)
+
+        return res
+          .status(error.status || 500)
+          .send({
+            success: false,
+            message: error.message,
+            stack: error.stack,
+            description: error.cause,
+          })
+      } finally {
+        console.timeEnd('downLoadListRecipientsWhoAccepted in')
       }
     })
   }

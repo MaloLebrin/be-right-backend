@@ -1,5 +1,5 @@
 import { sign } from 'jsonwebtoken'
-import type { DataSource, EntityManager, Repository } from 'typeorm'
+import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import uid2 from 'uid2'
 import AnswerEntity from '../entity/AnswerEntity'
@@ -10,17 +10,14 @@ import { ApiError } from '../middlewares/ApiError'
 import { answerResponse } from '../utils/answerHelper'
 
 export default class AnswerService {
-  getManager: EntityManager
-
-  repository: Repository<AnswerEntity>
-  eventRepository: Repository<EventEntity>
-  employeeRepository: Repository<EmployeeEntity>
+  private repository: Repository<AnswerEntity>
+  private eventRepository: Repository<EventEntity>
+  private employeeRepository: Repository<EmployeeEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(AnswerEntity)
     this.employeeRepository = APP_SOURCE.getRepository(EmployeeEntity)
     this.eventRepository = APP_SOURCE.getRepository(EventEntity)
-    this.getManager = APP_SOURCE.manager
   }
 
   private generateAnswerToken(employee: EmployeeEntity, answerId: number, eventId: number) {
@@ -47,17 +44,18 @@ export default class AnswerService {
   }
 
   public createOne = async (eventId: number, employeeId: number) => {
-    const event = await this.eventRepository.findOne({
-      where: {
-        id: eventId,
-      },
-    })
-
-    const employee = await this.employeeRepository.findOne({
-      where: {
-        id: employeeId,
-      },
-    })
+    const [event, employee] = await Promise.all([
+      this.eventRepository.findOne({
+        where: {
+          id: eventId,
+        },
+      }),
+      this.employeeRepository.findOne({
+        where: {
+          id: employeeId,
+        },
+      }),
+    ])
 
     if (!event || !employee) {
       throw new ApiError(422, 'Missing parameters')

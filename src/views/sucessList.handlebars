@@ -1,0 +1,146 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
+
+  main {
+    padding: 4rem;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .list-wrapper {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    width: 50%;
+  }
+
+  h1 {
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .text-wrapper {
+    margin: 1rem 0;
+  }
+
+  p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .field-bold {
+    font-weight: bold;
+  }
+
+  table {
+    width: 100%;
+    margin-top: 2rem;
+    overflow: visible;
+  }
+
+  thead {
+    width: 100%;
+  }
+
+  th {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+  }
+
+  .divide-gray-200> :not([hidden])~ :not([hidden]) {
+    --tw-divide-opacity: 1;
+    border-color: rgb(229 231 235 / var(--tw-divide-opacity))
+      /* #e5e7eb */
+    ;
+  }
+
+  .divide-y> :not([hidden])~ :not([hidden]) {
+    --tw-divide-y-reverse: 0;
+    border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+    border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
+  }
+
+  td {
+    padding-top: 0.5rem
+      /* 8px */
+    ;
+    padding-bottom: 0.5rem
+      /* 8px */
+    ;
+    padding-left: 0.75rem;
+    font-size: 0.75rem
+      /* 12px */
+    ;
+    line-height: 1rem
+      /* 16px */
+    ;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  tr{
+    border: solid 1px #e5e7eb;
+  }
+</style>
+
+<main>
+  <div class="list-wrapper">
+    <h1>Liste des personnes qui ont accepté l'utilisation de leurs droit à l'image</h1>
+
+    <div class="text-wrapper">
+      <p><span class="field-bold">Événement:&nbsp;n°</span> {{ data.eventId }}</span></p>
+      <p><span class="field-bold">Nom de l'événement:&nbsp;</span> {{ data.eventName }}</span></p>
+      <p>Date de l'événement:&nbsp;{{ toFormat eventStart }}</p>
+    </div>
+
+    <table class="table divide-y divide-gray-200 divide-gray-200">
+      <thead>
+        <tr>
+          <th scope="col">
+            <span class="field-bold">
+              Nom
+            </span>
+          </th>
+          <th scope="col">
+            <span class="field-bold">
+              Prénom
+            </span>
+          </th>
+          <th scope="col">
+            <span class="field-bold">
+              Signé le
+            </span>
+          </th>
+      </thead>
+
+      <tbody class="divide-y divide-gray-200">
+        {{#each data.recipients}}
+        <tr>
+          <td class="py-2 text-sm font-medium text-gray-900 truncate md:py-4 whitespace-nowrap sm:pl-6">
+            {{ lastName }}
+          </td>
+          <td class="py-2 pl-4 text-xs font-medium text-gray-900 truncate md:py-4 md:text-sm whitespace-nowrap">
+            {{ firstName }}
+          </td>
+          <td class="px-3 py-2 text-sm text-gray-500 truncate md:py-4 whitespace-nowrap">
+            {{ toFormat signedAt }}
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</main>
