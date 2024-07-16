@@ -10,7 +10,6 @@ import AnswerEntity from '../entity/AnswerEntity'
 import { generatePdfFromUrl } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
 import EventService from '../services/EventService'
-import { getfullUsername } from '../utils/userHelper'
 
 export class DownloadController {
   private repository: Repository<AnswerEntity>
@@ -167,7 +166,6 @@ export class DownloadController {
           recipients: answers.map(answer => ({
             firstName: answer.employee.firstName,
             lastName: answer.employee.lastName,
-            fullName: getfullUsername(answer.employee),
             signedAt: answer.signedAt.toISOString(),
           })),
           todayDate: new Date().toISOString(),
