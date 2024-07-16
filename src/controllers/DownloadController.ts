@@ -118,11 +118,11 @@ export class DownloadController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const currentUser = ctx.user
+      // const currentUser = ctx.user
 
-      if (!currentUser?.companyId) {
-        throw new ApiError(401, 'Action non authorisée')
-      }
+      // if (!currentUser?.companyId) {
+      //   throw new ApiError(401, 'Action non authorisée')
+      // }
 
       const eventId = parseInt(req.params.eventId as string)
 
@@ -138,7 +138,7 @@ export class DownloadController {
             event: {
               id: eventId,
               company: {
-                id: currentUser.companyId,
+                // id: currentUser.companyId,
               },
             },
           },
@@ -264,11 +264,11 @@ export class DownloadController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      const currentUser = ctx.user
+      // const currentUser = ctx.user
 
-      if (!currentUser?.companyId) {
-        throw new ApiError(401, 'Action non authorisée')
-      }
+      // if (!currentUser?.companyId) {
+      //   throw new ApiError(401, 'Action non authorisée')
+      // }
 
       const eventId = parseInt(req.params.eventId as string)
 
@@ -284,7 +284,7 @@ export class DownloadController {
             event: {
               id: eventId,
               company: {
-                id: currentUser.companyId,
+                // id: currentUser.companyId,
               },
             },
           },

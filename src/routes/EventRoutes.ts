@@ -2,6 +2,7 @@ import type { DataSource } from 'typeorm'
 import { isAuthenticated, useValidation } from '../middlewares'
 import EventController from '../controllers/EventController'
 import EventSpecificController from '../controllers/EventSpecificController'
+import { DownloadController } from '../controllers/DownloadController'
 import type { BaseInterfaceRouter } from './BaseRouter'
 import { BaseRouter } from './BaseRouter'
 
@@ -22,9 +23,13 @@ export class EventRoutes extends BaseRouter implements BaseInterfaceRouter {
     this.router.get('/deleted', [isAuthenticated], new EventController(this.DATA_SOURCE).getAllDeletedForUser)
     this.router.get('/withRelations/:id', [validate(idParamsSchema), isAuthenticated], new EventSpecificController(this.DATA_SOURCE).fetchOneEventWithRelations)
     this.router.get('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).getOne)
+    this.router.get('/listOfAccepted/:id', [validate(idParamsSchema)], new DownloadController(this.DATA_SOURCE).downLoadListRecipientsWhoAccepted)
+
     this.router.post('', [validate(createOneEventSchema), isAuthenticated], new EventSpecificController(this.DATA_SOURCE).posteOneWithRelations)
+
     this.router.patch('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).updateOne)
     this.router.patch('/synchronise/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).synchroniseOne)
+
     this.router.delete('/:id', [validate(idParamsSchema), isAuthenticated], new EventController(this.DATA_SOURCE).deleteOne)
 
     return this.router

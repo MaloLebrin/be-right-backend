@@ -35,8 +35,8 @@
     <p>Nom de l'événement: {{ eventName }}</span></p>
     <p>Date de l'événement: {{ toFormat eventStart }}</p>
   </div>
-  {{#each data.recipients}}
 
+  {{#each data.recipients}}
     <div class="text-wrapper">
       <p>{{ recipient.fullName }}</p>
       <p>Date de l'événement: {{ toFormat eventStart }}</p>
