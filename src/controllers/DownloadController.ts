@@ -118,13 +118,13 @@ export class DownloadController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      // const currentUser = ctx.user
+      const currentUser = ctx.user
 
-      // if (!currentUser?.companyId) {
-      //   throw new ApiError(401, 'Action non authorisée')
-      // }
+      if (!currentUser?.companyId) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
 
-      const eventId = parseInt(req.params.eventId as string)
+      const eventId = parseInt(req.params.id as string)
 
       if (!noNull(eventId) || isNaN(eventId)) {
         throw new ApiError(422, 'L\'identifiant de l\'événement est requis')
@@ -138,7 +138,7 @@ export class DownloadController {
             event: {
               id: eventId,
               company: {
-                // id: currentUser.companyId,
+                id: currentUser.companyId,
               },
             },
           },
@@ -160,6 +160,7 @@ export class DownloadController {
 
       return res.render('sucessList', {
         data: {
+          eventId,
           eventName: event.name,
           eventStart: event.start.toISOString(),
           eventEnd: event.end.toISOString(),
@@ -264,13 +265,13 @@ export class DownloadController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
-      // const currentUser = ctx.user
+      const currentUser = ctx.user
 
-      // if (!currentUser?.companyId) {
-      //   throw new ApiError(401, 'Action non authorisée')
-      // }
+      if (!currentUser?.companyId) {
+        throw new ApiError(401, 'Action non authorisée')
+      }
 
-      const eventId = parseInt(req.params.eventId as string)
+      const eventId = parseInt(req.params.id as string)
 
       if (!noNull(eventId) || isNaN(eventId)) {
         throw new ApiError(422, 'L\'identifiant de l\'événement est requis')
@@ -284,7 +285,7 @@ export class DownloadController {
             event: {
               id: eventId,
               company: {
-                // id: currentUser.companyId,
+                id: currentUser.companyId,
               },
             },
           },
@@ -307,7 +308,7 @@ export class DownloadController {
       const { content } = await generatePdfFromUrl({
         url: `${baseUrl}/event/listOfAccepted/${eventId}`,
         fileName,
-        token: currentUser.token,
+        token: 'perijgh',
         isMadeByBrowserless: isProduction(),
       })
       try {
