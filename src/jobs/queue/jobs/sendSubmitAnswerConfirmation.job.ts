@@ -3,7 +3,7 @@ import { logger } from '../../../middlewares/loggerService'
 import { MailjetService } from '../../../services'
 import { APP_SOURCE } from '../../..'
 import type AnswerEntity from '../../../entity/AnswerEntity'
-import { generateAnswerPdf } from '../../../utils/puppeteerHelper'
+import { generatePdfFromUrl } from '../../../utils/puppeteerHelper'
 import { isProduction } from '../../../utils/envHelper'
 import type { JobImp } from './job.definition'
 import { BaseJob } from './job.definition'
@@ -30,7 +30,7 @@ export class SendSubmitAnswerConfirmationJob extends BaseJob implements JobImp {
 
     const mailJetService = new MailjetService(APP_SOURCE)
 
-    const { content, fileName } = await generateAnswerPdf({
+    const { content, fileName } = await generatePdfFromUrl({
       url,
       fileName: `droit-image-${answer.employee.slug}.pdf`,
       token: creatorToken,

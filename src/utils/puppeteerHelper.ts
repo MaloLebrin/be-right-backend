@@ -58,7 +58,7 @@ export async function launchPuppeteer(isMadeByBrowserless?: boolean) {
   })
 }
 
-export async function generateAnswerPdf({
+export async function generatePdfFromUrl({
   url,
   fileName,
   token,

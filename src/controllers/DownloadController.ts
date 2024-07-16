@@ -6,19 +6,22 @@ import { wrapperRequest } from '../utils'
 import { parseQueryIds } from '../utils/basicHelper'
 import { logger } from '../middlewares/loggerService'
 import AnswerEntity from '../entity/AnswerEntity'
-import { generateAnswerPdf } from '../utils/puppeteerHelper'
+import { generatePdfFromUrl } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
+import EventService from '../services/EventService'
 
 export class DownloadController {
   private repository: Repository<AnswerEntity>
   private queryRunner: QueryRunner
   private logger: typeof logger
+  private EventService: EventService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.repository = DATA_SOURCE.getRepository(AnswerEntity)
       this.logger = logger
       this.queryRunner = DATA_SOURCE.createQueryRunner()
+      this.EventService = new EventService(DATA_SOURCE)
     }
   }
 
@@ -157,7 +160,7 @@ export class DownloadController {
         fileName = `droits-images-${event.name}.pdf`
       }
 
-      const { content } = await generateAnswerPdf({
+      const { content } = await generatePdfFromUrl({
         url,
         fileName,
         token: currentUser.token,
