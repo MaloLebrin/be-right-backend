@@ -1,7 +1,6 @@
 /* eslint-disable security/detect-object-injection */
 import type { Redis as RedisClient } from 'ioredis'
 import Redis from 'ioredis'
-import type { Logger } from 'pino'
 import type { BaseEntity } from './entity/bases/BaseEntity'
 import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
@@ -11,7 +10,7 @@ import { isProduction } from './utils/envHelper'
 export default class RedisCache {
   private client: RedisClient
   private connected = false
-  private logger: Logger
+  private logger: typeof logger
 
   constructor({ REDIS_PORT, REDIS_HOST, REDIS_PASSWORD }: { REDIS_PORT: number; REDIS_HOST: string; REDIS_PASSWORD: string }) {
     this.logger = logger

@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { Logger } from 'pino'
 import type { DataSource, QueryRunner, Repository } from 'typeorm'
 import { In, IsNull, Not } from 'typeorm'
 import { ApiError } from '../middlewares/ApiError'
@@ -11,17 +10,9 @@ import { generateAnswerPdf } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
 
 export class DownloadController {
-  repository: Repository<AnswerEntity>
-  logger: Logger<{
-    transport: {
-      target: string
-      options: {
-        colorize: boolean
-      }
-    }
-  }>
-
-  queryRunner: QueryRunner
+  private repository: Repository<AnswerEntity>
+  private queryRunner: QueryRunner
+  private logger: typeof logger
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {

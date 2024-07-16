@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { Logger } from 'pino'
+
 import { logger } from '../middlewares/loggerService'
 import { MailjetService } from '../services'
 import { wrapperRequest } from '../utils'
@@ -10,17 +10,9 @@ import type { EmployeeEntity } from '../entity/employees/EmployeeEntity'
 import { isUserAdmin } from '../utils/userHelper'
 
 export class MailController {
-  logger: Logger<{
-    transport: {
-      target: string
-      options: {
-        colorize: boolean
-      }
-    }
-  }>
-
-  MailjetService: MailjetService
-  AnswerService: AnswerService
+  private logger: typeof logger
+  private MailjetService: MailjetService
+  private AnswerService: AnswerService
 
   constructor() {
     this.MailjetService = new MailjetService(APP_SOURCE)
