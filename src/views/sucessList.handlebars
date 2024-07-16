@@ -1,0 +1,45 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
+
+  main {
+    padding: 4rem;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .text-wrapper {
+    margin: 1rem 0;
+  }
+
+  p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .field-bold {
+    font-weight: bold;
+  }
+</style>
+
+<main>
+  <h1>Liste des personnes qui ont accepté l'utilisation de leurs droit à l'image</h1>
+
+  <div class="text-wrapper">
+    <p>Nom de l'événement: {{ eventName }}</span></p>
+    <p>Date de l'événement: {{ toFormat eventStart }}</p>
+  </div>
+  {{#each data.recipients}}
+
+    <div class="text-wrapper">
+      <p>{{ recipient.fullName }}</p>
+      <p>Date de l'événement: {{ toFormat eventStart }}</p>
+    </div>
+  {{/each}}
+</main>
