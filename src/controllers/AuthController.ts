@@ -1,9 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import uid2 from 'uid2'
-import type { Logger } from 'pino'
 import type { DataSource, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
-import { logger } from '../middlewares/loggerService'
 import { UserEntity } from '../entity/UserEntity'
 import { ApiError } from '../middlewares/ApiError'
 import { CompanyEntity } from '../entity/Company.entity'
@@ -16,26 +14,16 @@ import type RedisCache from '../RedisCache'
 import { REDIS_CACHE } from '..'
 
 export default class AuthController {
-  logger: Logger<{
-    transport: {
-      target: string
-      options: {
-        colorize: boolean
-      }
-    }
-  }>
-
-  MailjetService: MailjetService
-  companyRepository: Repository<CompanyEntity>
-  userRepository: Repository<UserEntity>
-  SubscriptionService: SubscriptionService
-  UserService: UserService
+  private MailjetService: MailjetService
+  private companyRepository: Repository<CompanyEntity>
+  private userRepository: Repository<UserEntity>
+  private SubscriptionService: SubscriptionService
+  private UserService: UserService
   private redisCache: RedisCache
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.MailjetService = new MailjetService(DATA_SOURCE)
-      this.logger = logger
       this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.userRepository = DATA_SOURCE.getRepository(UserEntity)
       this.SubscriptionService = new SubscriptionService(DATA_SOURCE)

@@ -9,7 +9,6 @@ import cloudinary from 'cloudinary'
 import multer from 'multer'
 import { createChannel } from 'better-sse'
 import Context from './context'
-import { logger } from './middlewares/loggerService'
 import { useEnv } from './env'
 import { createAppSource } from './utils'
 import {
@@ -47,6 +46,7 @@ import { MigrationRepository } from './migrations/config/MigrationRepository'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
 import { StripeCustomerRoutes } from './routes/Stripe/CustomerRoutes'
+import { logger } from './middlewares/loggerService'
 dotenv.config()
 
 const {
@@ -101,7 +101,6 @@ async function StartAPI() {
   }))
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
-  // app.use(loggerMiddleware)
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     Context.bind(req)
