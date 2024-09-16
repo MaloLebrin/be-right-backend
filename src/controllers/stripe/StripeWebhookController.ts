@@ -5,12 +5,14 @@ import { StripeCheckoutSessionService } from '../../services/stripe/stripeChecko
 import { DraftEventService } from '../../services/DraftEventService.service'
 import { EventCreateService } from '../../services/event/eventCreateService.service'
 import { wrapperRequest } from '../../utils'
+import { StripeWebhookService } from '../../services/stripe/stripeWebhook.service'
 
 export class StripeWebhookController {
   private StripeCustomerService: StripeCustomerService
   private StripeCheckoutSessionService: StripeCheckoutSessionService
   private DraftEventService: DraftEventService
   private EventCreateService: EventCreateService
+  private StripeWebhookService: StripeWebhookService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -18,6 +20,7 @@ export class StripeWebhookController {
       this.StripeCheckoutSessionService = new StripeCheckoutSessionService()
       this.DraftEventService = new DraftEventService(DATA_SOURCE)
       this.EventCreateService = new EventCreateService(DATA_SOURCE)
+      this.StripeWebhookService = new StripeWebhookService(DATA_SOURCE)
     }
   }
 
@@ -32,13 +35,14 @@ export class StripeWebhookController {
           const paymentIntent = event.data.object
           // Then define and call a method to handle the successful payment intent.
           // handlePaymentIntentSucceeded(paymentIntent);
-          break
+          return this.StripeWebhookService.PaymentIntentSucceeded()
+
         case 'payment_method.attached':
           const paymentMethod = event.data.object
           // Then define and call a method to handle the successful attachment of a PaymentMethod.
           // handlePaymentMethodAttached(paymentMethod);
-          break
-        // ... handle other event types
+          return this.StripeWebhookService.PaymentMethodAttached()
+
         default:
           console.log(`Unhandled event type ${event.type}`)
       }

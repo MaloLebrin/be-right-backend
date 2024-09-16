@@ -7,7 +7,7 @@ export class StripeWebHooksRoutes extends BaseRouter implements BaseInterfaceRou
 
   public intializeRoutes = () => {
     this.router.post(
-      '/payEvent',
+      '/webhook',
       [],
       new StripeWebhookController(this.DATA_SOURCE).events,
     )
