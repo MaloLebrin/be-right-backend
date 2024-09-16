@@ -5,8 +5,4 @@ export class StripeWebhookService extends StripeService {
   constructor(APP_SOURCE: DataSource) {
     super()
   }
-
-  async PaymentIntentSucceeded() {}
-
-  async PaymentMethodAttached() {}
 }
