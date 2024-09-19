@@ -22,7 +22,7 @@ export class StripeWebhookController {
       const event: WebhookEvent<unknown> = req.body
       switch (event.type) {
         case 'checkout.session.async_payment_failed':
-          return this.StripeWebhookService.PaymentIntentSucceeded(event)
+          return
 
         case 'checkout.session.completed':
           return
