@@ -92,13 +92,11 @@ export default class RedisCache {
     const value = await this.client.get(key)
 
     if (value) {
-      this.loggerInfo('redis value retrieved')
       await this.client.expire(key, 3600)
       return JSON.parse(value)
     }
 
     if (!value) {
-      this.loggerInfo('no value in redis cache')
       const result = await fetcher()
       await this.save(key, result)
       return result

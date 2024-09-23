@@ -22,33 +22,34 @@ export class MailController {
 
   public sendMailToEmployee = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const answerId = parseInt(req.params.id)
       if (!ctx) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
+      const answerId = parseInt(req.params.id)
 
-      if (answerId) {
-        const answer = await this.AnswerService.getOne(answerId, true)
-
-        const event = answer.event
-        const currentUser = ctx.user
-
-        if (event && (event.companyId !== currentUser.companyId && !isUserAdmin(currentUser))) {
-          throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
-        }
-
-        if (!answer) {
-          throw new ApiError(422, 'Réponse à l\'événement manquante')
-        }
-
-        const employee = answer.employee as EmployeeEntity
-
-        if (employee) {
-          const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, event, creator: currentUser })
-          return res.status(200).json({ status, message, body })
-        }
+      if (!answerId) {
+        throw new ApiError(422, 'Identifiant manquant')
       }
-      throw new ApiError(422, 'Identifiant manquant')
+
+      const answer = await this.AnswerService.getOne(answerId, true)
+
+      const event = answer.event
+      const currentUser = ctx.user
+
+      if (event && (event.companyId !== currentUser.companyId && !isUserAdmin(currentUser))) {
+        throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
+      }
+
+      if (!answer) {
+        throw new ApiError(422, 'Réponse à l\'événement manquante')
+      }
+
+      const employee = answer.employee as EmployeeEntity
+
+      if (employee) {
+        const { status, message, body } = await this.MailjetService.sendEmployeeMail({ answer, employee, event, creator: currentUser })
+        return res.status(200).json({ status, message, body })
+      }
     })
   }
 }
