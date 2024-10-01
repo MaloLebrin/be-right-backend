@@ -78,8 +78,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       stripe:
-        specifier: ^15.9.0
-        version: 15.12.0
+        specifier: ^17.0.0
+        version: 17.0.0
       ts-node:
         specifier: 10.9.2
         version: 10.9.2(@types/node@18.19.51)(typescript@5.6.2)
@@ -2872,10 +2872,6 @@ packages:
 
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
-  qs@6.12.2:
-    resolution: {integrity: sha512-x+NLUpx9SYrcwXtX7ob1gnkSems4i/mGZX5SlYxwIau6RrUSODO89TR/XDGGpn5RPWSYIB+aSfuSlV5+CmbTBg==}
-    engines: {node: '>=0.6'}
-
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
     engines: {node: '>=0.6'}
@@ -3184,8 +3180,8 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  stripe@15.12.0:
-    resolution: {integrity: sha512-slTbYS1WhRJXVB8YXU8fgHizkUrM9KJyrw4Dd8pLEwzKHYyQTIE46EePC2MVbSDZdE24o1GdNtzmJV4PrPpmJA==}
+  stripe@17.0.0:
+    resolution: {integrity: sha512-URKpnjH2O+OWxhvXLIaEIaAkp2fQvqITm/3zJS0a3nGCREjH3qJYxmGowngA46Qu1x2MumNL3Y/OdY6uzIhpCQ==}
     engines: {node: '>=12.*'}
 
   superagent@9.0.2:
@@ -6972,10 +6968,6 @@ snapshots:
 
   q@1.5.1: {}
 
-  qs@6.12.2:
-    dependencies:
-      side-channel: 1.0.6
-
   qs@6.13.0:
     dependencies:
       side-channel: 1.0.6
@@ -7313,10 +7305,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  stripe@15.12.0:
+  stripe@17.0.0:
     dependencies:
       '@types/node': 18.19.51
-      qs: 6.12.2
+      qs: 6.13.0
 
   superagent@9.0.2:
     dependencies:
