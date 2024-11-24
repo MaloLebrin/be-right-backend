@@ -67,10 +67,10 @@ export default class RedisCache {
     objKey: RedisEntitiesField
     expireTime?: number
   }): Promise<void> {
-    payload.forEach(item => {
+    await Promise.all(payload.map(item => {
       const redisKey = `${typeofEntity}-${objKey}-${item.id}` as RedisKeys
-      this.save(redisKey, item, expireTime)
-    })
+      return this.save(redisKey, item, expireTime)
+    }))
     // TODO do better more powerfull
     // await this.client.mset(payload)
   }
@@ -80,7 +80,9 @@ export default class RedisCache {
   }
 
   private parseArray<T>(strings: string[]): T[] {
-    return strings.filter(st => st).map(str => JSON.parse(str))
+    return strings
+      .filter(Boolean)
+      .map(str => JSON.parse(str))
   }
 
   async get<T>(key: RedisKeys, fetcher: () => Promise<T>): Promise<T> {
