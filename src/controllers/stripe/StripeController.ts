@@ -1,5 +1,6 @@
 import type { DataSource } from 'typeorm'
 import type { NextFunction, Request, Response } from 'express'
+import { noNull } from '@antfu/utils'
 import { StripeCustomerService } from '../../services/stripe/stripeCustomer.service'
 import { wrapperRequest } from '../../utils'
 import { ApiError } from '../../middlewares/ApiError'
@@ -7,12 +8,18 @@ import { StripeCheckoutSessionService } from '../../services/stripe/stripeChecko
 import { ModePaymentEnum, type StripeCheckoutSessionCreationPayload } from '../../types/Stripe'
 import { DraftEventService } from '../../services/DraftEventService.service'
 import { EventCreateService } from '../../services/event/eventCreateService.service'
+import EventService from '../../services/EventService'
+import AnswerService from '../../services/AnswerService'
+import { AddressService } from '../../services'
 
 export class StripeController {
   private StripeCustomerService: StripeCustomerService
   private StripeCheckoutSessionService: StripeCheckoutSessionService
   private DraftEventService: DraftEventService
   private EventCreateService: EventCreateService
+  private EventService: EventService
+  private AnswerService: AnswerService
+  private AddressService: AddressService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -20,6 +27,9 @@ export class StripeController {
       this.StripeCheckoutSessionService = new StripeCheckoutSessionService()
       this.DraftEventService = new DraftEventService(DATA_SOURCE)
       this.EventCreateService = new EventCreateService(DATA_SOURCE)
+      this.EventService = new EventService(DATA_SOURCE)
+      this.AddressService = new AddressService(DATA_SOURCE)
+      this.AnswerService = new AnswerService(DATA_SOURCE)
     }
   }
 
@@ -85,15 +95,33 @@ export class StripeController {
       const { sessionId } = req.params
       const [session, draftEvent] = await Promise.all([
         this.StripeCheckoutSessionService.getStripeCheckoutSession(sessionId),
-        this.DraftEventService.getDraftEventByCheckoutSessionId(sessionId),
+        this.DraftEventService.getDraftEventByCheckoutSessionId(sessionId, {
+          includeSoftDeleted: true,
+        }),
       ])
 
-      if (!session || !draftEvent) {
+      if (!session) {
         throw new ApiError(500, 'Une erreur s\'est produite impossible de trouver la session de paiement')
       }
 
       if (session.payment_status !== 'paid') {
         throw new ApiError(401, 'Le paiement n\'a pas été effectué')
+      }
+
+      if (noNull(draftEvent.deletedAt)) {
+        const newEventId = draftEvent.eventId
+        const [event, answers] = await Promise.all([
+          this.EventService.getOneWithoutRelations(newEventId),
+          this.AnswerService.getAllAnswersForEvent(newEventId),
+        ])
+        const address = await this.AddressService.getOne(event.addressId)
+
+        return res.status(200).json({
+          event,
+          address,
+          answers,
+          message: 'Les données ont été récupérées.',
+        })
       }
 
       const { event, address, answers } = await this.EventCreateService.createEventWithRelations({
@@ -107,10 +135,15 @@ export class StripeController {
       if (!event || !address) {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
-
+      await this.DraftEventService.addEventOnDraftEvent(draftEvent.id, event.id)
       await this.DraftEventService.deleteDraftEventByCheckoutSessionId(sessionId)
 
-      return res.status(200).json({ event, address, answers })
+      return res.status(200).json({
+        event,
+        address,
+        answers,
+        message: 'L\'événement a été créé avec succès.',
+      })
     })
   }
 }

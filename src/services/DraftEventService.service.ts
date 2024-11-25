@@ -46,11 +46,22 @@ export class DraftEventService {
     return this.repository.save(draftEvent)
   }
 
-  public async getDraftEventByCheckoutSessionId(checkoutSessionId: string) {
+  public async getDraftEventByCheckoutSessionId(checkoutSessionId: string, {
+    includeSoftDeleted = false,
+  }: {
+    includeSoftDeleted?: boolean
+  }) {
     return this.repository.findOne({
       where: {
         checkoutSessionId,
       },
+      withDeleted: includeSoftDeleted,
+    })
+  }
+
+  public async addEventOnDraftEvent(id: number, eventId: number) {
+    return this.repository.update(id, {
+      event: { id: eventId },
     })
   }
 
