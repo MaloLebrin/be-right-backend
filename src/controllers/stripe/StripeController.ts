@@ -55,7 +55,6 @@ export class StripeController {
 
       const session = await this.StripeCheckoutSessionService.createStripeCheckoutSession({
         stripeCustomerId: stripeCustomer.id,
-        userEmail: user.email,
         modePayment: ModePaymentEnum.PAYMENT,
         products: [
           {
