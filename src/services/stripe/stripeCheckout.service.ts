@@ -36,16 +36,19 @@ export class StripeCheckoutSessionService extends StripeService {
 
   public createStripeCheckoutSession = async ({
     stripeCustomerId,
+    userEmail,
     modePayment,
     products,
   }: {
     stripeCustomerId: string
+    userEmail: string
     modePayment: ModePaymentEnum
     products: StripeProductForSession[]
   }) => {
     return this.stripe.checkout.sessions.create({
       currency: StripeCurrency.EUR,
       client_reference_id: stripeCustomerId,
+      customer_email: userEmail,
       success_url: this.SUCCESS_URL,
       cancel_url: this.CANCEL_URL,
       customer: stripeCustomerId,
