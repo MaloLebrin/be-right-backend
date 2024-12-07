@@ -8,6 +8,7 @@ import { SubscriptionEntity } from './SubscriptionEntity'
 import { FileEntity } from './FileEntity'
 import { UserEntity } from './UserEntity'
 import { GroupEntity } from './employees/Group.entity'
+import { DraftEventEntity } from './event/DraftEvent.entity'
 
 @Entity()
 export class CompanyEntity extends BaseEntity {
@@ -39,6 +40,9 @@ export class CompanyEntity extends BaseEntity {
 
   @RelationId((company: CompanyEntity) => company.events)
   readonly eventIds: number[]
+
+  @OneToMany(() => DraftEventEntity, event => event.company, { cascade: true })
+  draftEvents: DraftEventEntity[]
 
   @OneToMany(() => EmployeeEntity, employee => employee.company, { cascade: true })
   @JoinColumn()

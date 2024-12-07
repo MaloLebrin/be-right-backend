@@ -45,7 +45,7 @@ import { MigrationRunner } from './migrations/config/MigrationRunner'
 import { MigrationRepository } from './migrations/config/MigrationRepository'
 import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Notifications'
 import { SSERoutes } from './routes/SSERoutes'
-import { StripeCustomerRoutes } from './routes/Stripe/CustomerRoutes'
+import { StripeCustomerRoutes, StripeSessionRoutes } from './routes/Stripe'
 import { logger } from './middlewares/loggerService'
 dotenv.config()
 
@@ -210,6 +210,7 @@ async function StartAPI() {
 
   // Stripe Customer
   app.use('/stripe/customer', new StripeCustomerRoutes(APP_SOURCE).intializeRoutes())
+  app.use('/stripe/payment', new StripeSessionRoutes(APP_SOURCE).intializeRoutes())
 
   app.all('*', req => {
     throw new NotFoundError(req.path)
