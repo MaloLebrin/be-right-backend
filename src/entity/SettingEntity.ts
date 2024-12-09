@@ -7,8 +7,9 @@ import { UserEntity } from './UserEntity'
 export class SettingEntity extends BaseEntity {
   @Column({ nullable: true, type: 'json', default: null })
   paginatedRequestLimit: {
-    events: string
-    recipients: null
+    events: number | null
+    recipients: number | null
+    notifications: number | null
   }
 
   @Column({ type: 'enum', enum: ThemeEnum, default: ThemeEnum.LIGHT })
