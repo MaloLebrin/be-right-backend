@@ -16,6 +16,7 @@ import { CompanyEntity } from './Company.entity'
 import { BadgeEntity } from './repositories/Badge.entity'
 import { MigrationEntity } from './repositories/Migration.entity'
 import { DraftEventEntity } from './event/DraftEvent.entity'
+import { SettingEntity } from './SettingEntity'
 
 export default {
   AddressEntity,
@@ -33,6 +34,7 @@ export default {
   NotificationEntity,
   NotificationSubcriptionEntity,
   SessionEntity,
+  SettingEntity,
   SubscriptionEntity,
   UserEntity,
 }
@@ -53,6 +55,7 @@ export const entities = [
   NotificationEntity,
   NotificationSubcriptionEntity,
   SessionEntity,
+  SettingEntity,
   SubscriptionEntity,
   UserEntity,
 ]
