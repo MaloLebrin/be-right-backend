@@ -19,6 +19,6 @@ export class SettingEntity extends BaseEntity {
   @JoinColumn()
   user: UserEntity
 
-  @RelationId((user: UserEntity) => user.id)
+  @RelationId((setting: SettingEntity) => setting.user)
   readonly userId: number
 }
