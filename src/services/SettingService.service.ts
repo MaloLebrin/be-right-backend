@@ -11,7 +11,7 @@ export class SettingService {
 
   async getOneByUserId(userId: number) {
     return this.repository.findOne({
-      where: { userId },
+      where: { user: { id: userId } },
     })
   }
 

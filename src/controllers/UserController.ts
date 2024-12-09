@@ -460,7 +460,6 @@ export default class UserController {
             'company.groups',
             'company.subscription',
             'company.address',
-            'settings',
           ],
         }),
         this.SettingService.getOneByUserId(user.id),
