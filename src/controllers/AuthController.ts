@@ -9,7 +9,7 @@ import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
 import UserService from '../services/UserService'
 import { userResponse } from '../utils/userHelper'
-import { MailjetService } from '../services'
+import { MailjetService, SettingService } from '../services'
 import type RedisCache from '../RedisCache'
 import { REDIS_CACHE } from '..'
 
@@ -19,6 +19,7 @@ export default class AuthController {
   private userRepository: Repository<UserEntity>
   private SubscriptionService: SubscriptionService
   private UserService: UserService
+  private SettingService: SettingService
   private redisCache: RedisCache
 
   constructor(DATA_SOURCE: DataSource) {
@@ -28,6 +29,7 @@ export default class AuthController {
       this.userRepository = DATA_SOURCE.getRepository(UserEntity)
       this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
       this.UserService = new UserService(DATA_SOURCE)
+      this.SettingService = new SettingService(DATA_SOURCE)
       this.redisCache = REDIS_CACHE
     }
   }
@@ -166,13 +168,17 @@ export default class AuthController {
 
       newCompany.users = [newUser]
 
-      await this.companyRepository.save(newCompany)
+      const [settings] = await Promise.all([
+        this.SettingService.createDefaultOneForUser(newUser.id),
+        this.companyRepository.save(newCompany),
+      ])
 
       delete newCompany.users
 
       return res.status(200).json({
         user: userResponse(newUser),
         company: newCompany,
+        settings,
       })
     })
   }
