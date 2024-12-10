@@ -255,21 +255,25 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
-          const company = await this.companyRepository.findOne({
-            where: { id: user.companyId },
-            relations: {
-              address: true,
-              employees: true,
-              events: true,
-              files: true,
-              subscription: true,
-              users: true,
-            },
-          })
+          const [company, settings] = await Promise.all([
+            this.companyRepository.findOne({
+              where: { id: user.companyId },
+              relations: {
+                address: true,
+                employees: true,
+                events: true,
+                files: true,
+                subscription: true,
+                users: true,
+              },
+            }),
+            this.SettingService.getOneByUserId(user.id),
+          ])
 
           return res.status(200).json({
             user: userResponse(user),
             company,
+            settings,
           })
         }
 
