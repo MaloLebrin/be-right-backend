@@ -12,7 +12,7 @@ import { EntitiesEnum } from '../types'
 import { REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
-import { AddressService } from '../services'
+import { AddressService, SettingService } from '../services'
 import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
@@ -31,6 +31,7 @@ export default class UserController {
   private FileService: FileService
   private redisCache: RedisCache
   private repository: Repository<UserEntity>
+  private SettingService: SettingService
   private UserService: UserService
 
   constructor(DATA_SOURCE: DataSource) {
@@ -43,6 +44,7 @@ export default class UserController {
       this.redisCache = REDIS_CACHE
       this.repository = DATA_SOURCE.getRepository(UserEntity)
       this.UserService = new UserService(DATA_SOURCE)
+      this.SettingService = new SettingService(DATA_SOURCE)
     }
   }
 
@@ -118,11 +120,14 @@ export default class UserController {
         companyId,
       })
 
-      const companyToSend = await this.companyRepository.findOne({
-        where: {
-          id: companyId,
-        },
-      })
+      const [companyToSend] = await Promise.all([
+        this.companyRepository.findOne({
+          where: {
+            id: companyId,
+          },
+        }),
+        this.SettingService.createDefaultOneForUser(newUser.id),
+      ])
 
       await defaultQueue.add(
         generateQueueName(),
@@ -250,21 +255,25 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
-          const company = await this.companyRepository.findOne({
-            where: { id: user.companyId },
-            relations: {
-              address: true,
-              employees: true,
-              events: true,
-              files: true,
-              subscription: true,
-              users: true,
-            },
-          })
+          const [company, settings] = await Promise.all([
+            this.companyRepository.findOne({
+              where: { id: user.companyId },
+              relations: {
+                address: true,
+                employees: true,
+                events: true,
+                files: true,
+                subscription: true,
+                users: true,
+              },
+            }),
+            this.SettingService.getOneByUserId(user.id),
+          ])
 
           return res.status(200).json({
             user: userResponse(user),
             company,
+            settings,
           })
         }
 
@@ -338,6 +347,7 @@ export default class UserController {
         if (userToDelete.company.addressId) {
           await Promise.all([
             this.AddressService.softDelete(userToDelete.company.addressId),
+            this.SettingService.deleteOneByUserId(id),
 
             this.redisCache.invalidate(generateRedisKey({
               typeofEntity: EntitiesEnum.ADDRESS,
@@ -443,18 +453,21 @@ export default class UserController {
         })
       }
 
-      const userToSend = await this.repository.findOne({
-        where: { email },
-        relations: [
-          'profilePicture',
-          'notificationSubscriptions',
-          'company.events',
-          'company.employees',
-          'company.groups',
-          'company.subscription',
-          'company.address',
-        ],
-      })
+      const [userToSend, settings] = await Promise.all([
+        this.repository.findOne({
+          where: { email },
+          relations: [
+            'profilePicture',
+            'notificationSubscriptions',
+            'company.events',
+            'company.employees',
+            'company.groups',
+            'company.subscription',
+            'company.address',
+          ],
+        }),
+        this.SettingService.getOneByUserId(user.id),
+      ])
 
       this.redisCache.save(`user-notification-${user.notificationToken}`, {
         id: user.id,
@@ -464,6 +477,7 @@ export default class UserController {
       return res.status(200).json({
         user: userToSend,
         company: user.company,
+        settings,
       })
     })
   }
@@ -477,6 +491,7 @@ export default class UserController {
       }
 
       const newPhotographer = await this.UserService.createPhotographer({ email, firstName, lastName })
+      await this.SettingService.createDefaultOneForUser(newPhotographer.id)
 
       return res.status(200).json(newPhotographer)
     })
@@ -567,8 +582,12 @@ export default class UserController {
         throw new ApiError(422, 'Paramètre manquant')
       }
 
-      await this.repository.restore(id)
+      await Promise.all([
+        this.repository.restore(id),
+        this.SettingService.restoreOneByUserId(id),
+      ])
       const user = await this.UserService.getOne(id)
+
       return res.status(200).json(userResponse(user))
     })
   }
@@ -589,6 +608,7 @@ export default class UserController {
       await Promise.all([
         this.deleteUserInCache(user),
         this.repository.delete(id),
+        this.SettingService.deleteForEverOneByUserId(id),
       ])
 
       const company = await this.companyRepository.findOne({
