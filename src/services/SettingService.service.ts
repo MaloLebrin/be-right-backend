@@ -47,17 +47,17 @@ export class SettingService {
   }
 
   async deleteOneByUserId(userId: number) {
-    return this.repository.softDelete({ userId })
+    return this.repository.softDelete({ user: { id: userId } })
   }
 
   async deleteForEverOneByUserId(userId: number) {
-    return this.repository.delete({ userId })
+    return this.repository.delete({ user: { id: userId } })
   }
 
   async restoreOneByUserId(userId: number) {
     const exist = await this.repository.findOneOrFail({
       withDeleted: true,
-      where: { userId },
+      where: { user: { id: userId } },
     })
     return this.repository.restore({ id: exist.id })
   }
