@@ -47,6 +47,8 @@ import { NotificationRoutes, NotificationSubscriptionRoutes } from './routes/Not
 import { SSERoutes } from './routes/SSERoutes'
 import { StripeCustomerRoutes, StripeSessionRoutes } from './routes/Stripe'
 import { logger } from './middlewares/loggerService'
+import { SettingRoutes } from './routes/SettingRoutes'
+
 dotenv.config()
 
 const {
@@ -211,6 +213,9 @@ async function StartAPI() {
   // Stripe Customer
   app.use('/stripe/customer', new StripeCustomerRoutes(APP_SOURCE).intializeRoutes())
   app.use('/stripe/payment', new StripeSessionRoutes(APP_SOURCE).intializeRoutes())
+
+  // Settings
+  app.use('/settings', new SettingRoutes(APP_SOURCE).intializeRoutes())
 
   app.all('*', req => {
     throw new NotFoundError(req.path)
