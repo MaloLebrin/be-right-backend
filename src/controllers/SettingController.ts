@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { SettingService } from '../services'
 import { ApiError } from '../middlewares/ApiError'
 import { wrapperRequest } from '../utils'
+import { composeSettingPayload } from '../utils/settingsHelper'
 import { SettingEntity } from '../entity/SettingEntity'
 
 export class SettingController {
@@ -33,7 +34,7 @@ export class SettingController {
 
   public patchOne = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const { setting }: { setting: Partial<SettingEntity> } = req.body
+      const setting: Partial<SettingEntity> = req.body
 
       if (!ctx || !ctx.user) {
         throw new ApiError(500, 'Une erreur s\'est produite')
@@ -46,10 +47,13 @@ export class SettingController {
         throw new ApiError(404, 'Paramètres introuvables')
       }
 
-      await this.repository.update(existingSetting.id, {
-        ...existingSetting,
-        ...setting,
-      })
+      await this.repository.update(
+        existingSetting.id,
+        composeSettingPayload({
+          ...existingSetting,
+          ...setting,
+        }),
+      )
 
       const updatedSetting = await this.SettingService.getOneByUserId(userId)
       return res.status(200).json(updatedSetting)
