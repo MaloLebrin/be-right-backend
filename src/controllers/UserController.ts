@@ -258,7 +258,7 @@ export default class UserController {
             loggedAt: new Date(),
           })
 
-          const [company, settings, sub] = await Promise.all([
+          const [company, settings] = await Promise.all([
             this.companyRepository.findOne({
               where: { id: user.companyId },
               relations: {
@@ -271,7 +271,6 @@ export default class UserController {
               },
             }),
             this.SettingService.getOneByUserId(user.id),
-            this.SubscriptionService.getOneByCompanyId(user.companyId),
           ])
 
           return res.status(200).json({
