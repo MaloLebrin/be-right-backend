@@ -11,6 +11,8 @@ import { EventCreateService } from '../../services/event/eventCreateService.serv
 import EventService from '../../services/EventService'
 import AnswerService from '../../services/AnswerService'
 import { AddressService } from '../../services'
+import { SubscriptionService } from '../../services/SubscriptionService'
+import { isProduction } from '../../utils/envHelper'
 
 export class StripeController {
   private StripeCustomerService: StripeCustomerService
@@ -20,6 +22,7 @@ export class StripeController {
   private EventService: EventService
   private AnswerService: AnswerService
   private AddressService: AddressService
+  private SubscriptionService: SubscriptionService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -30,6 +33,7 @@ export class StripeController {
       this.EventService = new EventService(DATA_SOURCE)
       this.AddressService = new AddressService(DATA_SOURCE)
       this.AnswerService = new AnswerService(DATA_SOURCE)
+      this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
     }
   }
 
@@ -40,11 +44,6 @@ export class StripeController {
       }
 
       const user = ctx.user
-      const stripeCustomer = await this.StripeCustomerService.getStripeCustomerForUser(user)
-
-      if (!stripeCustomer || !user.email || !user.companyId) {
-        throw new ApiError(500, 'Une erreur s\'est produite impossible d\'identifier l\'utilisateur')
-      }
 
       const {
         priceId,
@@ -52,6 +51,26 @@ export class StripeController {
         address,
         photographerId,
       }: StripeCheckoutSessionCreationPayload = req.body
+
+      const userSubscription = await this.SubscriptionService.getOneByCompanyId(user.companyId)
+
+      if (userSubscription && userSubscription.type === 'PREMIUM') {
+        const { event: createdEvent } = await this.EventCreateService.createEventWithRelations({
+          event,
+          address,
+          companyId: ctx.user.companyId,
+          photographerId,
+          user: ctx.user,
+        })
+
+        return res.status(200).json({ sessionUrl: `${isProduction() ? 'https://be-right.co' : 'http://localhost:3000'}/evenement/show-${createdEvent.id}` })
+      }
+
+      const stripeCustomer = await this.StripeCustomerService.getStripeCustomerForUser(user)
+
+      if (!stripeCustomer || !user.email || !user.companyId) {
+        throw new ApiError(500, 'Une erreur s\'est produite impossible d\'identifier l\'utilisateur')
+      }
 
       const session = await this.StripeCheckoutSessionService.createStripeCheckoutSession({
         stripeCustomerId: stripeCustomer.id,

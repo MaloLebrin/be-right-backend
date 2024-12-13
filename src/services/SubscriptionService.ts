@@ -3,12 +3,15 @@ import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { SubscriptionEntity } from '../entity/SubscriptionEntity'
 import { SubscriptionEnum } from '../types/Subscription'
+import { CompanyEntity } from '../entity/Company.entity'
 
 export class SubscriptionService {
-  repository: Repository<SubscriptionEntity>
+  private repository: Repository<SubscriptionEntity>
+  private QueryBuilderCompany: Repository<CompanyEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(SubscriptionEntity)
+    this.QueryBuilderCompany = APP_SOURCE.getRepository(CompanyEntity)
   }
 
   public createOne = async (subscriptionType: SubscriptionEnum) => {
@@ -34,6 +37,14 @@ export class SubscriptionService {
       where: { id },
       relations: ['user', 'payment'],
     })
+  }
+
+  public getOneByCompanyId = async (companyId: number) => {
+    const company = await this.QueryBuilderCompany.findOneOrFail({
+      where: { id: companyId },
+      relations: ['subscription'],
+    })
+    return company?.subscription || null
   }
 
   public getMany = async (ids: number[]) => {

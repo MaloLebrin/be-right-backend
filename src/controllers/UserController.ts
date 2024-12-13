@@ -22,6 +22,7 @@ import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { SendMailUserOnAccountJob } from '../jobs/queue/jobs/sendMailUserOnAccount.job'
 import { useEnv } from '../env'
 import { newPaginator } from '../utils/paginatorHelper'
+import { SubscriptionService } from '../services/SubscriptionService'
 
 export default class UserController {
   private AddressService: AddressService
@@ -33,6 +34,7 @@ export default class UserController {
   private repository: Repository<UserEntity>
   private SettingService: SettingService
   private UserService: UserService
+  private SubscriptionService: SubscriptionService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -45,6 +47,7 @@ export default class UserController {
       this.repository = DATA_SOURCE.getRepository(UserEntity)
       this.UserService = new UserService(DATA_SOURCE)
       this.SettingService = new SettingService(DATA_SOURCE)
+      this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
     }
   }
 
@@ -274,6 +277,7 @@ export default class UserController {
             user: userResponse(user),
             company,
             settings,
+            subcription: company.subscription,
           })
         }
 
@@ -478,6 +482,7 @@ export default class UserController {
         user: userToSend,
         company: user.company,
         settings,
+        subscription: userToSend.company.subscription,
       })
     })
   }
