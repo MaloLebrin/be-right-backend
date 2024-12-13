@@ -278,7 +278,7 @@ export default class UserController {
             user: userResponse(user),
             company,
             settings,
-            sub,
+            subcription: company.subscription,
           })
         }
 
@@ -483,6 +483,7 @@ export default class UserController {
         user: userToSend,
         company: user.company,
         settings,
+        subscription: userToSend.company.subscription,
       })
     })
   }
