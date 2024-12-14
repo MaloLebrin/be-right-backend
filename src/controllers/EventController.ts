@@ -8,7 +8,7 @@ import { wrapperRequest } from '../utils'
 import AnswerService from '../services/AnswerService'
 import { EntitiesEnum, NotificationTypeEnum } from '../types'
 import { composeEventForPeriod, composeOrderFieldForEventStatus, generateRedisKey, generateRedisKeysArray, isUserAdmin } from '../utils/'
-import { AddressService } from '../services'
+import { AddressService, EventDeleteService } from '../services'
 import { REDIS_CACHE } from '..'
 import type { AddressEntity } from '../entity/AddressEntity'
 import type RedisCache from '../RedisCache'
@@ -24,6 +24,7 @@ export default class EventController {
   AddressService: AddressService
   AnswerService: AnswerService
   EventService: EventService
+  EventDeleteService: EventDeleteService
   repository: Repository<EventEntity>
   redisCache: RedisCache
   RediceService: RedisService
@@ -31,6 +32,7 @@ export default class EventController {
   constructor(SOURCE: DataSource) {
     if (SOURCE) {
       this.EventService = new EventService(SOURCE)
+      this.EventDeleteService = new EventDeleteService(SOURCE)
       this.AnswerService = new AnswerService(SOURCE)
       this.AddressService = new AddressService(SOURCE)
       this.repository = SOURCE.getRepository(EventEntity)
@@ -392,7 +394,7 @@ export default class EventController {
         }
 
         if (eventToDelete?.companyId === user.companyId || isUserAdmin(ctx.user)) {
-          await this.EventService.deleteOneAndRelations(eventToDelete)
+          await this.EventDeleteService.softDeleteOneAndRelations(eventToDelete)
           await this.RediceService.updateCurrentUserInCache({ userId: user.id })
 
           return res.status(204).json({ data: eventToDelete, message: 'Événement supprimé' })

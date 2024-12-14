@@ -6,13 +6,13 @@ import { UserEntity, userRelationFields, userSearchableFields } from '../entity/
 import { Role } from '../types/Role'
 import { SubscriptionEnum } from '../types/Subscription'
 import UserService from '../services/UserService'
-import { createJwtToken, generateRedisKey, isUserAdmin, isUserOwner, uniqByKey, userResponse } from '../utils/'
+import { createJwtToken, generateRedisKey, isUserAdmin, uniqByKey, userResponse } from '../utils/'
 import type { RedisKeys } from '../types'
 import { EntitiesEnum } from '../types'
 import { REDIS_CACHE } from '..'
 import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
-import { AddressService, SettingService } from '../services'
+import { AddressService, EventDeleteService, SettingService } from '../services'
 import EmployeeService from '../services/employee/EmployeeService'
 import EventService from '../services/EventService'
 import FileService from '../services/FileService'
@@ -22,19 +22,18 @@ import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { SendMailUserOnAccountJob } from '../jobs/queue/jobs/sendMailUserOnAccount.job'
 import { useEnv } from '../env'
 import { newPaginator } from '../utils/paginatorHelper'
-import { SubscriptionService } from '../services/SubscriptionService'
 
 export default class UserController {
   private AddressService: AddressService
   private companyRepository: Repository<CompanyEntity>
   private EmployeeService: EmployeeService
   private EventService: EventService
+  private EventDeleteService: EventDeleteService
   private FileService: FileService
   private redisCache: RedisCache
   private repository: Repository<UserEntity>
   private SettingService: SettingService
   private UserService: UserService
-  private SubscriptionService: SubscriptionService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -42,12 +41,12 @@ export default class UserController {
       this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.EmployeeService = new EmployeeService(DATA_SOURCE)
       this.EventService = new EventService(DATA_SOURCE)
+      this.EventDeleteService = new EventDeleteService(DATA_SOURCE)
       this.FileService = new FileService(DATA_SOURCE)
       this.redisCache = REDIS_CACHE
       this.repository = DATA_SOURCE.getRepository(UserEntity)
       this.UserService = new UserService(DATA_SOURCE)
       this.SettingService = new SettingService(DATA_SOURCE)
-      this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
     }
   }
 
@@ -55,13 +54,6 @@ export default class UserController {
     await Promise.all([
       this.redisCache.save(`user-id-${user.id}`, user),
       this.redisCache.save(`user-token-${user.token}`, user),
-    ])
-  }
-
-  private deleteUserInCache = async (user: UserEntity) => {
-    await Promise.all([
-      this.redisCache.invalidate(`user-id-${user.id}`),
-      this.redisCache.invalidate(`user-token-${user.token}`),
     ])
   }
 
@@ -375,7 +367,7 @@ export default class UserController {
 
         if (userToDelete.company.events?.length > 0) {
           await Promise.all(userToDelete.company.events.map(async event => {
-            await this.EventService.deleteOneAndRelations(event)
+            await this.EventDeleteService.softDeleteOneAndRelations(event)
           }))
         }
 
@@ -594,48 +586,6 @@ export default class UserController {
       const user = await this.UserService.getOne(id)
 
       return res.status(200).json(userResponse(user))
-    })
-  }
-
-  public deleteForEver = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const id = parseInt(req.params.id)
-      if (!id) {
-        throw new ApiError(422, 'Paramètre manquant')
-      }
-
-      const user = await this.repository.findOneBy({ id })
-
-      if (!user) {
-        throw new ApiError(422, 'L\'utilisateur n\'existe pas')
-      }
-
-      await Promise.all([
-        this.deleteUserInCache(user),
-        this.repository.delete(id),
-        this.SettingService.deleteForEverOneByUserId(id),
-      ])
-
-      const company = await this.companyRepository.findOne({
-        where: {
-          id: user.companyId,
-        },
-        relations: {
-          users: true,
-        },
-      })
-
-      if (company && isUserOwner(user)) {
-        const owners = company.users?.filter(user => isUserOwner(user))
-        if (owners?.length < 2) {
-          await this.companyRepository.delete(user.companyId)
-        }
-      }
-
-      return res.status(201).json({
-        isSuccess: true,
-        message: 'L\'utilisateur a bien été supprimé',
-      })
     })
   }
 }

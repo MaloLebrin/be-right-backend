@@ -4,6 +4,7 @@ import { Role } from '../../types'
 import type { BaseInterfaceRouter } from '../BaseRouter'
 import { BaseRouter } from '../BaseRouter'
 import UserController from '../../controllers/UserController'
+import { UserDeleteController } from '../../controllers/user/UserDeleteController'
 
 const {
   idParamsSchema,
@@ -21,7 +22,7 @@ export class AdminUserRoutes extends BaseRouter implements BaseInterfaceRouter {
 
     this.router.delete('/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).deleteOne)
 
-    this.router.delete('/deleteForEver/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).deleteForEver)
+    this.router.delete('/deleteForEver/:id', [validate(idParamsSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserDeleteController(this.DATA_SOURCE).deleteForEver)
 
     this.router.patch('/:id', [validate(patchUserSchema), isAuthenticated, checkUserRole(Role.ADMIN)], new UserController(this.DATA_SOURCE).updateOne)
 

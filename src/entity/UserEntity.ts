@@ -21,17 +21,17 @@ export class UserEntity extends BaseAuthEntity {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   roles: Role
 
-  @OneToOne(() => FileEntity, { cascade: true })
+  @OneToOne(() => FileEntity, { cascade: ['remove'] })
   @JoinColumn()
   profilePicture: FileEntity
 
   @RelationId((user: UserEntity) => user.profilePicture)
   profilePictureId: number
 
-  @OneToMany(() => EventEntity, event => event.partner, { cascade: true })
+  @OneToMany(() => EventEntity, event => event.partner, { cascade: ['remove'] })
   shootingEvent: EventEntity[]
 
-  @OneToMany(() => NotificationSubcriptionEntity, notificationSubcription => notificationSubcription.createdByUser, { cascade: true })
+  @OneToMany(() => NotificationSubcriptionEntity, notificationSubcription => notificationSubcription.createdByUser, { cascade: ['remove'] })
   notificationSubscriptions: NotificationSubcriptionEntity[]
 
   @RelationId((user: UserEntity) => user.notificationSubscriptions)
