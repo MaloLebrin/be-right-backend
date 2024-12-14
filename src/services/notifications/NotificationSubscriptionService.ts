@@ -80,7 +80,15 @@ export class NotificationSubscriptionService {
     return eventNotifCreated
   }
 
-  public deleteOne = async (id: number) => {
+  public softDelete = async (id: number) => {
     return this.repository.softDelete(id)
+  }
+
+  public deleteOneByUserId = async (userId: number) => {
+    return this.repository.delete({
+      createdByUser: {
+        id: userId,
+      },
+    })
   }
 }

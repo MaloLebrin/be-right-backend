@@ -64,7 +64,7 @@ export class SubscriptionService {
     return this.repository.update(id, { type: subscriptionType })
   }
 
-  public deleteOne = async (id: number) => {
+  public softDeleteOne = async (id: number) => {
     return this.repository.softDelete(id)
   }
 }
