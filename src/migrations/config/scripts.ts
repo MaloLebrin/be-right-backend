@@ -4,6 +4,7 @@ import {
   addNotificationTokenToUser,
   SeedTestAdminUser1708691709145,
   CreateSettingsEntities1733776782367,
+  SeedRepositories1734335069060,
 } from "../migrations"
 
 export const migrationScripts: MigrationScript[] = [
@@ -26,5 +27,10 @@ export const migrationScripts: MigrationScript[] = [
     version: 3,
     name: 'CreateSettingsEntities1733776782367',
     script: CreateSettingsEntities1733776782367,
+  },
+  {
+    version: 4,
+    name: 'SeedRepositories1734335069060',
+    script: SeedRepositories1734335069060,
   },
 ]
