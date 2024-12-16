@@ -1,5 +1,5 @@
 #!/app/bin/env bash
 
-exec node build/src/seed/index.js
+exec pnpx ts-node src/seed/index.ts
 
 exit 1
