@@ -65,6 +65,12 @@ export class UserDeleteController {
         throw new ApiError(422, 'L\'utilisateur n\'existe pas')
       }
 
+      await Promise.all([
+        this.deleteUserInCache(user),
+        this.SettingService.deleteForEverOneByUserId(id),
+        this.NoficationSubscriptionsService.deleteOneByUserId(id),
+      ])
+
       const [company] = await Promise.all([
         this.companyRepository.findOne({
           where: {
