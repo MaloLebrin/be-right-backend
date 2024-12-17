@@ -94,7 +94,7 @@ importers:
         version: 11.0.3
       yup:
         specifier: ^1.4.0
-        version: 1.5.0
+        version: 1.6.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^0.37.0
@@ -3657,8 +3657,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  yup@1.5.0:
-    resolution: {integrity: sha512-NJfBIHnp1QbqZwxcgl6irnDMIsb/7d1prNhFx02f1kp8h+orpi4xs3w90szNpOh68a/iHPdMsYvhZWoDmUvXBQ==}
+  yup@1.6.0:
+    resolution: {integrity: sha512-/dny6arMf5CV6ZPAGpXYVw0wR8qcDF15H8zILTQWoRf6jHN1nJNFL1IAlFfUMlO7QGifMVHZle/l8YJdxtWfxg==}
 
 snapshots:
 
@@ -7775,7 +7775,7 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  yup@1.5.0:
+  yup@1.6.0:
     dependencies:
       property-expr: 2.0.6
       tiny-case: 1.0.3
