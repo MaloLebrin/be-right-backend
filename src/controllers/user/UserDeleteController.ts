@@ -31,7 +31,7 @@ export class UserDeleteController {
       this.NoficationSubscriptionsService = new NotificationSubscriptionService(DATA_SOURCE)
       this.EventDeleteService = new EventDeleteService(DATA_SOURCE)
       this.eventRepository = DATA_SOURCE.getRepository(EventEntity)
-      this.
+      this.GroupRepository = DATA_SOURCE.getRepository(GroupEntity)
     }
   }
 
@@ -99,7 +99,7 @@ export class UserDeleteController {
           await this.GroupRepository.delete({
             company: {
               id: user.companyId,
-            }
+            },
           })
           await this.companyRepository.delete(user.companyId)
         }
