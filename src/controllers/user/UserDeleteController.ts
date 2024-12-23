@@ -10,6 +10,7 @@ import type RedisCache from '../../RedisCache'
 import { isUserOwner } from '../../utils/userHelper'
 import { NotificationSubscriptionService } from '../../services/notifications'
 import EventEntity from '../../entity/EventEntity'
+import { GroupEntity } from '../../entity/employees/Group.entity'
 
 export class UserDeleteController {
   private companyRepository: Repository<CompanyEntity>
@@ -19,6 +20,7 @@ export class UserDeleteController {
   private SettingService: SettingService
   private NoficationSubscriptionsService: NotificationSubscriptionService
   private EventDeleteService: EventDeleteService
+  private GroupRepository: Repository<GroupEntity>
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
@@ -29,6 +31,7 @@ export class UserDeleteController {
       this.NoficationSubscriptionsService = new NotificationSubscriptionService(DATA_SOURCE)
       this.EventDeleteService = new EventDeleteService(DATA_SOURCE)
       this.eventRepository = DATA_SOURCE.getRepository(EventEntity)
+      this.GroupRepository = DATA_SOURCE.getRepository(GroupEntity)
     }
   }
 
@@ -93,6 +96,11 @@ export class UserDeleteController {
       if (company && isUserOwner(user)) {
         const owners = company.users?.filter(user => isUserOwner(user))
         if (owners?.length < 2) {
+          await this.GroupRepository.delete({
+            company: {
+              id: user.companyId,
+            },
+          })
           await this.companyRepository.delete(user.companyId)
         }
       }
