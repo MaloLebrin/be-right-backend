@@ -1,4 +1,4 @@
-import { type DataSource, In, type Repository } from 'typeorm'
+import { type DataSource, type Repository } from 'typeorm'
 import EventEntity from '../../entity/EventEntity'
 import { AddressEntity } from '../../entity/AddressEntity'
 import AnswerEntity from '../../entity/AnswerEntity'
@@ -48,14 +48,25 @@ export class EventDeleteService {
       }))
     }
 
-    const answersIds = await this.answerService.getAnswerIdsForEvent(event.id)
+    const answers = await this.AnswerRepository.find({
+      select: {
+        id: true,
+      },
+      where: {
+        event: {
+          id: event.id,
+        },
+      },
+      relations: ['mails'],
+      withDeleted: true,
+    })
+
+    const answersIds = answers.map(answer => answer.id)
 
     if (answersIds?.length > 0) {
-      await this.MailsRepository.delete({
-        answer: {
-          id: In(answersIds),
-        },
-      })
+      const mailIds = answers.reduce((acc, answer) => [...acc, ...answer.mails.map(mail => mail.id)], [])
+
+      await this.MailsRepository.delete(mailIds)
       await this.AnswerRepository.delete(answersIds)
 
       await Promise.all(answersIds.map(async id => {
