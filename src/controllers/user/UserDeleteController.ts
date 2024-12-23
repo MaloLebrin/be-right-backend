@@ -65,6 +65,8 @@ export class UserDeleteController {
         throw new ApiError(422, 'L\'utilisateur n\'existe pas')
       }
 
+      await Promise.all(events.map(event => this.EventDeleteService.deleteOneAndRelationsForEver(event)))
+
       await Promise.all([
         this.deleteUserInCache(user),
         this.SettingService.deleteForEverOneByUserId(id),
@@ -95,8 +97,6 @@ export class UserDeleteController {
         this.SettingService.deleteForEverOneByUserId(id),
         this.NoficationSubscriptionsService.deleteOneByUserId(id),
       ])
-
-      await Promise.all(events.map(event => this.EventDeleteService.deleteOneAndRelationsForEver(event)))
 
       return res.status(201).json({
         isSuccess: true,
