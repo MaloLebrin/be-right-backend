@@ -3,11 +3,15 @@ import uid2 from 'uid2'
 import { type CreateUserPayload, type PhotographerCreatePayload, Role } from '../../types'
 import { generateHash } from '../../utils'
 import { createJwtToken, createNotificationToken, userResponse } from '../../utils/userHelper'
+import { StripeCustomerService } from '../stripe/stripeCustomer.service'
 import { BaseUserService } from './BaseUser.service'
 
 export class CreateUserService extends BaseUserService {
+  private StripeCustomerService: StripeCustomerService
+
   constructor(APP_SOURCE: DataSource) {
     super(APP_SOURCE)
+    this.StripeCustomerService = new StripeCustomerService(APP_SOURCE)
   }
 
   async createOneUser(payload: CreateUserPayload) {
@@ -49,6 +53,8 @@ export class CreateUserService extends BaseUserService {
         id: companyId,
       },
     })
+
+    await this.StripeCustomerService.createStripeCustomer(newUser)
 
     const userToSend = await this.repository.save({
       ...newUser,
