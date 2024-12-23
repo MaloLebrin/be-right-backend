@@ -1,16 +1,16 @@
-import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
 import { UserEntity } from '../entity/UserEntity'
-import { generateHash } from '../utils'
-import type { CreateUserPayload, PhotographerCreatePayload } from '../types'
-import { Role } from '../types'
-import { createJwtToken, createNotificationToken, userResponse } from '../utils/'
+import type { PhotographerCreatePayload } from '../types'
+import { createJwtToken, userResponse } from '../utils/'
+import { CreateUserService } from './user/CreateUser.service'
 
 export default class UserService {
-  repository: Repository<UserEntity>
+  private repository: Repository<UserEntity>
+  private CreateUserService: CreateUserService
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(UserEntity)
+    this.CreateUserService = new CreateUserService(APP_SOURCE)
   }
 
   async getByToken(token: string, withRelation?: boolean): Promise<UserEntity> {
@@ -70,73 +70,6 @@ export default class UserService {
     return this.repository.findOne({ where: { email } })
   }
 
-  async createOnePhotoGrapher(user: PhotographerCreatePayload) {
-    const newUser = this.repository.create({
-      ...user,
-      salt: uid2(128),
-      token: createJwtToken({
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        roles: Role.PHOTOGRAPHER,
-      }),
-      roles: Role.PHOTOGRAPHER,
-    })
-    const userToSend = await this.repository.save({
-      ...newUser,
-      notificationToken: createNotificationToken(newUser.id),
-    })
-    return userResponse(userToSend)
-  }
-
-  async createOneUser(payload: CreateUserPayload) {
-    const {
-      email,
-      firstName,
-      lastName,
-      password,
-      role,
-      subscription,
-      loggedAt,
-      companyId,
-      signature,
-    } = payload
-
-    const salt = uid2(128)
-    const twoFactorSecret = uid2(128)
-    const twoFactorRecoveryCode = generateHash(twoFactorSecret, email)
-
-    const newUser = this.repository.create({
-      email,
-      firstName,
-      lastName,
-      salt,
-      roles: role,
-      twoFactorRecoveryCode,
-      twoFactorSecret,
-      token: createJwtToken({
-        email,
-        firstName,
-        lastName,
-        roles: role,
-        subscription,
-      }),
-      password: generateHash(salt, password),
-      signature,
-      loggedAt: loggedAt || null,
-      company: {
-        id: companyId,
-      },
-    })
-
-    const userToSend = await this.repository.save({
-      ...newUser,
-      notificationToken: createNotificationToken(newUser.id),
-    })
-
-    return userToSend
-  }
-
   async createPhotographer(photographer: PhotographerCreatePayload): Promise<UserEntity> {
     const userAlReadyExist = await this.findOneByEmail(photographer.email)
 
@@ -148,7 +81,7 @@ export default class UserService {
       const newPhotographer = await this.getOneWithRelations(userAlReadyExist.id)
       return newPhotographer
     }
-    return await this.createOnePhotoGrapher(photographer) as UserEntity
+    return await this.CreateUserService.createOnePhotoGrapher(photographer) as UserEntity
   }
 
   async deleteMany(ids: number[]) {

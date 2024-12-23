@@ -14,7 +14,6 @@ import type RedisCache from '../RedisCache'
 import { ApiError } from '../middlewares/ApiError'
 import { AddressService, EventDeleteService, SettingService } from '../services'
 import EmployeeService from '../services/employee/EmployeeService'
-import EventService from '../services/EventService'
 import FileService from '../services/FileService'
 import { CompanyEntity } from '../entity/Company.entity'
 import { defaultQueue } from '../jobs/queue/queue'
@@ -22,31 +21,32 @@ import { generateQueueName } from '../jobs/queue/jobs/provider'
 import { SendMailUserOnAccountJob } from '../jobs/queue/jobs/sendMailUserOnAccount.job'
 import { useEnv } from '../env'
 import { newPaginator } from '../utils/paginatorHelper'
+import { CreateUserService } from '../services/user'
 
 export default class UserController {
   private AddressService: AddressService
   private companyRepository: Repository<CompanyEntity>
   private EmployeeService: EmployeeService
-  private EventService: EventService
   private EventDeleteService: EventDeleteService
   private FileService: FileService
   private redisCache: RedisCache
   private repository: Repository<UserEntity>
   private SettingService: SettingService
   private UserService: UserService
+  private CreateUserService: CreateUserService
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.AddressService = new AddressService(DATA_SOURCE)
       this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.EmployeeService = new EmployeeService(DATA_SOURCE)
-      this.EventService = new EventService(DATA_SOURCE)
       this.EventDeleteService = new EventDeleteService(DATA_SOURCE)
       this.FileService = new FileService(DATA_SOURCE)
       this.redisCache = REDIS_CACHE
       this.repository = DATA_SOURCE.getRepository(UserEntity)
       this.UserService = new UserService(DATA_SOURCE)
       this.SettingService = new SettingService(DATA_SOURCE)
+      this.CreateUserService = new CreateUserService(DATA_SOURCE)
     }
   }
 
@@ -105,7 +105,7 @@ export default class UserController {
         throw new ApiError(422, 'L\'entreprise selectionnée n\'existe pas')
       }
 
-      const newUser = await this.UserService.createOneUser({
+      const newUser = await this.CreateUserService.createOneUser({
         email,
         firstName,
         lastName,

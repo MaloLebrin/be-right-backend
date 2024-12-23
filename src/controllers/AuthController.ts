@@ -7,18 +7,18 @@ import { ApiError } from '../middlewares/ApiError'
 import { CompanyEntity } from '../entity/Company.entity'
 import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
-import UserService from '../services/UserService'
 import { userResponse } from '../utils/userHelper'
 import { MailjetService, SettingService } from '../services'
 import type RedisCache from '../RedisCache'
 import { REDIS_CACHE } from '..'
+import { CreateUserService } from '../services/user'
 
 export default class AuthController {
   private MailjetService: MailjetService
   private companyRepository: Repository<CompanyEntity>
   private userRepository: Repository<UserEntity>
   private SubscriptionService: SubscriptionService
-  private UserService: UserService
+  private CreateUserService: CreateUserService
   private SettingService: SettingService
   private redisCache: RedisCache
 
@@ -28,9 +28,9 @@ export default class AuthController {
       this.companyRepository = DATA_SOURCE.getRepository(CompanyEntity)
       this.userRepository = DATA_SOURCE.getRepository(UserEntity)
       this.SubscriptionService = new SubscriptionService(DATA_SOURCE)
-      this.UserService = new UserService(DATA_SOURCE)
       this.SettingService = new SettingService(DATA_SOURCE)
       this.redisCache = REDIS_CACHE
+      this.CreateUserService = new CreateUserService(DATA_SOURCE)
     }
   }
 
@@ -156,7 +156,7 @@ export default class AuthController {
       })
       await this.companyRepository.save(newCompany)
 
-      const newUser = await this.UserService.createOneUser({
+      const newUser = await this.CreateUserService.createOneUser({
         email,
         firstName,
         lastName,

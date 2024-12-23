@@ -15,6 +15,7 @@ import { GroupService } from '../../services/employee/GroupService'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { BadgeEntity } from '../../entity/repositories/Badge.entity'
 import { NotificationService } from '../../services/notifications'
+import { CreateUserService } from '../../services/user'
 import {
   addressFixtureCompanyMedium,
   addressFixtureCompanyPremium,
@@ -34,13 +35,17 @@ import { tomJedusorSignature } from './signatureFixture'
 export class UserSeedClass extends BaseSeedClass {
   private GroupService: GroupService
   private CompanyRepository: Repository<CompanyEntity>
+  private repository: Repository<UserEntity>
   private NotificationService: NotificationService
+  private CreateUserService: CreateUserService
 
   constructor(SEED_SOURCE: DataSource) {
     super(SEED_SOURCE)
     this.GroupService = new GroupService(SEED_SOURCE)
     this.CompanyRepository = SEED_SOURCE.getRepository(CompanyEntity)
     this.NotificationService = new NotificationService(SEED_SOURCE)
+    this.CreateUserService = new CreateUserService(SEED_SOURCE)
+    this.repository = SEED_SOURCE.getRepository(UserEntity)
   }
 
   private async photographersSeeder() {
@@ -52,7 +57,7 @@ export class UserSeedClass extends BaseSeedClass {
     ]
 
     await Promise.all(photographersPayload.map(async photographer =>
-      await this.UserService.createOnePhotoGrapher(photographer),
+      await this.CreateUserService.createOnePhotoGrapher(photographer),
     ))
   }
 
@@ -70,7 +75,7 @@ export class UserSeedClass extends BaseSeedClass {
 
     await this.CompanyRepository.save(newCompany)
 
-    const newUser = await this.UserService.createOneUser({
+    const newUser = await this.CreateUserService.createOneUser({
       ...userNotUsed,
       companyId: newCompany.id,
     })
@@ -176,7 +181,7 @@ export class UserSeedClass extends BaseSeedClass {
   }
 
   public async seedUserPremium() {
-    const isExisting = await this.UserService.repository.exists({
+    const isExisting = await this.repository.exists({
       where: {
         email: userCompanyFixturePremium.email,
       },
@@ -200,7 +205,7 @@ export class UserSeedClass extends BaseSeedClass {
 
     await this.CompanyRepository.save(newCompany)
 
-    const user = await this.UserService.createOneUser({
+    const user = await this.CreateUserService.createOneUser({
       ...userCompanyFixturePremium,
       companyId: newCompany.id,
     })
@@ -373,7 +378,7 @@ export class UserSeedClass extends BaseSeedClass {
 
     await this.CompanyRepository.save(newCompany)
 
-    const user = await this.UserService.createOneUser({
+    const user = await this.CreateUserService.createOneUser({
       ...userCompanyFixtureMedium,
       subscription: SubscriptionEnum.MEDIUM,
       companyId: newCompany.id,
