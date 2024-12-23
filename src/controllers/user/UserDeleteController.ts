@@ -51,6 +51,7 @@ export class UserDeleteController {
           where: {
             id,
           },
+          withDeleted: true,
         }),
         this.eventRepository.find({
           where: {
@@ -58,6 +59,7 @@ export class UserDeleteController {
               id,
             },
           },
+          withDeleted: true,
         }),
       ])
 
