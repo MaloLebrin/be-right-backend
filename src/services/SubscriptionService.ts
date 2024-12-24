@@ -1,9 +1,10 @@
-import dayjs from 'dayjs'
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
+import dayjs from 'dayjs'
 import { SubscriptionEntity } from '../entity/SubscriptionEntity'
 import { SubscriptionEnum } from '../types/Subscription'
 import { CompanyEntity } from '../entity/Company.entity'
+import { isPremiumSubscription } from '../utils/subscriptionHelper'
 
 export class SubscriptionService {
   private repository: Repository<SubscriptionEntity>
@@ -14,19 +15,10 @@ export class SubscriptionService {
     this.QueryBuilderCompany = APP_SOURCE.getRepository(CompanyEntity)
   }
 
-  public createOne = async (subscriptionType: SubscriptionEnum) => {
-    const subscription = this.repository.create({
-      type: subscriptionType,
-      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
-    })
-    await this.repository.save(subscription)
-    return subscription
-  }
-
   public createBasicSubscription = async () => {
     const subscription = this.repository.create({
       type: SubscriptionEnum.BASIC,
-      expireAt: dayjs().add(1, 'year'), // TODO generate date with payment and  type
+      expireAt: null,
     })
     await this.repository.save(subscription)
     return subscription
@@ -61,7 +53,11 @@ export class SubscriptionService {
   }
 
   public updateSubscription = async (id: number, subscriptionType: SubscriptionEnum) => {
-    return this.repository.update(id, { type: subscriptionType })
+    let expireAt: Date | null = null
+    if (isPremiumSubscription(subscriptionType)) {
+      expireAt = dayjs().add(1, 'year').toDate()
+    }
+    return this.repository.update(id, { type: subscriptionType, expireAt })
   }
 
   public softDeleteOne = async (id: number) => {

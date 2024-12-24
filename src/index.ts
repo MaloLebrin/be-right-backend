@@ -48,6 +48,7 @@ import { SSERoutes } from './routes/SSERoutes'
 import { StripeCustomerRoutes, StripeSessionRoutes } from './routes/Stripe'
 import { logger } from './middlewares/loggerService'
 import { SettingRoutes } from './routes/SettingRoutes'
+import { AdminSubscriptionRoutes } from './routes/Admin/AdminSubscriptionRoutes'
 
 dotenv.config()
 
@@ -141,6 +142,7 @@ async function StartAPI() {
   app.use('/admin/event', new AdminEventRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/group', new AdminGroupRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/stats', new StatsRouter(APP_SOURCE).intializeRoutes())
+  app.use('/admin/subscription', new AdminSubscriptionRoutes(APP_SOURCE).intializeRoutes())
   app.use('/admin/user', new AdminUserRoutes(APP_SOURCE).intializeRoutes())
 
   // Address
