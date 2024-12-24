@@ -13,6 +13,7 @@ import AnswerService from '../../services/AnswerService'
 import { AddressService } from '../../services'
 import { SubscriptionService } from '../../services/SubscriptionService'
 import { isProduction } from '../../utils/envHelper'
+import { isPremiumSubscription, isSubscriptionExpired } from '../../utils/subscriptionHelper'
 
 export class StripeController {
   private StripeCustomerService: StripeCustomerService
@@ -54,7 +55,7 @@ export class StripeController {
 
       const userSubscription = await this.SubscriptionService.getOneByCompanyId(user.companyId)
 
-      if (userSubscription && userSubscription.type === 'PREMIUM') {
+      if (isPremiumSubscription(userSubscription) && !isSubscriptionExpired(userSubscription)) {
         const { event: createdEvent } = await this.EventCreateService.createEventWithRelations({
           event,
           address,
