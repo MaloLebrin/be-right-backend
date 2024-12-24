@@ -3,3 +3,5 @@ export enum SubscriptionEnum {
   MEDIUM = 'MEDIUM',
   BASIC = 'BASIC',
 }
+
+export const SubscriptionEnumArray = Object.values(SubscriptionEnum)
