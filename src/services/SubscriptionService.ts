@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { SubscriptionEntity } from '../entity/SubscriptionEntity'
 import { SubscriptionEnum } from '../types/Subscription'
 import { CompanyEntity } from '../entity/Company.entity'
-import { isPremiumSubscription } from '../utils/subscriptionHelper'
+import { isPremiumSubscriptionType } from '../utils/subscriptionHelper'
 
 export class SubscriptionService {
   private repository: Repository<SubscriptionEntity>
@@ -54,7 +54,7 @@ export class SubscriptionService {
 
   public updateSubscription = async (id: number, subscriptionType: SubscriptionEnum) => {
     let expireAt: Date | null = null
-    if (isPremiumSubscription(subscriptionType)) {
+    if (isPremiumSubscriptionType(subscriptionType)) {
       expireAt = dayjs().add(1, 'year').toDate()
     }
     return this.repository.update(id, { type: subscriptionType, expireAt })
