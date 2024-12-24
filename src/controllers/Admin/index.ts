@@ -1,5 +1,4 @@
 export * from './CompanyController'
-export * from './SubscriptionAdmin.controller'
 export * from './EmployeeController'
 export * from './EventController'
 export * from './StatsController'
