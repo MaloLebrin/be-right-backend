@@ -6,6 +6,7 @@ import { logger } from './middlewares/loggerService'
 import type { EntitiesEnum, RedisEntitiesField, RedisKeys } from './types'
 import { parseRedisKey } from './utils/redisHelper'
 import { isProduction } from './utils/envHelper'
+import type { UserEntity } from './entity/UserEntity'
 
 export default class RedisCache {
   private client: RedisClient
@@ -161,5 +162,12 @@ export default class RedisCache {
         return result
       }
     }
+  }
+
+  async invalidateUserInCache(user: UserEntity) {
+    return Promise.all([
+      this.invalidate(`user-id-${user.id}`),
+      this.invalidate(`user-token-${user.token}`),
+    ])
   }
 }

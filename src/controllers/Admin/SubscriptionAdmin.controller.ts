@@ -6,42 +6,62 @@ import { wrapperRequest } from '../../utils'
 import { ApiError } from '../../middlewares/ApiError'
 import type { updateCompanySubscription } from '../../middlewares/validation/subscription.Validator'
 import type { idParamsSchema } from '../../middlewares/validation'
+import type RedisCache from '../../RedisCache'
+import { CompanyEntity } from '../../entity/Company.entity'
+import { REDIS_CACHE } from '../..'
 
 export class SubscriptionAdminController {
   private repository: Repository<SubscriptionEntity>
+  private CompanyRepository: Repository<CompanyEntity>
+  private RedisCache: RedisCache
 
   constructor(DATA_SOURCE: DataSource) {
     if (DATA_SOURCE) {
       this.repository = DATA_SOURCE.getRepository(SubscriptionEntity)
+      this.CompanyRepository = DATA_SOURCE.getRepository(CompanyEntity)
+      this.RedisCache = REDIS_CACHE
     }
   }
 
   public updateSubscription = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async ctx => {
-      if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
-      }
-
+    await wrapperRequest(req, res, next, async () => {
       const { body: { id, type, expireAt } }: InferType<typeof updateCompanySubscription> = req
 
       if (!id || !type || !expireAt) {
         throw new ApiError(422, 'Les paramètres sont incorrects')
       }
 
-      const subscription = await this.repository.findOne({
-        where: {
-          id,
-        },
-      })
+      const [subscription, company] = await Promise.all([
+        this.repository.findOne({
+          where: {
+            id,
+          },
+        }),
+        this.CompanyRepository.findOne({
+          where: {
+            subscription: { id },
+          },
+          relations: ['users'],
+        }),
+      ])
 
       if (!subscription) {
         throw new ApiError(404, 'La souscription est introuvable')
       }
 
-      await this.repository.update(id, {
-        type,
-        expireAt,
-      })
+      const invalidateCachePromises = company.users.reduce((acc, user) => [
+        ...acc,
+        this.RedisCache.invalidate(`user-id-${user.id}`),
+        this.RedisCache.invalidate(`user-token-${user.token}`),
+      ], [] as Promise<void>[])
+
+      await Promise.all([
+        this.repository.update(id, {
+          type,
+          expireAt,
+        }),
+        ...invalidateCachePromises,
+      ])
 
       const updatedSubscription = await this.repository.findOne({
         where: {
