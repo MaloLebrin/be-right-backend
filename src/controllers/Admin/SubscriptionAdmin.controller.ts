@@ -5,6 +5,7 @@ import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
 import { wrapperRequest } from '../../utils'
 import { ApiError } from '../../middlewares/ApiError'
 import type { updateCompanySubscription } from '../../middlewares/validation/subscription.Validator'
+import type { idParamsSchema } from '../../middlewares/validation'
 
 export class SubscriptionAdminController {
   private repository: Repository<SubscriptionEntity>
@@ -49,6 +50,23 @@ export class SubscriptionAdminController {
       })
 
       return res.status(200).json(updatedSubscription)
+    })
+  }
+
+  public getOne = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const { params: { id } }: InferType<typeof idParamsSchema> = req
+      const subscription = await this.repository.findOne({
+        where: {
+          id,
+        },
+      })
+
+      if (!subscription) {
+        throw new ApiError(404, 'La souscription est introuvable')
+      }
+
+      return res.status(200).json(subscription)
     })
   }
 }
