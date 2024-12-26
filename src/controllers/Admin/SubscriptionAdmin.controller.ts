@@ -1,4 +1,4 @@
-import type { DataSource, Repository } from 'typeorm'
+import { type DataSource, In, type Repository } from 'typeorm'
 import type { NextFunction, Request, Response } from 'express'
 import type { InferType } from 'yup'
 import { SubscriptionEntity } from '../../entity/SubscriptionEntity'
@@ -9,6 +9,7 @@ import type { idParamsSchema } from '../../middlewares/validation'
 import type RedisCache from '../../RedisCache'
 import { CompanyEntity } from '../../entity/Company.entity'
 import { REDIS_CACHE } from '../..'
+import { parseQueryIds } from '../../utils/basicHelper'
 
 export class SubscriptionAdminController {
   private repository: Repository<SubscriptionEntity>
@@ -88,6 +89,27 @@ export class SubscriptionAdminController {
       }
 
       return res.status(200).json(subscription)
+    })
+  }
+
+  public getMany = async (req: Request, res: Response, next: NextFunction) => {
+    await wrapperRequest(req, res, next, async () => {
+      const ids = req.query.ids as string
+
+      if (ids) {
+        const subscriptionIds = parseQueryIds(ids)
+
+        if (subscriptionIds?.length > 0) {
+          const subscriptions = await this.repository.find({
+            where: {
+              id: In(subscriptionIds),
+            },
+          })
+
+          return res.status(200).json(subscriptions)
+        }
+      }
+      throw new ApiError(422, 'identifiants des entreprises manquants')
     })
   }
 }
