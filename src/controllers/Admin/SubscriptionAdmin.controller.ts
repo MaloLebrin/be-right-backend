@@ -60,6 +60,7 @@ export class SubscriptionAdminController {
           type,
           expireAt,
         }),
+        this.CompanyRepository.update(company.id, { subscriptionLabel: type }),
         ...invalidateCachePromises,
       ])
 
