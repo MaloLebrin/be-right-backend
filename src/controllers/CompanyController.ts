@@ -44,9 +44,9 @@ export class CompanyController {
         const companyIds = parseQueryIds(ids)
 
         if (companyIds?.length > 0) {
-          const employees = await this.CompanyService.getMany(companyIds)
+          const companies = await this.CompanyService.getMany(companyIds)
 
-          return res.status(200).json(employees)
+          return res.status(200).json(companies)
         }
       }
       throw new ApiError(422, 'identifiants des entreprises manquants')

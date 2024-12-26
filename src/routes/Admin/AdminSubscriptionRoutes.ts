@@ -13,6 +13,7 @@ export class AdminSubscriptionRoutes extends BaseRouter implements BaseInterface
   constructor(SOURCE: DataSource) { super(SOURCE) }
 
   public intializeRoutes = () => {
+    this.router.get('/manyByIds', [isAuthenticated, checkUserRole([Role.ADMIN])], new SubscriptionAdminController(this.DATA_SOURCE).getMany)
     this.router.get('/:id', [validate(idParamsSchema), isAuthenticated], new SubscriptionAdminController(this.DATA_SOURCE).getOne)
     this.router.patch(
       '/',
