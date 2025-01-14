@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@antfu/utils':
         specifier: ^8.0.0
-        version: 8.0.0
+        version: 8.1.0
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -175,8 +175,8 @@ packages:
     peerDependencies:
       eslint: '>=7.4.0'
 
-  '@antfu/utils@8.0.0':
-    resolution: {integrity: sha512-3NfBIlWj8ffBHdNiedaiea1xIy0NIZZaqQwTbmwXa4sGekD5UarRU3NfXScpuC5aw99KCvErew3PHxGJeHqeAg==}
+  '@antfu/utils@8.1.0':
+    resolution: {integrity: sha512-XPR7Jfwp0FFl/dFYPX8ZjpmU4/1mIXTjnZ1ba48BLMyKOV62/tiRjdsFcPs2hsYcSud4tzk7w3a3LjX8Fu3huA==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -3729,7 +3729,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@antfu/utils@8.0.0': {}
+  '@antfu/utils@8.1.0': {}
 
   '@babel/code-frame@7.24.7':
     dependencies:
