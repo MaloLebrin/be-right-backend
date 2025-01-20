@@ -5,7 +5,7 @@ import EventService from '../../../services/EventService'
 import { CompanyEntity } from '../../../entity/Company.entity'
 import { EventStatusEnum } from '../../../types'
 import { MailjetService } from '../../../services/MailjetService'
-import { EventAndNotificationService } from '../../../services/EventAndNotificationService.service'
+import { EventAndNotificationService } from '../../../services/notifications/EventAndNotificationService.service'
 import { BaseJob } from './job.definition'
 import type { JobImp } from './job.definition'
 
