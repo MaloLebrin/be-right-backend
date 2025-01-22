@@ -8,7 +8,7 @@ import { StripeCheckoutSessionService } from '../../services/stripe/stripeChecko
 import { ModePaymentEnum, type StripeCheckoutSessionCreationPayload } from '../../types/Stripe'
 import { DraftEventService } from '../../services/DraftEventService.service'
 import { EventCreateService } from '../../services/event/eventCreateService.service'
-import EventService from '../../services/EventService'
+import { EventService } from '../../services/event/EventService'
 import AnswerService from '../../services/AnswerService'
 import { AddressService } from '../../services'
 import { SubscriptionService } from '../../services/SubscriptionService'

@@ -1,7 +1,7 @@
 import type { Job } from 'bullmq'
 import { APP_SOURCE } from '../../..'
 import { logger } from '../../../middlewares/loggerService'
-import EventService from '../../../services/EventService'
+import { EventService } from '../../../services/event/EventService'
 import { CompanyEntity } from '../../../entity/Company.entity'
 import { EventStatusEnum } from '../../../types'
 import { MailjetService } from '../../../services/MailjetService'

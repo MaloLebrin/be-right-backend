@@ -1,18 +1,18 @@
 import type { DataSource, Repository } from 'typeorm'
 import { In } from 'typeorm'
 import { noNull, notUndefined } from '@antfu/utils'
-import { REDIS_CACHE } from '..'
-import AnswerEntity from '../entity/AnswerEntity'
-import EventEntity from '../entity/EventEntity'
-import type RedisCache from '../RedisCache'
-import { EntitiesEnum } from '../types'
-import { EventStatusEnum } from '../types/Event'
-import { generateRedisKey, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../utils/index'
-import { ApiError } from '../middlewares/ApiError'
-import { AddressService } from './AddressService'
-import AnswerService from './AnswerService'
+import AnswerEntity from '../../entity/AnswerEntity'
+import EventEntity from '../../entity/EventEntity'
+import type RedisCache from '../../RedisCache'
+import { EntitiesEnum } from '../../types'
+import { EventStatusEnum } from '../../types/Event'
+import { generateRedisKey, removeUnecessaryFieldsEvent, updateStatusEventBasedOnStartEndTodayDate } from '../../utils/index'
+import { ApiError } from '../../middlewares/ApiError'
+import { AddressService } from '../AddressService'
+import AnswerService from '../AnswerService'
+import { REDIS_CACHE } from '../..'
 
-export default class EventService {
+export class EventService {
   private repository: Repository<EventEntity>
   private AnswerRepository: Repository<AnswerEntity>
   private answerService: AnswerService
