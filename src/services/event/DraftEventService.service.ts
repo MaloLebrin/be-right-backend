@@ -1,6 +1,6 @@
 import type { DataSource, Repository } from 'typeorm'
-import { DraftEventEntity } from '../entity/event/DraftEvent.entity'
-import type { EventWithRelationsCreationPayload } from '../types/Event'
+import { DraftEventEntity } from '../../entity/event/DraftEvent.entity'
+import type { EventWithRelationsCreationPayload } from '../../types/Event'
 
 export class DraftEventService {
   private repository: Repository<DraftEventEntity>
