@@ -1,8 +1,8 @@
 import type { DataSource, Repository } from 'typeorm'
-import { UserEntity } from '../entity/UserEntity'
-import type { PhotographerCreatePayload } from '../types'
-import { createJwtToken, userResponse } from '../utils/'
-import { CreateUserService } from './user/CreateUser.service'
+import { UserEntity } from '../../entity/UserEntity'
+import type { PhotographerCreatePayload } from '../../types'
+import { createJwtToken, userResponse } from '../../utils/userHelper'
+import { CreateUserService } from './CreateUser.service'
 
 export default class UserService {
   private repository: Repository<UserEntity>
