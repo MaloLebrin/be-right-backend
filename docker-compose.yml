@@ -21,21 +21,5 @@ services:
     expose:
       - 6379
 
-  # app:
-  #   restart: always
-  #   image: zenika/alpine-chrome:with-puppeteer
-  #   links:
-  #   - redis
-  #   depends_on:
-  #     - redis
-  #     - postgres
-  #   build:
-  #     context: .
-  #   ports:
-  #     - "${PORT}:${PORT}"
-  #   env_file:
-  #     - .env
-
-
 volumes:
   mysql-storage:

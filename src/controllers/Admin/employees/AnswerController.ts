@@ -8,7 +8,7 @@ import { UpdateEventStatusJob } from '../../../jobs/queue/jobs/updateEventStatus
 import { defaultQueue } from '../../../jobs/queue/queue'
 import { ApiError } from '../../../middlewares/ApiError'
 import AnswerService from '../../../services/AnswerService'
-import EventService from '../../../services/EventService'
+import { EventService } from '../../../services/event/EventService'
 import { wrapperRequest } from '../../../utils'
 
 export class AdminAnswerController extends BaseAdminController {

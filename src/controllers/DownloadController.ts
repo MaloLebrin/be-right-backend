@@ -9,7 +9,7 @@ import { logger } from '../middlewares/loggerService'
 import AnswerEntity from '../entity/AnswerEntity'
 import { generatePdfFromUrl } from '../utils/puppeteerHelper'
 import { isProduction } from '../utils/envHelper'
-import EventService from '../services/EventService'
+import { EventService } from '../services/event/EventService'
 
 export class DownloadController {
   private repository: Repository<AnswerEntity>

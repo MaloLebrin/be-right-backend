@@ -7,8 +7,8 @@ import { defaultQueue } from '../../jobs/queue/queue'
 import { type EventCreationPayload, NotificationTypeEnum } from '../../types'
 import { AddressService } from '../AddressService'
 import AnswerService from '../AnswerService'
-import EventService from '../EventService'
 import RedisService from '../RedisService'
+import { EventService } from './EventService'
 
 export class EventCreateService {
   private EventService: EventService

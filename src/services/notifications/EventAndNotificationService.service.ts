@@ -1,10 +1,10 @@
 import { type DataSource, In, type Repository } from 'typeorm'
-import type EventEntity from '../entity/EventEntity'
-import { getNotificationTypeByEventStatus } from '../utils/notificationHelper'
-import { CompanyEntity } from '../entity/Company.entity'
-import { NotificationSubcriptionEntity } from '../entity/notifications/NotificationSubscription.entity'
-import { NotificationService } from './notifications/NotificationService'
-import { EventNotificationService } from './notifications/EventNotificationService'
+import type EventEntity from '../../entity/EventEntity'
+import { getNotificationTypeByEventStatus } from '../../utils/notificationHelper'
+import { CompanyEntity } from '../../entity/Company.entity'
+import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
+import { NotificationService } from './NotificationService'
+import { EventNotificationService } from './EventNotificationService'
 
 export class EventAndNotificationService {
   private CompanyRepository: Repository<CompanyEntity>

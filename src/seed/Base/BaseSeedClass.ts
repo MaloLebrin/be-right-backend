@@ -3,8 +3,8 @@ import { AddressService } from '../../services'
 import AnswerService from '../../services/AnswerService'
 import { CompanyService } from '../../services/CompanyService'
 import EmployeeService from '../../services/employee/EmployeeService'
-import EventService from '../../services/EventService'
-import UserService from '../../services/UserService'
+import { EventService } from '../../services/event/EventService'
+import UserService from '../../services/user/UserService'
 
 export class BaseSeedClass {
   getManager: EntityManager
