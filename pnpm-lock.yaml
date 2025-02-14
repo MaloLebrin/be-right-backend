@@ -19,7 +19,7 @@ importers:
         version: 0.14.1
       bullmq:
         specifier: ^5.34.6
-        version: 5.40.0
+        version: 5.41.0
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -999,8 +999,8 @@ packages:
   builtins@5.1.0:
     resolution: {integrity: sha512-SW9lzGTLvWTP1AY8xeAMZimqDrIaSdLQUcVr9DMef51niJ022Ri87SwRRKYm4A6iHfkPaiVUu/Duw2Wc4J7kKg==}
 
-  bullmq@5.40.0:
-    resolution: {integrity: sha512-tmrk32EmcbtUOGPSdwlDUcc0w+nAMqCisk8vEFFmG8aOzIehz0BxTNSj6Grh0qoMugRF3VglWk8HGUBnWqU2Fw==}
+  bullmq@5.41.0:
+    resolution: {integrity: sha512-GGfKu2DHGIvbnMtQjR/82wvWsdCaGxN5JGR3pvKd1mkDI9DsWn8r0+pAzZ6Y4ImWXFaetaAqywOhv2Ik0R2m3g==}
 
   busboy@0.2.14:
     resolution: {integrity: sha512-InWFDomvlkEj+xWLBfU3AvnbVYqeTWmQopiW0tWWEy5yehYm2YkGEc59sUmw/4ty5Zj/b0WHGs1LgecuBSBGrg==}
@@ -3029,8 +3029,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.0:
-    resolution: {integrity: sha512-DrfFnPzblFmNrIZzg5RzHegbiRWg7KMR7btwi2yjHwx06zsUbO5g613sVwEV7FTwmzJu+Io0lJe2GJ3LxqpvBQ==}
+  semver@7.7.1:
+    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -4432,7 +4432,7 @@ snapshots:
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare-lite: 1.4.0
-      semver: 7.7.0
+      semver: 7.7.1
       tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -4477,7 +4477,7 @@ snapshots:
       debug: 4.4.0
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.7.0
+      semver: 7.7.1
       tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -4494,7 +4494,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.7.3)
       eslint: 8.57.1
       eslint-scope: 5.1.1
-      semver: 7.7.0
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -4791,15 +4791,15 @@ snapshots:
 
   builtins@5.1.0:
     dependencies:
-      semver: 7.7.0
+      semver: 7.7.1
 
-  bullmq@5.40.0:
+  bullmq@5.41.0:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.5.0
       msgpackr: 1.11.2
       node-abort-controller: 3.1.1
-      semver: 7.7.0
+      semver: 7.7.1
       tslib: 2.8.1
       uuid: 9.0.1
     transitivePeerDependencies:
@@ -5254,7 +5254,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
-      semver: 7.7.0
+      semver: 7.7.1
 
   eslint-import-resolver-node@0.3.9:
     dependencies:
@@ -5364,7 +5364,7 @@ snapshots:
       is-core-module: 2.14.0
       minimatch: 3.1.2
       resolve: 1.22.8
-      semver: 7.7.0
+      semver: 7.7.1
 
   eslint-plugin-no-only-tests@3.3.0: {}
 
@@ -5393,7 +5393,7 @@ snapshots:
       regexp-tree: 0.1.27
       regjsparser: 0.9.1
       safe-regex: 2.1.1
-      semver: 7.7.0
+      semver: 7.7.1
       strip-indent: 3.0.0
 
   eslint-plugin-unused-imports@2.0.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1):
@@ -5411,7 +5411,7 @@ snapshots:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 6.1.0
-      semver: 7.7.0
+      semver: 7.7.1
       vue-eslint-parser: 9.4.3(eslint@8.57.1)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
@@ -6062,7 +6062,7 @@ snapshots:
       '@babel/parser': 7.24.7
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
-      semver: 7.7.0
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6355,7 +6355,7 @@ snapshots:
       jest-util: 29.7.0
       natural-compare: 1.4.0
       pretty-format: 29.7.0
-      semver: 7.7.0
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6449,7 +6449,7 @@ snapshots:
       acorn: 8.12.1
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
-      semver: 7.7.0
+      semver: 7.7.1
 
   jsonfile@6.1.0:
     dependencies:
@@ -6542,7 +6542,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.7.0
+      semver: 7.7.1
 
   make-error@1.3.6: {}
 
@@ -7146,7 +7146,7 @@ snapshots:
 
   semver@7.6.3: {}
 
-  semver@7.7.0: {}
+  semver@7.7.1: {}
 
   send@0.19.0:
     dependencies:
@@ -7653,7 +7653,7 @@ snapshots:
       espree: 9.6.1
       esquery: 1.6.0
       lodash: 4.17.21
-      semver: 7.7.0
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
 
