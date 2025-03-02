@@ -306,7 +306,7 @@ export class DownloadController {
       const { content } = await generatePdfFromUrl({
         url: `${baseUrl}/event/listOfAccepted/${eventId}`,
         fileName,
-        token: 'perijgh',
+        token: 'perijgh', // FIXME c'est quoi ça?
         isMadeByBrowserless: isProduction(),
       })
       try {
