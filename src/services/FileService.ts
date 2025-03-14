@@ -9,9 +9,8 @@ import { useEnv } from '../env'
 import { CompanyEntity } from '../entity/Company.entity'
 
 export default class FileService {
-  getManager: EntityManager
-
-  repository: Repository<FileEntity>
+  private getManager: EntityManager
+  private repository: Repository<FileEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(FileEntity)
