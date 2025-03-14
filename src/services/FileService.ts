@@ -7,6 +7,7 @@ import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
 import { CompanyEntity } from '../entity/Company.entity'
+import { uploadFileToProvider } from '../utils/fileHelper'
 
 export default class FileService {
   private getManager: EntityManager
@@ -142,8 +143,6 @@ export default class FileService {
   }
 
   async createLogo(file: Express.Multer.File, company: CompanyEntity) {
-    const { NODE_ENV } = useEnv()
-
     const existLogos = await this.repository.find({
       where: {
         company: {
@@ -159,18 +158,17 @@ export default class FileService {
         .filter(Boolean)
       await this.deleteManyfiles(logosIds)
     }
-    const result = await cloudinary.v2.uploader.upload(file.path, {
-      folder: `beright-${NODE_ENV}/company-${company.name}/${FileTypeEnum.LOGO}`,
-      quality: 'auto',
-      fetch_format: 'auto',
-      format: 'webp',
+    const result = await uploadFileToProvider({
+      file,
+      company,
+      typeOfFile: FileTypeEnum.LOGO,
     })
 
     const picture = {
       fileName: file.filename,
       name: `Logo de ${company.name}`,
       description: `Logo de ${company.name}`,
-      createdByUser: company,
+      company: company,
       type: FileTypeEnum.LOGO,
       url: result.url,
       public_id: result.public_id,
