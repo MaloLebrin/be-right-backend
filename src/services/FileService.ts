@@ -92,7 +92,7 @@ export default class FileService {
     return this.getFile(id)
   }
 
-  async createProfilePicture(file: Express.Multer.File, user: UserEntity) {
+  async createProfilePicture(file: Express.Multer.File, user: UserEntity, company: CompanyEntity) {
     const { NODE_ENV } = useEnv()
 
     const existProfilePicture = await this.repository.findOne({
@@ -109,7 +109,7 @@ export default class FileService {
     }
 
     const result = await cloudinary.v2.uploader.upload(file.path, {
-      folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
+      folder: `beright-${NODE_ENV}/company-${company.id}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.PROFILE_PICTURE}`,
       quality: 'auto',
       fetch_format: 'auto',
       format: 'webp',

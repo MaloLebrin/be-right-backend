@@ -51,6 +51,11 @@ export default class FileController {
         })
       }
 
+      const company = ctx.user.company
+      if (!company) {
+        throw new NotFoundError('Entreprise', { userId: ctx.user.id })
+      }
+
       let userId = null
       let user = ctx.user
 
@@ -69,7 +74,7 @@ export default class FileController {
       }
 
       const result = await cloudinary.v2.uploader.upload(fileRecieved.path, {
-        folder: `beright-${NODE_ENV}/user-${userId}-${user.firstName}-${user.lastName}/${type}`,
+        folder: `beright-${NODE_ENV}/company-${company.id}/${type}`,
         quality: 'auto',
         fetch_format: 'auto',
       })
@@ -111,8 +116,13 @@ export default class FileController {
         throw new ValidationError('Aucun fichier reçu', { field: 'file' })
       }
 
+      const company = ctx.user.company
+      if (!company) {
+        throw new NotFoundError('Entreprise', { userId: ctx.user.id })
+      }
+
       try {
-        const profilePicture = await this.FileService.createProfilePicture(fileReceived, ctx.user)
+        const profilePicture = await this.FileService.createProfilePicture(fileReceived, ctx.user, company)
         res.status(201).json(profilePicture)
       } catch (error) {
         if (error instanceof Error && error.message.includes('cloudinary')) {
