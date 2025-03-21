@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@antfu/utils':
-        specifier: ^8.1.1
-        version: 8.1.1
+        specifier: ^9.0.0
+        version: 9.1.0
       axios:
         specifier: ^1.8.4
         version: 1.8.4
@@ -178,8 +178,8 @@ packages:
     peerDependencies:
       eslint: '>=7.4.0'
 
-  '@antfu/utils@8.1.1':
-    resolution: {integrity: sha512-Mex9nXf9vR6AhcXmMrlz/HVgYYZpVGJ6YlPgwl7UnaFpnshXs6EK/oa5Gpf3CzENMjkvEx2tQtntGnb7UtSTOQ==}
+  '@antfu/utils@9.1.0':
+    resolution: {integrity: sha512-R+3bzxNN0ZscQg3ZVG7suqBTFP2dbdaCjKe5KY6hqNZimdyZ32KemotJPmoqQhKH28CqdgyXQGkWZlCGsGQmJw==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -3739,7 +3739,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@antfu/utils@8.1.1': {}
+  '@antfu/utils@9.1.0': {}
 
   '@babel/code-frame@7.24.7':
     dependencies:

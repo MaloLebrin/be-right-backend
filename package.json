@@ -20,7 +20,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@antfu/utils": "^8.1.1",
+    "@antfu/utils": "^9.0.0",
     "axios": "^1.8.4",
     "better-sse": "^0.14.1",
     "bullmq": "^5.44.1",
