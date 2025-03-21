@@ -6,7 +6,7 @@ import { UserEntity } from '../entity/UserEntity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
-import { CompanyEntity } from '../entity/Company.entity'
+import type { CompanyEntity } from '../entity/Company.entity'
 import { uploadFileToProvider } from '../utils/fileHelper'
 
 export default class FileService {
@@ -168,7 +168,7 @@ export default class FileService {
       fileName: file.filename,
       name: `Logo de ${company.name}`,
       description: `Logo de ${company.name}`,
-      company: company,
+      company,
       type: FileTypeEnum.LOGO,
       url: result.url,
       public_id: result.public_id,

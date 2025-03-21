@@ -1,7 +1,7 @@
 import cloudinary from 'cloudinary'
-import { CompanyEntity } from "../entity/Company.entity"
-import { useEnv } from "../env"
-import { FileTypeEnum } from "../types/File"
+import type { CompanyEntity } from '../entity/Company.entity'
+import { useEnv } from '../env'
+import type { FileTypeEnum } from '../types/File'
 
 const { NODE_ENV } = useEnv()
 
