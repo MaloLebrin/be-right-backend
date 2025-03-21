@@ -12,11 +12,11 @@ import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
 import {
   ApiError,
-  ValidationError,
-  NotFoundError,
   AuthorizationError,
+  DatabaseError,
   ExternalServiceError,
-  DatabaseError
+  NotFoundError,
+  ValidationError,
 } from '../middlewares/ApiError'
 
 export default class FileController {
@@ -47,7 +47,7 @@ export default class FileController {
 
       if (!name || !type) {
         throw new ValidationError('Nom et type de fichier requis', {
-          fields: { name: !name, type: !type }
+          fields: { name: !name, type: !type },
         })
       }
 
@@ -102,7 +102,6 @@ export default class FileController {
 
   public createProfilePicture = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-
       if (!ctx) {
         throw new DatabaseError('Contexte de requête manquant')
       }

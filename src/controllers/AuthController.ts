@@ -76,8 +76,8 @@ export default class AuthController {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       if (!email || !twoFactorRecoveryCode || !password) {
-        throw new ValidationError('Token et mot de passe requis', { 
-          fields: { email: !email, twoFactorRecoveryCode: !twoFactorRecoveryCode, password: !password } 
+        throw new ValidationError('Token et mot de passe requis', {
+          fields: { email: !email, twoFactorRecoveryCode: !twoFactorRecoveryCode, password: !password },
         })
       }
 

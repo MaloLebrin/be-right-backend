@@ -1,14 +1,15 @@
 import type { NextFunction, Request, Response } from 'express'
 import { isProduction } from '../utils/envHelper'
+import type { ErrorResponse } from '../types/Errors'
+import { ErrorType } from '../types/Errors'
 import { ApiError } from './ApiError'
-import { ErrorResponse, ErrorType } from '../types/Errors'
 import { logger } from './loggerService'
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   const errorResponse: ErrorResponse = {
     status: 500,
     type: ErrorType.INTERNAL_SERVER_ERROR,
-    message: 'Internal Server Error'
+    message: 'Internal Server Error',
   }
 
   // Si c'est une erreur API personnalisée
@@ -36,8 +37,8 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
       path: req.path,
       method: req.method,
       ip: req.ip,
-      userAgent: req.get('user-agent')
-    }
+      userAgent: req.get('user-agent'),
+    },
   })
 
   // En production, on ne renvoie pas la stack trace
@@ -47,7 +48,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
 
   // Réponse d'erreur
   res.status(errorResponse.status).json({
-    error: errorResponse
+    error: errorResponse,
   })
 
   // On appelle next pour permettre à d'autres middlewares de gérer l'erreur si nécessaire

@@ -1,5 +1,5 @@
-import { ErrorType, ApiErrorDetails } from "../types/Errors"
-
+import type { ApiErrorDetails } from '../types/Errors'
+import { ErrorType } from '../types/Errors'
 
 export class ApiError extends Error {
   statusCode: number
@@ -18,7 +18,7 @@ export class ApiError extends Error {
     return {
       code: this.type,
       message: this.message,
-      details: this.details
+      details: this.details,
     }
   }
 }
@@ -30,13 +30,13 @@ export class ValidationError extends ApiError {
 }
 
 export class AuthenticationError extends ApiError {
-  constructor(message: string = 'Authentication failed', details?: Record<string, any>) {
+  constructor(message = 'Authentication failed', details?: Record<string, any>) {
     super(401, message, ErrorType.AUTHENTICATION_ERROR, details)
   }
 }
 
 export class AuthorizationError extends ApiError {
-  constructor(message: string = 'Not authorized', details?: Record<string, any>) {
+  constructor(message = 'Not authorized', details?: Record<string, any>) {
     super(403, message, ErrorType.AUTHORIZATION_ERROR, details)
   }
 }
