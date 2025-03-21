@@ -92,7 +92,15 @@ export default class FileService {
     return this.getFile(id)
   }
 
-  async createProfilePicture(file: Express.Multer.File, user: UserEntity, company: CompanyEntity) {
+  async createProfilePicture({
+    file,
+    user,
+    company,
+  }: {
+    file: Express.Multer.File
+    user: UserEntity
+    company: CompanyEntity
+  }) {
     const { NODE_ENV } = useEnv()
 
     const existProfilePicture = await this.repository.findOne({
@@ -142,7 +150,13 @@ export default class FileService {
     }
   }
 
-  async createLogo(file: Express.Multer.File, company: CompanyEntity) {
+  async createLogo({
+    file,
+    company,
+  }: {
+    file: Express.Multer.File
+    company: CompanyEntity
+  }) {
     const existLogos = await this.repository.find({
       where: {
         company: {

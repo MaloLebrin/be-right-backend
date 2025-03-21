@@ -122,7 +122,11 @@ export default class FileController {
       }
 
       try {
-        const profilePicture = await this.FileService.createProfilePicture(fileReceived, ctx.user, company)
+        const profilePicture = await this.FileService.createProfilePicture({
+          file: fileReceived,
+          user: ctx.user,
+          company,
+        })
         res.status(201).json(profilePicture)
       } catch (error) {
         if (error instanceof Error && error.message.includes('cloudinary')) {
@@ -154,7 +158,10 @@ export default class FileController {
       }
 
       try {
-        const logo = await this.FileService.createLogo(fileReceived, company)
+        const logo = await this.FileService.createLogo({
+          file: fileReceived,
+          company,
+        })
         res.status(201).json(logo)
       } catch (error) {
         if (error instanceof Error && error.message.includes('cloudinary')) {
