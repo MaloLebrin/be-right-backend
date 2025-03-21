@@ -18,6 +18,9 @@ export class CompanyEntity extends BaseEntity {
   @Column({ nullable: true })
   siret: string
 
+  @Column({ nullable: true })
+  color: string
+
   @Column({ type: 'enum', enum: SubscriptionEnum, default: SubscriptionEnum.BASIC, nullable: true })
   subscriptionLabel: SubscriptionEnum
 
