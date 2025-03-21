@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit'
-import { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { isProduction } from '../utils/envHelper'
 
 /**
@@ -47,4 +47,4 @@ export const rateLimitErrorHandler = (err: any, req: Request, res: Response, nex
     })
   }
   next(err)
-} 
+}

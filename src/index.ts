@@ -15,7 +15,7 @@ import {
   isAuthenticated,
   useValidation,
 } from './middlewares'
-import { generalLimiter, authLimiter, rateLimitErrorHandler } from './middlewares/rateLimiter'
+import { authLimiter, generalLimiter, rateLimitErrorHandler } from './middlewares/rateLimiter'
 import EmployeeController from './controllers/employees/EmployeeController'
 import FileController from './controllers/FileController'
 import { seedersFunction } from './seed'
