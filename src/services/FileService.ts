@@ -6,11 +6,12 @@ import { UserEntity } from '../entity/UserEntity'
 import { FileTypeEnum } from '../types/File'
 import { getfullUsername } from '../utils/userHelper'
 import { useEnv } from '../env'
+import type { CompanyEntity } from '../entity/Company.entity'
+import { uploadFileToProvider } from '../utils/fileHelper'
 
 export default class FileService {
-  getManager: EntityManager
-
-  repository: Repository<FileEntity>
+  private getManager: EntityManager
+  private repository: Repository<FileEntity>
 
   constructor(APP_SOURCE: DataSource) {
     this.repository = APP_SOURCE.getRepository(FileEntity)
@@ -27,7 +28,7 @@ export default class FileService {
   }
 
   async deleteManyfiles(fileIds: number[]) {
-    await Promise.all(fileIds.map(fileId => this.deleteFile(fileId)))
+    await Promise.allSettled(fileIds.map(fileId => this.deleteFile(fileId)))
   }
 
   async getFile(fileId: number) {
@@ -141,32 +142,33 @@ export default class FileService {
     }
   }
 
-  async createLogo(file: Express.Multer.File, user: UserEntity) {
-    const { NODE_ENV } = useEnv()
-
+  async createLogo(file: Express.Multer.File, company: CompanyEntity) {
     const existLogos = await this.repository.find({
       where: {
-        id: user.profilePictureId,
+        company: {
+          id: company.id,
+        },
         type: FileTypeEnum.LOGO,
       },
     })
 
     if (existLogos.length > 0) {
-      const logosIds = existLogos.map(logo => logo.id)
+      const logosIds = existLogos
+        .map(logo => logo.id)
+        .filter(Boolean)
       await this.deleteManyfiles(logosIds)
     }
-    const result = await cloudinary.v2.uploader.upload(file.path, {
-      folder: `beright-${NODE_ENV}/user-${user.id}-${user.firstName}-${user.lastName}/${FileTypeEnum.LOGO}`,
-      quality: 'auto',
-      fetch_format: 'auto',
-      format: 'webp',
+    const result = await uploadFileToProvider({
+      file,
+      company,
+      typeOfFile: FileTypeEnum.LOGO,
     })
 
     const picture = {
       fileName: file.filename,
-      name: `Logo de ${getfullUsername(user)}`,
-      description: `Logo de ${getfullUsername(user)}`,
-      createdByUser: user,
+      name: `Logo de ${company.name}`,
+      description: `Logo de ${company.name}`,
+      company,
       type: FileTypeEnum.LOGO,
       url: result.url,
       public_id: result.public_id,

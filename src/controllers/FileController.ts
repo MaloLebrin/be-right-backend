@@ -106,8 +106,14 @@ export default class FileController {
         throw new ApiError(500, 'Une erreur s\'est produite')
       }
 
+      const company = ctx.user.company
+
+      if (!company) {
+        throw new ApiError(422, 'Entreprise non trouvée')
+      }
+
       if (fileRecieved) {
-        const logo = await this.FileService.createLogo(fileRecieved, ctx.user)
+        const logo = await this.FileService.createLogo(fileRecieved, company)
         return res.status(200).json(logo)
       }
       throw new ApiError(422, 'fichier manquant')
