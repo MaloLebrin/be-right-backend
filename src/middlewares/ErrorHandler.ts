@@ -1,49 +1,56 @@
 import type { NextFunction, Request, Response } from 'express'
 import { isProduction } from '../utils/envHelper'
+import type { ErrorResponse } from '../types/Errors'
+import { ErrorType } from '../types/Errors'
 import { ApiError } from './ApiError'
+import { logger } from './loggerService'
 
-export function errorHandler(err: Error, _: Request, res: Response, next: NextFunction) {
-  // default HTTP status code and error message
-  let httpStatusCode = 500
-  let message = 'Internal Server Error'
+export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  const errorResponse: ErrorResponse = {
+    status: 500,
+    type: ErrorType.INTERNAL_SERVER_ERROR,
+    message: 'Internal Server Error',
+  }
 
-  // if the error is a custom defined error
+  // Si c'est une erreur API personnalisée
   if (err instanceof ApiError) {
-    httpStatusCode = err.statusCode
-    message = err.message
+    errorResponse.status = err.statusCode
+    errorResponse.type = err.type
+    errorResponse.message = err.message
+    errorResponse.details = err.details
   } else {
-    // hide the detailed error message in production
-    // for security reasons
-    if (isProduction()) {
-      // since in JavaScript you can also
-      // directly throw strings
-      if (typeof err === 'string') {
-        message = err
-      } else if (err instanceof Error) {
-        message = err.message
-      }
+    // Pour les erreurs non-API, on masque les détails en production
+    if (!isProduction()) {
+      errorResponse.message = err.message
+      errorResponse.stack = err.stack
     }
   }
 
-  let stackTrace
-
-  // return the stack trace only when
-  // developing locally or in stage
-  if (isProduction()) {
-    stackTrace = err.stack
-  }
-
-  // logg the error
-  console.error(err)
-  // other custom behaviors...
-
-  // return the standard error response
-  res.status(httpStatusCode).send({
+  // Logging structuré
+  logger.error({
     error: {
-      status: httpStatusCode,
-      message,
-      stackTrace,
+      message: errorResponse.message,
+      type: errorResponse.type,
+      status: errorResponse.status,
+      details: errorResponse.details,
+      stack: errorResponse.stack,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
     },
   })
-  return next(err)
+
+  // En production, on ne renvoie pas la stack trace
+  if (isProduction()) {
+    delete errorResponse.stack
+  }
+
+  // Réponse d'erreur
+  res.status(errorResponse.status).json({
+    error: errorResponse,
+  })
+
+  // On appelle next pour permettre à d'autres middlewares de gérer l'erreur si nécessaire
+  next(err)
 }

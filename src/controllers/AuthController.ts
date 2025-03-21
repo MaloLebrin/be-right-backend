@@ -3,7 +3,7 @@ import uid2 from 'uid2'
 import type { DataSource, Repository } from 'typeorm'
 import { generateHash, wrapperRequest } from '../utils'
 import { UserEntity } from '../entity/UserEntity'
-import { ApiError } from '../middlewares/ApiError'
+import { ApiError, AuthenticationError, NotFoundError, ValidationError } from '../middlewares/ApiError'
 import { CompanyEntity } from '../entity/Company.entity'
 import { Role, SubscriptionEnum } from '../types'
 import { SubscriptionService } from '../services/SubscriptionService'
@@ -39,13 +39,11 @@ export default class AuthController {
       const { email }: { email: string } = req.body
 
       if (!email) {
-        throw new ApiError(422, 'Email manquant')
+        throw new ValidationError('Email manquant', { field: 'email' })
       }
 
       const user = await this.userRepository.findOne({
-        where: {
-          email,
-        },
+        where: { email },
         select: {
           id: true,
           twoFactorSecret: true,
@@ -58,7 +56,7 @@ export default class AuthController {
       })
 
       if (!user) {
-        throw new ApiError(422, 'Aucun utilisateur trouvé avec cet email')
+        throw new NotFoundError('Utilisateur', { email })
       }
 
       const twoFactorSecret = uid2(128)
@@ -78,7 +76,9 @@ export default class AuthController {
       const { email, twoFactorRecoveryCode, password }: { email: string; twoFactorRecoveryCode: string; password: string } = req.body
 
       if (!email || !twoFactorRecoveryCode || !password) {
-        throw new ApiError(422, 'Paramètres manquants')
+        throw new ValidationError('Token et mot de passe requis', {
+          fields: { email: !email, twoFactorRecoveryCode: !twoFactorRecoveryCode, password: !password },
+        })
       }
 
       const user = await this.userRepository.findOne({
@@ -104,7 +104,7 @@ export default class AuthController {
       const hash = generateHash(user.twoFactorSecret, email)
 
       if (user.twoFactorRecoveryCode !== hash || email !== user.email) {
-        throw new ApiError(401, 'Vous n\'êtes pas autorizé à effectuer cette action')
+        throw new AuthenticationError('Vous n\'êtes pas autorizé à effectuer cette action')
       }
 
       user.password = generateHash(user.salt, password)

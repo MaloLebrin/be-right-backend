@@ -10,7 +10,14 @@ import { Role } from '../types/Role'
 import { useEnv } from '../env'
 import { APP_SOURCE } from '..'
 import { UserEntity } from '../entity/UserEntity'
-import { ApiError } from '../middlewares/ApiError'
+import {
+  ApiError,
+  AuthorizationError,
+  DatabaseError,
+  ExternalServiceError,
+  NotFoundError,
+  ValidationError,
+} from '../middlewares/ApiError'
 
 export default class FileController {
   getManager: EntityManager
@@ -27,21 +34,33 @@ export default class FileController {
     const { NODE_ENV } = useEnv()
 
     await wrapperRequest(req, res, next, async ctx => {
-      const fileRecieved = req.file
-      const { name, description, event, employee, type }:
-      { name: string; description: string; event?: number; employee?: number; type: FileTypeEnum } = req.body
-
       if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
+        throw new DatabaseError('Contexte de requête manquant')
+      }
+
+      const fileRecieved = req.file
+      const { name, description, event, employee, type } = req.body
+
+      if (!fileRecieved) {
+        throw new ValidationError('Aucun fichier reçu', { field: 'file' })
+      }
+
+      if (!name || !type) {
+        throw new ValidationError('Nom et type de fichier requis', {
+          fields: { name: !name, type: !type },
+        })
       }
 
       let userId = null
-
       let user = ctx.user
+
       if (user.roles === Role.ADMIN) {
         if (req.params.id) {
           userId = parseInt(req.params.id)
           user = await this.getManager.findOne(UserEntity, userId)
+          if (!user) {
+            throw new NotFoundError('Utilisateur', { id: userId })
+          }
         } else {
           userId = user.id
         }
@@ -83,77 +102,107 @@ export default class FileController {
 
   public createProfilePicture = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const fileRecieved = req.file
-
       if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
+        throw new DatabaseError('Contexte de requête manquant')
       }
 
-      if (fileRecieved) {
-        const profilePicture = await this.FileService.createProfilePicture(fileRecieved, ctx.user)
-        return res.status(200).json(profilePicture)
+      const fileReceived = req.file
+      if (!fileReceived) {
+        throw new ValidationError('Aucun fichier reçu', { field: 'file' })
       }
 
-      throw new ApiError(422, 'fichier manquant')
+      try {
+        const profilePicture = await this.FileService.createProfilePicture(fileReceived, ctx.user)
+        res.status(201).json(profilePicture)
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('cloudinary')) {
+          throw new ExternalServiceError('Cloudinary', 'Erreur lors de l\'upload de la photo de profil')
+        }
+        throw new DatabaseError('Erreur lors de la création de la photo de profil')
+      }
     })
   }
 
   public createLogo = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const fileRecieved = req.file
-
       if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
+        throw new DatabaseError('Contexte de requête manquant')
+      }
+
+      const fileReceived = req.file
+      if (!fileReceived) {
+        throw new ValidationError('Aucun fichier reçu', { field: 'file' })
+      }
+
+      if (ctx.user.roles !== Role.ADMIN) {
+        throw new AuthorizationError('Seul un administrateur peut créer un logo')
       }
 
       const company = ctx.user.company
-
       if (!company) {
-        throw new ApiError(422, 'Entreprise non trouvée')
+        throw new NotFoundError('Entreprise', { userId: ctx.user.id })
       }
 
-      if (fileRecieved) {
-        const logo = await this.FileService.createLogo(fileRecieved, company)
-        return res.status(200).json(logo)
+      try {
+        const logo = await this.FileService.createLogo(fileReceived, company)
+        res.status(201).json(logo)
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('cloudinary')) {
+          throw new ExternalServiceError('Cloudinary', 'Erreur lors de l\'upload du logo')
+        }
+        throw new DatabaseError('Erreur lors de la création du logo')
       }
-      throw new ApiError(422, 'fichier manquant')
     })
   }
 
-  /**
-   * @param file file: Partial<FileEntity>
-   * @returns return file just updated
-   */
   public updateOne = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async ctx => {
-      const { file }: { file: Partial<FileEntity> } = req.body
-      const id = parseInt(req.params.id)
-
       if (!ctx) {
-        throw new ApiError(500, 'Une erreur s\'est produite')
+        throw new DatabaseError('Contexte de requête manquant')
       }
 
-      if (id) {
-        const fileUpdated = await this.FileService.updateFile(id, file as FileEntity)
-        return res.status(200).json(fileUpdated)
+      const { id } = req.params
+      const { name, description } = req.body
+
+      if (!id) {
+        throw new ValidationError('ID du fichier manquant', { field: 'id' })
       }
 
-      throw new ApiError(422, 'identitfiant du fichier manquant')
+      const file = await this.FileService.getFile(parseInt(id))
+      if (!file) {
+        throw new NotFoundError('Fichier', { id })
+      }
+
+      try {
+        const updatedFile = await this.FileService.updateFile(parseInt(id), {
+          ...file,
+          name,
+          description,
+        })
+        res.status(200).json(updatedFile)
+      } catch (error) {
+        throw new DatabaseError('Erreur lors de la mise à jour du fichier')
+      }
     })
   }
 
   public getFile = async (req: Request, res: Response, next: NextFunction) => {
-    await wrapperRequest(req, res, next, async () => {
-      const id = parseInt(req.params.id)
-      if (id) {
-        const file = await this.FileService.getFile(id)
-        if (file) {
-          return res.status(200).json(file)
-        } else {
-          throw new ApiError(422, 'fichier non trouvé')
-        }
+    await wrapperRequest(req, res, next, async ctx => {
+      if (!ctx) {
+        throw new DatabaseError('Contexte de requête manquant')
       }
-      throw new ApiError(422, 'identitfiant du fichier manquant')
+
+      const { id } = req.params
+      if (!id) {
+        throw new ValidationError('ID du fichier manquant', { field: 'id' })
+      }
+
+      const file = await this.FileService.getFile(parseInt(id))
+      if (!file) {
+        throw new NotFoundError('Fichier', { id })
+      }
+
+      res.status(200).json(file)
     })
   }
 
@@ -240,20 +289,23 @@ export default class FileController {
   public deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     await wrapperRequest(req, res, next, async () => {
       const id = parseInt(req.params.id)
-      if (id) {
-        const file = await this.FileService.getFile(id)
-        if (file) {
-          await cloudinary.v2.uploader.destroy(file.public_id)
-          const deleted = await this.FileService.deleteFile(id)
 
-          if (deleted) {
-            return res.status(204).json({ message: 'Fichier Supprimé' })
-          }
-          throw new ApiError(422, 'fichier non supprimé')
-        }
-        throw new ApiError(422, 'fichier n\'éxiste pas')
+      if (!id) {
+        throw new ValidationError('ID du fichier manquant', { field: 'id' })
       }
-      throw new ApiError(422, 'identitfiant du fichier manquant')
+
+      const file = await this.FileService.getFile(id)
+      if (!file) {
+        throw new NotFoundError('Fichier', { id })
+      }
+
+      await cloudinary.v2.uploader.destroy(file.public_id)
+      const deleted = await this.FileService.deleteFile(id)
+
+      if (deleted) {
+        return res.status(204).json({ message: 'Fichier Supprimé' })
+      }
+      throw new ApiError(500, 'fichier non supprimé')
     })
   }
 }
