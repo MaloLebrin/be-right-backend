@@ -15,7 +15,7 @@ import {
   isAuthenticated,
   useValidation,
 } from './middlewares'
-import { authLimiter, generalLimiter, rateLimitErrorHandler } from './middlewares/rateLimiter'
+import { rateLimitErrorHandler } from './middlewares/rateLimiter'
 import EmployeeController from './controllers/employees/EmployeeController'
 import FileController from './controllers/FileController'
 import { seedersFunction } from './seed'
@@ -106,7 +106,7 @@ async function StartAPI() {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
 
-  app.use(generalLimiter)
+  // app.use(generalLimiter)
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     Context.bind(req)
@@ -155,7 +155,11 @@ async function StartAPI() {
   app.use('/answer', new AnswerRoutes(APP_SOURCE).intializeRoutes())
 
   // Auth
-  app.use('/auth', authLimiter, new AuthRoutes(APP_SOURCE).intializeRoutes())
+  app.use(
+    '/auth',
+    // authLimiter,
+    new AuthRoutes(APP_SOURCE).intializeRoutes(),
+  )
 
   // Badge
   app.get('/badges', [isAuthenticated], new BadgeController().getAll)
