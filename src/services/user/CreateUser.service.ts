@@ -54,13 +54,12 @@ export class CreateUserService extends BaseUserService {
       },
     })
 
-    await this.StripeCustomerService.createStripeCustomer(newUser)
-
     const userToSend = await this.repository.save({
       ...newUser,
       notificationToken: createNotificationToken(newUser.id),
     })
-
+    
+    await this.StripeCustomerService.createStripeCustomer(userToSend)
     return userToSend
   }
 
