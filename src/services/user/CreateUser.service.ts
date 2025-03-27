@@ -58,8 +58,13 @@ export class CreateUserService extends BaseUserService {
       ...newUser,
       notificationToken: createNotificationToken(newUser.id),
     })
-    
-    await this.StripeCustomerService.createStripeCustomer(userToSend)
+
+    try {
+      await this.StripeCustomerService.createStripeCustomer(userToSend)
+    } catch (error) {
+      await this.repository.remove(userToSend)
+      throw new Error(`Failed to create Stripe customer: ${error.message}`)
+    }
     return userToSend
   }
 
