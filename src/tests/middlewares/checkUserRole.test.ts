@@ -9,7 +9,7 @@ describe('Without Context', () => {
   test('checkUserRole throw error when context does not exist', () => {
     expect(() =>
       checkUserRole(Role.ADMIN)({} as any, undefined as any, jest.fn() as any))
-      .toThrowError('Une erreur s\‘est produite')
+      .toThrowError('Une erreur s\'est produite')
   })
 })
 

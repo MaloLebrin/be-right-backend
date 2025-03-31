@@ -1,11 +1,11 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response, ErrorRequestHandler } from 'express'
 import { isProduction } from '../utils/envHelper'
 import type { ErrorResponse } from '../types/Errors'
 import { ErrorType } from '../types/Errors'
 import { ApiError } from './ApiError'
 import { logger } from './loggerService'
 
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+export const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   const errorResponse: ErrorResponse = {
     status: 500,
     type: ErrorType.INTERNAL_SERVER_ERROR,

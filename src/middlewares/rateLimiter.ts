@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit'
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response, ErrorRequestHandler } from 'express'
 import { isProduction } from '../utils/envHelper'
 
 /**
@@ -38,13 +38,14 @@ export const apiLimiter = rateLimit({
 /**
  * Middleware to handle rate limiting errors
  */
-export const rateLimitErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const rateLimitErrorHandler: ErrorRequestHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   if (err.name === 'RateLimitExceeded') {
-    return res.status(429).json({
+    res.status(429).json({
       error: 'Too Many Requests',
       message: err.message,
       retryAfter: Math.ceil(err.retryAfter / 1000),
     })
+    return
   }
   next(err)
 }

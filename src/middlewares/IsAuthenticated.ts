@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response, RequestHandler } from 'express'
 import { verify } from 'jsonwebtoken'
 import { isUserEntity } from '../utils/index'
 import Context from '../context'
@@ -8,7 +8,7 @@ import { useEnv } from '../env'
 import { logger } from './loggerService'
 import { ApiError } from './ApiError'
 
-export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+const isAuthenticated: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     logger.info(`${req.url} check auth started`)
 
@@ -37,11 +37,12 @@ export default async function isAuthenticated(req: Request, res: Response, next:
           ctx.user = user
 
           logger.info(`${req.url} User is allowed`)
-          return next()
+          next()
+          return
         }
       }
     }
-    return res.status(401).send({
+    res.status(401).send({
       success: false,
       message: 'Action non autorisée',
     })
@@ -50,7 +51,7 @@ export default async function isAuthenticated(req: Request, res: Response, next:
 
     logger.error(error)
 
-    return res.status(401).send({
+    res.status(401).send({
       success: false,
       message: 'Action non autorisée',
       stack: error.stack,
@@ -60,3 +61,5 @@ export default async function isAuthenticated(req: Request, res: Response, next:
     logger.info(`${req.url} check auth ended`)
   }
 }
+
+export default isAuthenticated
