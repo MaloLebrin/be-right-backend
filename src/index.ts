@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import path from 'node:path'
-import type { NextFunction, Request, Response, RequestHandler } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'

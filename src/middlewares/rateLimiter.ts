@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit'
-import type { NextFunction, Request, Response, ErrorRequestHandler } from 'express'
+import type { ErrorRequestHandler, NextFunction, Request, Response } from 'express'
 import { isProduction } from '../utils/envHelper'
 
 /**

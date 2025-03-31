@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response, RequestHandler } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { verify } from 'jsonwebtoken'
 import { isUserEntity } from '../utils/index'
 import Context from '../context'

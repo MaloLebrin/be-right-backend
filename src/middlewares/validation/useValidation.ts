@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response, RequestHandler } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import type { AnyObject, ObjectSchema } from 'yup'
 import { array, date, number, object, string } from 'yup'
 import { NotificationTypeEnumArray, Role } from '../../types'

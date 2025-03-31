@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response, RequestHandler } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import type { Role } from '../types/Role'
 import Context from '../context'
 import { isArray } from '../utils/arrayHelper'
