@@ -36,7 +36,7 @@ export class NotificationSSEService {
     )
 
     if (!user) {
-      throw new ApiError(422, 'L\'utilisateur n\'existe pas')
+      return []
     }
 
     const notificationSubscriptions = await this.NotificationSubscriptionRepository.find({
