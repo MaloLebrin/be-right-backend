@@ -1,6 +1,5 @@
 import { type DataSource, IsNull, type Repository } from 'typeorm'
 import { UserEntity } from '../../entity/UserEntity'
-import { ApiError } from '../../middlewares/ApiError'
 import { NotificationSubcriptionEntity } from '../../entity/notifications/NotificationSubscription.entity'
 import type { NotificationEntity } from '../../entity/notifications/Notification.entity'
 import { REDIS_CACHE } from '../../'
@@ -22,7 +21,7 @@ export class NotificationSSEService {
   }: {
     notificationToken: string
   }): Promise<NotificationEntity[]> => {
-    const user = await REDIS_CACHE.get<{ id: number; notificationToken: string }>(
+    const user = await this.redisCache.get<{ id: number; notificationToken: string }>(
       `user-notification-${notificationToken}`,
       () => this.UserRepository.findOne({
         where: {
