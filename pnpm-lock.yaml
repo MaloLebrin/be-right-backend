@@ -55,7 +55,7 @@ importers:
         version: 8.1.0
       ioredis:
         specifier: ^5.6.0
-        version: 5.6.0
+        version: 5.6.1
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -88,7 +88,7 @@ importers:
         version: 4.9.3
       typeorm:
         specifier: 0.3.22
-        version: 0.3.22(ioredis@5.6.0)(pg@8.14.1)(redis@4.7.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.2))
+        version: 0.3.22(ioredis@5.6.1)(pg@8.14.1)(redis@4.7.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.2))
       uid2:
         specifier: 1.0.0
         version: 1.0.0
@@ -2010,8 +2010,8 @@ packages:
     resolution: {integrity: sha512-NGnrKwXzSms2qUUih/ILZ5JBqNTSa1+ZmP6flaIp6KmSElgE9qdndzS3cqjrDovwFdmwsGsLdeFgB6suw+1e9g==}
     engines: {node: '>= 0.4'}
 
-  ioredis@5.6.0:
-    resolution: {integrity: sha512-tBZlIIWbndeWBWCXWZiqtOF/yxf6yZX3tAlTJ7nfo5jhd6dctNxF7QnYlZLZ1a0o0pDoen7CgZqO+zjNaFbJAg==}
+  ioredis@5.6.1:
+    resolution: {integrity: sha512-UxC0Yv1Y4WRJiGQxQkP0hfdL0/5/6YvdfOOClRgJ0qppSarkhneSa6UvkMkms0AkdGimSH3Ikqm+6mkMmX7vGA==}
     engines: {node: '>=12.22.0'}
 
   ip-address@9.0.5:
@@ -4548,7 +4548,7 @@ snapshots:
 
   agent-base@7.1.1:
     dependencies:
-      debug: 4.4.0
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -4813,7 +4813,7 @@ snapshots:
   bullmq@5.46.1:
     dependencies:
       cron-parser: 4.9.0
-      ioredis: 5.6.0
+      ioredis: 5.6.1
       msgpackr: 1.11.2
       node-abort-controller: 3.1.1
       semver: 7.7.1
@@ -5613,7 +5613,7 @@ snapshots:
 
   extract-zip@2.0.1:
     dependencies:
-      debug: 4.4.0
+      debug: 4.3.4
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -5793,7 +5793,7 @@ snapshots:
     dependencies:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
-      debug: 4.4.0
+      debug: 4.3.4
       fs-extra: 11.2.0
     transitivePeerDependencies:
       - supports-color
@@ -5918,14 +5918,14 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.4.0
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.5:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.4.0
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -5968,7 +5968,7 @@ snapshots:
       hasown: 2.0.2
       side-channel: 1.1.0
 
-  ioredis@5.6.0:
+  ioredis@5.6.1:
     dependencies:
       '@ioredis/commands': 1.2.0
       cluster-key-slot: 1.1.2
@@ -6840,7 +6840,7 @@ snapshots:
     dependencies:
       '@tootallnate/quickjs-emscripten': 0.23.0
       agent-base: 7.1.1
-      debug: 4.4.0
+      debug: 4.3.4
       get-uri: 6.0.3
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
@@ -6988,7 +6988,7 @@ snapshots:
   proxy-agent@6.3.1:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.4.0
+      debug: 4.3.4
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
       lru-cache: 7.18.3
@@ -7289,7 +7289,7 @@ snapshots:
   socks-proxy-agent@8.0.4:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.4.0
+      debug: 4.3.4
       socks: 2.8.3
     transitivePeerDependencies:
       - supports-color
@@ -7611,7 +7611,7 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typeorm@0.3.22(ioredis@5.6.0)(pg@8.14.1)(redis@4.7.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.2)):
+  typeorm@0.3.22(ioredis@5.6.1)(pg@8.14.1)(redis@4.7.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.2)):
     dependencies:
       '@sqltools/formatter': 1.2.5
       ansis: 3.17.0
@@ -7628,7 +7628,7 @@ snapshots:
       uuid: 11.1.0
       yargs: 17.7.2
     optionalDependencies:
-      ioredis: 5.6.0
+      ioredis: 5.6.1
       pg: 8.14.1
       redis: 4.7.0
       ts-node: 10.9.2(@types/node@18.19.86)(typescript@5.8.2)
