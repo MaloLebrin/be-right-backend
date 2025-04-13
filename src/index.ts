@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import path from 'node:path'
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -127,7 +127,7 @@ async function StartAPI() {
   const upload = multer({ dest: 'src/uploads/' })
 
   app.get('/', (req: Request, res: Response) => {
-    return res.send('Hello World')
+    res.send('Hello World')
   })
 
   const {
@@ -162,47 +162,47 @@ async function StartAPI() {
   )
 
   // Badge
-  app.get('/badges', [isAuthenticated], new BadgeController().getAll)
-  app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser)
+  app.get('/badges', [isAuthenticated], new BadgeController().getAll as RequestHandler)
+  app.get('/badges/user', [isAuthenticated], new BadgeController().getAllForUser as RequestHandler)
 
   // Company
   app.use('/company', new CompanyRoutes(APP_SOURCE).intializeRoutes())
 
   // Employee
-  app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany)
-  app.get('/employee/', [isAuthenticated], new EmployeeController().getAll)
-  app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne)
-  app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId)
-  app.get('/employee/event/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByEventId)
-  app.get('/employee/restore/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().restoreOne)
-  app.post('/employee', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne)
-  app.post('/employee/many', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany)
-  app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId)
-  app.post('/employee-upload/csv', [isAuthenticated], upload.single('file'), new EmployeeController().uploadFormCSV)
-  app.put('/employee/updateTotalSignatureNeeded/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().patchOne)
-  app.patch('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().updateOne)
-  app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne)
+  app.get('/employee/manyByIds', [isAuthenticated], new EmployeeController().getMany as RequestHandler)
+  app.get('/employee/', [isAuthenticated], new EmployeeController().getAll as RequestHandler)
+  app.get('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getOne as RequestHandler)
+  app.get('/employee/user/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByUserId as RequestHandler)
+  app.get('/employee/event/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().getManyByEventId as RequestHandler)
+  app.get('/employee/restore/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().restoreOne as RequestHandler)
+  app.post('/employee', [validate(createEmployeeSchema), isAuthenticated], new EmployeeController().createOne as RequestHandler)
+  app.post('/employee/many', [validate(createManyEmployeesSchema), isAuthenticated], new EmployeeController().createMany as RequestHandler)
+  app.post('/employee/manyonevent/:eventId/:id', [validate(createManyEmployeesOnEventSchema), isAuthenticated], new EmployeeController().createManyEmployeeByEventId as RequestHandler)
+  app.post('/employee-upload/csv', [isAuthenticated], upload.single('file'), new EmployeeController().uploadFormCSV as RequestHandler)
+  app.put('/employee/updateTotalSignatureNeeded/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().patchOne as RequestHandler)
+  app.patch('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().updateOne as RequestHandler)
+  app.delete('/employee/:id', [validate(idParamsSchema), isAuthenticated], new EmployeeController().deleteOne as RequestHandler)
 
   // Event
   app.use('/event', new EventRoutes(APP_SOURCE).intializeRoutes())
 
   // File
-  app.get('/file/many', [isAuthenticated], new FileController().getFiles)
-  app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture)
-  app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo)
-  app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile)
-  app.post('/file/getProfiles', [isAuthenticated], new FileController().getProfilePictures)
-  app.patch('/file/:id', [isAuthenticated], new FileController().updateOne)
-  app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile)
-  app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser)
-  app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent)
-  app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile)
+  app.get('/file/many', [isAuthenticated], new FileController().getFiles as RequestHandler)
+  app.post('/file/profile', [isAuthenticated], upload.single('file'), new FileController().createProfilePicture as RequestHandler)
+  app.post('/file/logo', [isAuthenticated], upload.single('file'), new FileController().createLogo as RequestHandler)
+  app.post('/file/:id', [isAuthenticated], upload.single('file'), new FileController().newFile as RequestHandler)
+  app.post('/file/getProfiles', [isAuthenticated], new FileController().getProfilePictures as RequestHandler)
+  app.patch('/file/:id', [isAuthenticated], new FileController().updateOne as RequestHandler)
+  app.get('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().getFile as RequestHandler)
+  app.get('/file/user/:id', [isAuthenticated], new FileController().getFilesByUser as RequestHandler)
+  app.get('/file/event/:id', [isAuthenticated], new FileController().getFilesByEvent as RequestHandler)
+  app.delete('/file/:id', [validate(idParamsSchema), isAuthenticated], new FileController().deleteFile as RequestHandler)
 
   // Group
   app.use('/group', new GroupRoutes(APP_SOURCE).intializeRoutes())
 
   // Mail
-  app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee)
+  app.get('/mail/answer/:id', [validate(idParamsSchema), isAuthenticated], new MailController().sendMailToEmployee as RequestHandler)
 
   const notificationChannel = createChannel()
 
