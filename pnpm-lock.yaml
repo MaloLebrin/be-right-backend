@@ -19,13 +19,13 @@ importers:
         version: 0.14.1
       bullmq:
         specifier: ^5.44.1
-        version: 5.51.1
+        version: 5.52.1
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
       cloudinary:
         specifier: ^2.6.0
-        version: 2.6.0
+        version: 2.6.1
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -1007,8 +1007,8 @@ packages:
   builtins@5.1.0:
     resolution: {integrity: sha512-SW9lzGTLvWTP1AY8xeAMZimqDrIaSdLQUcVr9DMef51niJ022Ri87SwRRKYm4A6iHfkPaiVUu/Duw2Wc4J7kKg==}
 
-  bullmq@5.51.1:
-    resolution: {integrity: sha512-JEZokH5Sb6p66HRjbfQjPNYuSilDRcB8UREmJzOBqTTaJFza8I92vsBF3J/zmtzd7KVv3dxhZyH9CYSLOJALRA==}
+  bullmq@5.52.1:
+    resolution: {integrity: sha512-u7CSV9wID3MBEX2DNubEErbAlrADgm8abUBAi6h8rQTnuTkhhgMs2iD7uhqplK8lIgUOkBIW3sDJWaMSInH47A==}
 
   busboy@0.2.14:
     resolution: {integrity: sha512-InWFDomvlkEj+xWLBfU3AvnbVYqeTWmQopiW0tWWEy5yehYm2YkGEc59sUmw/4ty5Zj/b0WHGs1LgecuBSBGrg==}
@@ -1089,8 +1089,8 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
-  cloudinary@2.6.0:
-    resolution: {integrity: sha512-FIlny9RR5LPgkMioG4V7yUpC6ASyIFQMWfx4TgOi/xBeLxJTegbyQc3itiXL0b0lDlSaL0KyT2THEw6osrKqpQ==}
+  cloudinary@2.6.1:
+    resolution: {integrity: sha512-Dt7o3p4VzxYoTi+EqWkVQmGy6WiXIyMcG5Gbr9kPR/EQ+jZa+3FFzlDKfDx1uDsaB1aTR1gYeO6wZqrgLFaByQ==}
     engines: {node: '>=9'}
 
   cluster-key-slot@1.1.2:
@@ -4810,7 +4810,7 @@ snapshots:
     dependencies:
       semver: 7.7.1
 
-  bullmq@5.51.1:
+  bullmq@5.52.1:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.6.1
@@ -4896,7 +4896,7 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
-  cloudinary@2.6.0:
+  cloudinary@2.6.1:
     dependencies:
       lodash: 4.17.21
       q: 1.5.1
