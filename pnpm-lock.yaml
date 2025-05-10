@@ -63,8 +63,8 @@ importers:
         specifier: ^1.4.4
         version: 1.4.4
       node-cron:
-        specifier: ^3.0.3
-        version: 3.0.3
+        specifier: ^4.0.0
+        version: 4.0.0
       node-mailjet:
         specifier: ^6.0.8
         version: 6.0.8
@@ -2598,8 +2598,8 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-cron@3.0.3:
-    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
+  node-cron@4.0.0:
+    resolution: {integrity: sha512-xMWGvrhVhBjwyAn5vJVhztG1+wkk7JANHOMI1nSZnwaokD+eslmokJ9aJEzBJgLs0jnyUbRQE6ztdY/vKNM2MQ==}
     engines: {node: '>=6.0.0'}
 
   node-fetch@2.7.0:
@@ -3539,10 +3539,6 @@ packages:
 
   uuid@11.1.0:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
-    hasBin: true
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
 
   uuid@9.0.1:
@@ -6721,9 +6717,7 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-cron@3.0.3:
-    dependencies:
-      uuid: 8.3.2
+  node-cron@4.0.0: {}
 
   node-fetch@2.7.0:
     dependencies:
@@ -7683,8 +7677,6 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@11.1.0: {}
-
-  uuid@8.3.2: {}
 
   uuid@9.0.1: {}
 
