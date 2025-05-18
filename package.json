@@ -38,7 +38,7 @@
     "ioredis": "^5.6.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.4",
-    "node-cron": "^3.0.3",
+    "node-cron": "^4.0.0",
     "node-mailjet": "^6.0.8",
     "pg": "^8.14.1",
     "puppeteer": "21.11.0",
