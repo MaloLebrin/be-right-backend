@@ -15,8 +15,8 @@ importers:
         specifier: ^1.8.4
         version: 1.10.0
       better-sse:
-        specifier: ^0.14.1
-        version: 0.14.1
+        specifier: ^0.15.0
+        version: 0.15.0
       bullmq:
         specifier: ^5.44.1
         version: 5.54.3
@@ -952,8 +952,8 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  better-sse@0.14.1:
-    resolution: {integrity: sha512-htQOrymWPKD/LDkRRlgmqS5+xX3p9/BetUQTRshqtwuSk+aQ63RluzHx0CJpY1AYUadCvUex8J+B6XwkGLkZxw==}
+  better-sse@0.15.0:
+    resolution: {integrity: sha512-ckLqV9k44J22MBCfINAZOkxhk5bErEMohn1c0f3CVZD264/J0VgB8fxFxz8x0UOWtfl2S3rYdPs7RxAzQUbHzQ==}
     engines: {node: '>=20', pnpm: '>=9'}
 
   bignumber.js@9.1.2:
@@ -4726,7 +4726,7 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  better-sse@0.14.1: {}
+  better-sse@0.15.0: {}
 
   bignumber.js@9.1.2: {}
 
