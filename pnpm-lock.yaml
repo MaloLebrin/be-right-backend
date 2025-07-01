@@ -70,7 +70,7 @@ importers:
         version: 6.0.8
       pg:
         specifier: ^8.14.1
-        version: 8.16.1
+        version: 8.16.3
       puppeteer:
         specifier: 21.11.0
         version: 21.11.0(typescript@5.8.3)
@@ -88,7 +88,7 @@ importers:
         version: 4.9.3
       typeorm:
         specifier: 0.3.24
-        version: 0.3.24(ioredis@5.6.1)(pg@8.16.1)(redis@5.5.6)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.112)(typescript@5.8.3))
+        version: 0.3.24(ioredis@5.6.1)(pg@8.16.3)(redis@5.5.6)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.112)(typescript@5.8.3))
       uid2:
         specifier: 1.0.0
         version: 1.0.0
@@ -2766,8 +2766,8 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
-  pg-cloudflare@1.2.6:
-    resolution: {integrity: sha512-uxmJAnmIgmYgnSFzgOf2cqGQBzwnRYcrEgXuFjJNEkpedEIPBSEzxY7ph4uA9k1mI+l/GR0HjPNS6FKNZe8SBQ==}
+  pg-cloudflare@1.2.7:
+    resolution: {integrity: sha512-YgCtzMH0ptvZJslLM1ffsY4EuGaU0cx4XSdXLRFae8bPP4dS5xL1tNB3k2o/N64cHJpwU7dxKli/nZ2lUa5fLg==}
 
   pg-connection-string@2.9.1:
     resolution: {integrity: sha512-nkc6NpDcvPVpZXxrreI/FOtX3XemeLl8E0qFr6F2Lrm/I8WOnaWNhIPK2Z7OHpw7gh5XJThi6j6ppgNoaT1w4w==}
@@ -2781,15 +2781,15 @@ packages:
     peerDependencies:
       pg: '>=8.0'
 
-  pg-protocol@1.10.1:
-    resolution: {integrity: sha512-9YS3ZonDj0Lxny//aF0ITPdfrEPgKWCJvONsSXAaIUhgpzlzl5JgaZNlbTFxvYNfm2terGEnHeOSUlF6qRGBzw==}
+  pg-protocol@1.10.3:
+    resolution: {integrity: sha512-6DIBgBQaTKDJyxnXaLiLR8wBpQQcGWuAESkRBX/t6OwA8YsqP+iVSiond2EDy6Y/dsGk8rh/jtax3js5NeV7JQ==}
 
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.16.1:
-    resolution: {integrity: sha512-5n6e7MgF5ABRsssOsX9xC95p+NUuhgDQDBSsrKSZJjYVqZHGyrmJuknym2IbVhGtzV9siBdzH9SEIQAuWF+sdg==}
+  pg@8.16.3:
+    resolution: {integrity: sha512-enxc1h0jA/aq5oSDMvqyW3q89ra6XIIDZgCX9vkMrnz5DFTw/Ny3Li2lFQ+pt3L6MCgm/5o2o8HW9hiJji+xvw==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -6880,18 +6880,18 @@ snapshots:
 
   pend@1.2.0: {}
 
-  pg-cloudflare@1.2.6:
+  pg-cloudflare@1.2.7:
     optional: true
 
   pg-connection-string@2.9.1: {}
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.10.1(pg@8.16.1):
+  pg-pool@3.10.1(pg@8.16.3):
     dependencies:
-      pg: 8.16.1
+      pg: 8.16.3
 
-  pg-protocol@1.10.1: {}
+  pg-protocol@1.10.3: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -6901,15 +6901,15 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.16.1:
+  pg@8.16.3:
     dependencies:
       pg-connection-string: 2.9.1
-      pg-pool: 3.10.1(pg@8.16.1)
-      pg-protocol: 1.10.1
+      pg-pool: 3.10.1(pg@8.16.3)
+      pg-protocol: 1.10.3
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.2.6
+      pg-cloudflare: 1.2.7
 
   pgpass@1.0.5:
     dependencies:
@@ -7576,7 +7576,7 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typeorm@0.3.24(ioredis@5.6.1)(pg@8.16.1)(redis@5.5.6)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.112)(typescript@5.8.3)):
+  typeorm@0.3.24(ioredis@5.6.1)(pg@8.16.3)(redis@5.5.6)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.112)(typescript@5.8.3)):
     dependencies:
       '@sqltools/formatter': 1.2.5
       ansis: 3.17.0
@@ -7595,7 +7595,7 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       ioredis: 5.6.1
-      pg: 8.16.1
+      pg: 8.16.3
       redis: 5.5.6
       ts-node: 10.9.2(@types/node@18.19.112)(typescript@5.8.3)
     transitivePeerDependencies:
