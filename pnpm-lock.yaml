@@ -64,7 +64,7 @@ importers:
         version: 2.0.1
       node-cron:
         specifier: ^4.0.0
-        version: 4.2.0
+        version: 4.2.1
       node-mailjet:
         specifier: ^6.0.8
         version: 6.0.8
@@ -2607,8 +2607,8 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-cron@4.2.0:
-    resolution: {integrity: sha512-nOdP7uH7u55w7ybQq9fusXtsResok+ErzvOBydJUPBBaQ9W+EfBaBWFPgJ8sOB7FWQednDvVBJtgP5xA0bME7Q==}
+  node-cron@4.2.1:
+    resolution: {integrity: sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg==}
     engines: {node: '>=6.0.0'}
 
   node-fetch@2.7.0:
@@ -6712,7 +6712,7 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-cron@4.2.0: {}
+  node-cron@4.2.1: {}
 
   node-fetch@2.7.0:
     dependencies:
