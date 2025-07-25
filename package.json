@@ -52,7 +52,7 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.37.0",
+    "@antfu/eslint-config": "^5.0.0",
     "@jest/globals": "^29.7.0",
     "@types/cors": "^2.8.19",
     "@types/crypto-js": "^4.2.2",
