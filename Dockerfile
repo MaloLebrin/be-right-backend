@@ -1,40 +1,57 @@
-FROM zenika/alpine-chrome:with-puppeteer
+FROM node:22-alpine
 
-USER root
+# Installer les dépendances système nécessaires
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-liberation \
+    git
 
-RUN git config --system --add safe.directory '*'
+# Créer un utilisateur non-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
 
-RUN apk add --no-cache ttf-liberation
-
-# RUN mkdir -p /app
+# Définir le répertoire de travail
 WORKDIR /app
 
-COPY package.json /app/
-COPY pnpm-lock.yaml /app/
+# Copier les fichiers de dépendances
+COPY package.json pnpm-lock.yaml ./
 
-RUN npm i -g pnpm \
-    && pnpm install --no-frozen-lockfile --unsafe-perm \
-    && chown -R 0:0 /app/node_modules
+# Installer pnpm et les dépendances
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile
 
-# RUN mkdir -p node_modules/.cache
-# RUN chmod -R 777 node_modules/.cache
-# Be careful with this env variable
-ARG NODE_ENV
-ENV NODE_ENV=${NODE_ENV}
+# Copier les fichiers de configuration
+COPY tsconfig.json ./
+COPY ormconfig.ts ./
 
-# COPY .env /app/.env
-COPY ormconfig.ts /app/ormconfig.ts
-COPY tsconfig.json /app/
+# Copier le code source
+COPY ./src ./src
 
-COPY ./src /app/src
+# Compiler TypeScript
+RUN pnpm run tsc
 
-RUN pnpm run tsc && \
-  chmod -R 777 /app/src/uploads && \
-  chmod 777 /app/build/src/middlewares/
+# Copier les vues
+COPY ./src/views ./build/src/views
 
-COPY ./src/views /app/build/src/views
+# Créer le répertoire uploads avec les bonnes permissions
+RUN mkdir -p /app/build/src/uploads && \
+    chown -R nodejs:nodejs /app
 
-USER chrome
-# RUN chmod +x /app/uploads
+# Définir les variables d'environnement
+ENV NODE_ENV=production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-ENTRYPOINT ["node", "/app/build/src/index.js"]
+# Changer vers l'utilisateur non-root
+USER nodejs
+
+# Exposer le port
+EXPOSE 3000
+
+# Point d'entrée
+CMD ["node", "/app/build/src/index.js"]

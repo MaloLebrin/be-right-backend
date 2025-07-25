@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [18.x]
+        node: [22.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -47,7 +47,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [18.x, 20.x]
+        node: [22.x]
         os: [ubuntu-latest]
       fail-fast: false
 
