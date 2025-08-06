@@ -67,7 +67,7 @@ importers:
         version: 4.2.1
       node-mailjet:
         specifier: ^6.0.8
-        version: 6.0.8
+        version: 6.0.9
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -956,8 +956,8 @@ packages:
     resolution: {integrity: sha512-htQOrymWPKD/LDkRRlgmqS5+xX3p9/BetUQTRshqtwuSk+aQ63RluzHx0CJpY1AYUadCvUex8J+B6XwkGLkZxw==}
     engines: {node: '>=20', pnpm: '>=9'}
 
-  bignumber.js@9.1.2:
-    resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
+  bignumber.js@9.3.1:
+    resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
 
   bluebird@3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
@@ -2631,8 +2631,8 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  node-mailjet@6.0.8:
-    resolution: {integrity: sha512-VyB2+SeD1zuxpuJLePC4bk10UN0G294CsVlF8YBxb+1tlH0Tw4wECGlTYlQOaRMtPgckdObpcfEbhUWu3UuFIQ==}
+  node-mailjet@6.0.9:
+    resolution: {integrity: sha512-WGovS3g+2R/02IkD9/EWNvItRVhei7ltmh40JN53cozna41Ug/T3oKOAehBnV0B6Egx1H6L565HbeffUE7DYWg==}
     engines: {node: '>= 12.0.0', npm: '>= 6.9.0'}
 
   node-releases@2.0.14:
@@ -4736,7 +4736,7 @@ snapshots:
 
   better-sse@0.14.1: {}
 
-  bignumber.js@9.1.2: {}
+  bignumber.js@9.3.1: {}
 
   bluebird@3.7.2: {}
 
@@ -6474,7 +6474,7 @@ snapshots:
 
   json-bigint@1.0.0:
     dependencies:
-      bignumber.js: 9.1.2
+      bignumber.js: 9.3.1
 
   json-buffer@3.0.1: {}
 
@@ -6732,7 +6732,7 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  node-mailjet@6.0.8:
+  node-mailjet@6.0.9:
     dependencies:
       axios: 1.11.0
       json-bigint: 1.0.0
