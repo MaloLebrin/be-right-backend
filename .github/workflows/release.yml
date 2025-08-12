@@ -9,7 +9,7 @@ jobs:
   new-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Checkout our working repository
+      - uses: actions/checkout@v5 # Checkout our working repository
 
       - name: 📚 Changelog
         uses: scottbrenner/generate-changelog-action@master
