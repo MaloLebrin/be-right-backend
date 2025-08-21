@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
 # Installer les dépendances système nécessaires
 RUN apk add --no-cache \
