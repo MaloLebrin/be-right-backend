@@ -87,8 +87,8 @@ importers:
         specifier: ^4.9.3
         version: 4.9.3
       typeorm:
-        specifier: 0.3.25
-        version: 0.3.25(ioredis@5.7.0)(pg@8.16.3)(redis@5.8.2)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@22.18.0)(typescript@5.9.2))
+        specifier: 0.3.26
+        version: 0.3.26(ioredis@5.7.0)(pg@8.16.3)(redis@5.8.2)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@22.18.0)(typescript@5.9.2))
       uid2:
         specifier: 1.0.0
         version: 1.0.0
@@ -3397,15 +3397,14 @@ packages:
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
-  typeorm@0.3.25:
-    resolution: {integrity: sha512-fTKDFzWXKwAaBdEMU4k661seZewbNYET4r1J/z3Jwf+eAvlzMVpTLKAVcAzg75WwQk7GDmtsmkZ5MfkmXCiFWg==}
+  typeorm@0.3.26:
+    resolution: {integrity: sha512-o2RrBNn3lczx1qv4j+JliVMmtkPSqEGpG0UuZkt9tCfWkoXKu8MZnjvp2GjWPll1SehwemQw6xrbVRhmOglj8Q==}
     engines: {node: '>=16.13.0'}
     hasBin: true
     peerDependencies:
       '@google-cloud/spanner': ^5.18.0 || ^6.0.0 || ^7.0.0
-      '@sap/hana-client': ^2.12.25
-      better-sqlite3: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
-      hdb-pool: ^0.1.6
+      '@sap/hana-client': ^2.14.22
+      better-sqlite3: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0
       ioredis: ^5.0.4
       mongodb: ^5.8.0 || ^6.0.0
       mssql: ^9.1.1 || ^10.0.1 || ^11.0.1
@@ -3414,7 +3413,7 @@ packages:
       pg: ^8.5.1
       pg-native: ^3.0.0
       pg-query-stream: ^4.0.0
-      redis: ^3.1.1 || ^4.0.0
+      redis: ^3.1.1 || ^4.0.0 || ^5.0.14
       reflect-metadata: ^0.1.14 || ^0.2.0
       sql.js: ^1.4.0
       sqlite3: ^5.0.3
@@ -3426,8 +3425,6 @@ packages:
       '@sap/hana-client':
         optional: true
       better-sqlite3:
-        optional: true
-      hdb-pool:
         optional: true
       ioredis:
         optional: true
@@ -4516,7 +4513,7 @@ snapshots:
 
   agent-base@7.1.1:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5574,7 +5571,7 @@ snapshots:
 
   extract-zip@2.0.1:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.1
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -5749,7 +5746,7 @@ snapshots:
     dependencies:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
-      debug: 4.3.4
+      debug: 4.4.1
       fs-extra: 11.2.0
     transitivePeerDependencies:
       - supports-color
@@ -5872,14 +5869,14 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.5:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6778,7 +6775,7 @@ snapshots:
     dependencies:
       '@tootallnate/quickjs-emscripten': 0.23.0
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.4.1
       get-uri: 6.0.3
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
@@ -6924,7 +6921,7 @@ snapshots:
   proxy-agent@6.3.1:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.4.1
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
       lru-cache: 7.18.3
@@ -7211,7 +7208,7 @@ snapshots:
   socks-proxy-agent@8.0.4:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.4.1
       socks: 2.8.3
     transitivePeerDependencies:
       - supports-color
@@ -7531,7 +7528,7 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typeorm@0.3.25(ioredis@5.7.0)(pg@8.16.3)(redis@5.8.2)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@22.18.0)(typescript@5.9.2)):
+  typeorm@0.3.26(ioredis@5.7.0)(pg@8.16.3)(redis@5.8.2)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@22.18.0)(typescript@5.9.2)):
     dependencies:
       '@sqltools/formatter': 1.2.5
       ansis: 3.17.0
