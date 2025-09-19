@@ -46,7 +46,7 @@
     "reflect-metadata": "^0.2.2",
     "stripe": "^15.12.0",
     "tslog": "^4.9.3",
-    "typeorm": "0.3.26",
+    "typeorm": "0.3.27",
     "uid2": "1.0.0",
     "uuid": "^13.0.0",
     "yup": "^1.7.0"
