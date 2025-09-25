@@ -19,7 +19,7 @@ importers:
         version: 0.15.1
       bullmq:
         specifier: ^5.58.5
-        version: 5.58.7
+        version: 5.58.8
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -1010,8 +1010,8 @@ packages:
   builtins@5.1.0:
     resolution: {integrity: sha512-SW9lzGTLvWTP1AY8xeAMZimqDrIaSdLQUcVr9DMef51niJ022Ri87SwRRKYm4A6iHfkPaiVUu/Duw2Wc4J7kKg==}
 
-  bullmq@5.58.7:
-    resolution: {integrity: sha512-rqsKV/ip76wU90q7Cxpr1vS/6PYIVbhuzqr3wgILgjS6XbsnJtWyYrK23jqWHs9+m6/NXM4+62hyf8CSBpufAw==}
+  bullmq@5.58.8:
+    resolution: {integrity: sha512-j7h2JlWs7rOzsLePKtNK+zLOyrH6PRurLLZ6SriSpt9w5fHR128IFSd4gHGwYUb41ycnWmbLDcggp64zNW/p/Q==}
 
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
@@ -1309,8 +1309,8 @@ packages:
     resolution: {integrity: sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
-  detect-libc@2.1.0:
-    resolution: {integrity: sha512-vEtk+OcP7VBRtQZ1EJ3bdgzSfBjgnEalLTp5zjJrS+2Z1w2KZly4SBdac/WDU3hhsNAZ9E8SC96ME4Ey8MZ7cg==}
+  detect-libc@2.1.1:
+    resolution: {integrity: sha512-ecqj/sy1jcK1uWrwpR67UhYrIFQ+5WlGxth34WquCbamhFA6hkkwiu37o6J5xCHdo1oixJRfVRw+ywV+Hq/0Aw==}
     engines: {node: '>=8'}
 
   detect-newline@3.1.0:
@@ -4799,7 +4799,7 @@ snapshots:
     dependencies:
       semver: 7.7.2
 
-  bullmq@5.58.7:
+  bullmq@5.58.8:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.7.0
@@ -5074,7 +5074,7 @@ snapshots:
 
   destroy@1.2.0: {}
 
-  detect-libc@2.1.0:
+  detect-libc@2.1.1:
     optional: true
 
   detect-newline@3.1.0: {}
@@ -6707,7 +6707,7 @@ snapshots:
 
   node-gyp-build-optional-packages@5.2.2:
     dependencies:
-      detect-libc: 2.1.0
+      detect-libc: 2.1.1
     optional: true
 
   node-int64@0.4.0: {}
